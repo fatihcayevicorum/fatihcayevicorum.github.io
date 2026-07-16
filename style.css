@@ -52,7 +52,7 @@ filter:blur(60px);
 }
 
 .logo{
-    width:300px;
+    width:320px;
     max-width:90%;
     margin-bottom:25px;
     animation:float 4s ease-in-out infinite;
@@ -233,7 +233,7 @@ grid-template-columns:1fr;
 }
 
 .logo{
-width:150px;
+width:220px;
 }
 
 h1{
