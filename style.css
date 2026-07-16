@@ -54,9 +54,14 @@ filter:blur(60px);
 .logo{
     width:320px;
     max-width:90%;
-    margin-bottom:25px;
+    padding:20px;
+    background:rgba(255,255,255,0.08);
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,0.15);
+    backdrop-filter:blur(8px);
+    box-shadow:0 15px 40px rgba(0,0,0,.35);
     animation:float 4s ease-in-out infinite;
-    filter:drop-shadow(0 10px 20px rgba(0,0,0,.45));
+}shadow(0 10px 20px rgba(0,0,0,.45));
 }
 
 @keyframes float{
