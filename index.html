@@ -2,238 +2,308 @@
 <html lang="tr">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fatih Çay Evi | Çorum</title>
+    <title>Fatih Çay Evi | Çorum</title>
 
-<meta name="description" content="Çorum Fatih Çay Evi - Günlük taze demlenen çay, sıcak ve soğuk içecekler.">
+    <meta name="description"
+        content="Çorum Fatih Çay Evi - Günlük taze demlenen çay, sıcak sohbet, kaliteli hizmet.">
 
-<meta name="theme-color" content="#8B0000">
+    <meta name="keywords"
+        content="Fatih Çay Evi, Çorum Çay Evi, Çorum Çay, Osmancık Caddesi">
 
-<link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#7b1013">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="style.css">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
-<header class="hero">
+    <!-- HERO -->
 
-<div class="hero-overlay">
+    <header class="hero">
 
-<img src="logo.png" class="logo" alt="Fatih Çay Evi">
+        <div class="hero-overlay">
 
-<h1>Fatih Çay Evi</h1>
+            <img src="logo.png" alt="Fatih Çay Evi" class="logo">
 
-<p class="subtitle">
-Kaliteli Çay • Samimi Sohbet
-</p>
+            <h1>Fatih Çay Evi</h1>
 
-<p class="slogan">
-"Oksijeni bilmem ama yaşamak için <strong>ÇAY</strong> şart."
-</p>
+            <h2 class="hero-title">
+                Çorum'un Sıcak Sohbet Noktası
+            </h2>
 
-<div class="status">
-🟢 Her Gün Taze Demleme
-</div>
+            <p class="subtitle">
+                Kaliteli Çay • Samimi Sohbet
+            </p>
 
-</div>
+            <p class="slogan">
+                “Oksijeni bilmem ama yaşamak için <strong>ÇAY</strong> şart.”
+            </p>
 
-</header>
+            <div class="status">
+                <i class="fa-solid fa-mug-hot"></i>
+                Her Gün Taze Demleme
+            </div>
 
-<main class="container">
+        </div>
 
-<!-- HOŞ GELDİNİZ -->
+    </header>
 
-<section class="panel">
+    <main class="container">
 
-<h2>☕ Hoş Geldiniz</h2>
+        <!-- HOŞ GELDİNİZ -->
 
-<p>
+        <section class="panel">
 
-Fatih Çay Evi olarak kaliteli çay, güler yüzlü hizmet ve sıcak sohbet ortamı sunuyoruz.
+            <h2>
+                <i class="fa-solid fa-heart"></i>
+                Hoş Geldiniz
+            </h2>
 
-Her gün özenle demlenen çayımız eşliğinde sizleri ağırlamaktan mutluluk duyarız.
+            <p>
+                Fatih Çay Evi olarak sizlere her gün özenle demlenmiş kaliteli çay,
+                samimi bir sohbet ortamı ve güler yüzlü hizmet sunuyoruz.
+            </p>
 
-</p>
+            <p>
+                İster kısa bir mola verin, ister dostlarınızla keyifli vakit geçirin...
+                Çayımız her zaman taze, kapımız her zaman açıktır.
+            </p>
 
-</section>
+        </section>
 
-<!-- HAVA DURUMU -->
+        <!-- HAVA DURUMU -->
 
-<section class="panel weather-card">
+        <section class="panel weather-card">
 
-<h2>🌤️ Çorum Hava Durumu</h2>
+            <h2>
+                <i class="fa-solid fa-cloud-sun"></i>
+                Çorum Hava Durumu
+            </h2>
 
-<div id="weather">
+            <div id="weather">
 
-<h3>Çorum</h3>
+                <div class="weather-icon">
+                    🌤️
+                </div>
 
-<p>
+                <h3>Çorum</h3>
 
-Canlı hava durumu yakında burada gösterilecek.
+                <p id="weatherText">
+                    Hava durumu yükleniyor...
+                </p>
 
-</p>
+            </div>
 
-</div>
+        </section>
+                <!-- ÇAY TAZELİK DURUMU -->
 
-</section>
+        <section class="panel">
 
-<!-- TAZELİK -->
+            <h2>
+                <i class="fa-solid fa-mug-hot"></i>
+                Çay Tazelik Durumu
+            </h2>
 
-<section class="panel">
+            <p class="tea-info">
+                Her zaman taze demlenen çaylarımızla sizlere en kaliteli lezzeti sunuyoruz.
+            </p>
 
-<h2>🍵 Çay Tazelik Durumu</h2>
+            <div class="fresh-bar">
+                <div class="fill" id="freshFill"></div>
+            </div>
 
-<p>
+            <h3 id="freshText">
+                🟢 %100 - Yeni Demlendi
+            </h3>
 
-Her zaman taze demlenen çaylarımızla hizmet veriyoruz.
+            <p class="last-tea">
+                Son Demleme :
+                <span id="lastTea">
+                    Bugün
+                </span>
+            </p>
 
-</p>
+        </section>
 
-<div class="fresh-bar">
+        <!-- MENÜ -->
 
-<div class="fill" id="freshFill"></div>
+        <section class="panel" id="menu">
 
-</div>
+            <h2>
+                <i class="fa-solid fa-book-open"></i>
+                Menü
+            </h2>
 
-<h3 id="freshText">
+            <p>
+                Güncel çay, oralet ve soğuk içecek fiyatlarımızı görmek için aşağıdaki butona tıklayabilirsiniz.
+            </p>
 
-%100 Taze
+            <a href="menu.html" class="menuButton">
+                ☕ Menü ve Fiyatlar
+            </a>
 
-</h3>
+        </section>
 
-<p>
+        <!-- GALERİ -->
 
-Son Demleme :
-<span id="lastTea">
+        <section class="panel">
 
-Bugün
+            <h2>
+                <i class="fa-solid fa-camera"></i>
+                Galeri
+            </h2>
 
-</span>
+            <p>
+                İşletmemizden güncel fotoğraflar çok yakında burada yer alacaktır.
+            </p>
 
-</p>
+            <div class="gallery-placeholder">
 
-</section>
+                <div class="gallery-box">
+                    <i class="fa-solid fa-image"></i>
+                    <span>Yakında</span>
+                </div>
 
-<!-- MENÜ -->
+                <div class="gallery-box">
+                    <i class="fa-solid fa-image"></i>
+                    <span>Yakında</span>
+                </div>
 
-<section class="panel" id="menu">
+                <div class="gallery-box">
+                    <i class="fa-solid fa-image"></i>
+                    <span>Yakında</span>
+                </div>
 
-<h2>📋 Menü</h2>
+            </div>
 
-<p>
+        </section>
+                <!-- HIZLI ERİŞİM -->
 
-Çay, oralet, sıcak ve soğuk içeceklerimizin fiyatlarını görmek için aşağıdaki butona tıklayın.
+        <section class="panel">
 
-</p>
+            <h2>
+                <i class="fa-solid fa-bolt"></i>
+                Hızlı Erişim
+            </h2>
 
-<br>
+            <p class="quick-text">
+                Tek dokunuşla bize ulaşabilir, yol tarifi alabilir veya Google'da yorum bırakabilirsiniz.
+            </p>
 
-<a href="menu.html" class="menuButton">
+            <div class="quick-actions">
 
-☕ Menü ve Fiyatlar
+                <a href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank" class="card">
 
-</a>
+                    <i class="fa-solid fa-location-dot"></i>
 
-</section>
+                    <h3>Yol Tarifi</h3>
 
-<!-- GALERİ -->
+                    <p>Haritada Aç</p>
 
-<section class="panel">
+                </a>
 
-<h2>📸 Galeri</h2>
+                <a href="https://www.instagram.com/fatihcayevicorum" target="_blank" class="card">
 
-<p>
+                    <i class="fa-brands fa-instagram"></i>
 
-İşletmemizden fotoğraflar çok yakında burada yer alacaktır.
+                    <h3>Instagram</h3>
 
-</p>
+                    <p>Bizi Takip Et</p>
 
-</section>
+                </a>
 
-<!-- HIZLI İŞLEMLER -->
+                <a href="tel:+905541180806" class="card">
 
-<section class="quick-actions">
+                    <i class="fa-solid fa-phone"></i>
 
-<a href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank" class="card">
+                    <h3>Hemen Ara</h3>
 
-<i class="fa-solid fa-location-dot"></i>
+                    <p>0554 118 08 06</p>
 
-<h3>Yol Tarifi</h3>
+                </a>
 
-<p>Haritada Aç</p>
+                <a href="https://g.page/r/CSOIVY6sAnqOEBM/review" target="_blank" class="card">
 
-</a>
+                    <i class="fa-solid fa-star"></i>
 
-<a href="https://www.instagram.com/fatihcayevicorum" target="_blank" class="card">
+                    <h3>Yorum Yap</h3>
 
-<i class="fa-brands fa-instagram"></i>
+                    <p>Google'da Değerlendir</p>
 
-<h3>Instagram</h3>
+                </a>
 
-<p>Bizi Takip Et</p>
+            </div>
 
-</a>
+        </section>
 
-<a href="tel:+905541180806" class="card">
+    </main>
 
-<i class="fa-solid fa-phone"></i>
+    <!-- FOOTER -->
 
-<h3>Hemen Ara</h3>
+    <footer>
 
-<p>0554 118 08 06</p>
+        <div class="footer-content">
 
-</a>
+            <img src="logo.png" class="footer-logo" alt="Fatih Çay Evi">
 
-<a href="https://g.page/r/CSOIVY6sAnqOEBM/review" target="_blank" class="card">
+            <h3>Fatih Çay Evi</h3>
 
-<i class="fa-solid fa-star"></i>
+            <p>☕ Kaliteli Çay • Samimi Sohbet</p>
 
-<h3>Yorum Yap</h3>
+            <p>📍 Çorum Merkez • Osmancık Caddesi</p>
 
-<p>Google'da Değerlendir</p>
+            <p>📞 0554 118 08 06</p>
 
-</a>
+            <div class="footer-social">
 
-</section>
+                <a href="https://www.instagram.com/fatihcayevicorum" target="_blank">
 
-</main>
+                    <i class="fa-brands fa-instagram"></i>
 
-<footer>
+                </a>
 
-<div class="footer-content">
+                <a href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank">
 
-<img src="logo.png" class="footer-logo" alt="Fatih Çay Evi">
+                    <i class="fa-solid fa-location-dot"></i>
 
-<h3>Fatih Çay Evi</h3>
+                </a>
 
-<p>☕ Kaliteli Çay • Samimi Sohbet</p>
+                <a href="https://g.page/r/CSOIVY6sAnqOEBM/review" target="_blank">
 
-<p>📍 Çorum Merkez - Osmancık Caddesi</p>
+                    <i class="fa-solid fa-star"></i>
 
-<p>📞 0554 118 08 06</p>
+                </a>
 
-<p>© 2026 Fatih Çay Evi</p>
+            </div>
 
-</div>
+            <p class="copyright">
+                © 2026 Fatih Çay Evi - Tüm Hakları Saklıdır.
+            </p>
 
-</footer>
+        </div>
 
-<button id="topBtn">
+    </footer>
 
-<i class="fa-solid fa-arrow-up"></i>
+    <!-- YUKARI ÇIK -->
 
-</button>
+    <button id="topBtn" aria-label="Sayfanın başına dön">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
 
 </body>
+
 </html>
