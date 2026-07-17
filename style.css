@@ -201,13 +201,15 @@ a { color: inherit; }
    MODERN HAVA DURUMU
 ========================== */
 
-.weather-card #weather {
-    text-align: center;
-    padding: 20px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 20px;
-    margin-top: 15px;
-    border: 1px solid rgba(255,255,255,0.1);
+.weather-message{
+
+margin-top:15px;
+padding:12px;
+background:rgba(244,180,0,0.15);
+border-radius:12px;
+font-size:15px!important;
+color:#f4b400;
+
 }
 
 .weather-icon {
