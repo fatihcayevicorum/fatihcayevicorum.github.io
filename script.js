@@ -200,15 +200,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================
-       HAVA DURUMU (ŞİMDİLİK YER TUTUCU)
-    ========================== */
+   HAVA DURUMU
+========================== */
 
-    const weatherText = document.getElementById("weatherText");
+async function loadWeather() {
 
-    if (weatherText) {
+    try {
 
-        weatherText.innerHTML = "☀️ Çorum için hava durumu yakında burada gösterilecek.";
+        // Çorum koordinatları
+        const lat = 40.5506;
+        const lon = 34.9556;
+
+        const response = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`
+        );
+
+        const data = await response.json();
+
+        const temp = data.current.temperature_2m;
+        const code = data.current.weather_code;
+
+        let icon = "☀️";
+        let text = "Açık";
+
+        if ([1,2,3].includes(code)) {
+            icon = "⛅";
+            text = "Parçalı Bulutlu";
+        } else if ([45,48].includes(code)) {
+            icon = "🌫️";
+            text = "Sisli";
+        } else if ([51,53,55,61,63,65].includes(code)) {
+            icon = "🌧️";
+            text = "Yağmurlu";
+        } else if ([71,73,75].includes(code)) {
+            icon = "❄️";
+            text = "Karlı";
+        } else if ([95,96,99].includes(code)) {
+            icon = "⛈️";
+            text = "Fırtınalı";
+        }
+
+        document.getElementById("weather").innerHTML = `
+            <div class="weather-icon">${icon}</div>
+            <h3>Çorum</h3>
+            <p><strong>${temp}°C</strong></p>
+            <p>${text}</p>
+        `;
+
+    } catch (error) {
+
+        document.getElementById("weather").innerHTML = `
+            <p>Hava durumu yüklenemedi.</p>
+        `;
+
+        console.error(error);
 
     }
 
+}
+
+loadWeather();
 });
