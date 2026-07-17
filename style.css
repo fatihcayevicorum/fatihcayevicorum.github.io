@@ -201,37 +201,39 @@ a { color: inherit; }
    MODERN HAVA DURUMU
 ========================== */
 
-.weather-message{
+/* Kompakt Hava Durumu */
 
-margin-top:15px;
-padding:12px;
-background:rgba(244,180,0,0.15);
-border-radius:12px;
-font-size:15px!important;
-color:#f4b400;
-
+.weather-card #weather {
+    text-align:center;
+    padding:10px;
 }
 
 .weather-icon {
-    font-size: 60px;
-    margin-bottom: 10px;
-    animation: weatherFloat 3s ease-in-out infinite;
+    font-size:38px;
+    margin-bottom:5px;
 }
 
 #weather h3 {
-    font-size: 24px;
-    margin: 10px 0;
+    font-size:20px;
+    margin:5px 0;
     color:#f4b400;
 }
 
 #weather p {
-    font-size:18px;
-    margin:8px 0;
+    font-size:15px;
+    margin:5px 0;
 }
 
 #weather strong {
-    font-size:42px;
-    color:#fff;
+    font-size:30px;
+}
+
+.weather-message {
+    margin-top:8px;
+    padding:8px;
+    background:rgba(244,180,0,0.12);
+    border-radius:10px;
+    font-size:13px!important;
 }
 
 
