@@ -222,29 +222,52 @@ async function loadWeather() {
 
         let icon = "☀️";
         let text = "Açık";
+        let teaMessage = "";
 
-        if ([1,2,3].includes(code)) {
-            icon = "⛅";
-            text = "Parçalı Bulutlu";
-        } else if ([45,48].includes(code)) {
-            icon = "🌫️";
-            text = "Sisli";
-        } else if ([51,53,55,61,63,65].includes(code)) {
-            icon = "🌧️";
-            text = "Yağmurlu";
-        } else if ([71,73,75].includes(code)) {
-            icon = "❄️";
-            text = "Karlı";
-        } else if ([95,96,99].includes(code)) {
-            icon = "⛈️";
-            text = "Fırtınalı";
-        }
+       if ([1,2,3].includes(code)) {
+
+    icon = "⛅";
+    text = "Parçalı Bulutlu";
+    teaMessage = "Güzel bir çay ve samimi sohbet için bekleriz. ☕";
+
+} else if ([45,48].includes(code)) {
+
+    icon = "🌫️";
+    text = "Sisli";
+    teaMessage = "Sisli havada sıcak çay keyfi bir başka güzel. ☕";
+
+} else if ([51,53,55,61,63,65].includes(code)) {
+
+    icon = "🌧️";
+    text = "Yağmurlu";
+    teaMessage = "Yağmurlu havanın en güzel eşlikçisi sıcak bir çaydır. ☕";
+
+} else if ([71,73,75].includes(code)) {
+
+    icon = "❄️";
+    text = "Karlı";
+    teaMessage = "Soğuk havalarda içinizi ısıtacak çayımız hazır. ☕";
+
+} else if ([95,96,99].includes(code)) {
+
+    icon = "⛈️";
+    text = "Fırtınalı";
+    teaMessage = "Fırtınalı havada sıcak bir mola vermeye ne dersiniz? ☕";
+
+} else {
+
+    teaMessage = "Taze çayımız ve sıcak sohbetimizle bekleriz. ☕";
+
+}
 
         document.getElementById("weather").innerHTML = `
             <div class="weather-icon">${icon}</div>
             <h3>Çorum</h3>
             <p><strong>${temp}°C</strong></p>
             <p>${text}</p>
+            <p class="weather-message">
+${teaMessage}
+</p>
         `;
 
     } catch (error) {
