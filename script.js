@@ -200,88 +200,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================
-   HAVA DURUMU
-========================== */
+       HAVA DURUMU (ŞİMDİLİK YER TUTUCU)
+    ========================== */
 
-async function loadWeather() {
+    const weatherText = document.getElementById("weatherText");
 
-    try {
+    if (weatherText) {
 
-        // Çorum koordinatları
-        const lat = 40.5506;
-        const lon = 34.9556;
-
-        const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`
-        );
-
-        const data = await response.json();
-
-        const temp = data.current.temperature_2m;
-        const code = data.current.weather_code;
-
-        let icon = "☀️";
-        let text = "Açık";
-        let teaMessage = "";
-
-       if ([1,2,3].includes(code)) {
-
-    icon = "⛅";
-    text = "Parçalı Bulutlu";
-    teaMessage = "Güzel bir çay ve samimi sohbet için bekleriz. ☕";
-
-} else if ([45,48].includes(code)) {
-
-    icon = "🌫️";
-    text = "Sisli";
-    teaMessage = "Sisli havada sıcak çay keyfi bir başka güzel. ☕";
-
-} else if ([51,53,55,61,63,65].includes(code)) {
-
-    icon = "🌧️";
-    text = "Yağmurlu";
-    teaMessage = "Yağmurlu havanın en güzel eşlikçisi sıcak bir çaydır. ☕";
-
-} else if ([71,73,75].includes(code)) {
-
-    icon = "❄️";
-    text = "Karlı";
-    teaMessage = "Soğuk havalarda içinizi ısıtacak çayımız hazır. ☕";
-
-} else if ([95,96,99].includes(code)) {
-
-    icon = "⛈️";
-    text = "Fırtınalı";
-    teaMessage = "Fırtınalı havada sıcak bir mola vermeye ne dersiniz? ☕";
-
-} else {
-
-    teaMessage = "Taze çayımız ve sıcak sohbetimizle bekleriz. ☕";
-
-}
-
-        document.getElementById("weather").innerHTML = `
-            <div class="weather-icon">${icon}</div>
-            <h3>Çorum</h3>
-            <p><strong>${temp}°C</strong></p>
-            <p>${text}</p>
-            <p class="weather-message">
-${teaMessage}
-</p>
-        `;
-
-    } catch (error) {
-
-        document.getElementById("weather").innerHTML = `
-            <p>Hava durumu yüklenemedi.</p>
-        `;
-
-        console.error(error);
+        weatherText.innerHTML = "☀️ Çorum için hava durumu yakında burada gösterilecek.";
 
     }
-
-}
-
-loadWeather();
 
 });
