@@ -233,138 +233,79 @@ a { color: inherit; }
 #weather h3 { margin: 0; font-size: 1.3rem; }
 #weather p { margin: 0; color: rgba(255, 255, 255, 0.86); font-size: 0.92rem; }
 
-/* -------------------- Tea freshness -------------------- */
+/* ==========================
+   ÇAY TAZELİK KARTI
+========================== */
 
-.tea-info { color: var(--muted); }
+.tea-details{
 
-.fresh-bar {
-  height: 1rem;
-  margin: 1.05rem 0 0.85rem;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #e8dfd2;
-  box-shadow: inset 0 1px 3px rgba(69, 36, 26, 0.15);
+display:flex;
+
+justify-content:space-between;
+
+gap:15px;
+
+margin-top:20px;
+
 }
 
-.fill {
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #06994d, #80d74c);
-  box-shadow: 0 0 15px rgba(0, 153, 77, 0.4);
-  transition: width 0.55s ease, background 0.35s ease;
+.tea-item{
+
+flex:1;
+
+background:rgba(255,255,255,.05);
+
+padding:15px;
+
+border-radius:15px;
+
+text-align:center;
+
+border:1px solid rgba(255,255,255,.08);
+
 }
 
-#freshText {
-  margin: 0;
-  color: #087b42;
-  font-size: 1.05rem;
+.tea-item i{
+
+font-size:22px;
+
+color:#f4b400;
+
+margin-bottom:10px;
+
+display:block;
+
 }
 
-.last-tea {
-  margin: 0.5rem 0 0 !important;
-  color: var(--muted);
-  font-size: 0.9rem;
+.tea-item span{
+
+display:block;
+
+font-size:13px;
+
+color:#bbb;
+
+margin-bottom:8px;
+
 }
 
-#lastTea { color: var(--burgundy-700); font-weight: 700; }
+.tea-item strong{
 
-/* -------------------- Menu and gallery -------------------- */
+font-size:18px;
 
-.menuButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 3rem;
-  margin-top: 0.35rem;
-  padding: 0.72rem 1.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
-  color: var(--white);
-  font-weight: 700;
-  text-decoration: none;
-  background: linear-gradient(135deg, var(--burgundy-700), var(--burgundy-900));
-  box-shadow: 0 10px 20px rgba(101, 24, 32, 0.26);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+color:#fff;
+
 }
 
-.menuButton:hover,
-.menuButton:focus-visible {
-  color: var(--white);
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-  box-shadow: 0 14px 27px rgba(101, 24, 32, 0.33);
+@media(max-width:600px){
+
+.tea-details{
+
+flex-direction:column;
+
 }
 
-.gallery-placeholder {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.65rem;
-  margin-top: 1rem;
 }
-
-.gallery-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 6.7rem;
-  padding: 0.6rem;
-  border: 1px dashed rgba(134, 29, 40, 0.32);
-  border-radius: var(--radius-md);
-  color: var(--burgundy-700);
-  text-align: center;
-  background: linear-gradient(135deg, #fffaf0, #f5e6cb);
-}
-
-.gallery-box i { margin-bottom: 0.3rem; color: var(--gold-500); font-size: 1.45rem; }
-.gallery-box span { font-size: 0.78rem; font-weight: 600; }
-
-/* -------------------- Quick actions -------------------- */
-
-.quick-text { color: var(--muted); }
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.72rem;
-  margin-top: 1rem;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 9.5rem;
-  padding: 1rem 0.7rem;
-  overflow: hidden;
-  border: 1px solid rgba(104, 28, 34, 0.1);
-  border-radius: var(--radius-md);
-  color: var(--burgundy-900);
-  text-align: center;
-  text-decoration: none;
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 8px 16px rgba(52, 18, 20, 0.08);
-  transition: transform 0.24s ease, box-shadow 0.24s ease, background 0.24s ease;
-}
-
-.card:hover,
-.card:focus-visible {
-  color: var(--burgundy-900);
-  transform: translateY(-4px);
-  background: #fffdf9;
-  box-shadow: 0 17px 28px rgba(77, 21, 26, 0.16);
-}
-
-.card i { margin-bottom: 0.55rem; color: var(--gold-500); font-size: 1.9rem; }
-.card h3 { margin: 0; font-size: 0.98rem; line-height: 1.3; }
-.card p { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.72rem; line-height: 1.35; }
-
-.card:nth-child(1) i { color: #2e74c0; }
-.card:nth-child(2) i { color: #c53882; }
-.card:nth-child(3) i { color: #138b5b; }
-.card:nth-child(4) i { color: #d29b16; }
 
 /* -------------------- Footer -------------------- */
 
