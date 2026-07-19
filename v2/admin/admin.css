@@ -1,10 +1,11 @@
-
 /* =====================================================
-   FATİH ÇAY EVİ - YÖNETİM PANELİ
-   admin.css
+   FATİH ÇAY EVİ
+   YÖNETİM PANELİ V2
+   ADMIN CSS
 ===================================================== */
 
-/* ---------- Genel ---------- */
+
+/* GENEL */
 
 *{
     margin:0;
@@ -12,63 +13,54 @@
     box-sizing:border-box;
 }
 
-:root{
-
-    --primary:#b71c1c;
-    --secondary:#d97706;
-    --green:#22c55e;
-    --yellow:#facc15;
-    --red:#ef4444;
-
-    --bg:#111827;
-    --card:#1f2937;
-    --card2:#2b3648;
-
-    --text:#ffffff;
-    --text2:#cbd5e1;
-
-    --radius:18px;
-
-}
 
 body{
 
     font-family:'Poppins',sans-serif;
 
-    background:linear-gradient(135deg,#8B0000,#d97706);
-
     min-height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #5b1a0f,
+        #b45309,
+        #7c2d12
+    );
 
     color:white;
 
 }
 
 
-/* ---------- Ana Alan ---------- */
+/* ANA KONTEYNER */
 
-.dashboard{
+.container{
 
     width:95%;
+
     max-width:1200px;
 
-    margin:30px auto;
+    margin:25px auto;
 
 }
 
 
-/* ---------- Üst Kısım ---------- */
 
-.topbar{
+/* =====================
+ HEADER
+===================== */
 
-    background:rgba(255,255,255,.08);
 
-    backdrop-filter:blur(14px);
+.header{
 
-    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,0.12);
 
-    border-radius:22px;
+    backdrop-filter:blur(15px);
 
-    padding:28px;
+    border-radius:25px;
+
+    padding:25px;
 
     display:flex;
 
@@ -76,54 +68,177 @@ body{
 
     align-items:center;
 
-    margin-bottom:25px;
+    border:1px solid rgba(255,255,255,.2);
+
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
 
 }
 
-.title h1{
 
-    font-size:34px;
 
+/* =========================
+   LOGO ALANI
+========================= */
+
+.logo-area{
+    display:flex;
+    align-items:center;
+    gap:25px;
+}
+
+
+/* Yuvarlak logo */
+
+.logo{
+    width:200px;
+    height:200px;
+    object-fit:contain;
+    border-radius:50%;
+    background:white;
+    padding:8px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.25);
+}
+
+
+/* Logo yanındaki yazılar */
+
+.logo-text{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+
+.logo-area h1{
+    margin:0;
+    font-size:32px;
     font-weight:700;
+    color:white;
+}
+
+
+.logo-area span{
+    margin-top:5px;
+    font-size:16px;
+    color:#ffd54a;
+}
+
+
+
+/* HOŞGELDİN */
+
+.welcome-user{
+
+    margin-top:12px;
+
+    background:rgba(255,255,255,.15);
+
+    padding:8px 15px;
+
+    border-radius:30px;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    font-size:15px;
 
 }
 
-.title p{
 
-    color:#ddd;
 
-    margin-top:6px;
+/* HAVA DURUMU */
+
+
+.weather-box{
+
+    margin-top:10px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    background:rgba(255,255,255,.15);
+
+    padding:10px 15px;
+
+    border-radius:20px;
+
+    width:max-content;
 
 }
 
-.datetime{
+
+.weather-box i{
+
+    font-size:28px;
+
+    color:#fde047;
+
+}
+
+
+
+/* SAAT */
+
+
+.clock{
 
     text-align:right;
 
 }
 
-#date{
 
-    font-size:16px;
 
-    color:#ddd;
+.date-box,
+.time-box{
+
+    background:rgba(255,255,255,.15);
+
+    padding:10px 18px;
+
+    border-radius:18px;
+
+    margin-bottom:10px;
 
 }
 
-#clock{
 
-    font-size:32px;
+
+.date-box i,
+.time-box i{
+
+    margin-right:8px;
+
+    color:#fde047;
+
+}
+
+
+#time{
+
+    font-size:30px;
 
     font-weight:700;
 
-    margin-top:8px;
-
 }
 
 
-/* ---------- İstatistik ---------- */
+
+
+
+/* =====================
+ İSTATİSTİK KARTLARI
+===================== */
+
 
 .stats{
+
+    margin-top:25px;
 
     display:grid;
 
@@ -131,121 +246,299 @@ body{
 
     gap:20px;
 
-    margin-bottom:25px;
-
 }
 
-.stat-card{
 
-    background:rgba(255,255,255,.08);
+
+.card{
+
+    background:rgba(255,255,255,.13);
 
     backdrop-filter:blur(12px);
 
-    border-radius:20px;
+    border-radius:25px;
 
     padding:30px;
 
     text-align:center;
 
-    transition:.30s;
+    border:1px solid rgba(255,255,255,.15);
+
+    box-shadow:0 10px 25px rgba(0,0,0,.2);
+
+    transition:.3s;
 
 }
 
-.stat-card:hover{
+
+.card:hover{
 
     transform:translateY(-5px);
 
 }
 
-.stat-card h2{
 
-    font-size:45px;
 
-    margin-bottom:10px;
+.number{
 
-}
+    font-size:50px;
 
-.stat-card p{
-
-    color:#ddd;
+    font-weight:700;
 
 }
 
 
-/* ---------- Buton Alanı ---------- */
+
+.title{
+
+    margin-top:10px;
+
+    font-size:18px;
+
+}
+
+
+.title i{
+
+    color:#fde047;
+
+    margin-right:8px;
+
+}
+
+
+
+
+
+/* =====================
+ YENİ DEMLİK BUTONU
+===================== */
+
 
 .actions{
 
-    margin-bottom:30px;
+    margin-top:30px;
 
 }
 
-#newTea{
+
+
+#yeniDemlik{
+
 
     width:100%;
 
+    padding:22px;
+
     border:none;
+
+    border-radius:25px;
 
     cursor:pointer;
 
-    border-radius:20px;
-
-    padding:22px;
-
     font-size:22px;
 
-    font-weight:600;
-
-    background:linear-gradient(135deg,#16a34a,#22c55e);
+    font-weight:700;
 
     color:white;
 
-    transition:.30s;
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #16a34a,
+        #22c55e
+    );
+
+
+    box-shadow:0 10px 25px rgba(0,0,0,.3);
+
+    transition:.3s;
 
 }
 
-#newTea:hover{
+
+
+#yeniDemlik:hover{
 
     transform:scale(1.02);
 
 }
 
 
-/* ---------- Bölüm Başlığı ---------- */
 
-.section-title{
+
+
+/* =====================
+ DEMLİKLER
+===================== */
+
+
+.demlikler{
+
+    margin-top:35px;
+
+}
+
+
+
+.demlikler h2{
 
     margin-bottom:20px;
 
-    font-size:30px;
+}
+
+
+
+#demlikListesi{
+
+
+    display:grid;
+
+    gap:20px;
 
 }
 
 
-/* ---------- Responsive ---------- */
+
+.bos{
+
+
+    background:rgba(255,255,255,.12);
+
+    padding:35px;
+
+    text-align:center;
+
+    border-radius:25px;
+
+    color:#ddd;
+
+}
+
+
+
+
+
+/* =====================
+ ÇIKIŞ
+===================== */
+
+
+.footer{
+
+    margin-top:35px;
+
+    text-align:center;
+
+}
+
+
+
+#logoutBtn{
+
+
+    background:#dc2626;
+
+    color:white;
+
+    border:none;
+
+    padding:15px 40px;
+
+    border-radius:25px;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+}
+
+
+
+#logoutBtn:hover{
+
+    background:#b91c1c;
+
+}
+
+
+
+
+/* =====================
+ TABLET
+===================== */
+
 
 @media(max-width:900px){
 
-.topbar{
 
-flex-direction:column;
+.header{
 
-gap:20px;
+    flex-direction:column;
 
-text-align:center;
+    gap:25px;
+
+    text-align:center;
+
+}
+
+
+.clock{
+
+    text-align:center;
 
 }
 
-.datetime{
 
-text-align:center;
-
-}
 
 .stats{
 
-grid-template-columns:1fr;
+    grid-template-columns:1fr;
 
 }
+
+
+
+.logo-area{
+
+    flex-direction:column;
+
+}
+
+
+}
+
+
+
+
+/* TELEFON */
+
+@media(max-width:500px){
+
+
+.logo-area h1{
+
+    font-size:25px;
+
+}
+
+
+
+.number{
+
+    font-size:40px;
+
+}
+
+
+
+#time{
+
+    font-size:25px;
+
+}
+
 
 }

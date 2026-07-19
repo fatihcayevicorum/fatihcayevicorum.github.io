@@ -3,106 +3,300 @@
 
 <head>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Fatih Çay Evi | Yönetim Paneli</title>
+<title>Fatih Çay Evi | Yönetim Paneli</title>
 
-    <link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="admin.css">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
 </head>
 
+
 <body>
+
 
 <div class="container">
 
-    <!-- HEADER -->
 
-    <header class="header">
-
-        <div class="logo-area">
-
-            <img src="../logo.png" alt="Fatih Çay Evi" class="logo">
-
-            <div>
-
-                <h1>Fatih Çay Evi</h1>
-
-                <span>Yönetim Paneli</span>
-
-            </div>
-
-        </div>
-
-        <div class="date-area">
-
-            <div id="today"></div>
-
-            <div id="clock"></div>
-
-        </div>
-
-    </header>
+<header class="header">
 
 
-    <!-- İSTATİSTİKLER -->
-
-    <section class="stats">
-
-        <div class="card">
-
-            <div class="number" id="aktifDemlik">0</div>
-
-            <div class="text">
-
-                <i class="fa-solid fa-mug-hot"></i>
-
-                Aktif Demlik
-
-            </div>
-
-        </div>
-
-        <div class="card">
-
-            <div class="number" id="hazirDemlik">0</div>
-
-            <div class="text">
-
-                <i class="fa-solid fa-circle-check"></i>
-
-                Hazır
-
-            </div>
-
-        </div>
-
-        <div class="card">
-
-            <div class="number" id="demleniyorDemlik">0</div>
-
-            <div class="text">
-
-                <i class="fa-solid fa-hourglass-half"></i>
-
-                Demleniyor
-
-            </div>
-
-        </div>
-
-    </section>
+<div class="logo-area">
 
 
-    <!-- BUTON -->
+<img src="../../logo.png" class="logo">
 
-    <section class="action">
+
+
+<div class="brand-text">
+
+
+<h1>
+Fatih Çay Evi
+</h1>
+
+
+<p>
+Yönetim Paneli
+</p>
+
+
+
+<!-- KULLANICI BİLGİSİ -->
+
+<div class="welcome-user">
+
+<i class="fa-solid fa-user"></i>
+
+Hoşgeldin:
+<span id="username">
+Fatih
+</span>
+
+</div>
+
+<!-- HAVA DURUMU -->
+
+<div class="weather-box">
+
+<i class="fa-solid fa-cloud-sun"></i>
+
+<div>
+
+<span id="city">
+Çorum
+</span>
+
+<br>
+
+<span id="weather">
+22°C Açık
+</span>
+
+</div>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- TARİH SAAT ALANI -->
+
+
+<div class="clock">
+
+
+<div class="date-box">
+
+<i class="fa-solid fa-calendar-days"></i>
+
+<span id="date">
+19 Temmuz 2026
+</span>
+
+</div>
+
+
+
+<div class="time-box">
+
+<i class="fa-solid fa-clock"></i>
+
+<span id="time">
+00:00
+</span>
+
+</div>
+
+
+</div>
+
+
+
+</header>
+
+
+
+
+
+<section class="stats">
+
+
+<div class="card">
+
+<div class="number" id="aktifDemlik">
+0
+</div>
+
+
+<div class="title">
+
+<i class="fas fa-mug-hot"></i>
+
+Aktif Demlik
+
+</div>
+
+</div>
+
+
+
+
+
+<div class="card">
+
+<div class="number" id="hazirSayisi">
+0
+</div>
+
+
+<div class="title">
+
+<i class="fas fa-circle-check"></i>
+
+Hazır
+
+</div>
+
+</div>
+
+
+
+
+
+<div class="card">
+
+
+<div class="number" id="demleniyorSayisi">
+0
+</div>
+
+
+<div class="title">
+
+<i class="fas fa-hourglass-half"></i>
+
+Demleniyor
+
+</div>
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+<section class="actions">
+
+
+<button id="yeniDemlik">
+
+
+<i class="fas fa-plus"></i>
+
+Yeni Demlik Başlat
+
+
+</button>
+
+
+</section>
+
+
+
+
+
+
+<section class="demlikler">
+
+
+<h2>
+
+<i class="fa-solid fa-mug-hot"></i>
+
+Aktif Demlikler
+
+</h2>
+
+
+<div id="demlikListesi">
+
+
+<div class="bos">
+
+Henüz aktif demlik bulunmuyor.
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+<footer class="footer">
+
+
+<button id="logoutBtn">
+
+
+<i class="fas fa-right-from-bracket"></i>
+
+
+Çıkış Yap
+
+
+</button>
+
+
+</footer>
+
+<footer class="footer">
+
+    <div class="copyright">
+
+        © 2026 Fatih Çay Evi - Tüm Hakları Saklıdır.
+
+    </div>
+
+
+</footer>
+
+
+
+</div>
+
+
+
+<script src="admin.js"></script>
+
+
+</body>
+
+</html>
