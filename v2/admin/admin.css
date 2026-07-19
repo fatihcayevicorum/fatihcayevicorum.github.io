@@ -1,9 +1,21 @@
+
 /* =====================================================
    FATİH ÇAY EVİ - YÖNETİM PANELİ
    admin.css
 ===================================================== */
 
 /* ---------- Genel ---------- */
+<header class="topbar">
+    <div class="title">
+        <h1>☕ Fatih Çay Evi</h1>
+        <p>Yönetim Paneli</p>
+    </div>
+
+    <div class="datetime">
+        <div id="date"></div>
+        <div id="clock"></div>
+    </div>
+</header>
 
 *{
     margin:0;
