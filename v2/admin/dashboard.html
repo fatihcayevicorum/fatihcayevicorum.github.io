@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Fatih Çay Evi | Yönetim Paneli</title>
+
+<link rel="stylesheet" href="admin.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<header class="topbar">
+
+<h1>☕ Fatih Çay Evi</h1>
+
+<p>Yönetim Paneli</p>
+
+<div class="datetime">
+
+<div id="date"></div>
+
+<div id="clock"></div>
+
+</div>
+
+</header>
+
+<section class="stats">
+
+<div class="stat-card">
+
+<h2 id="aktifDemlik">0</h2>
+
+<p>Aktif Demlik</p>
+
+</div>
+
+<div class="stat-card">
+
+<h2 id="hazirDemlik">0</h2>
+
+<p>Hazır</p>
+
+</div>
+
+<div class="stat-card">
+
+<h2 id="demlenenDemlik">0</h2>
+
+<p>Demleniyor</p>
+
+</div>
+
+</section>
+
+<section class="actions">
+
+<button id="newTea">
+
+<i class="fa-solid fa-plus"></i>
+
+Yeni Demlik Başlat
+
+</button>
+
+</section>
+
+<section>
+
+<h2 class="section-title">
+
+Aktif Demlikler
+
+</h2>
+
+<div id="teaList">
+
+<div class="empty-card">
+
+Henüz aktif demlik bulunmuyor.
+
+</div>
+
+</div>
+
+</section>
+
+<footer>
+
+<button class="logout">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+Çıkış Yap
+
+</button>
+
+</footer>
+
+<script src="admin.js"></script>
+
+</body>
+
+</html>
