@@ -1,127 +1,250 @@
+/* =====================================================
+   FATİH ÇAY EVİ - YÖNETİM PANELİ
+   admin.css
+===================================================== */
+
+/* ---------- Genel ---------- */
+
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
 }
 
+:root{
+
+    --primary:#b71c1c;
+    --secondary:#d97706;
+    --green:#22c55e;
+    --yellow:#facc15;
+    --red:#ef4444;
+
+    --bg:#111827;
+    --card:#1f2937;
+    --card2:#2b3648;
+
+    --text:#ffffff;
+    --text2:#cbd5e1;
+
+    --radius:18px;
+
+}
+
 body{
+
     font-family:'Poppins',sans-serif;
-    background:linear-gradient(135deg,#5f0d0d,#9d1b1b,#d18b00);
+
+    background:linear-gradient(135deg,#8B0000,#d97706);
+
     min-height:100vh;
+
+    color:white;
+
+}
+
+
+/* ---------- Ana Alan ---------- */
+
+.dashboard{
+
+    width:95%;
+    max-width:1200px;
+
+    margin:30px auto;
+
+}
+
+
+/* ---------- Üst Kısım ---------- */
+
+.topbar{
+
+    background:rgba(255,255,255,.08);
+
+    backdrop-filter:blur(14px);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    border-radius:22px;
+
+    padding:28px;
+
     display:flex;
-    justify-content:center;
+
+    justify-content:space-between;
+
     align-items:center;
-    padding:20px;
+
+    margin-bottom:25px;
+
 }
 
-.login-container{
-    width:100%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+.title h1{
+
+    font-size:34px;
+
+    font-weight:700;
+
 }
 
-.login-card{
-    width:100%;
-    max-width:420px;
-    background:rgba(25,25,25,.92);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:24px;
-    padding:40px 30px;
-    text-align:center;
-    backdrop-filter:blur(12px);
-    box-shadow:0 15px 40px rgba(0,0,0,.45);
+.title p{
+
+    color:#ddd;
+
+    margin-top:6px;
+
 }
 
-.logo{
-    width:170px;
-    margin-bottom:20px;
+.datetime{
+
+    text-align:right;
+
 }
 
-h1{
-    color:#fff;
+#date{
+
+    font-size:16px;
+
+    color:#ddd;
+
+}
+
+#clock{
+
     font-size:32px;
-    margin-bottom:6px;
+
+    font-weight:700;
+
+    margin-top:8px;
+
 }
 
-.subtitle{
-    color:#cfcfcf;
-    margin-bottom:35px;
+
+/* ---------- İstatistik ---------- */
+
+.stats{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:20px;
+
+    margin-bottom:25px;
+
 }
 
-.inputBox{
-    background:#2b2b2b;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    padding:0 18px;
-    margin-bottom:18px;
-    border:1px solid #3d3d3d;
+.stat-card{
+
+    background:rgba(255,255,255,.08);
+
+    backdrop-filter:blur(12px);
+
+    border-radius:20px;
+
+    padding:30px;
+
+    text-align:center;
+
+    transition:.30s;
+
 }
 
-.inputBox i{
-    color:#d18b00;
-    font-size:18px;
+.stat-card:hover{
+
+    transform:translateY(-5px);
+
 }
 
-.inputBox input{
+.stat-card h2{
+
+    font-size:45px;
+
+    margin-bottom:10px;
+
+}
+
+.stat-card p{
+
+    color:#ddd;
+
+}
+
+
+/* ---------- Buton Alanı ---------- */
+
+.actions{
+
+    margin-bottom:30px;
+
+}
+
+#newTea{
+
     width:100%;
-    background:transparent;
-    border:none;
-    outline:none;
-    color:#fff;
-    font-size:17px;
-    padding:18px 14px;
-}
 
-.inputBox input::placeholder{
-    color:#9b9b9b;
-}
-
-button{
-    width:100%;
-    height:58px;
     border:none;
-    border-radius:14px;
-    background:#c62828;
-    color:#fff;
-    font-size:18px;
-    font-weight:600;
+
     cursor:pointer;
-    transition:.3s;
+
+    border-radius:20px;
+
+    padding:22px;
+
+    font-size:22px;
+
+    font-weight:600;
+
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+
+    color:white;
+
+    transition:.30s;
+
 }
 
-button:hover{
-    background:#d84315;
-    transform:translateY(-2px);
+#newTea:hover{
+
+    transform:scale(1.02);
+
 }
 
-button:active{
-    transform:scale(.98);
+
+/* ---------- Bölüm Başlığı ---------- */
+
+.section-title{
+
+    margin-bottom:20px;
+
+    font-size:30px;
+
 }
 
-.copyright{
-    margin-top:28px;
-    color:#999;
-    font-size:14px;
+
+/* ---------- Responsive ---------- */
+
+@media(max-width:900px){
+
+.topbar{
+
+flex-direction:column;
+
+gap:20px;
+
+text-align:center;
+
 }
 
-@media(max-width:600px){
+.datetime{
 
-.login-card{
-    padding:30px 22px;
+text-align:center;
+
 }
 
-.logo{
-    width:140px;
-}
+.stats{
 
-h1{
-    font-size:26px;
-}
+grid-template-columns:1fr;
 
-button{
-    height:54px;
 }
 
 }
