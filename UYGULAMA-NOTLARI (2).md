@@ -2,6 +2,8 @@
 
 Bu paket, yayındaki ana sayfanın mevcut içerik ve renklerini koruyarak dikey mobil görünümü düzenler.
 
+Son güncellemede üst karşılama alanı kısaltılmış ve koyu kırmızı geçişli arka plana alınmıştır. “Hoş Geldiniz” kartı tek kısa paragrafa düşürülmüş, menü butonu ise sayfanın ana eylemi olarak daha belirgin hâle getirilmiştir.
+
 ## Uygulama
 
 GitHub deposundaki mevcut `index.html`, `style.css` ve `script.js` dosyalarını yedekleyin. Bu paketteki aynı adlı üç dosyayı deponun ana dizinine yükleyip mevcut dosyaların üzerine yazın. `logo.png` dosyanızı değiştirmeyin.
@@ -12,6 +14,9 @@ GitHub Pages güncellemesi çoğunlukla birkaç dakika içinde görünür. Eski 
 
 - Ana sayfadaki eksik `.quick-actions`, `.card`, `.gallery-placeholder`, `.gallery-box`, `.menuButton` ve tazelik göstergesi stilleri tamamlandı.
 - 320–639 piksel dikey mobil ekranlar için logo, başlık, panel boşlukları ve yazı boyutları küçültülüp dengelendi.
+- Koyu kırmızı geçişli üst alanın yüksekliği azaltıldı; logo ve metin aralıkları sıkılaştırıldı.
+- “Hoş Geldiniz” bölümü tek kısa paragrafla kompakt hâle getirildi.
+- Menü butonuna ikon kutusu, açıklama ve yön oku eklenerek görsel önceliği artırıldı.
 - Hızlı erişim kartları mobilde iki sütun, geniş ekranda dört sütun olacak şekilde düzenlendi.
 - Çay tazelik bilgilerindeki açık zemin üzerinde görünmeyen beyaz/gri yazılar koyu ve okunaklı renklere çevrildi.
 - Tazelik göstergesinin çubuğu görünür hale getirildi; JavaScript erişilebilirlik değerini de güncelliyor.

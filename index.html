@@ -40,19 +40,12 @@
     </header>
 
     <main class="container">
-        <section class="panel">
+        <section class="panel welcome-panel">
             <h2>
                 <i class="fa-solid fa-heart" aria-hidden="true"></i>
                 <span>Hoş Geldiniz</span>
             </h2>
-            <p>
-                Fatih Çay Evi olarak sizlere her gün özenle demlenmiş kaliteli çay,
-                samimi bir sohbet ortamı ve güler yüzlü hizmet sunuyoruz.
-            </p>
-            <p>
-                İster kısa bir mola verin, ister dostlarınızla keyifli vakit geçirin...
-                Çayımız her zaman taze, kapımız her zaman açıktır.
-            </p>
+            <p>Fatih Çay Evi’nde taze demlenmiş çay, samimi sohbet ve güler yüzlü hizmet sizi bekliyor.</p>
         </section>
 
         <section class="panel weather-card" aria-labelledby="weatherTitle">
@@ -99,7 +92,7 @@
             </div>
         </section>
 
-        <section class="panel" id="menu">
+        <section class="panel menu-panel" id="menu">
             <h2>
                 <i class="fa-solid fa-book-open" aria-hidden="true"></i>
                 <span>Menü</span>
@@ -107,9 +100,15 @@
             <p>
                 Güncel çay, oralet ve soğuk içecek fiyatlarımızı görmek için aşağıdaki butona dokunabilirsiniz.
             </p>
-            <a href="menu.html" class="menuButton">
-                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
-                <span>Menü ve Fiyatlar</span>
+            <a href="menu.html" class="menuButton" aria-label="Menü ve fiyatları görüntüle">
+                <span class="menu-button-icon" aria-hidden="true">
+                    <i class="fa-solid fa-mug-hot"></i>
+                </span>
+                <span class="menu-button-copy">
+                    <strong>Menü ve Fiyatlar</strong>
+                    <small>Güncel ürünleri görüntüle</small>
+                </span>
+                <i class="fa-solid fa-arrow-right menu-button-arrow" aria-hidden="true"></i>
             </a>
         </section>
 
