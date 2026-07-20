@@ -4,6 +4,8 @@ Bu paket, yayındaki ana sayfanın mevcut içerik ve renklerini koruyarak dikey 
 
 Son güncellemede üst karşılama alanı kısaltılmış ve koyu kırmızı geçişli arka plana alınmıştır. “Hoş Geldiniz” kartı tek kısa paragrafa düşürülmüş, menü butonu ise sayfanın ana eylemi olarak daha belirgin hâle getirilmiştir.
 
+Menü bölümü, çay tazelik bölümünün üstüne taşınmıştır. Alt kısımdaki tekrar eden logo, iletişim bilgileri ve sosyal bağlantılar kaldırılmış; hızlı erişim bölümünden sonra yalnızca telif hakkı satırı bırakılmıştır.
+
 ## Uygulama
 
 GitHub deposundaki mevcut `index.html`, `style.css` ve `script.js` dosyalarını yedekleyin. Bu paketteki aynı adlı üç dosyayı deponun ana dizinine yükleyip mevcut dosyaların üzerine yazın. `logo.png` dosyanızı değiştirmeyin.

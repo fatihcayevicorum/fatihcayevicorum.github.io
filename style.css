@@ -563,78 +563,16 @@ a {
 /* -------------------- Footer -------------------- */
 
 footer {
-  position: relative;
-  overflow: hidden;
-  padding: 2.4rem 1rem calc(1.8rem + env(safe-area-inset-bottom));
-  color: rgba(255, 255, 255, 0.82);
+  padding: 1.05rem 1rem calc(1.05rem + env(safe-area-inset-bottom));
+  color: rgba(255, 255, 255, 0.72);
   text-align: center;
   background: linear-gradient(140deg, var(--burgundy-950), var(--burgundy-800));
 }
 
-footer::before {
-  position: absolute;
-  top: -7rem;
-  right: -6rem;
-  width: 16rem;
-  height: 16rem;
-  content: "";
-  border-radius: 50%;
-  background: rgba(216, 169, 58, 0.15);
-  filter: blur(6px);
-}
-
-.footer-content {
-  position: relative;
-  width: min(100%, 500px);
-  margin: 0 auto;
-}
-
-.footer-logo {
-  width: 4.6rem;
-  aspect-ratio: 1;
-  margin: 0 auto 0.7rem;
-  padding: 0.4rem;
-  object-fit: contain;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.footer-content h3 {
+.site-footer p {
   margin: 0;
-  color: var(--gold-400);
-  font-size: 1.2rem;
-}
-
-.footer-content p {
-  margin: 0.4rem 0;
-  font-size: 0.8rem;
-}
-
-.footer-social {
-  display: flex;
-  justify-content: center;
-  gap: 0.65rem;
-  margin: 1rem 0;
-}
-
-.footer-social a {
-  display: inline-grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  color: var(--white);
-  text-decoration: none;
-  background: rgba(255, 255, 255, 0.1);
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.copyright {
-  margin-top: 1.1rem !important;
-  color: rgba(255, 255, 255, 0.58);
-  font-size: 0.68rem !important;
+  font-size: 0.7rem;
+  line-height: 1.5;
 }
 
 /* -------------------- Yukarı çık -------------------- */
@@ -769,13 +707,6 @@ footer::before {
     border-color: rgba(134, 29, 40, 0.25);
     box-shadow: 0 13px 24px rgba(67, 23, 27, 0.14);
     transform: translateY(-4px);
-  }
-
-  .footer-social a:hover,
-  .footer-social a:focus-visible {
-    color: var(--burgundy-950);
-    background: var(--gold-400);
-    transform: translateY(-3px);
   }
 
   #topBtn:hover,
