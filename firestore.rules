@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isFatihAdmin() {
+      return request.auth != null
+        && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02';
+    }
+
+    match /publicTea/status {
+      allow read: if true;
+      allow write: if isFatihAdmin();
+    }
+
+    match /adminTea/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

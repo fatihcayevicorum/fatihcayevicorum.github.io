@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <title>Taze Dem Takibi | Fatih Çay Evi</title>
+    <meta name="description" content="Fatih Çay Evi taze çay demleme takip paneli.">
+    <meta name="theme-color" content="#5a1018">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand">
+                <img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu">
+                <div class="brand-copy">
+                    <p class="eyebrow">Fatih Çay Evi</p>
+                    <h1>Taze Dem Takibi</h1>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="live-time" aria-live="off">
+                    <span id="currentDate">--</span>
+                    <strong id="currentTime">--:--</strong>
+                </div>
+                <button class="logout-button" id="logoutButton" type="button" aria-label="Çıkış yap">
+                    <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="summary-panel" aria-labelledby="summaryTitle">
+            <div class="section-heading summary-heading">
+                <div>
+                    <p class="section-kicker">Kontrol merkezi</p>
+                    <h2 id="summaryTitle">Bugünkü Demler</h2>
+                </div>
+
+                <span class="connection-badge" id="saveStatus">
+                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                    Canlı bağlantı kuruluyor
+                </span>
+            </div>
+
+            <div class="stats-grid">
+                <article class="stat-card">
+                    <span>Aktif Demlik</span>
+                    <strong id="activeCount">0 / 2</strong>
+                </article>
+
+                <article class="stat-card">
+                    <span>Bugünkü Dem</span>
+                    <strong id="todayCount">0</strong>
+                </article>
+
+                <article class="stat-card stat-card-wide">
+                    <span>Güncel Durum</span>
+                    <strong id="currentStatus">Demlik bekleniyor</strong>
+                </article>
+            </div>
+
+            <button class="start-button" id="startBrewButton" type="button">
+                <span class="button-icon" aria-hidden="true">
+                    <i class="fa-solid fa-plus"></i>
+                </span>
+                <span class="button-copy">
+                    <strong>Yeni Dem Başlat</strong>
+                    <small>20 dakikalık demleme sayacını başlatır</small>
+                </span>
+            </button>
+
+            <p class="capacity-note" id="capacityNote">
+                Aynı anda en fazla iki demlik takip edilir.
+            </p>
+        </section>
+
+        <section class="active-panel" aria-labelledby="activeBrewsTitle">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Canlı takip</p>
+                    <h2 id="activeBrewsTitle">Aktif Demlikler</h2>
+                </div>
+                <span class="live-badge"><span aria-hidden="true"></span> Canlı</span>
+            </div>
+
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon" aria-hidden="true">
+                    <i class="fa-solid fa-mug-hot"></i>
+                </div>
+                <h3>Henüz aktif demlik yok</h3>
+                <p>İlk çayı ocağa koyduğunuzda “Yeni Dem Başlat” butonuna dokunun.</p>
+            </div>
+
+            <div class="brew-list" id="brewList"></div>
+        </section>
+
+        <section class="history-panel" aria-labelledby="historyTitle">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Günlük kayıt</p>
+                    <h2 id="historyTitle">Tamamlanan Demler</h2>
+                </div>
+            </div>
+
+            <p class="history-empty" id="historyEmpty">Bugün tamamlanan dem bulunmuyor.</p>
+            <div class="history-list" id="historyList"></div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</p>
+    </footer>
+
+    <dialog class="confirm-dialog" id="finishDialog">
+        <form method="dialog">
+            <div class="dialog-icon" aria-hidden="true">
+                <i class="fa-solid fa-mug-hot"></i>
+            </div>
+            <h2>Demlik bitirilsin mi?</h2>
+            <p id="finishDialogText">Seçilen demlik aktif listeden kaldırılacak.</p>
+
+            <div class="dialog-actions">
+                <button class="secondary-button" type="submit" value="cancel">Vazgeç</button>
+                <button class="danger-button" id="confirmFinishButton" type="submit" value="confirm">Demliği Bitir</button>
+            </div>
+        </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>

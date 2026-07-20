@@ -319,6 +319,194 @@ a {
 
 /* -------------------- Çay tazeliği -------------------- */
 
+.tea-live-panel {
+  border-color: rgba(134, 29, 40, 0.14);
+  background:
+    radial-gradient(circle at 94% 0%, rgba(216, 169, 58, 0.13), transparent 9rem),
+    rgba(255, 255, 255, 0.86);
+}
+
+.tea-live-intro {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 0.8rem;
+}
+
+.tea-live-intro p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.tea-sync-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(26, 147, 82, 0.16);
+  border-radius: 999px;
+  color: #187444;
+  background: rgba(26, 147, 82, 0.08);
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.tea-sync-badge > span {
+  width: 0.43rem;
+  height: 0.43rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.tea-sync-badge.is-offline {
+  color: #a22a32;
+  border-color: rgba(162, 42, 50, 0.16);
+  background: rgba(162, 42, 50, 0.07);
+}
+
+.customer-tea-empty {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px dashed rgba(134, 29, 40, 0.2);
+  border-radius: 14px;
+  color: var(--muted);
+  background: rgba(255, 248, 233, 0.72);
+}
+
+.customer-tea-empty[hidden] {
+  display: none;
+}
+
+.customer-tea-empty > i {
+  flex: 0 0 auto;
+  color: var(--gold-500);
+  font-size: 1.25rem;
+}
+
+.customer-tea-empty strong,
+.customer-tea-empty span {
+  display: block;
+}
+
+.customer-tea-empty strong {
+  color: var(--burgundy-800);
+  font-size: 0.78rem;
+}
+
+.customer-tea-empty span {
+  margin-top: 0.1rem;
+  font-size: 0.65rem;
+}
+
+.customer-tea-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.customer-brew-row {
+  --tea-state: var(--gold-500);
+  --tea-state-soft: rgba(216, 169, 58, 0.12);
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.72rem;
+  border: 1px solid color-mix(in srgb, var(--tea-state) 26%, transparent);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0%, var(--tea-state-soft), transparent 7rem),
+    linear-gradient(180deg, #fff, #fffaf2);
+}
+
+.customer-brew-row.state-brewing {
+  --tea-state: #ca9124;
+  --tea-state-soft: rgba(202, 145, 36, 0.12);
+}
+
+.customer-brew-row.state-new {
+  --tea-state: #159553;
+  --tea-state-soft: rgba(21, 149, 83, 0.12);
+}
+
+.customer-brew-row.state-fresh {
+  --tea-state: #4da93e;
+  --tea-state-soft: rgba(77, 169, 62, 0.12);
+}
+
+.customer-brew-row.state-normal {
+  --tea-state: #d2a126;
+  --tea-state-soft: rgba(210, 161, 38, 0.12);
+}
+
+.customer-brew-row.state-warning {
+  --tea-state: #dd6d2c;
+  --tea-state-soft: rgba(221, 109, 44, 0.12);
+}
+
+.customer-brew-row.state-expired {
+  --tea-state: #c43139;
+  --tea-state-soft: rgba(196, 49, 57, 0.12);
+}
+
+.customer-brew-icon {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--tea-state);
+  background: var(--tea-state-soft);
+}
+
+.customer-brew-copy {
+  min-width: 0;
+}
+
+.customer-brew-copy strong,
+.customer-brew-copy span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.customer-brew-copy strong {
+  color: var(--burgundy-800);
+  font-size: 0.78rem;
+}
+
+.customer-brew-copy span {
+  margin-top: 0.1rem;
+  color: var(--tea-state);
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.customer-brew-timer {
+  display: grid;
+  min-width: 3.6rem;
+  justify-items: end;
+  color: var(--tea-state);
+  font-variant-numeric: tabular-nums;
+}
+
+.customer-brew-timer strong {
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+
+.customer-brew-timer small {
+  margin-top: 0.05rem;
+  color: var(--muted);
+  font-size: 0.52rem;
+}
+
 .tea-info {
   color: var(--muted);
 }

@@ -84,32 +84,29 @@
             </a>
         </section>
 
-        <section class="panel" aria-labelledby="freshnessTitle">
+        <section class="panel tea-live-panel" aria-labelledby="freshnessTitle">
             <h2 id="freshnessTitle">
                 <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
                 <span>Çay Tazelik Durumu</span>
             </h2>
 
-            <p class="tea-info">Her gün taze demlenen çaylarımız sizleri bekliyor.</p>
+            <div class="tea-live-intro">
+                <p>Demliklerimizin güncel durumunu canlı olarak takip edebilirsiniz.</p>
+                <span class="tea-sync-badge" id="teaSyncBadge">
+                    <span aria-hidden="true"></span>
+                    Bağlanıyor
+                </span>
+            </div>
 
-            <progress class="fresh-bar" id="freshBar" aria-label="Çayın tazelik oranı"
-                value="100" max="100">%100</progress>
-
-            <h3 class="fresh-text" id="freshText">🟢 %100 - Yeni Demlendi</h3>
-
-            <div class="tea-details">
-                <div class="tea-item">
-                    <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                    <span>Son Demleme</span>
-                    <strong id="lastTea">14:35</strong>
-                </div>
-
-                <div class="tea-item">
-                    <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
-                    <span>Geçen Süre</span>
-                    <strong id="teaTime">8 Dakika</strong>
+            <div class="customer-tea-empty" id="customerTeaEmpty">
+                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                <div>
+                    <strong>Güncel dem bilgisi bekleniyor</strong>
+                    <span>Yeni dem başladığında burada görünecek.</span>
                 </div>
             </div>
+
+            <div class="customer-tea-list" id="customerTeaList" aria-live="polite"></div>
         </section>
 
         <section class="panel">
@@ -184,6 +181,7 @@
     </button>
 
     <script src="script.js"></script>
+    <script type="module" src="tea-live.js"></script>
 </body>
 
 </html>

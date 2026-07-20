@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Yönetici Girişi | Fatih Çay Evi</title>
+    <meta name="description" content="Fatih Çay Evi Taze Dem yönetici girişi.">
+    <meta name="theme-color" content="#5a1018">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="yonetici-giris.css">
+</head>
+
+<body>
+    <main class="login-page">
+        <section class="login-card" aria-labelledby="loginTitle">
+            <img src="logo.png" class="login-logo" width="132" height="132" alt="Fatih Çay Evi logosu">
+
+            <p class="eyebrow">Fatih Çay Evi</p>
+            <h1 id="loginTitle">Yönetici Girişi</h1>
+            <p class="login-intro">Taze Dem takip paneline giriş yapın.</p>
+
+            <form id="loginForm">
+                <label class="field-label" for="email">E-posta adresi</label>
+                <div class="input-wrap">
+                    <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                    <input id="email" name="email" type="email" autocomplete="username" required
+                        placeholder="ornek@email.com">
+                </div>
+
+                <label class="field-label" for="password">Şifre</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required
+                        minlength="8" placeholder="Şifrenizi girin">
+                    <button class="password-toggle" id="passwordToggle" type="button"
+                        aria-label="Şifreyi göster">
+                        <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <label class="remember-row">
+                    <input id="rememberMe" type="checkbox" checked>
+                    <span>Beni hatırla</span>
+                </label>
+
+                <p class="form-message" id="formMessage" role="alert" aria-live="polite"></p>
+
+                <button class="login-button" id="loginButton" type="submit">
+                    <span>Giriş Yap</span>
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </form>
+
+            <a class="customer-link" href="index.html">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                Müşteri sayfasına dön
+            </a>
+        </section>
+    </main>
+
+    <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
+
+    <script type="module" src="yonetici-giris.js"></script>
+</body>
+
+</html>
