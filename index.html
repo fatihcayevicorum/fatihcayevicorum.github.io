@@ -3,327 +3,211 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <title>Fatih Çay Evi | Çorum</title>
 
     <meta name="description"
         content="Çorum Fatih Çay Evi - Günlük taze demlenen çay, sıcak sohbet, kaliteli hizmet.">
-
     <meta name="keywords"
         content="Fatih Çay Evi, Çorum Çay Evi, Çorum Çay, Osmancık Caddesi">
-
     <meta name="theme-color" content="#7b1013">
-
-    <link rel="stylesheet" href="style.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
-
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
-    <!-- HERO -->
-
     <header class="hero">
-
         <div class="hero-overlay">
-
-            <img src="logo.png" alt="Fatih Çay Evi" class="logo">
+            <img src="logo.png" alt="Fatih Çay Evi logosu" class="logo" width="300" height="300">
 
             <h1>Fatih Çay Evi</h1>
-
-            <h2 class="hero-title">
-                Çorum'un Sıcak Sohbet Noktası
-            </h2>
-
-            <p class="subtitle">
-                Kaliteli Çay • Samimi Sohbet
-            </p>
-
-            <p class="slogan">
-                “Oksijeni bilmem ama yaşamak için <strong>ÇAY</strong> şart.”
-            </p>
+            <h2 class="hero-title">Çorum'un Sıcak Sohbet Noktası</h2>
+            <p class="subtitle">Kaliteli Çay • Samimi Sohbet</p>
+            <p class="slogan">“Oksijeni bilmem ama yaşamak için <strong>ÇAY</strong> şart.”</p>
 
             <div class="status">
-                <i class="fa-solid fa-mug-hot"></i>
-                Her Gün Taze Demleme
+                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                <span>Her Gün Taze Demleme</span>
             </div>
-
         </div>
-
     </header>
 
     <main class="container">
-
-        <!-- HOŞ GELDİNİZ -->
-
         <section class="panel">
-
             <h2>
-                <i class="fa-solid fa-heart"></i>
-                Hoş Geldiniz
+                <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                <span>Hoş Geldiniz</span>
             </h2>
-
             <p>
                 Fatih Çay Evi olarak sizlere her gün özenle demlenmiş kaliteli çay,
                 samimi bir sohbet ortamı ve güler yüzlü hizmet sunuyoruz.
             </p>
-
             <p>
                 İster kısa bir mola verin, ister dostlarınızla keyifli vakit geçirin...
                 Çayımız her zaman taze, kapımız her zaman açıktır.
             </p>
-
         </section>
 
-        <!-- HAVA DURUMU -->
-
-        <section class="panel weather-card">
-
-            <h2>
-                <i class="fa-solid fa-cloud-sun"></i>
-                Çorum Hava Durumu
+        <section class="panel weather-card" aria-labelledby="weatherTitle">
+            <h2 id="weatherTitle">
+                <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>
+                <span>Çorum Hava Durumu</span>
             </h2>
 
-            <div id="weather">
+            <div id="weather" aria-live="polite">
+                <div class="weather-icon" id="weatherIcon" aria-hidden="true">🌤️</div>
+                <div class="weather-copy">
+                    <h3>Çorum</h3>
+                    <p class="weather-temp" id="weatherTemp">--°C</p>
+                    <p id="weatherText">Hava durumu yükleniyor...</p>
+                </div>
+            </div>
+        </section>
 
-                <div class="weather-icon">
-                    🌤️
+        <section class="panel" aria-labelledby="freshnessTitle">
+            <h2 id="freshnessTitle">
+                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                <span>Çay Tazelik Durumu</span>
+            </h2>
+
+            <p class="tea-info">Her gün taze demlenen çaylarımız sizleri bekliyor.</p>
+
+            <progress class="fresh-bar" id="freshBar" aria-label="Çayın tazelik oranı"
+                value="100" max="100">%100</progress>
+
+            <h3 class="fresh-text" id="freshText">🟢 %100 - Yeni Demlendi</h3>
+
+            <div class="tea-details">
+                <div class="tea-item">
+                    <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                    <span>Son Demleme</span>
+                    <strong id="lastTea">14:35</strong>
                 </div>
 
-                <h3>Çorum</h3>
-
-                <p id="weatherText">
-                    Hava durumu yükleniyor...
-                </p>
-
+                <div class="tea-item">
+                    <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+                    <span>Geçen Süre</span>
+                    <strong id="teaTime">8 Dakika</strong>
+                </div>
             </div>
-
         </section>
-                <!-- ÇAY TAZELİK DURUMU -->
-
-        <section class="panel">
-
-    <h2>
-        <i class="fa-solid fa-mug-hot"></i>
-        Çay Tazelik Durumu
-    </h2>
-
-    <p class="tea-info">
-        Her gün taze demlenen çaylarımız sizleri bekliyor.
-    </p>
-
-    <div class="fresh-bar">
-
-        <div class="fill" id="freshFill"></div>
-
-    </div>
-
-    <h3 id="freshText">
-
-        🟢 %100 - Yeni Demlendi
-
-    </h3>
-
-    <div class="tea-details">
-
-        <div class="tea-item">
-
-            <i class="fa-regular fa-clock"></i>
-
-            <span>Son Demleme</span>
-
-            <strong id="lastTea">14:35</strong>
-
-        </div>
-
-        <div class="tea-item">
-
-            <i class="fa-solid fa-hourglass-half"></i>
-
-            <span>Geçen Süre</span>
-
-            <strong id="teaTime">8 Dakika</strong>
-
-        </div>
-
-    </div>
-
-</section>
-        <!-- MENÜ -->
 
         <section class="panel" id="menu">
-
             <h2>
-                <i class="fa-solid fa-book-open"></i>
-                Menü
+                <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                <span>Menü</span>
             </h2>
-
             <p>
-                Güncel çay, oralet ve soğuk içecek fiyatlarımızı görmek için aşağıdaki butona tıklayabilirsiniz.
+                Güncel çay, oralet ve soğuk içecek fiyatlarımızı görmek için aşağıdaki butona dokunabilirsiniz.
             </p>
-
             <a href="menu.html" class="menuButton">
-                ☕ Menü ve Fiyatlar
+                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                <span>Menü ve Fiyatlar</span>
             </a>
-
         </section>
 
-        <!-- GALERİ -->
-
         <section class="panel">
-
             <h2>
-                <i class="fa-solid fa-camera"></i>
-                Galeri
+                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                <span>Galeri</span>
             </h2>
+            <p>İşletmemizden güncel fotoğraflar çok yakında burada yer alacaktır.</p>
 
-            <p>
-                İşletmemizden güncel fotoğraflar çok yakında burada yer alacaktır.
-            </p>
-
-            <div class="gallery-placeholder">
-
+            <div class="gallery-placeholder" role="group" aria-label="Yakında eklenecek galeri görselleri">
                 <div class="gallery-box">
-                    <i class="fa-solid fa-image"></i>
+                    <i class="fa-solid fa-image" aria-hidden="true"></i>
                     <span>Yakında</span>
                 </div>
-
                 <div class="gallery-box">
-                    <i class="fa-solid fa-image"></i>
+                    <i class="fa-solid fa-image" aria-hidden="true"></i>
                     <span>Yakında</span>
                 </div>
-
                 <div class="gallery-box">
-                    <i class="fa-solid fa-image"></i>
+                    <i class="fa-solid fa-image" aria-hidden="true"></i>
                     <span>Yakında</span>
                 </div>
-
             </div>
-
         </section>
-                <!-- HIZLI ERİŞİM -->
 
         <section class="panel">
-
             <h2>
-                <i class="fa-solid fa-bolt"></i>
-                Hızlı Erişim
+                <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                <span>Hızlı Erişim</span>
             </h2>
-
             <p class="quick-text">
                 Tek dokunuşla bize ulaşabilir, yol tarifi alabilir veya Google'da yorum bırakabilirsiniz.
             </p>
 
             <div class="quick-actions">
-
-                <a href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank" class="card">
-
-                    <i class="fa-solid fa-location-dot"></i>
-
+                <a href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank"
+                    rel="noopener noreferrer" class="card">
+                    <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
                     <h3>Yol Tarifi</h3>
-
                     <p>Haritada Aç</p>
-
                 </a>
 
-                <a href="https://www.instagram.com/fatihcayevicorum" target="_blank" class="card">
-
-                    <i class="fa-brands fa-instagram"></i>
-
+                <a href="https://www.instagram.com/fatihcayevicorum" target="_blank"
+                    rel="noopener noreferrer" class="card">
+                    <i class="fa-brands fa-instagram" aria-hidden="true"></i>
                     <h3>Instagram</h3>
-
                     <p>Bizi Takip Et</p>
-
                 </a>
 
                 <a href="tel:+905541180806" class="card">
-
-                    <i class="fa-solid fa-phone"></i>
-
-                    <h3>Hemen Ara</h3>
-
-                    <p>0554 118 08 06</p>
-
+                    <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                    <h3>Hemen&nbsp;Ara</h3>
+                    <p>0554&nbsp;118&nbsp;08&nbsp;06</p>
                 </a>
 
-                <a href="https://g.page/r/CSOIVY6sAnqOEBM/review" target="_blank" class="card">
-
-                    <i class="fa-solid fa-star"></i>
-
+                <a href="https://g.page/r/CSOIVY6sAnqOEAE/review" target="_blank"
+                    rel="noopener noreferrer" class="card">
+                    <i class="fa-solid fa-star" aria-hidden="true"></i>
                     <h3>Yorum Yap</h3>
-
                     <p>Google'da Değerlendir</p>
-
                 </a>
-
             </div>
-
         </section>
-
     </main>
 
-    <!-- FOOTER -->
-
     <footer>
-
         <div class="footer-content">
-
-            <img src="logo.png" class="footer-logo" alt="Fatih Çay Evi">
-
+            <img src="logo.png" class="footer-logo" alt="" width="80" height="80">
             <h3>Fatih Çay Evi</h3>
-
             <p>☕ Kaliteli Çay • Samimi Sohbet</p>
-
             <p>📍 Çorum Merkez • Osmancık Caddesi</p>
-
-            <p>📞 0554 118 08 06</p>
+            <p>📞 0554&nbsp;118&nbsp;08&nbsp;06</p>
 
             <div class="footer-social">
-
-                <a href="https://www.instagram.com/fatihcayevicorum" target="_blank">
-
-                    <i class="fa-brands fa-instagram"></i>
-
+                <a href="https://www.instagram.com/fatihcayevicorum" target="_blank"
+                    rel="noopener noreferrer" aria-label="Instagram sayfasını aç">
+                    <i class="fa-brands fa-instagram" aria-hidden="true"></i>
                 </a>
-
-                <a href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank">
-
-                    <i class="fa-solid fa-location-dot"></i>
-
+                <a href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank"
+                    rel="noopener noreferrer" aria-label="Yol tarifini aç">
+                    <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
                 </a>
-
-                <a href="https://g.page/r/CSOIVY6sAnqOEBM/review" target="_blank">
-
-                    <i class="fa-solid fa-star"></i>
-
+                <a href="https://g.page/r/CSOIVY6sAnqOEAE/review" target="_blank"
+                    rel="noopener noreferrer" aria-label="Google yorumu bırak">
+                    <i class="fa-solid fa-star" aria-hidden="true"></i>
                 </a>
-
             </div>
 
-            <p class="copyright">
-                © 2026 Fatih Çay Evi - Tüm Hakları Saklıdır.
-            </p>
-
+            <p class="copyright">© 2026 Fatih Çay Evi - Tüm Hakları Saklıdır.</p>
         </div>
-
     </footer>
 
-    <!-- YUKARI ÇIK -->
-
-    <button id="topBtn" aria-label="Sayfanın başına dön">
-        <i class="fa-solid fa-arrow-up"></i>
+    <button id="topBtn" type="button" aria-label="Sayfanın başına dön">
+        <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
     </button>
 
     <script src="script.js"></script>
-
 </body>
 
 </html>

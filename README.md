@@ -1,1 +1,0 @@
-# fatihcayevicorum.github.io
