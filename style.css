@@ -491,12 +491,12 @@ a {
   content: "";
   background: linear-gradient(100deg, transparent 10%, rgba(255, 255, 255, 0.9) 48%, transparent 86%);
   transform: translateX(-120%);
-  animation: customer-bar-shine 2.1s ease-in-out infinite;
+  animation: customer-bar-shine 8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
 @keyframes customer-bar-shine {
-  0%, 28% { transform: translateX(-120%); }
-  70%, 100% { transform: translateX(120%); }
+  0%, 22% { transform: translateX(-120%); }
+  78%, 100% { transform: translateX(120%); }
 }
 
 .customer-brew-row.state-brewing {
@@ -541,12 +541,12 @@ a {
   transition: box-shadow 0.6s ease, background-color 0.6s ease, color 0.6s ease;
 }
 
-.customer-brew-row.state-brewing { animation: customer-card-warm 2.1s ease-in-out infinite; }
+.customer-brew-row.state-brewing { animation: customer-card-warm 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
 .customer-brew-row.state-new,
-.customer-brew-row.state-fresh { animation: customer-card-fresh 2.7s ease-in-out infinite; }
-.customer-brew-row.state-brewing .customer-brew-icon { animation: customer-warm-glow 1.8s ease-in-out infinite; }
+.customer-brew-row.state-fresh { animation: customer-card-fresh 7.4s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.customer-brew-row.state-brewing .customer-brew-icon { animation: customer-warm-glow 6.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
 .customer-brew-row.state-new .customer-brew-icon,
-.customer-brew-row.state-fresh .customer-brew-icon { animation: customer-fresh-glow 2.4s ease-in-out infinite; }
+.customer-brew-row.state-fresh .customer-brew-icon { animation: customer-fresh-glow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
 
 @keyframes customer-card-warm {
   0%, 100% { box-shadow: 0 8px 18px rgba(54, 16, 20, 0.08), 0 0 0.55rem rgba(202, 145, 36, 0.2); }
