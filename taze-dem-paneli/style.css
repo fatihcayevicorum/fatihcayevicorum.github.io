@@ -423,6 +423,22 @@ button {
   background: var(--state-color);
 }
 
+.brew-card::after {
+  position: absolute;
+  z-index: 2;
+  inset: -1px;
+  padding: 2px;
+  border-radius: inherit;
+  pointer-events: none;
+  content: "";
+  background: conic-gradient(from var(--panel-orbit-angle), transparent 0 72%, var(--state-color) 83%, #fff2b0 88%, var(--state-color) 92%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: panel-border-orbit 7s linear infinite;
+}
+
 .brew-card.state-brewing {
   --state-color: #cf9524;
   --state-soft: rgba(207, 149, 36, 0.13);
@@ -525,19 +541,13 @@ button {
 .progress-heading strong { color: var(--state-color); }
 .progress-meta { margin-top: 0.28rem; }
 
-.brew-card.state-brewing { animation: panel-warm-glow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-.brew-card.state-new,
-.brew-card.state-fresh { animation: panel-fresh-glow 7.4s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-
-@keyframes panel-warm-glow {
-  0%, 100% { box-shadow: 0 10px 24px rgba(54, 16, 20, 0.1), 0 0 0.7rem rgba(207, 149, 36, 0.22); }
-  50% { box-shadow: 0 14px 32px rgba(54, 16, 20, 0.15), 0 0 2.2rem rgba(238, 145, 32, 0.55); }
+@property --panel-orbit-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
 }
 
-@keyframes panel-fresh-glow {
-  0%, 100% { box-shadow: 0 10px 24px rgba(54, 16, 20, 0.1), 0 0 0.75rem rgba(21, 149, 83, 0.22); }
-  50% { box-shadow: 0 14px 32px rgba(54, 16, 20, 0.14), 0 0 2.1rem rgba(21, 149, 83, 0.5); }
-}
+@keyframes panel-border-orbit { to { --panel-orbit-angle: 360deg; } }
 
 .timer-label {
   color: var(--muted);
@@ -580,19 +590,6 @@ button {
   transition: width 0.45s linear, background-color 0.3s ease;
 }
 
-.progress-fill::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background: linear-gradient(100deg, transparent 10%, rgba(255, 255, 255, 0.92) 48%, transparent 86%);
-  transform: translateX(-120%);
-  animation: panel-bar-shine 8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-}
-
-@keyframes panel-bar-shine {
-  0%, 22% { transform: translateX(-120%); }
-  78%, 100% { transform: translateX(120%); }
-}
 
 .brew-meta {
   display: grid;
