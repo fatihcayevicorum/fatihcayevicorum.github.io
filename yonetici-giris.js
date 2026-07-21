@@ -20,12 +20,13 @@ const rememberInput = document.getElementById("rememberMe");
 const loginButton = document.getElementById("loginButton");
 const formMessage = document.getElementById("formMessage");
 const passwordToggle = document.getElementById("passwordToggle");
+const nextPage = getSafeNextPage();
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) return;
 
     if (user.uid === ADMIN_UID) {
-        window.location.replace("taze-dem-paneli/");
+        window.location.replace(nextPage);
         return;
     }
 
@@ -55,7 +56,7 @@ form.addEventListener("submit", async (event) => {
             throw new Error("auth/not-admin");
         }
 
-        window.location.replace("taze-dem-paneli/");
+        window.location.replace(nextPage);
     } catch (error) {
         showError(getLoginErrorMessage(error));
         setLoading(false);
@@ -100,4 +101,10 @@ function getLoginErrorMessage(error) {
         default:
             return "Giriş yapılamadı. Bilgilerinizi kontrol edip tekrar deneyin.";
     }
+}
+
+function getSafeNextPage() {
+    const requestedPage = new URLSearchParams(window.location.search).get("next");
+    const allowedPages = new Set(["taze-dem-paneli/", "menu-yonetimi/"]);
+    return allowedPages.has(requestedPage) ? requestedPage : "taze-dem-paneli/";
 }

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Menü ve Fiyatlar | Fatih Çay Evi</title>
+    <meta name="description" content="Fatih Çay Evi güncel ürünleri ve fiyatları.">
+    <meta name="theme-color" content="#5a1018">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="menu.css?v=1">
+</head>
+<body>
+    <header class="menu-hero">
+        <a class="back-link" href="index.html"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Ana sayfa</a>
+        <img src="logo.png" width="132" height="132" alt="Fatih Çay Evi logosu">
+        <p class="eyebrow">Fatih Çay Evi</p>
+        <h1>Menü ve Fiyatlar</h1>
+        <p>Güncel ürünlerimizi ve fiyatlarımızı inceleyin.</p>
+    </header>
+
+    <main class="menu-shell">
+        <section class="menu-toolbar" aria-label="Menü filtreleri">
+            <label class="search-box" for="menuSearch">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="menuSearch" type="search" placeholder="Menüde ara" autocomplete="off">
+            </label>
+            <div class="sync-badge" id="menuSyncBadge"><span aria-hidden="true"></span> Menü yükleniyor</div>
+        </section>
+
+        <nav class="category-tabs" id="categoryTabs" aria-label="Menü kategorileri"></nav>
+
+        <section class="menu-state" id="menuLoading">
+            <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+            <strong>Menü hazırlanıyor</strong>
+            <span>Güncel ürünler getiriliyor.</span>
+        </section>
+
+        <section class="menu-state" id="menuEmpty" hidden>
+            <i class="fa-solid fa-utensils" aria-hidden="true"></i>
+            <strong>Menü yakında burada</strong>
+            <span>Ürünlerimiz yönetim panelinden eklendiğinde bu sayfada görünecek.</span>
+        </section>
+
+        <div class="menu-sections" id="menuSections" aria-live="polite"></div>
+
+        <p class="menu-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Fiyatlar işletme tarafından güncel olarak yayınlanır.</p>
+    </main>
+
+    <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
+    <script type="module" src="menu.js?v=1"></script>
+</body>
+</html>
