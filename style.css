@@ -450,22 +450,6 @@ a {
     linear-gradient(180deg, #fff, #fffaf2);
 }
 
-.customer-brew-row::after {
-  position: absolute;
-  z-index: 2;
-  inset: -1px;
-  padding: 2px;
-  border-radius: inherit;
-  pointer-events: none;
-  content: "";
-  background: conic-gradient(from var(--orbit-angle), transparent 0 72%, var(--tea-state) 83%, #fff2b0 88%, var(--tea-state) 92%, transparent 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  animation: customer-border-orbit 35s linear infinite;
-}
-
 .customer-progress {
   grid-column: 1 / -1;
   min-width: 0;
@@ -501,6 +485,21 @@ a {
   background: var(--tea-state);
   box-shadow: 0 0 0.7rem var(--tea-state-soft);
   transition: width 0.7s linear, background-color 0.7s ease;
+}
+
+.customer-progress-track > span::after {
+  position: absolute;
+  inset: 0;
+  width: 38%;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.78), transparent);
+  transform: translateX(-130%);
+  animation: customer-loading-sweep 4s ease-in-out infinite;
+}
+
+@keyframes customer-loading-sweep {
+  0%, 18% { transform: translateX(-130%); }
+  82%, 100% { transform: translateX(360%); }
 }
 
 
@@ -546,13 +545,6 @@ a {
   transition: box-shadow 0.6s ease, background-color 0.6s ease, color 0.6s ease;
 }
 
-@property --orbit-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes customer-border-orbit { to { --orbit-angle: 360deg; } }
 
 .customer-brew-copy {
   min-width: 0;
