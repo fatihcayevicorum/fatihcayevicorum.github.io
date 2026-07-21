@@ -436,7 +436,7 @@ button {
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
-  animation: panel-border-orbit 7s linear infinite;
+  animation: panel-border-orbit 14s linear infinite;
 }
 
 .brew-card.state-brewing {
