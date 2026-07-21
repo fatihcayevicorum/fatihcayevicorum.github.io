@@ -13,7 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
 
-const MAX_ACTIVE_BREWS = 2;
+const MAX_ACTIVE_BREWS = 3;
 const BREWING_DURATION_MS = 20 * 60 * 1000;
 const FRESHNESS_DURATION_MS = 60 * 60 * 1000;
 
@@ -136,7 +136,7 @@ async function startNewBrew() {
     } catch (error) {
         console.error(error);
         showToast(error.message === "max-active-brews"
-            ? "Aynı anda en fazla iki demlik takip edilebilir."
+            ? "Aynı anda en fazla üç demlik takip edilebilir."
             : "Yeni dem başlatılamadı. İnternet bağlantısını kontrol edin.");
     } finally {
         setBusy(false);
@@ -239,8 +239,8 @@ function renderSummary(now) {
     elements.todayCount.textContent = String(todayCount);
     elements.startButton.disabled = isBusy || activeCount >= MAX_ACTIVE_BREWS;
     elements.capacityNote.textContent = activeCount >= MAX_ACTIVE_BREWS
-        ? "İki demlik aktif. Yeni dem için önce bir demliği bitirin."
-        : "Aynı anda en fazla iki demlik takip edilir.";
+        ? "Üç demlik aktif. Yeni dem için önce bir demliği bitirin."
+        : "Aynı anda en fazla üç demlik takip edilir.";
 
     if (activeCount === 0) {
         elements.currentStatus.textContent = "Demlik bekleniyor";
