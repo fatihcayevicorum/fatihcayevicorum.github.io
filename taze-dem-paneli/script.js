@@ -359,7 +359,6 @@ function renderActiveBrews(now) {
                     </div>
 
                     <div class="timer-block">
-                        <span class="state-effect" aria-hidden="true"><span></span><span></span><span></span></span>
                         <span class="timer-label">${stage.timerLabel}</span>
                         <strong class="timer-value">${formatDuration(stage.timerMs)}</strong>
                         <span class="timer-note">${stage.note}</span>

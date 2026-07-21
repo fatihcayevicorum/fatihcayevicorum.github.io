@@ -510,44 +510,6 @@ button {
   margin: 0.9rem 0 0.8rem;
 }
 
-.state-effect {
-  position: relative;
-  width: 2.1rem;
-  height: 1.8rem;
-  margin-bottom: 0.2rem;
-}
-
-.state-effect > span { position: absolute; display: block; }
-
-.state-brewing .state-effect > span {
-  bottom: 0;
-  width: 0.68rem;
-  height: 1.15rem;
-  border-radius: 70% 30% 60% 40%;
-  background: linear-gradient(180deg, #ffe06a, #f07828 60%, #b92f26);
-  filter: drop-shadow(0 0 0.28rem rgba(239, 107, 36, 0.55));
-  transform-origin: 50% 100%;
-  animation: panel-flame 0.85s ease-in-out infinite alternate;
-}
-
-.state-brewing .state-effect > span:nth-child(1) { left: 0.05rem; animation-delay: -0.3s; }
-.state-brewing .state-effect > span:nth-child(2) { left: 0.7rem; height: 1.65rem; }
-.state-brewing .state-effect > span:nth-child(3) { left: 1.35rem; animation-delay: -0.55s; }
-
-.brew-card:not(.state-brewing):not(.state-expired) .state-effect > span {
-  bottom: 0;
-  width: 0.42rem;
-  height: 1.5rem;
-  border-radius: 999px;
-  border-left: 3px solid color-mix(in srgb, var(--state-color) 56%, white);
-  opacity: 0;
-  animation: panel-steam 2.5s ease-out infinite;
-}
-
-.brew-card:not(.state-brewing):not(.state-expired) .state-effect > span:nth-child(1) { left: 0.15rem; }
-.brew-card:not(.state-brewing):not(.state-expired) .state-effect > span:nth-child(2) { left: 0.82rem; animation-delay: 0.7s; }
-.brew-card:not(.state-brewing):not(.state-expired) .state-effect > span:nth-child(3) { left: 1.5rem; animation-delay: 1.4s; }
-
 .progress-heading,
 .progress-meta {
   display: flex;
@@ -563,15 +525,18 @@ button {
 .progress-heading strong { color: var(--state-color); }
 .progress-meta { margin-top: 0.28rem; }
 
-@keyframes panel-flame {
-  from { transform: scaleY(0.76) rotate(-7deg); }
-  to { transform: scaleY(1.08) rotate(7deg); }
+.brew-card.state-brewing { animation: panel-warm-glow 2.4s ease-in-out infinite; }
+.brew-card.state-new,
+.brew-card.state-fresh { animation: panel-fresh-glow 3.2s ease-in-out infinite; }
+
+@keyframes panel-warm-glow {
+  0%, 100% { box-shadow: 0 10px 24px rgba(54, 16, 20, 0.09), 0 0 0 rgba(207, 149, 36, 0); }
+  50% { box-shadow: 0 12px 28px rgba(54, 16, 20, 0.11), 0 0 1.4rem rgba(207, 149, 36, 0.2); }
 }
 
-@keyframes panel-steam {
-  0% { opacity: 0; transform: translateY(0) translateX(0) scaleY(0.7); }
-  25% { opacity: 0.65; }
-  100% { opacity: 0; transform: translateY(-1.15rem) translateX(0.25rem) scaleY(1.15); }
+@keyframes panel-fresh-glow {
+  0%, 100% { box-shadow: 0 10px 24px rgba(54, 16, 20, 0.09), 0 0 0.5rem rgba(21, 149, 83, 0.07); }
+  50% { box-shadow: 0 12px 28px rgba(54, 16, 20, 0.1), 0 0 1.35rem rgba(21, 149, 83, 0.18); }
 }
 
 .timer-label {
@@ -607,11 +572,26 @@ button {
 }
 
 .progress-fill {
+  position: relative;
   width: var(--progress);
   height: 100%;
   border-radius: inherit;
   background: var(--state-color);
   transition: width 0.45s linear, background-color 0.3s ease;
+}
+
+.progress-fill::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(100deg, transparent 15%, rgba(255, 255, 255, 0.58) 48%, transparent 80%);
+  transform: translateX(-120%);
+  animation: panel-bar-shine 3.2s ease-in-out infinite;
+}
+
+@keyframes panel-bar-shine {
+  0%, 28% { transform: translateX(-120%); }
+  70%, 100% { transform: translateX(120%); }
 }
 
 .brew-meta {
