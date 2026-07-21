@@ -12,13 +12,17 @@ const publicStatusReference = doc(database, "publicTea", "status");
 const teaList = document.getElementById("customerTeaList");
 const teaEmpty = document.getElementById("customerTeaEmpty");
 const syncBadge = document.getElementById("teaSyncBadge");
+const serviceBadge = document.getElementById("teaServiceBadge");
 
 let activeBrews = [];
+let serviceOpen = true;
 
 onSnapshot(publicStatusReference, (snapshot) => {
-    activeBrews = snapshot.exists() && Array.isArray(snapshot.data().activeBrews)
-        ? snapshot.data().activeBrews
+    const data = snapshot.exists() ? snapshot.data() : {};
+    activeBrews = Array.isArray(data.activeBrews)
+        ? data.activeBrews
         : [];
+    serviceOpen = data.serviceOpen !== false;
 
     syncBadge.classList.remove("is-offline");
     syncBadge.innerHTML = '<span aria-hidden="true"></span> Canlı';
@@ -38,10 +42,16 @@ window.setInterval(renderCustomerTeaStatus, 1000);
 
 function renderCustomerTeaStatus() {
     const now = Date.now();
-    teaEmpty.hidden = activeBrews.length > 0;
+    serviceBadge.hidden = serviceOpen;
+    teaEmpty.hidden = !serviceOpen || activeBrews.length > 0;
+
+    if (!serviceOpen) {
+        teaList.innerHTML = "";
+        return;
+    }
 
     teaList.innerHTML = activeBrews.map((brew, index) => {
-        const stage = getCustomerStage(Number(brew.startedAtMs), now);
+        const stage = getCustomerStage(brew, now);
 
         return `
             <article class="customer-brew-row state-${stage.key}">
@@ -61,19 +71,21 @@ function renderCustomerTeaStatus() {
     }).join("");
 }
 
-function getCustomerStage(startedAtMs, now) {
+function getCustomerStage(brew, now) {
+    const startedAtMs = Number(brew.startedAtMs);
+    const readyAtMs = Number(brew.readyAtMs) || startedAtMs + BREWING_DURATION_MS;
     const elapsedMs = Math.max(0, now - startedAtMs);
 
-    if (elapsedMs < BREWING_DURATION_MS) {
+    if (now < readyAtMs) {
         return {
             key: "brewing",
             label: "Demleniyor",
-            timerMs: BREWING_DURATION_MS - elapsedMs,
+            timerMs: readyAtMs - now,
             timerLabel: "Hazır olmasına"
         };
     }
 
-    const freshnessElapsedMs = elapsedMs - BREWING_DURATION_MS;
+    const freshnessElapsedMs = Math.max(0, now - readyAtMs);
     const remainingMs = Math.max(0, FRESHNESS_DURATION_MS - freshnessElapsedMs);
 
     if (freshnessElapsedMs < 15 * 60 * 1000) {

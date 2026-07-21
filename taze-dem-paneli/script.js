@@ -31,6 +31,8 @@ const elements = {
     currentStatus: document.getElementById("currentStatus"),
     saveStatus: document.getElementById("saveStatus"),
     startButton: document.getElementById("startBrewButton"),
+    serviceStatus: document.getElementById("serviceStatus"),
+    serviceToggleButton: document.getElementById("serviceToggleButton"),
     capacityNote: document.getElementById("capacityNote"),
     emptyState: document.getElementById("emptyState"),
     brewList: document.getElementById("brewList"),
@@ -51,6 +53,7 @@ let isBusy = false;
 
 elements.startButton.disabled = true;
 elements.startButton.addEventListener("click", startNewBrew);
+elements.serviceToggleButton.addEventListener("click", toggleTeaService);
 elements.brewList.addEventListener("click", handleBrewListClick);
 elements.finishDialog.addEventListener("close", handleDialogClose);
 elements.confirmFinishButton.addEventListener("click", () => {
@@ -80,7 +83,7 @@ window.setInterval(() => {
 }, 1000);
 
 function createEmptyState() {
-    return { activeBrews: [], history: [] };
+    return { activeBrews: [], history: [], serviceOpen: true };
 }
 
 function subscribeToAdminState() {
@@ -90,7 +93,8 @@ function subscribeToAdminState() {
         const data = snapshot.exists() ? snapshot.data() : createEmptyState();
         appState = {
             activeBrews: Array.isArray(data.activeBrews) ? data.activeBrews : [],
-            history: Array.isArray(data.history) ? data.history : []
+            history: Array.isArray(data.history) ? data.history : [],
+            serviceOpen: data.serviceOpen !== false
         };
         setConnectionState(true);
         render();
@@ -128,6 +132,7 @@ async function startNewBrew() {
             });
             transaction.set(publicStatusReference, {
                 activeBrews: state.activeBrews,
+                serviceOpen: state.serviceOpen,
                 updatedAt: serverTimestamp()
             });
         });
@@ -144,6 +149,12 @@ async function startNewBrew() {
 }
 
 function handleBrewListClick(event) {
+    const readyButton = event.target.closest("[data-ready-id]");
+    if (readyButton && !isBusy) {
+        markBrewReady(readyButton.dataset.readyId);
+        return;
+    }
+
     const finishButton = event.target.closest("[data-finish-id]");
     if (!finishButton || isBusy) return;
 
@@ -161,6 +172,67 @@ function handleBrewListClick(event) {
 
     if (window.confirm(`Demlik ${brewIndex + 1} bitirilsin mi?`)) {
         finishBrew(brewId);
+    }
+}
+
+async function markBrewReady(brewId) {
+    if (isBusy) return;
+    setBusy(true);
+
+    try {
+        let readyNumber = 1;
+        await runTransaction(database, async (transaction) => {
+            const snapshot = await transaction.get(adminStateReference);
+            const state = normalizeState(snapshot.exists() ? snapshot.data() : createEmptyState());
+            const brewIndex = state.activeBrews.findIndex((brew) => brew.id === brewId);
+            if (brewIndex < 0) throw new Error("brew-not-found");
+
+            readyNumber = brewIndex + 1;
+            if (!Number.isFinite(Number(state.activeBrews[brewIndex].readyAtMs))) {
+                state.activeBrews[brewIndex].readyAtMs = Date.now();
+            }
+
+            transaction.set(adminStateReference, { ...state, updatedAt: serverTimestamp() });
+            transaction.set(publicStatusReference, {
+                activeBrews: state.activeBrews,
+                serviceOpen: state.serviceOpen,
+                updatedAt: serverTimestamp()
+            });
+        });
+        showToast(`Demlik ${readyNumber} hazır olarak işaretlendi.`);
+    } catch (error) {
+        console.error(error);
+        showToast("Demlik hazır olarak işaretlenemedi.");
+    } finally {
+        setBusy(false);
+    }
+}
+
+async function toggleTeaService() {
+    if (isBusy) return;
+    setBusy(true);
+
+    try {
+        let serviceOpen = true;
+        await runTransaction(database, async (transaction) => {
+            const snapshot = await transaction.get(adminStateReference);
+            const state = normalizeState(snapshot.exists() ? snapshot.data() : createEmptyState());
+            state.serviceOpen = !state.serviceOpen;
+            serviceOpen = state.serviceOpen;
+
+            transaction.set(adminStateReference, { ...state, updatedAt: serverTimestamp() });
+            transaction.set(publicStatusReference, {
+                activeBrews: state.activeBrews,
+                serviceOpen: state.serviceOpen,
+                updatedAt: serverTimestamp()
+            });
+        });
+        showToast(serviceOpen ? "Çay servisi başlatıldı." : "Çay servisi kapatıldı.");
+    } catch (error) {
+        console.error(error);
+        showToast("Servis durumu değiştirilemedi.");
+    } finally {
+        setBusy(false);
     }
 }
 
@@ -199,6 +271,7 @@ async function finishBrew(brewId) {
             });
             transaction.set(publicStatusReference, {
                 activeBrews: state.activeBrews,
+                serviceOpen: state.serviceOpen,
                 updatedAt: serverTimestamp()
             });
         });
@@ -216,7 +289,8 @@ async function finishBrew(brewId) {
 function normalizeState(state) {
     return {
         activeBrews: Array.isArray(state.activeBrews) ? state.activeBrews : [],
-        history: Array.isArray(state.history) ? state.history : []
+        history: Array.isArray(state.history) ? state.history : [],
+        serviceOpen: state.serviceOpen !== false
     };
 }
 
@@ -242,23 +316,32 @@ function renderSummary(now) {
         ? "Üç demlik aktif. Yeni dem için önce bir demliği bitirin."
         : "Aynı anda en fazla üç demlik takip edilir.";
 
+    elements.serviceStatus.textContent = appState.serviceOpen ? "Açık" : "Kapalı";
+    elements.serviceToggleButton.disabled = isBusy;
+    elements.serviceToggleButton.classList.toggle("is-open", appState.serviceOpen);
+    elements.serviceToggleButton.classList.toggle("is-closed", !appState.serviceOpen);
+    elements.serviceToggleButton.innerHTML = appState.serviceOpen
+        ? '<i class="fa-solid fa-circle-stop" aria-hidden="true"></i><span>Servisi Kapat</span>'
+        : '<i class="fa-solid fa-circle-play" aria-hidden="true"></i><span>Servisi Başlat</span>';
+
     if (activeCount === 0) {
         elements.currentStatus.textContent = "Demlik bekleniyor";
         return;
     }
 
     const newestBrew = appState.activeBrews[activeCount - 1];
-    const newestStage = getBrewStage(newestBrew.startedAtMs, now);
+    const newestStage = getBrewStage(newestBrew, now);
     elements.currentStatus.textContent = `Demlik ${activeCount}: ${newestStage.label}`;
+
 }
 
 function renderActiveBrews(now) {
     elements.emptyState.hidden = appState.activeBrews.length > 0;
 
     elements.brewList.innerHTML = appState.activeBrews.map((brew, index) => {
-        const stage = getBrewStage(brew.startedAtMs, now);
+        const stage = getBrewStage(brew, now);
         const progress = Math.min(100, Math.max(0, stage.progress));
-        const readyAt = brew.startedAtMs + BREWING_DURATION_MS;
+        const readyAt = Number(brew.readyAtMs) || brew.startedAtMs + BREWING_DURATION_MS;
         const elapsed = Math.max(0, now - brew.startedAtMs);
 
         return `
@@ -293,10 +376,17 @@ function renderActiveBrews(now) {
                         </div>
                     </div>
 
-                    <button class="finish-button" type="button" data-finish-id="${brew.id}">
-                        <i class="fa-solid fa-check" aria-hidden="true"></i>
-                        Demliği Bitir
-                    </button>
+                    <div class="brew-actions">
+                        ${stage.key === "brewing" ? `
+                            <button class="ready-button" type="button" data-ready-id="${brew.id}">
+                                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                                Hazır
+                            </button>` : ""}
+                        <button class="finish-button" type="button" data-finish-id="${brew.id}">
+                            <i class="fa-solid fa-check" aria-hidden="true"></i>
+                            Demliği Bitir
+                        </button>
+                    </div>
                 </div>
             </article>
         `;
@@ -326,21 +416,23 @@ function renderHistory() {
     }).join("");
 }
 
-function getBrewStage(startedAtMs, now = Date.now()) {
+function getBrewStage(brew, now = Date.now()) {
+    const startedAtMs = Number(brew.startedAtMs);
+    const readyAtMs = Number(brew.readyAtMs) || startedAtMs + BREWING_DURATION_MS;
     const elapsedMs = Math.max(0, now - startedAtMs);
 
-    if (elapsedMs < BREWING_DURATION_MS) {
+    if (now < readyAtMs) {
         return {
             key: "brewing",
             label: "Demleniyor",
             timerLabel: "Geçen süre",
             timerMs: elapsedMs,
             note: "20 dakika dolunca tazelik sayacı başlayacak.",
-            progress: (elapsedMs / BREWING_DURATION_MS) * 100
+            progress: (elapsedMs / Math.max(1, readyAtMs - startedAtMs)) * 100
         };
     }
 
-    const freshnessElapsedMs = elapsedMs - BREWING_DURATION_MS;
+    const freshnessElapsedMs = Math.max(0, now - readyAtMs);
     const remainingMs = Math.max(0, FRESHNESS_DURATION_MS - freshnessElapsedMs);
     const progress = Math.max(0, (remainingMs / FRESHNESS_DURATION_MS) * 100);
 

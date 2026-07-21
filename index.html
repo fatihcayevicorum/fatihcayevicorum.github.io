@@ -19,7 +19,7 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 
 <body>
@@ -92,10 +92,13 @@
 
             <div class="tea-live-intro">
                 <p>Demliklerimizin güncel durumunu canlı olarak takip edebilirsiniz.</p>
-                <span class="tea-sync-badge" id="teaSyncBadge">
-                    <span aria-hidden="true"></span>
-                    Bağlanıyor
-                </span>
+                <div class="tea-badges">
+                    <span class="tea-service-badge" id="teaServiceBadge" hidden>Servis Kapalı</span>
+                    <span class="tea-sync-badge" id="teaSyncBadge">
+                        <span aria-hidden="true"></span>
+                        Bağlanıyor
+                    </span>
+                </div>
             </div>
 
             <div class="customer-tea-empty" id="customerTeaEmpty">
@@ -181,7 +184,7 @@
     </button>
 
     <script src="script.js"></script>
-    <script type="module" src="tea-live.js"></script>
+    <script type="module" src="tea-live.js?v=2"></script>
 </body>
 
 </html>

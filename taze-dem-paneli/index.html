@@ -15,7 +15,7 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 
 <body>
@@ -58,7 +58,7 @@
             <div class="stats-grid">
                 <article class="stat-card">
                     <span>Aktif Demlik</span>
-                    <strong id="activeCount">0 / 2</strong>
+                    <strong id="activeCount">0 / 3</strong>
                 </article>
 
                 <article class="stat-card">
@@ -81,6 +81,17 @@
                     <small>20 dakikalık demleme sayacını başlatır</small>
                 </span>
             </button>
+
+            <div class="service-controls" aria-label="Çay servisi kontrolü">
+                <div class="service-state-copy">
+                    <span>Çay Servisi</span>
+                    <strong id="serviceStatus">Açık</strong>
+                </div>
+                <button class="service-button is-open" id="serviceToggleButton" type="button">
+                    <i class="fa-solid fa-circle-stop" aria-hidden="true"></i>
+                    <span>Servisi Kapat</span>
+                </button>
+            </div>
 
             <p class="capacity-note" id="capacityNote">
                 Aynı anda en fazla üç demlik takip edilir.
@@ -141,7 +152,7 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="script.js"></script>
+    <script type="module" src="script.js?v=2"></script>
 </body>
 
 </html>
