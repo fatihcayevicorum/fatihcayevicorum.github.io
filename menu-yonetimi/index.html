@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Menü Yönetimi | Fatih Çay Evi</title>
+    <meta name="theme-color" content="#5a1018">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand">
+                <img src="../logo.png" width="72" height="72" alt="Fatih Çay Evi logosu">
+                <div><p>Fatih Çay Evi</p><h1>Menü Yönetimi</h1></div>
+            </div>
+            <nav class="header-actions" aria-label="Yönetim bağlantıları">
+                <a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i><span>Taze Dem</span></a>
+                <a href="../menu.html" target="_blank"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Önizle</span></a>
+                <button id="logoutButton" type="button" aria-label="Çıkış yap"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i></button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="panel summary-panel">
+            <div class="section-heading">
+                <div><p class="kicker">Kontrol merkezi</p><h2>Menü Özeti</h2></div>
+                <span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Bağlanıyor</span>
+            </div>
+            <div class="stats">
+                <article><span>Kategori</span><strong id="categoryCount">0</strong></article>
+                <article><span>Ürün</span><strong id="productCount">0</strong></article>
+                <article><span>Satışta</span><strong id="availableCount">0</strong></article>
+            </div>
+        </section>
+
+        <section class="panel category-panel">
+            <div class="section-heading"><div><p class="kicker">Düzenleme</p><h2>Kategoriler</h2></div></div>
+            <form class="inline-form" id="categoryForm">
+                <input id="categoryName" type="text" maxlength="40" placeholder="Örn. Sıcak İçecekler" required>
+                <input id="categoryOrder" type="number" min="0" max="999" value="0" aria-label="Kategori sırası">
+                <button type="submit"><i class="fa-solid fa-plus" aria-hidden="true"></i> Ekle</button>
+            </form>
+            <p class="empty-copy" id="categoryEmpty">Henüz kategori eklenmedi.</p>
+            <div class="category-list" id="categoryList"></div>
+        </section>
+
+        <section class="panel product-form-panel">
+            <div class="section-heading"><div><p class="kicker">Ürün bilgileri</p><h2 id="productFormTitle">Yeni Ürün</h2></div></div>
+            <form id="productForm">
+                <input id="editingProductId" type="hidden">
+                <div class="field-grid">
+                    <label><span>Ürün adı</span><input id="productName" type="text" maxlength="60" required placeholder="Örn. Çay"></label>
+                    <label><span>Kategori</span><select id="productCategory" required><option value="">Önce kategori ekleyin</option></select></label>
+                    <label><span>Fiyat (TL)</span><input id="productPrice" type="number" min="0" max="99999" step="0.01" required placeholder="0"></label>
+                    <label><span>Görünme sırası</span><input id="productOrder" type="number" min="0" max="999" value="0"></label>
+                    <label class="full-field"><span>Kısa açıklama <small>(isteğe bağlı)</small></span><textarea id="productDescription" maxlength="140" rows="3" placeholder="Ürünle ilgili kısa bilgi"></textarea></label>
+                </div>
+                <label class="switch-row"><input id="productAvailable" type="checkbox" checked><span>Ürün satışta ve müşteriye açık</span></label>
+                <div class="form-actions">
+                    <button class="secondary-button" id="cancelEditButton" type="button" hidden>Vazgeç</button>
+                    <button class="primary-button" id="saveProductButton" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ürünü Kaydet</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel product-list-panel">
+            <div class="section-heading">
+                <div><p class="kicker">Canlı liste</p><h2>Menü Ürünleri</h2></div>
+                <input class="product-search" id="productSearch" type="search" placeholder="Ürün ara">
+            </div>
+            <p class="empty-copy" id="productEmpty">Henüz ürün eklenmedi.</p>
+            <div class="product-list" id="productList"></div>
+        </section>
+    </main>
+
+    <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="script.js?v=1"></script>
+</body>
+</html>
