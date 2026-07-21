@@ -52,11 +52,18 @@ function renderCustomerTeaStatus() {
 
     teaList.innerHTML = activeBrews.map((brew, index) => {
         const stage = getCustomerStage(brew, now);
+        const stageProgress = Math.min(100, Math.max(0, stage.progress ?? 100));
+        const freshnessPercent = Math.min(100, Math.max(0, stage.freshnessPercent ?? 0));
+        const barProgress = stage.key === "brewing" ? stageProgress : 100;
+        const progressText = stage.key === "brewing"
+            ? `Demleme %${Math.round(stageProgress)}`
+            : `Tazelik %${Math.round(freshnessPercent)}`;
 
         return `
             <article class="customer-brew-row state-${stage.key}">
                 <div class="customer-brew-icon" aria-hidden="true">
                     <i class="fa-solid fa-mug-hot"></i>
+                    <span class="customer-state-effect"><span></span><span></span><span></span></span>
                 </div>
                 <div class="customer-brew-copy">
                     <strong>Demlik ${index + 1}</strong>
@@ -65,6 +72,15 @@ function renderCustomerTeaStatus() {
                 <div class="customer-brew-timer">
                     <strong>${formatDuration(stage.timerMs)}</strong>
                     <small>${stage.timerLabel}</small>
+                </div>
+                <div class="customer-progress">
+                    <div class="customer-progress-heading">
+                        <span>Demleme saati ${formatTime(Number(brew.startedAtMs))}</span>
+                        <strong>${progressText}</strong>
+                    </div>
+                    <div class="customer-progress-track" role="progressbar" aria-label="${progressText}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(stage.key === "brewing" ? stageProgress : freshnessPercent)}">
+                        <span style="--progress: ${barProgress.toFixed(2)}%"></span>
+                    </div>
                 </div>
             </article>
         `;
@@ -77,11 +93,14 @@ function getCustomerStage(brew, now) {
     const elapsedMs = Math.max(0, now - startedAtMs);
 
     if (now < readyAtMs) {
+        const remainingMs = readyAtMs - now;
+        const totalBrewingMs = Math.max(1, readyAtMs - startedAtMs);
         return {
             key: "brewing",
             label: "Demleniyor",
-            timerMs: readyAtMs - now,
-            timerLabel: "Hazır olmasına"
+            timerMs: remainingMs,
+            timerLabel: "Hazır olmasına kalan",
+            progress: ((now - startedAtMs) / totalBrewingMs) * 100
         };
     }
 
@@ -105,17 +124,33 @@ function getCustomerStage(brew, now) {
         key: "expired",
         label: "Süresi Doldu",
         timerMs: 0,
-        timerLabel: "Yeni dem bekleniyor"
+        timerLabel: "Yeni dem bekleniyor",
+        freshnessPercent: 0
     };
 }
 
 function customerStage(key, label, timerMs) {
-    return { key, label, timerMs, timerLabel: "Tazelik süresi" };
+    return {
+        key,
+        label,
+        timerMs,
+        timerLabel: "Tazelik için kalan",
+        freshnessPercent: (timerMs / FRESHNESS_DURATION_MS) * 100
+    };
 }
 
 function formatDuration(milliseconds) {
     const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    return `${minutes} dk ${String(seconds).padStart(2, "0")} sn`;
+}
+
+function formatTime(timestamp) {
+    return new Intl.DateTimeFormat("tr-TR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: "Europe/Istanbul"
+    }).format(new Date(timestamp));
 }

@@ -341,6 +341,9 @@ function renderActiveBrews(now) {
     elements.brewList.innerHTML = appState.activeBrews.map((brew, index) => {
         const stage = getBrewStage(brew, now);
         const progress = Math.min(100, Math.max(0, stage.progress));
+        const progressText = stage.key === "brewing"
+            ? `Demleme %${Math.round(progress)}`
+            : `Tazelik %${Math.round(stage.freshnessPercent ?? 0)}`;
         const readyAt = Number(brew.readyAtMs) || brew.startedAtMs + BREWING_DURATION_MS;
         const elapsed = Math.max(0, now - brew.startedAtMs);
 
@@ -356,13 +359,23 @@ function renderActiveBrews(now) {
                     </div>
 
                     <div class="timer-block">
+                        <span class="state-effect" aria-hidden="true"><span></span><span></span><span></span></span>
                         <span class="timer-label">${stage.timerLabel}</span>
                         <strong class="timer-value">${formatDuration(stage.timerMs)}</strong>
                         <span class="timer-note">${stage.note}</span>
                     </div>
 
-                    <div class="progress-track" aria-hidden="true">
+                    <div class="progress-heading">
+                        <span>${stage.label}</span>
+                        <strong>${progressText}</strong>
+                    </div>
+
+                    <div class="progress-track" role="progressbar" aria-label="${progressText}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(stage.key === "brewing" ? progress : stage.freshnessPercent ?? 0)}">
                         <div class="progress-fill" style="--progress: ${progress.toFixed(2)}%"></div>
+                    </div>
+
+                    <div class="progress-meta">
+                        <span>Demleme saati ${formatTime(brew.startedAtMs)}</span>
                     </div>
 
                     <div class="brew-meta">
@@ -422,12 +435,13 @@ function getBrewStage(brew, now = Date.now()) {
     const elapsedMs = Math.max(0, now - startedAtMs);
 
     if (now < readyAtMs) {
+        const remainingMs = Math.max(0, readyAtMs - now);
         return {
             key: "brewing",
             label: "Demleniyor",
-            timerLabel: "Geçen süre",
-            timerMs: elapsedMs,
-            note: "20 dakika dolunca tazelik sayacı başlayacak.",
+            timerLabel: "Hazır olmasına kalan",
+            timerMs: remainingMs,
+            note: "Sayaç sıfıra indiğinde tazelik süresi başlayacak.",
             progress: (elapsedMs / Math.max(1, readyAtMs - startedAtMs)) * 100
         };
     }
@@ -455,7 +469,8 @@ function getBrewStage(brew, now = Date.now()) {
         timerLabel: "Tazelik süresi",
         timerMs: 0,
         note: "Demliği bitirin ve yeni dem hazırlayın.",
-        progress: 100
+        progress: 100,
+        freshnessPercent: 0
     };
 }
 
@@ -466,7 +481,8 @@ function freshnessStage(key, label, timerMs, progress) {
         timerLabel: "Tazelik için kalan",
         timerMs,
         note: "Tazelik süresi 1 saatten geriye sayıyor.",
-        progress
+        progress: 100,
+        freshnessPercent: progress
     };
 }
 
