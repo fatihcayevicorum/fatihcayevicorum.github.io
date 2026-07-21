@@ -63,7 +63,6 @@ function renderCustomerTeaStatus() {
             <article class="customer-brew-row state-${stage.key}">
                 <div class="customer-brew-icon" aria-hidden="true">
                     <i class="fa-solid fa-mug-hot"></i>
-                    <span class="customer-state-effect"><span></span><span></span><span></span></span>
                 </div>
                 <div class="customer-brew-copy">
                     <strong>Demlik ${index + 1}</strong>

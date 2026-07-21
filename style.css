@@ -475,6 +475,7 @@ a {
 }
 
 .customer-progress-track > span {
+  position: relative;
   display: block;
   width: var(--progress);
   height: 100%;
@@ -482,6 +483,20 @@ a {
   background: var(--tea-state);
   box-shadow: 0 0 0.7rem var(--tea-state-soft);
   transition: width 0.7s linear, background-color 0.7s ease;
+}
+
+.customer-progress-track > span::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(100deg, transparent 15%, rgba(255, 255, 255, 0.55) 48%, transparent 80%);
+  transform: translateX(-120%);
+  animation: customer-bar-shine 3.2s ease-in-out infinite;
+}
+
+@keyframes customer-bar-shine {
+  0%, 28% { transform: translateX(-120%); }
+  70%, 100% { transform: translateX(120%); }
 }
 
 .customer-brew-row.state-brewing {
@@ -515,7 +530,6 @@ a {
 }
 
 .customer-brew-icon {
-  position: relative;
   display: grid;
   width: 2.45rem;
   height: 2.45rem;
@@ -523,59 +537,22 @@ a {
   border-radius: 12px;
   color: var(--tea-state);
   background: var(--tea-state-soft);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--tea-state) 22%, transparent);
+  transition: box-shadow 0.6s ease, background-color 0.6s ease, color 0.6s ease;
 }
 
-.customer-state-effect {
-  position: absolute;
-  inset: -0.5rem -0.35rem auto auto;
-  width: 1.35rem;
-  height: 1.55rem;
-  pointer-events: none;
+.customer-brew-row.state-brewing .customer-brew-icon { animation: customer-warm-glow 2.2s ease-in-out infinite; }
+.customer-brew-row.state-new .customer-brew-icon,
+.customer-brew-row.state-fresh .customer-brew-icon { animation: customer-fresh-glow 3s ease-in-out infinite; }
+
+@keyframes customer-warm-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(202, 145, 36, 0.08), 0 0 0.5rem rgba(202, 145, 36, 0.12); }
+  50% { box-shadow: 0 0 0 0.3rem rgba(202, 145, 36, 0.08), 0 0 1.1rem rgba(202, 145, 36, 0.28); }
 }
 
-.customer-state-effect > span {
-  position: absolute;
-  display: block;
-}
-
-.state-brewing .customer-state-effect > span {
-  bottom: 0;
-  width: 0.48rem;
-  height: 0.9rem;
-  border-radius: 70% 30% 60% 40%;
-  background: linear-gradient(180deg, #ffd85a, #ef6b24 62%, #b92f26);
-  filter: drop-shadow(0 0 0.2rem rgba(239, 107, 36, 0.55));
-  transform-origin: 50% 100%;
-  animation: flame-dance 0.85s ease-in-out infinite alternate;
-}
-
-.state-brewing .customer-state-effect > span:nth-child(1) { left: 0.1rem; animation-delay: -0.25s; }
-.state-brewing .customer-state-effect > span:nth-child(2) { left: 0.46rem; height: 1.25rem; }
-.state-brewing .customer-state-effect > span:nth-child(3) { left: 0.83rem; animation-delay: -0.45s; }
-
-.customer-brew-row:not(.state-brewing):not(.state-expired) .customer-state-effect > span {
-  bottom: 0.1rem;
-  width: 0.3rem;
-  height: 1.2rem;
-  border-radius: 999px;
-  border-left: 2px solid color-mix(in srgb, var(--tea-state) 58%, white);
-  opacity: 0;
-  animation: steam-rise 2.4s ease-out infinite;
-}
-
-.customer-brew-row:not(.state-brewing):not(.state-expired) .customer-state-effect > span:nth-child(1) { left: 0.15rem; }
-.customer-brew-row:not(.state-brewing):not(.state-expired) .customer-state-effect > span:nth-child(2) { left: 0.55rem; animation-delay: 0.65s; }
-.customer-brew-row:not(.state-brewing):not(.state-expired) .customer-state-effect > span:nth-child(3) { left: 0.95rem; animation-delay: 1.3s; }
-
-@keyframes flame-dance {
-  from { transform: scaleY(0.78) rotate(-7deg); }
-  to { transform: scaleY(1.08) rotate(7deg); }
-}
-
-@keyframes steam-rise {
-  0% { opacity: 0; transform: translateY(0) translateX(0) scaleY(0.7); }
-  25% { opacity: 0.65; }
-  100% { opacity: 0; transform: translateY(-0.9rem) translateX(0.2rem) scaleY(1.15); }
+@keyframes customer-fresh-glow {
+  0%, 100% { box-shadow: 0 0 0.45rem rgba(21, 149, 83, 0.1); }
+  50% { box-shadow: 0 0 1.1rem rgba(21, 149, 83, 0.26); }
 }
 
 .customer-brew-copy {
