@@ -463,7 +463,7 @@ a {
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
-  animation: customer-border-orbit 14s linear infinite;
+  animation: customer-border-orbit 35s linear infinite;
 }
 
 .customer-progress {
