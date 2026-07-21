@@ -423,22 +423,6 @@ button {
   background: var(--state-color);
 }
 
-.brew-card::after {
-  position: absolute;
-  z-index: 2;
-  inset: -1px;
-  padding: 2px;
-  border-radius: inherit;
-  pointer-events: none;
-  content: "";
-  background: conic-gradient(from var(--panel-orbit-angle), transparent 0 72%, var(--state-color) 83%, #fff2b0 88%, var(--state-color) 92%, transparent 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  animation: panel-border-orbit 35s linear infinite;
-}
-
 .brew-card.state-brewing {
   --state-color: #cf9524;
   --state-soft: rgba(207, 149, 36, 0.13);
@@ -541,14 +525,6 @@ button {
 .progress-heading strong { color: var(--state-color); }
 .progress-meta { margin-top: 0.28rem; }
 
-@property --panel-orbit-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes panel-border-orbit { to { --panel-orbit-angle: 360deg; } }
-
 .timer-label {
   color: var(--muted);
   font-size: 0.65rem;
@@ -588,6 +564,21 @@ button {
   border-radius: inherit;
   background: var(--state-color);
   transition: width 0.45s linear, background-color 0.3s ease;
+}
+
+.progress-fill::after {
+  position: absolute;
+  inset: 0;
+  width: 38%;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  transform: translateX(-130%);
+  animation: panel-loading-sweep 4s ease-in-out infinite;
+}
+
+@keyframes panel-loading-sweep {
+  0%, 18% { transform: translateX(-130%); }
+  82%, 100% { transform: translateX(360%); }
 }
 
 
