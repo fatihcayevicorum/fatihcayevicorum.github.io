@@ -501,13 +501,13 @@ function updateClock() {
     const now = new Date();
     elements.currentDate.textContent = new Intl.DateTimeFormat("tr-TR", {
         day: "2-digit",
-        month: "short",
+        month: "2-digit",
+        year: "2-digit",
         timeZone: "Europe/Istanbul"
-    }).format(now);
+    }).format(now).replace(/\./g, "/");
     elements.currentTime.textContent = new Intl.DateTimeFormat("tr-TR", {
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit",
         hour12: false,
         timeZone: "Europe/Istanbul"
     }).format(now);

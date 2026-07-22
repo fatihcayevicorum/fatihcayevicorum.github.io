@@ -163,12 +163,13 @@ button {
 }
 
 .live-time span {
+  margin-top: 0.12rem;
   color: rgba(255, 255, 255, 0.68);
   font-size: 0.62rem;
 }
 
 .live-time strong {
-  margin-top: 0.15rem;
+  margin: 0;
   color: var(--gold-400);
   font-size: 1.12rem;
 }
