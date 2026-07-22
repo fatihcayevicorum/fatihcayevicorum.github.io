@@ -9,19 +9,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=1">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
     <header class="app-header">
         <div class="header-inner">
             <div class="brand">
-                <img src="../logo.png" width="72" height="72" alt="Fatih Çay Evi logosu">
-                <div><p>Fatih Çay Evi</p><h1>Menü Yönetimi</h1></div>
+                <img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu">
+                <div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Menü Yönetimi</h1></div>
             </div>
             <nav class="header-actions" aria-label="Yönetim bağlantıları">
-                <a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i><span>Taze Dem</span></a>
-                <a href="../menu.html" target="_blank"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Önizle</span></a>
-                <button id="logoutButton" type="button" aria-label="Çıkış yap"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i></button>
+                <a class="panel-switch-link" href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i><span>Taze Dem</span></a>
+                <a class="panel-switch-link preview-link" href="../menu.html" target="_blank"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Önizle</span></a>
+                <button class="logout-button" id="logoutButton" type="button" aria-label="Çıkış yap"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i></button>
             </nav>
         </div>
     </header>
