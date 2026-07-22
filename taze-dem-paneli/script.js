@@ -468,7 +468,7 @@ function getBrewStage(brew, now = Date.now()) {
         timerLabel: "Tazelik süresi",
         timerMs: 0,
         note: "Demliği bitirin ve yeni dem hazırlayın.",
-        progress: 100,
+        progress: 0,
         freshnessPercent: 0
     };
 }
@@ -480,7 +480,7 @@ function freshnessStage(key, label, timerMs, progress) {
         timerLabel: "Tazelik için kalan",
         timerMs,
         note: "Tazelik süresi 1 saatten geriye sayıyor.",
-        progress: 100,
+        progress,
         freshnessPercent: progress
     };
 }
