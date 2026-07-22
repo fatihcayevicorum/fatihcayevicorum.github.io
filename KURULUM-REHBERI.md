@@ -1,12 +1,31 @@
 # Fatih Çay Evi — Canlı Taze Dem Sistemi
 
-Bu paket müşteri ana sayfasını, yönetici girişini ve canlı Taze Dem panelini birlikte içerir.
+Bu paket müşteri ana sayfasını, canlı Taze Dem sistemini, Menü Yönetimini ve Stok Yönetimini birlikte içerir.
 
 ## Sayfalar
 
 - `/index.html`: Müşteri ana sayfası; Firestore'daki canlı demlik durumunu yalnızca okur.
 - `/yonetici-giris.html`: Firebase e-posta/şifre yönetici girişi.
 - `/taze-dem-paneli/index.html`: Demlik başlatma, bitirme ve günlük kayıt paneli.
+- `/menu.html`: Müşterilerin gördüğü canlı ürün ve fiyat listesi.
+- `/menu-yonetimi/index.html`: Kategori, ürün, fiyat ve satış durumu yönetim paneli.
+- `/stok-yonetimi/index.html`: Stok kartları, kritik seviye ve stok hareketleri yönetim paneli.
+
+## Stok akışı
+
+1. Yönetici yeni stok kartına ürün adı, miktar, serbest ölçü birimi, alış tarihi, satış fiyatı ve kritik seviyeyi girer.
+2. Şişe içecek veya atıştırmalık, menüdeki karşılığına bağlanıp “otomatik düşüm” için hazırlanabilir.
+3. Çay, şeker ve benzeri hammaddelerde “Kullanım / Çıkış” işlemi elle kaydedilir.
+4. Her stok girişi, kullanım ve sayım düzeltmesi tarihçede saklanır.
+5. Kritik seviyedeki ve tükenen stoklar özet alanında ayrıca gösterilir.
+
+## Menü akışı
+
+1. Yönetici mevcut hesabıyla Menü Yönetimi panelini açar.
+2. Önce kategorileri, ardından ürünleri ve fiyatları ekler.
+3. Değişiklikler `publicMenu/catalog` belgesine yazılır.
+4. `menu.html` sayfası aynı belgeyi gerçek zamanlı dinler ve değişiklikleri anında gösterir.
+5. Ürünler silinmeden geçici olarak “Mevcut değil” yapılabilir.
 
 ## Canlı akış
 
@@ -27,8 +46,9 @@ Firebase Console > Firestore Database > Kurallar bölümüne girin. `firestore.r
 
 Kuralların sonucu:
 
-- Müşteriler yalnızca `publicTea/status` belgesini okuyabilir.
+- Müşteriler yalnızca `publicTea/status` ve `publicMenu/catalog` belgelerini okuyabilir.
 - Yalnızca UID değeri `obuZLQXuPAWsHE20bZxcAxCNsO02` olan yönetici yazabilir.
+- Stok kartları ve stok hareketleri yalnızca yönetici tarafından okunup yazılabilir.
 - Yönetici geçmişi müşteriler tarafından okunamaz.
 - Diğer bütün Firestore erişimleri kapalıdır.
 
@@ -45,6 +65,9 @@ Yükleme sonrası adresler:
 - Müşteri: `https://fatihcayevicorum.github.io/`
 - Yönetici girişi: `https://fatihcayevicorum.github.io/yonetici-giris.html`
 - Panel: `https://fatihcayevicorum.github.io/taze-dem-paneli/`
+- Müşteri menüsü: `https://fatihcayevicorum.github.io/menu.html`
+- Menü yönetimi: `https://fatihcayevicorum.github.io/menu-yonetimi/`
+- Stok yönetimi: `https://fatihcayevicorum.github.io/stok-yonetimi/`
 
 Panel adresi doğrudan açılırsa giriş yapılmamış kullanıcı otomatik olarak yönetici girişine yönlendirilir.
 

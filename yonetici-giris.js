@@ -105,6 +105,6 @@ function getLoginErrorMessage(error) {
 
 function getSafeNextPage() {
     const requestedPage = new URLSearchParams(window.location.search).get("next");
-    const allowedPages = new Set(["taze-dem-paneli/", "menu-yonetimi/"]);
+    const allowedPages = new Set(["taze-dem-paneli/", "menu-yonetimi/", "stok-yonetimi/"]);
     return allowedPages.has(requestedPage) ? requestedPage : "taze-dem-paneli/";
 }

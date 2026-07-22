@@ -16,6 +16,19 @@ service cloud.firestore {
       allow read, write: if isFatihAdmin();
     }
 
+    match /publicMenu/catalog {
+      allow read: if true;
+      allow write: if isFatihAdmin();
+    }
+
+    match /adminStockItems/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
+    match /adminStockMovements/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
