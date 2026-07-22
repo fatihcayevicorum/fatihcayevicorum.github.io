@@ -48,6 +48,7 @@ button {
 
 .panel-switch-link {
   display: inline-flex;
+  width: 5.4rem;
   min-height: 2.55rem;
   align-items: center;
   gap: 0.38rem;
@@ -841,6 +842,11 @@ button {
 :focus-visible {
   outline: 3px solid var(--gold-400);
   outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+  .panel-switch-link { width: 2.55rem; padding: 0; }
+  .panel-switch-link span { display: none; }
 }
 
 @media (max-width: 380px) {
