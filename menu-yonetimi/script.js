@@ -11,7 +11,7 @@ const catalogReference = doc(database, "publicMenu", "catalog");
 const elements = {
     categoryForm: document.getElementById("categoryForm"), categoryName: document.getElementById("categoryName"), categoryOrder: document.getElementById("categoryOrder"), categoryList: document.getElementById("categoryList"), categoryEmpty: document.getElementById("categoryEmpty"),
     productForm: document.getElementById("productForm"), productFormTitle: document.getElementById("productFormTitle"), editingProductId: document.getElementById("editingProductId"), productName: document.getElementById("productName"), productCategory: document.getElementById("productCategory"), productPrice: document.getElementById("productPrice"), productOrder: document.getElementById("productOrder"), productDescription: document.getElementById("productDescription"), productAvailable: document.getElementById("productAvailable"), cancelEditButton: document.getElementById("cancelEditButton"), saveProductButton: document.getElementById("saveProductButton"), productList: document.getElementById("productList"), productEmpty: document.getElementById("productEmpty"), productSearch: document.getElementById("productSearch"),
-    categoryCount: document.getElementById("categoryCount"), productCount: document.getElementById("productCount"), availableCount: document.getElementById("availableCount"), saveStatus: document.getElementById("saveStatus"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast"), currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime")
+    categoryCount: document.getElementById("categoryCount"), productCount: document.getElementById("productCount"), availableCount: document.getElementById("availableCount"), saveStatus: document.getElementById("saveStatus"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast"), currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime"), importMenuFile: document.getElementById("importMenuFile")
 };
 
 let catalog = { categories: [], items: [] };
@@ -25,6 +25,7 @@ elements.cancelEditButton.addEventListener("click", resetProductForm);
 elements.categoryList.addEventListener("click", handleCategoryAction);
 elements.productList.addEventListener("click", handleProductAction);
 elements.productSearch.addEventListener("input", renderProducts);
+elements.importMenuFile.addEventListener("change", importMenuFile);
 elements.logoutButton.addEventListener("click", async () => { await signOut(auth); window.location.replace("../yonetici-giris.html"); });
 
 updateClock();
@@ -61,6 +62,23 @@ async function addCategory(event) {
     const categories = [...catalog.categories, { id: createId("category"), name, order: Number(elements.categoryOrder.value) || 0 }];
     await persistCatalog({ ...catalog, categories }, "Kategori eklendi.");
     elements.categoryForm.reset(); elements.categoryOrder.value = "0";
+}
+
+async function importMenuFile(event) {
+    const file = event.target.files?.[0];
+    if (!file || isBusy) return;
+    try {
+        const importedCatalog = validateImport(JSON.parse(await file.text()));
+        const shouldReplace = window.confirm(`${importedCatalog.categories.length} kategori ve ${importedCatalog.items.length} ürün içe aktarılacak. Mevcut menünün tamamı silinip değiştirilsin mi?`);
+        if (!shouldReplace) return;
+        const succeeded = await persistCatalog(importedCatalog, "Menü listesi başarıyla içe aktarıldı.");
+        if (succeeded) resetProductForm();
+    } catch (error) {
+        console.error(error);
+        showToast("Menü dosyası okunamadı veya biçimi geçersiz.");
+    } finally {
+        event.target.value = "";
+    }
 }
 
 async function saveProduct(event) {
@@ -142,6 +160,7 @@ function renderProducts() {
 
 function resetProductForm() { elements.productForm.reset(); elements.editingProductId.value = ""; elements.productOrder.value = "0"; elements.productAvailable.checked = true; elements.productFormTitle.textContent = "Yeni Ürün"; elements.cancelEditButton.hidden = true; elements.saveProductButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ürünü Kaydet'; }
 function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0 })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")) }; }
+function validateImport(data) { if (!data || !Array.isArray(data.categories) || !Array.isArray(data.items) || !data.categories.length || !data.items.length) throw new Error("invalid-menu-file"); const normalized = normalizeCatalog(data); const categoryIds = new Set(normalized.categories.map((category) => category.id)); const uniqueCategoryIds = new Set(); const uniqueItemIds = new Set(); for (const category of normalized.categories) { if (!category.id || !category.name.trim() || uniqueCategoryIds.has(category.id)) throw new Error("invalid-category"); uniqueCategoryIds.add(category.id); } for (const item of normalized.items) { if (!item.id || !item.name.trim() || !categoryIds.has(item.categoryId) || uniqueItemIds.has(item.id) || !Number.isFinite(item.price)) throw new Error("invalid-item"); uniqueItemIds.add(item.id); } return normalized; }
 function setBusy(value) { isBusy = value; elements.saveProductButton.disabled = value; }
 function setConnection(connected) { elements.saveStatus.classList.toggle("is-error", !connected); elements.saveStatus.innerHTML = connected ? '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Canlı bağlantı' : '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Bağlantı yok'; }
 function showToast(message) { clearTimeout(toastTimer); elements.toast.textContent = message; elements.toast.classList.add("show"); toastTimer = setTimeout(() => elements.toast.classList.remove("show"), 2800); }
