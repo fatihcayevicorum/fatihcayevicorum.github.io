@@ -48,7 +48,7 @@ button {
 
 .panel-switch-link {
   display: inline-flex;
-  width: 5.4rem;
+  width: 8rem;
   min-height: 2.55rem;
   align-items: center;
   gap: 0.38rem;
@@ -60,6 +60,7 @@ button {
   font-size: 0.66rem;
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .app-header {
