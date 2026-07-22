@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=1">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
     <header class="app-header">
@@ -55,15 +55,20 @@
             <form id="stockForm">
                 <input id="editingStockId" type="hidden">
                 <div class="field-grid">
-                    <label><span>Malzeme veya ürün adı</span><input id="stockName" type="text" maxlength="80" required placeholder="Örn. Şişe Kola"></label>
-                    <label><span>Mevcut miktar</span><input id="stockQuantity" type="number" min="0" max="999999" step="0.001" required placeholder="0"></label>
-                    <label><span>Ölçü birimi</span><input id="stockUnit" type="text" maxlength="24" list="unitSuggestions" required placeholder="adet, kg, kutu..."></label>
-                    <label><span>Kritik seviye uyarısı</span><input id="stockThreshold" type="number" min="0" max="999999" step="0.001" required placeholder="0"></label>
+                    <label class="full-field"><span>Menüden ürün seç <small>(hammadde için boş bırak)</small></span><select id="linkedMenuItem"><option value="">Menü ürünü seç veya elle yaz</option></select></label>
+                    <label><span>Malzeme veya ürün adı</span><input id="stockName" type="text" maxlength="80" required placeholder="Menüden seç veya elle yaz"></label>
+                    <label><span>Stok giriş şekli</span><select id="stockEntryMode"><option value="single">Tek birim olarak</option><option value="package">Koli / paket olarak</option></select></label>
+                    <label><span id="stockQuantityLabel">Mevcut miktar</span><input id="stockQuantity" type="number" min="0" max="999999" step="0.001" required placeholder="0"></label>
+                    <label><span>Stok takip birimi</span><input id="stockUnit" type="text" maxlength="24" list="unitSuggestions" required placeholder="adet, kg, kutu..."></label>
+                    <label class="package-field" id="packageUnitField" hidden><span>Paketleme birimi</span><input id="packageUnit" type="text" maxlength="24" value="koli" placeholder="koli, kasa, paket..."></label>
+                    <label class="package-field" id="unitsPerPackageField" hidden><span>Bir kolideki adet</span><input id="unitsPerPackage" type="number" min="1" max="999999" step="1" value="24"></label>
+                    <label><span id="stockThresholdLabel">Kritik seviye uyarısı</span><input id="stockThreshold" type="number" min="0" max="999999" step="0.001" required placeholder="0"></label>
                     <label><span>Son alış tarihi</span><input id="stockPurchaseDate" type="date" required></label>
+                    <label><span id="purchasePriceLabel">Alış fiyatı (TL)</span><input id="stockPurchasePrice" type="number" min="0" max="999999" step="0.01" placeholder="0"></label>
                     <label><span>Güncel satış fiyatı (TL)</span><input id="stockSalePrice" type="number" min="0" max="999999" step="0.01" placeholder="0"></label>
-                    <label class="full-field"><span>Bağlı menü ürünü <small>(isteğe bağlı)</small></span><select id="linkedMenuItem"><option value="">Menü ürününe bağlı değil</option></select></label>
                     <label class="full-field"><span>Not <small>(isteğe bağlı)</small></span><textarea id="stockNote" maxlength="180" rows="2" placeholder="Marka, koli içeriği veya hatırlatma"></textarea></label>
                 </div>
+                <div class="conversion-preview" id="conversionPreview" hidden>Toplam stok: —</div>
                 <label class="switch-row"><input id="automaticDeduction" type="checkbox"><span>Bu ürün adisyonda satıldığında gün sonunda stoktan otomatik düşsün</span></label>
                 <label class="deduction-field" id="deductionField" hidden><span>Bir satışta düşülecek miktar</span><input id="deductionAmount" type="number" min="0.001" max="999999" step="0.001" value="1"></label>
                 <div class="form-actions">
@@ -100,6 +105,7 @@
                 <label><input type="radio" name="movementType" value="set"><span><i class="fa-solid fa-pen"></i> Sayım Düzeltmesi</span></label>
             </div>
             <label class="dialog-field"><span id="movementAmountLabel">Eklenecek miktar</span><input id="movementAmount" type="number" min="0" max="999999" step="0.001" required></label>
+            <label class="switch-row dialog-package-switch" id="movementPackageRow" hidden><input id="movementAsPackage" type="checkbox"><span id="movementPackageText">Girişi koli olarak yap</span></label>
             <label class="dialog-field"><span>İşlem tarihi</span><input id="movementDate" type="date" required></label>
             <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="movementNote" maxlength="180" rows="2" placeholder="Örn. Haftalık 1 kg çay kullanıldı"></textarea></label>
             <div class="dialog-summary" id="movementPreview">Yeni stok miktarı: —</div>
@@ -109,6 +115,6 @@
 
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="script.js?v=1"></script>
+    <script type="module" src="script.js?v=2"></script>
 </body>
 </html>
