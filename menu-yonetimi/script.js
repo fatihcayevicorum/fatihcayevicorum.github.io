@@ -11,7 +11,7 @@ const catalogReference = doc(database, "publicMenu", "catalog");
 const elements = {
     categoryForm: document.getElementById("categoryForm"), categoryName: document.getElementById("categoryName"), categoryOrder: document.getElementById("categoryOrder"), categoryList: document.getElementById("categoryList"), categoryEmpty: document.getElementById("categoryEmpty"),
     productForm: document.getElementById("productForm"), productFormTitle: document.getElementById("productFormTitle"), editingProductId: document.getElementById("editingProductId"), productName: document.getElementById("productName"), productCategory: document.getElementById("productCategory"), productPrice: document.getElementById("productPrice"), productOrder: document.getElementById("productOrder"), productDescription: document.getElementById("productDescription"), productAvailable: document.getElementById("productAvailable"), cancelEditButton: document.getElementById("cancelEditButton"), saveProductButton: document.getElementById("saveProductButton"), productList: document.getElementById("productList"), productEmpty: document.getElementById("productEmpty"), productSearch: document.getElementById("productSearch"),
-    categoryCount: document.getElementById("categoryCount"), productCount: document.getElementById("productCount"), availableCount: document.getElementById("availableCount"), saveStatus: document.getElementById("saveStatus"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast")
+    categoryCount: document.getElementById("categoryCount"), productCount: document.getElementById("productCount"), availableCount: document.getElementById("availableCount"), saveStatus: document.getElementById("saveStatus"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast"), currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime")
 };
 
 let catalog = { categories: [], items: [] };
@@ -26,6 +26,9 @@ elements.categoryList.addEventListener("click", handleCategoryAction);
 elements.productList.addEventListener("click", handleProductAction);
 elements.productSearch.addEventListener("input", renderProducts);
 elements.logoutButton.addEventListener("click", async () => { await signOut(auth); window.location.replace("../yonetici-giris.html"); });
+
+updateClock();
+window.setInterval(updateClock, 1000);
 
 onAuthStateChanged(auth, async (user) => {
     if (!user || user.uid !== ADMIN_UID) {
@@ -145,3 +148,4 @@ function showToast(message) { clearTimeout(toastTimer); elements.toast.textConte
 function formatPrice(value) { return new Intl.NumberFormat("tr-TR", { style:"currency", currency:"TRY", minimumFractionDigits:value%1?2:0 }).format(value); }
 function createId(prefix) { return `${prefix}-${window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`; }
 function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (character) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" })[character]); }
+function updateClock() { const now = new Date(); elements.currentDate.textContent = new Intl.DateTimeFormat("tr-TR", { day:"2-digit", month:"short", timeZone:"Europe/Istanbul" }).format(now); elements.currentTime.textContent = new Intl.DateTimeFormat("tr-TR", { hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false, timeZone:"Europe/Istanbul" }).format(now); }
