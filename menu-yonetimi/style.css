@@ -15,8 +15,8 @@ button,input,select,textarea { font:inherit; }
 .panel-switch-link { display:inline-flex; width:5.4rem; min-height:2.55rem; align-items:center; justify-content:center; gap:.38rem; padding:.5rem .68rem; border:1px solid rgba(255,255,255,.18); border-radius:12px; color:#fff; background:rgba(255,255,255,.08); font-size:.66rem; font-weight:700; text-decoration:none; }
 .logout-button { display:grid; width:2.55rem; height:2.55rem; place-items:center; padding:0; border:1px solid rgba(255,255,255,.2); border-radius:12px; color:#f2cb65; cursor:pointer; background:rgba(255,255,255,.08); }
 .live-time { display:grid; flex:0 0 auto; justify-items:end; line-height:1.2; }
-.live-time span { color:rgba(255,255,255,.68); font-size:.62rem; }
-.live-time strong { margin-top:.15rem; color:#f2cb65; font-size:1.12rem; }
+.live-time span { margin-top:.12rem; color:rgba(255,255,255,.68); font-size:.62rem; }
+.live-time strong { margin:0; color:#f2cb65; font-size:1.12rem; }
 .page-shell { display:grid; width:min(calc(100% - 1.25rem),1100px); gap:.8rem; margin:auto; padding:1rem 0 2rem; }
 .panel { min-width:0; padding:1rem; border:1px solid var(--line); border-radius:19px; background:rgba(255,255,255,.9); box-shadow:var(--shadow); }
 .section-heading { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:.7rem; margin-bottom:.8rem; }
