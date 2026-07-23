@@ -1,6 +1,6 @@
 # Fatih Çay Evi — Canlı Taze Dem Sistemi
 
-Bu paket müşteri ana sayfasını, canlı Taze Dem sistemini, Menü Yönetimini, Stok Yönetimini ve Açık Hesap panelini birlikte içerir.
+Bu paket müşteri ana sayfasını, canlı Taze Dem sistemini, Menü Yönetimini, Stok Yönetimini, Açık Hesap ve Adisyon panellerini birlikte içerir.
 
 ## Sayfalar
 
@@ -11,6 +11,7 @@ Bu paket müşteri ana sayfasını, canlı Taze Dem sistemini, Menü Yönetimini
 - `/menu-yonetimi/index.html`: Kategori, ürün, fiyat ve satış durumu yönetim paneli.
 - `/stok-yonetimi/index.html`: Stok kartları, kritik seviye ve stok hareketleri yönetim paneli.
 - `/acik-hesap/index.html`: Müşteri borcu, nakit tahsilat, limit ve mesajla bakiye paylaşımı paneli.
+- `/adisyon/index.html`: Masa, ürün, ikram, ödeme, açık hesap, taşıma ve birleştirme paneli.
 
 ## Açık hesap akışı
 
@@ -81,6 +82,7 @@ Yükleme sonrası adresler:
 - Menü yönetimi: `https://fatihcayevicorum.github.io/menu-yonetimi/`
 - Stok yönetimi: `https://fatihcayevicorum.github.io/stok-yonetimi/`
 - Açık hesap: `https://fatihcayevicorum.github.io/acik-hesap/`
+- Adisyon: `https://fatihcayevicorum.github.io/adisyon/`
 
 Panel adresi doğrudan açılırsa giriş yapılmamış kullanıcı otomatik olarak yönetici girişine yönlendirilir.
 

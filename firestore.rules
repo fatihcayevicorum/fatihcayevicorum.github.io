@@ -37,6 +37,18 @@ service cloud.firestore {
       allow read, write: if isFatihAdmin();
     }
 
+    match /adminAppSettings/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
+    match /adminOrders/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
+    match /adminSales/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
