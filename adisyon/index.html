@@ -6,28 +6,68 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=2"><link rel="stylesheet" href="../panel-header.css?v=5">
+  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="../panel-header.css?v=5">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
   <div class="brand"><img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Adisyon Yönetimi</h1></div></div>
   <div class="header-actions"><div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div><details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a><a class="is-current" href="./"><i class="fa-solid fa-receipt"></i>Adisyon</a><span class="is-soon"><i class="fa-solid fa-chart-column"></i>Raporlar <small>yakında</small></span></nav></details><button id="logoutButton" class="logout-button" aria-label="Çıkış"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button></div>
 </div></header>
+
 <main>
-  <section class="toolbar card"><div><h1>Masalar ve Adisyonlar</h1><p id="connectionText"><i class="fa-solid fa-circle-check"></i> Canlı bağlantı</p></div><div class="toolbar-actions"><button id="newNamedOrder" class="secondary"><i class="fa-solid fa-user-plus"></i> İsimle Adisyon</button><button id="tableSettings" class="secondary"><i class="fa-solid fa-gear"></i> Masa Ayarı</button></div></section>
-  <section class="summary"><article><span>Açık adisyon</span><b id="openCount">0</b></article><article><span>Açık toplam</span><b id="openTotal">₺0</b></article><article><span>Dolu masa</span><b id="occupiedCount">0</b></article></section>
-  <section class="workspace pos-workspace">
-    <aside class="tables card"><div class="section-title"><h2>Masalar</h2><span id="tableCountLabel">0 masa</span></div><div id="tableGrid" class="table-grid"></div><div class="section-title custom-title"><h2>İsimli Adisyonlar</h2></div><div id="namedGrid" class="table-grid named"></div><p id="namedEmpty" class="empty">Açık isimli adisyon yok.</p></aside>
-    <aside class="products card"><div class="product-search"><i class="fa-solid fa-magnifying-glass"></i><input id="productSearch" placeholder="Ürün ara..."></div><div id="categoryTabs" class="category-tabs"></div><div id="productGrid" class="product-grid"></div><p id="productEmpty" class="empty">Satışta ürün bulunamadı.</p></aside>
-    <section class="order card"><div id="noSelection" class="select-hint"><i class="fa-solid fa-receipt"></i><h2>Bir masa seçin</h2><p>Adisyon açmak veya mevcut hesabı görmek için soldan seçim yapın.</p></div><div id="orderArea" hidden><div class="order-head"><div><span class="eyebrow">AKTİF ADİSYON</span><h2 id="orderTitle">Masa</h2><small id="orderOpened">Henüz ürün eklenmedi</small></div><button id="orderMore" class="secondary compact"><i class="fa-solid fa-shuffle"></i> Taşı / Birleştir</button></div><div id="orderItems" class="order-items"></div><p id="orderEmpty" class="empty">Henüz ürün eklenmedi.</p><div class="totals"><div><span>Ara toplam</span><b id="subtotal">₺0</b></div><div><span>İkram</span><b id="complimentaryTotal">₺0</b></div><div class="grand"><span>Hesap tutarı</span><b id="grandTotal">₺0</b></div></div><div class="checkout"><button id="clearOrder" class="danger ghost"><i class="fa-solid fa-trash"></i> Adisyonu İptal Et</button><button id="checkoutButton" class="primary"><i class="fa-solid fa-cash-register"></i> Ödeme Al</button></div></div></section>
+  <section id="tablesView" class="view">
+    <div class="view-top">
+      <div><h2>Masalar</h2><p id="connectionText"><i class="fa-solid fa-circle-check"></i> Canlı bağlantı</p></div>
+      <div class="quick-actions">
+        <button id="dailyStatus" class="secondary"><i class="fa-solid fa-chart-pie"></i><span>Günlük Durum</span></button>
+        <button id="newNamedOrder" class="secondary"><i class="fa-solid fa-user-plus"></i><span>İsimli Adisyon</span></button>
+        <button id="tableSettings" class="secondary"><i class="fa-solid fa-gear"></i><span>Masa Ayarı</span></button>
+      </div>
+    </div>
+    <section class="summary"><article><span>Açık adisyon</span><b id="openCount">0</b></article><article><span>Açık toplam</span><b id="openTotal">₺0</b></article><article><span>Dolu masa</span><b id="occupiedCount">0</b></article></section>
+    <div class="legend"><span><i class="occupied-dot"></i>Dolu</span><span><i class="empty-dot"></i>Boş</span><b id="tableCountLabel">0 masa</b></div>
+    <div id="tableGrid" class="table-grid"></div>
+    <section id="namedSection" class="named-section"><h3>İsimli Adisyonlar</h3><div id="namedGrid" class="table-grid named"></div><p id="namedEmpty" class="empty">Açık isimli adisyon yok.</p></section>
+  </section>
+
+  <section id="orderView" class="view" hidden>
+    <div class="order-toolbar">
+      <button id="backToTables" class="back-button"><i class="fa-solid fa-arrow-left"></i><span>Masalara Dön</span></button>
+      <div class="active-table"><span>AKTİF ADİSYON</span><h2 id="orderTitle">Masa</h2><small id="orderOpened">Henüz ürün eklenmedi</small></div>
+      <button id="orderMore" class="secondary"><i class="fa-solid fa-shuffle"></i><span>Taşı / Birleştir</span></button>
+    </div>
+    <div class="pos-layout">
+      <section class="products card">
+        <div class="product-search"><i class="fa-solid fa-magnifying-glass"></i><input id="productSearch" placeholder="Ürün ara..."></div>
+        <div id="categoryTabs" class="category-tabs"></div><div id="productGrid" class="product-grid"></div>
+        <p id="productEmpty" class="empty">Satışta ürün bulunamadı.</p>
+      </section>
+      <section class="order card">
+        <div class="order-title"><h3>Siparişler</h3><span>Her ekleme ayrı satırdır</span></div>
+        <div id="orderItems" class="order-items"></div><p id="orderEmpty" class="empty">Ürünlere dokunarak adisyonu başlatın.</p>
+        <div class="order-bottom">
+          <div class="totals"><div><span>Ara toplam</span><b id="subtotal">₺0</b></div><div><span>İkram</span><b id="complimentaryTotal">−₺0</b></div><div class="grand"><span>Hesap tutarı</span><b id="grandTotal">₺0</b></div></div>
+          <div class="checkout"><button id="clearOrder" class="danger ghost"><i class="fa-solid fa-trash"></i> İptal</button><button id="checkoutButton" class="primary"><i class="fa-solid fa-wallet"></i> Ödeme Al</button></div>
+        </div>
+      </section>
+    </div>
   </section>
 </main>
 <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
 
 <dialog id="nameDialog"><form id="nameForm" class="dialog-card"><div class="dialog-head"><h2>İsimle Adisyon Aç</h2><button type="button" data-close="nameDialog">×</button></div><label>Adisyon adı<input id="namedOrderName" required maxlength="50" placeholder="Örn. Mehmet Abi"></label><div class="dialog-actions"><button type="button" class="secondary" data-close="nameDialog">Vazgeç</button><button class="primary">Adisyonu Aç</button></div></form></dialog>
 <dialog id="settingsDialog"><form id="settingsForm" class="dialog-card"><div class="dialog-head"><h2>Masa Ayarı</h2><button type="button" data-close="settingsDialog">×</button></div><label>Sabit masa sayısı<input id="tableCountInput" type="number" min="1" max="50" required></label><p class="notice">Dolu bir masayı kaldırmamak için masa sayısını açık en yüksek masa numarasının altına düşüremezsiniz.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="settingsDialog">Vazgeç</button><button class="primary">Kaydet</button></div></form></dialog>
-<dialog id="checkoutDialog"><form id="checkoutForm" class="dialog-card wide"><div class="dialog-head"><h2>Ödeme Al</h2><button type="button" data-close="checkoutDialog">×</button></div><div class="checkout-summary"><span>Hesap tutarı</span><b id="checkoutBase">₺0</b></div><label>Alınan / kapatılacak tutar<input id="paidAmount" type="number" min="0" step="0.01" required></label><div id="roundingText" class="notice"></div><div class="payment-types"><label><input type="radio" name="paymentType" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label><label><input type="radio" name="paymentType" value="credit"><span><i class="fa-solid fa-address-book"></i>Açık Hesap</span></label></div><label id="creditCustomerRow" hidden>Açık hesap müşterisi<select id="creditCustomer"></select></label><div class="dialog-actions"><button type="button" class="secondary" data-close="checkoutDialog">Vazgeç</button><button id="confirmCheckout" class="primary">Hesabı Kapat</button></div></form></dialog>
+<dialog id="checkoutDialog"><form id="checkoutForm" class="dialog-card wide">
+  <div class="dialog-head"><h2>Parçalı Ödeme</h2><button type="button" data-close="checkoutDialog">×</button></div>
+  <div class="payment-summary"><div><span>Hesap</span><b id="checkoutBase">₺0</b></div><div><span>Ödenen</span><b id="checkoutPaid">₺0</b></div><div class="remaining"><span>Kalan</span><b id="checkoutRemaining">₺0</b></div></div>
+  <div id="paymentList" class="payment-list"></div>
+  <div class="payment-entry"><label>Tutar<input id="paidAmount" type="number" min="0.01" step="0.01"></label><label>Ödeme türü<select id="paymentType"><option value="cash">Nakit</option><option value="other">İkinci Ödeme</option><option value="credit">Açık Hesap</option></select></label></div>
+  <label id="creditCustomerRow" hidden>Açık hesap müşterisi<select id="creditCustomer"></select></label>
+  <div id="changeText" class="notice">Kalan tutarı ödeme olarak ekleyin.</div>
+  <div class="dialog-actions split-actions"><button type="button" id="addPayment" class="secondary"><i class="fa-solid fa-plus"></i> Ödeme Ekle</button><button id="confirmCheckout" class="primary" disabled>Hesabı Kapat</button></div>
+</form></dialog>
+<dialog id="dailyDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Bugünün Durumu</h2><button type="button" data-close="dailyDialog">×</button></div><p id="dailyPeriod" class="notice"></p><div id="dailyReport" class="daily-report"></div><div class="dialog-actions"><button type="button" class="primary" data-close="dailyDialog">Kapat</button></div></div></dialog>
 <dialog id="moveDialog"><form id="moveForm" class="dialog-card"><div class="dialog-head"><h2>Taşı veya Birleştir</h2><button type="button" data-close="moveDialog">×</button></div><label>Hedef masa / adisyon<select id="moveTarget" required></select></label><p class="notice">Hedef boşsa adisyon taşınır; doluysa iki adisyon birleştirilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="moveDialog">Vazgeç</button><button class="primary">Devam Et</button></div></form></dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=2"></script>
+<script type="module" src="script.js?v=3"></script>
 </body></html>
