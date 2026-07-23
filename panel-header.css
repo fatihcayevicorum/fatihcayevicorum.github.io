@@ -12,7 +12,7 @@ html,body{max-width:100%;overflow-x:hidden}body{font-family:"Poppins",Arial,sans
 .brand-copy .eyebrow{font-size:.72rem!important}.brand-copy h1{font-size:.86rem!important;font-weight:700!important}
 .page-shell,body>main{width:min(calc(100% - 1.25rem),1180px)!important;max-width:1180px!important;margin-right:auto!important;margin-left:auto!important}
 body>footer{padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom))!important;color:rgba(255,255,255,.68)!important;background:linear-gradient(140deg,#25090c,#5a1018)!important;font-size:.67rem!important;line-height:1.45!important;text-align:center!important}body>footer p{margin:0!important;font-size:inherit!important}
-.pos-workspace{grid-template-columns:minmax(220px,.72fr) minmax(300px,1fr) minmax(340px,1.1fr)!important}
+.pos-workspace{grid-template-columns:minmax(250px,.9fr) minmax(330px,1.45fr) minmax(285px,.85fr)!important}.pos-workspace .table-grid:not(.named){grid-template-columns:repeat(4,minmax(0,1fr))!important}
 @media(min-width:700px){.app-header{padding:1rem 0}.header-inner{width:min(calc(100% - 3rem),920px)}.brand-logo{width:4.3rem!important;height:4.3rem!important}.page-shell,body>main{width:min(calc(100% - 3rem),1180px)!important}}
 @media(min-width:1050px){.header-inner{width:min(calc(100% - 3rem),1180px)}}
 @media(min-width:721px) and (max-width:939px){.pos-workspace{grid-template-columns:minmax(220px,.75fr) minmax(0,1.25fr)!important}.pos-workspace .tables{grid-column:1!important}.pos-workspace .products{grid-column:2!important}.pos-workspace .order{grid-column:1/-1!important}}
