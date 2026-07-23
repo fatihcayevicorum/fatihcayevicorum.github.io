@@ -28,6 +28,7 @@ const elements = {
     currentTime: document.getElementById("currentTime"),
     activeCount: document.getElementById("activeCount"),
     todayCount: document.getElementById("todayCount"),
+    resetTodayCountButton: document.getElementById("resetTodayCountButton"),
     currentStatus: document.getElementById("currentStatus"),
     saveStatus: document.getElementById("saveStatus"),
     startButton: document.getElementById("startBrewButton"),
@@ -38,6 +39,8 @@ const elements = {
     brewList: document.getElementById("brewList"),
     historyEmpty: document.getElementById("historyEmpty"),
     historyList: document.getElementById("historyList"),
+    activePanel: document.querySelector(".active-panel"),
+    historyPanel: document.querySelector(".history-panel"),
     finishDialog: document.getElementById("finishDialog"),
     finishDialogText: document.getElementById("finishDialogText"),
     confirmFinishButton: document.getElementById("confirmFinishButton"),
@@ -54,6 +57,7 @@ let isBusy = false;
 elements.startButton.disabled = true;
 elements.startButton.addEventListener("click", startNewBrew);
 elements.serviceToggleButton.addEventListener("click", toggleTeaService);
+elements.resetTodayCountButton.addEventListener("click", resetTodayCount);
 elements.brewList.addEventListener("click", handleBrewListClick);
 elements.finishDialog.addEventListener("close", handleDialogClose);
 elements.confirmFinishButton.addEventListener("click", () => {
@@ -82,8 +86,14 @@ window.setInterval(() => {
     if (!elements.finishDialog.open) render();
 }, 1000);
 
+if (typeof ResizeObserver === "function") {
+    const panelSizeObserver = new ResizeObserver(syncHistoryPanelHeight);
+    panelSizeObserver.observe(elements.activePanel);
+}
+window.addEventListener("resize", syncHistoryPanelHeight);
+
 function createEmptyState() {
-    return { activeBrews: [], history: [], serviceOpen: true };
+    return { activeBrews: [], history: [], serviceOpen: true, todayCountResetAtMs: 0 };
 }
 
 function subscribeToAdminState() {
@@ -94,7 +104,8 @@ function subscribeToAdminState() {
         appState = {
             activeBrews: Array.isArray(data.activeBrews) ? data.activeBrews : [],
             history: Array.isArray(data.history) ? data.history : [],
-            serviceOpen: data.serviceOpen !== false
+            serviceOpen: data.serviceOpen !== false,
+            todayCountResetAtMs: Number(data.todayCountResetAtMs) || 0
         };
         setConnectionState(true);
         render();
@@ -236,6 +247,27 @@ async function toggleTeaService() {
     }
 }
 
+async function resetTodayCount() {
+    if (isBusy) return;
+    if (!window.confirm("Bugünkü Dem sayacı sıfırlansın mı? Aktif demlikler ve günlük kayıtlar silinmeyecek.")) return;
+    setBusy(true);
+
+    try {
+        await runTransaction(database, async (transaction) => {
+            const snapshot = await transaction.get(adminStateReference);
+            const state = normalizeState(snapshot.exists() ? snapshot.data() : createEmptyState());
+            state.todayCountResetAtMs = Date.now();
+            transaction.set(adminStateReference, { ...state, updatedAt: serverTimestamp() });
+        });
+        showToast("Bugünkü Dem sayacı sıfırlandı.");
+    } catch (error) {
+        console.error(error);
+        showToast("Bugünkü Dem sayacı sıfırlanamadı.");
+    } finally {
+        setBusy(false);
+    }
+}
+
 function handleDialogClose() {
     if (elements.finishDialog.returnValue !== "confirm") {
         pendingFinishId = null;
@@ -290,7 +322,8 @@ function normalizeState(state) {
     return {
         activeBrews: Array.isArray(state.activeBrews) ? state.activeBrews : [],
         history: Array.isArray(state.history) ? state.history : [],
-        serviceOpen: state.serviceOpen !== false
+        serviceOpen: state.serviceOpen !== false,
+        todayCountResetAtMs: Number(state.todayCountResetAtMs) || 0
     };
 }
 
@@ -299,30 +332,32 @@ function render() {
     renderSummary(now);
     renderActiveBrews(now);
     renderHistory();
+    syncHistoryPanelHeight();
 }
 
 function renderSummary(now) {
     const activeCount = appState.activeBrews.length;
     const todayKey = getDateKey(now);
+    const resetAtMs = getDateKey(appState.todayCountResetAtMs) === todayKey ? appState.todayCountResetAtMs : 0;
     const todayCount = [
         ...appState.activeBrews,
         ...appState.history
-    ].filter((brew) => getDateKey(brew.startedAtMs) === todayKey).length;
+    ].filter((brew) => getDateKey(brew.startedAtMs) === todayKey && Number(brew.startedAtMs) > resetAtMs).length;
 
     elements.activeCount.textContent = `${activeCount} / ${MAX_ACTIVE_BREWS}`;
     elements.todayCount.textContent = String(todayCount);
     elements.startButton.disabled = isBusy || activeCount >= MAX_ACTIVE_BREWS;
+    elements.resetTodayCountButton.disabled = isBusy;
     elements.capacityNote.textContent = activeCount >= MAX_ACTIVE_BREWS
         ? "Üç demlik aktif. Yeni dem için önce bir demliği bitirin."
         : "Aynı anda en fazla üç demlik takip edilir.";
 
-    elements.serviceStatus.textContent = appState.serviceOpen ? "Açık" : "Kapalı";
     elements.serviceToggleButton.disabled = isBusy;
     elements.serviceToggleButton.classList.toggle("is-open", appState.serviceOpen);
     elements.serviceToggleButton.classList.toggle("is-closed", !appState.serviceOpen);
     elements.serviceToggleButton.innerHTML = appState.serviceOpen
-        ? '<i class="fa-solid fa-circle-stop" aria-hidden="true"></i><span>Servisi Kapat</span>'
-        : '<i class="fa-solid fa-circle-play" aria-hidden="true"></i><span>Servisi Başlat</span>';
+        ? '<span class="button-icon service-icon" aria-hidden="true"><i class="fa-solid fa-circle-stop"></i></span><span class="button-copy"><strong>Servisi Kapat</strong><small>Çay Servisi: Açık</small></span>'
+        : '<span class="button-icon service-icon" aria-hidden="true"><i class="fa-solid fa-circle-play"></i></span><span class="button-copy"><strong>Servisi Başlat</strong><small>Çay Servisi: Kapalı</small></span>';
 
     if (activeCount === 0) {
         elements.currentStatus.textContent = "Demlik bekleniyor";
@@ -468,7 +503,7 @@ function getBrewStage(brew, now = Date.now()) {
         timerLabel: "Tazelik süresi",
         timerMs: 0,
         note: "Demliği bitirin ve yeni dem hazırlayın.",
-        progress: 0,
+        progress: 100,
         freshnessPercent: 0
     };
 }
@@ -480,7 +515,7 @@ function freshnessStage(key, label, timerMs, progress) {
         timerLabel: "Tazelik için kalan",
         timerMs,
         note: "Tazelik süresi 1 saatten geriye sayıyor.",
-        progress,
+        progress: 100,
         freshnessPercent: progress
     };
 }
@@ -553,4 +588,11 @@ function showToast(message) {
     elements.toast.textContent = message;
     elements.toast.classList.add("show");
     toastTimeout = window.setTimeout(() => elements.toast.classList.remove("show"), 2600);
+}
+
+function syncHistoryPanelHeight() {
+    window.requestAnimationFrame(() => {
+        const activeHeight = Math.round(elements.activePanel.getBoundingClientRect().height);
+        if (activeHeight > 0) elements.historyPanel.style.height = `${activeHeight}px`;
+    });
 }

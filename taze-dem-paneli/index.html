@@ -15,7 +15,7 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=16">
+    <link rel="stylesheet" href="style.css?v=17">
 </head>
 
 <body>
@@ -78,26 +78,32 @@
                     <span>Güncel Durum</span>
                     <strong id="currentStatus">Demlik bekleniyor</strong>
                 </article>
+
+                <article class="stat-card stat-action-card">
+                    <span>Günlük Sayaç</span>
+                    <button class="reset-count-button" id="resetTodayCountButton" type="button">
+                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                        <strong>Sayacı Sıfırla</strong>
+                    </button>
+                </article>
             </div>
 
-            <button class="start-button" id="startBrewButton" type="button">
-                <span class="button-icon" aria-hidden="true">
-                    <i class="fa-solid fa-plus"></i>
-                </span>
-                <span class="button-copy">
-                    <strong>Yeni Dem Başlat</strong>
-                    <small>20 dakikalık demleme sayacını başlatır</small>
-                </span>
-            </button>
-
-            <div class="service-controls" aria-label="Çay servisi kontrolü">
-                <div class="service-state-copy">
-                    <span>Çay Servisi</span>
-                    <strong id="serviceStatus">Açık</strong>
-                </div>
+            <div class="primary-actions">
+                <button class="start-button" id="startBrewButton" type="button">
+                    <span class="button-icon" aria-hidden="true">
+                        <i class="fa-solid fa-plus"></i>
+                    </span>
+                    <span class="button-copy">
+                        <strong>Yeni Dem Başlat</strong>
+                        <small>20 dakikalık demleme sayacını başlatır</small>
+                    </span>
+                </button>
                 <button class="service-button is-open" id="serviceToggleButton" type="button">
-                    <i class="fa-solid fa-circle-stop" aria-hidden="true"></i>
-                    <span>Servisi Kapat</span>
+                    <span class="button-icon service-icon" aria-hidden="true"><i class="fa-solid fa-circle-stop"></i></span>
+                    <span class="button-copy">
+                        <strong>Servisi Kapat</strong>
+                        <small>Çay Servisi: <span id="serviceStatus">Açık</span></small>
+                    </span>
                 </button>
             </div>
 
@@ -160,7 +166,7 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="script.js?v=6"></script>
+    <script type="module" src="script.js?v=7"></script>
 </body>
 
 </html>
