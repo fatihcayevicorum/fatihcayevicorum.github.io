@@ -16,15 +16,15 @@
 
 <main>
   <section id="tablesView" class="view">
-    <div class="view-top">
-      <div><h2>Masalar</h2><p id="connectionText"><i class="fa-solid fa-circle-check"></i> Canlı bağlantı</p></div>
+    <div class="view-top"><div><h2>Masalar</h2><p id="connectionText"><i class="fa-solid fa-circle-check"></i> Canlı bağlantı</p></div></div>
+    <div class="overview-row">
+      <section class="summary"><article><span>Açık adisyon</span><b id="openCount">0</b></article><article><span>Açık toplam</span><b id="openTotal">₺0</b></article><article><span>Dolu masa</span><b id="occupiedCount">0</b></article></section>
       <div class="quick-actions">
-        <button id="dailyStatus" class="secondary"><i class="fa-solid fa-chart-pie"></i><span>Günlük Durum</span></button>
-        <button id="newNamedOrder" class="secondary"><i class="fa-solid fa-user-plus"></i><span>İsimli Adisyon</span></button>
-        <button id="tableSettings" class="secondary"><i class="fa-solid fa-gear"></i><span>Masa Ayarı</span></button>
+        <button id="dailyStatus" class="secondary icon-action" title="Günlük Durum" aria-label="Günlük Durum"><i class="fa-solid fa-chart-pie"></i></button>
+        <button id="newNamedOrder" class="secondary icon-action" title="İsimli Adisyon" aria-label="İsimli Adisyon"><i class="fa-solid fa-user-plus"></i></button>
+        <button id="tableSettings" class="secondary icon-action" title="Masa Ayarı" aria-label="Masa Ayarı"><i class="fa-solid fa-table-cells-large"></i></button>
       </div>
     </div>
-    <section class="summary"><article><span>Açık adisyon</span><b id="openCount">0</b></article><article><span>Açık toplam</span><b id="openTotal">₺0</b></article><article><span>Dolu masa</span><b id="occupiedCount">0</b></article></section>
     <div class="legend"><span><i class="occupied-dot"></i>Dolu</span><span><i class="empty-dot"></i>Boş</span><b id="tableCountLabel">0 masa</b></div>
     <div id="tableGrid" class="table-grid"></div>
     <section id="namedSection" class="named-section"><h3>İsimli Adisyonlar</h3><div id="namedGrid" class="table-grid named"></div><p id="namedEmpty" class="empty">Açık isimli adisyon yok.</p></section>
@@ -57,6 +57,7 @@
 
 <dialog id="nameDialog"><form id="nameForm" class="dialog-card"><div class="dialog-head"><h2>İsimle Adisyon Aç</h2><button type="button" data-close="nameDialog">×</button></div><label>Adisyon adı<input id="namedOrderName" required maxlength="50" placeholder="Örn. Mehmet Abi"></label><div class="dialog-actions"><button type="button" class="secondary" data-close="nameDialog">Vazgeç</button><button class="primary">Adisyonu Aç</button></div></form></dialog>
 <dialog id="settingsDialog"><form id="settingsForm" class="dialog-card"><div class="dialog-head"><h2>Masa Ayarı</h2><button type="button" data-close="settingsDialog">×</button></div><label>Sabit masa sayısı<input id="tableCountInput" type="number" min="1" max="50" required></label><p class="notice">Dolu bir masayı kaldırmamak için masa sayısını açık en yüksek masa numarasının altına düşüremezsiniz.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="settingsDialog">Vazgeç</button><button class="primary">Kaydet</button></div></form></dialog>
+<dialog id="tableEditDialog"><form id="tableEditForm" class="dialog-card"><div class="dialog-head"><h2 id="tableEditTitle">Masa Bilgileri</h2><button type="button" data-close="tableEditDialog">×</button></div><label>Masa adı<input id="tableNameInput" maxlength="30" placeholder="Örn. Bahçe Masası"></label><label>Bağlı açık hesap müşterisi<select id="tableCustomerSelect"></select></label><p class="notice">Müşteri bağlandığında açık hesap ödemesinde otomatik seçilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="tableEditDialog">Vazgeç</button><button class="primary">Kaydet</button></div></form></dialog>
 <dialog id="checkoutDialog"><form id="checkoutForm" class="dialog-card wide">
   <div class="dialog-head"><h2>Parçalı Ödeme</h2><button type="button" data-close="checkoutDialog">×</button></div>
   <div class="payment-summary"><div><span>Hesap</span><b id="checkoutBase">₺0</b></div><div><span>Ödenen</span><b id="checkoutPaid">₺0</b></div><div class="remaining"><span>Kalan</span><b id="checkoutRemaining">₺0</b></div></div>
