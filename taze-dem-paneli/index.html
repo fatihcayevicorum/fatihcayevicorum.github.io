@@ -15,7 +15,7 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=18">
+    <link rel="stylesheet" href="style.css?v=19">
 </head>
 
 <body>
@@ -179,21 +179,9 @@
         </form>
     </dialog>
 
-    <dialog class="confirm-dialog notice-dialog" id="noticeDialog">
-        <form method="dialog">
-            <div class="dialog-icon" id="noticeDialogIcon" aria-hidden="true">
-                <i class="fa-solid fa-circle-info"></i>
-            </div>
-            <h2 id="noticeDialogTitle">Bilgilendirme</h2>
-            <p id="noticeDialogText"></p>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-            <div class="dialog-actions single-action">
-                <button class="danger-button" type="submit" value="close">Tamam</button>
-            </div>
-        </form>
-    </dialog>
-
-    <script type="module" src="script.js?v=8"></script>
+    <script type="module" src="script.js?v=9"></script>
 </body>
 
 </html>
