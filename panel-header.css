@@ -1,6 +1,6 @@
 /* Tüm yönetim panellerinin ortak üst alanı */
 html,body{max-width:100%;overflow-x:hidden}body{font-family:"Poppins",Arial,sans-serif}
-.app-header{position:relative;z-index:30;padding:.85rem 0;color:#fff;background:radial-gradient(circle at 12% 0%,rgba(217,170,59,.22),transparent 12rem),linear-gradient(145deg,#25090c,#5a1018 62%,#7d1823);box-shadow:0 9px 24px rgba(45,9,13,.25)}
+.app-header{position:relative;z-index:30;overflow:visible!important;padding:.85rem 0;color:#fff;background:radial-gradient(circle at 12% 0%,rgba(217,170,59,.22),transparent 12rem),linear-gradient(145deg,#25090c,#5a1018 62%,#7d1823);box-shadow:0 9px 24px rgba(45,9,13,.25)}
 .app-header::after{position:absolute;right:-4rem;bottom:-6rem;width:11rem;height:11rem;content:"";border-radius:50%;background:rgba(217,170,59,.12);pointer-events:none}
 .header-inner{position:relative;z-index:1;display:flex;width:min(calc(100% - 1.5rem),920px);min-width:0;align-items:center;justify-content:space-between;gap:.75rem;margin:0 auto}
 .brand{display:flex;min-width:0;align-items:center;gap:.7rem}.brand-logo{width:3.65rem!important;height:3.65rem!important;flex:0 0 auto;padding:.28rem;object-fit:contain;border:1px solid rgba(255,255,255,.22);border-radius:50%;background:rgba(255,255,255,.1)}
