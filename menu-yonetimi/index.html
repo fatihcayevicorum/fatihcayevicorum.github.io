@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="../panel-header.css?v=1">
 </head>
 <body>
     <header class="app-header">
@@ -19,13 +20,12 @@
                 <div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Menü Yönetimi</h1></div>
             </div>
             <div class="header-actions">
-                <a class="panel-switch-link" href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i><span>Taze Dem</span></a>
-                <a class="panel-switch-link" href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i><span>Stok Yönetimi</span></a>
                 <div class="live-time" aria-live="off">
                     <strong id="currentTime">--:--</strong>
                     <span id="currentDate">--/--/--</span>
                 </div>
-                <button class="logout-button" id="logoutButton" type="button" aria-label="Çıkış yap"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i></button>
+                <details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a class="is-current" href="./"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a><a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a><span class="is-soon"><i class="fa-solid fa-chart-column"></i>Raporlar <small>yakında</small></span></nav></details>
+                <button class="logout-button" id="logoutButton" type="button" aria-label="Çıkış yap"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span>Güvenli Çıkış</span></button>
             </div>
         </div>
     </header>
