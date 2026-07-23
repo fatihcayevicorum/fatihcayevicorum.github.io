@@ -44,14 +44,18 @@ const elements = {
     finishDialog: document.getElementById("finishDialog"),
     finishDialogText: document.getElementById("finishDialogText"),
     confirmFinishButton: document.getElementById("confirmFinishButton"),
+    resetCountDialog: document.getElementById("resetCountDialog"),
+    confirmResetCountButton: document.getElementById("confirmResetCountButton"),
+    noticeDialog: document.getElementById("noticeDialog"),
+    noticeDialogIcon: document.getElementById("noticeDialogIcon"),
+    noticeDialogTitle: document.getElementById("noticeDialogTitle"),
+    noticeDialogText: document.getElementById("noticeDialogText"),
     logoutButton: document.getElementById("logoutButton"),
-    toast: document.getElementById("toast")
 };
 
 let appState = createEmptyState();
 let pendingFinishId = null;
 let unsubscribeState = null;
-let toastTimeout = null;
 let isBusy = false;
 
 elements.startButton.disabled = true;
@@ -63,6 +67,7 @@ elements.finishDialog.addEventListener("close", handleDialogClose);
 elements.confirmFinishButton.addEventListener("click", () => {
     if (pendingFinishId) finishBrew(pendingFinishId);
 });
+elements.confirmResetCountButton.addEventListener("click", performResetTodayCount);
 elements.logoutButton.addEventListener("click", async () => {
     await signOut(auth);
     window.location.replace("../yonetici-giris.html");
@@ -247,9 +252,17 @@ async function toggleTeaService() {
     }
 }
 
-async function resetTodayCount() {
+function resetTodayCount() {
     if (isBusy) return;
-    if (!window.confirm("Bugünkü Dem sayacı sıfırlansın mı? Aktif demlikler ve günlük kayıtlar silinmeyecek.")) return;
+    if (typeof elements.resetCountDialog.showModal === "function") {
+        elements.resetCountDialog.showModal();
+        return;
+    }
+    performResetTodayCount();
+}
+
+async function performResetTodayCount() {
+    if (isBusy) return;
     setBusy(true);
 
     try {
@@ -584,10 +597,20 @@ function setConnectionState(connected) {
 }
 
 function showToast(message) {
-    window.clearTimeout(toastTimeout);
-    elements.toast.textContent = message;
-    elements.toast.classList.add("show");
-    toastTimeout = window.setTimeout(() => elements.toast.classList.remove("show"), 2600);
+    const errorMessage = /başlatılamadı|işaretlenemedi|değiştirilemedi|sıfırlanamadı|bitirilemedi|kurulamadı|bağlantı yok|en fazla/i.test(message);
+    const successMessage = /başlatıldı|işaretlendi|kapatıldı|sıfırlandı|bitirildi|güncellendi/i.test(message);
+    elements.noticeDialogTitle.textContent = errorMessage ? "İşlem tamamlanamadı" : successMessage ? "İşlem başarılı" : "Bilgilendirme";
+    elements.noticeDialogText.textContent = message;
+    elements.noticeDialogIcon.classList.toggle("is-error", errorMessage);
+    elements.noticeDialogIcon.classList.toggle("is-success", successMessage && !errorMessage);
+    elements.noticeDialogIcon.innerHTML = errorMessage
+        ? '<i class="fa-solid fa-triangle-exclamation"></i>'
+        : successMessage
+            ? '<i class="fa-solid fa-circle-check"></i>'
+            : '<i class="fa-solid fa-circle-info"></i>';
+    if (!elements.noticeDialog.open && typeof elements.noticeDialog.showModal === "function") {
+        elements.noticeDialog.showModal();
+    }
 }
 
 function syncHistoryPanelHeight() {

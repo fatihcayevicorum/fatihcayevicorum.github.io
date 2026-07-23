@@ -15,7 +15,7 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=17">
+    <link rel="stylesheet" href="style.css?v=18">
 </head>
 
 <body>
@@ -164,9 +164,36 @@
         </form>
     </dialog>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <dialog class="confirm-dialog" id="resetCountDialog">
+        <form method="dialog">
+            <div class="dialog-icon" aria-hidden="true">
+                <i class="fa-solid fa-rotate-left"></i>
+            </div>
+            <h2>Bugünkü sayaç sıfırlansın mı?</h2>
+            <p>Aktif demlikler ve günlük kayıtlar silinmeyecek. Yalnızca Bugünkü Dem sayısı sıfırdan başlayacak.</p>
 
-    <script type="module" src="script.js?v=7"></script>
+            <div class="dialog-actions">
+                <button class="secondary-button" type="submit" value="cancel">Vazgeç</button>
+                <button class="danger-button" id="confirmResetCountButton" type="submit" value="confirm">Sayacı Sıfırla</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog class="confirm-dialog notice-dialog" id="noticeDialog">
+        <form method="dialog">
+            <div class="dialog-icon" id="noticeDialogIcon" aria-hidden="true">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <h2 id="noticeDialogTitle">Bilgilendirme</h2>
+            <p id="noticeDialogText"></p>
+
+            <div class="dialog-actions single-action">
+                <button class="danger-button" type="submit" value="close">Tamam</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script type="module" src="script.js?v=8"></script>
 </body>
 
 </html>

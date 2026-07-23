@@ -862,30 +862,9 @@ button {
   background: linear-gradient(135deg, var(--burgundy-700), var(--red-600));
 }
 
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: max(1rem, env(safe-area-inset-bottom));
-  z-index: 50;
-  max-width: calc(100% - 2rem);
-  padding: 0.7rem 0.9rem;
-  border-radius: 999px;
-  color: var(--white);
-  pointer-events: none;
-  opacity: 0;
-  background: var(--burgundy-900);
-  box-shadow: 0 12px 26px rgba(40, 9, 12, 0.28);
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-align: center;
-  transform: translate(-50%, 0.7rem);
-  transition: opacity 0.22s ease, transform 0.22s ease;
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
+.dialog-actions.single-action { grid-template-columns: 1fr; }
+.notice-dialog .dialog-icon.is-success { color: #137641; background: rgba(21,149,83,.12); }
+.notice-dialog .dialog-icon.is-error { color: #a52831; background: rgba(180,43,50,.11); }
 
 :focus-visible {
   outline: 3px solid var(--gold-400);
