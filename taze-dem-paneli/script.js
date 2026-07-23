@@ -387,9 +387,12 @@ function renderActiveBrews(now) {
     elements.brewList.innerHTML = appState.activeBrews.map((brew, index) => {
         const stage = getBrewStage(brew, now);
         const progress = Math.min(100, Math.max(0, stage.progress));
+        const barProgress = stage.key === "brewing"
+            ? progress
+            : Math.min(100, Math.max(0, stage.freshnessPercent ?? 0));
         const progressText = stage.key === "brewing"
             ? `Demleme %${Math.round(progress)}`
-            : `Tazelik %${Math.round(stage.freshnessPercent ?? 0)}`;
+            : `Tazelik %${Math.round(barProgress)}`;
         const readyAt = Number(brew.readyAtMs) || brew.startedAtMs + BREWING_DURATION_MS;
         const elapsed = Math.max(0, now - brew.startedAtMs);
 
@@ -415,8 +418,8 @@ function renderActiveBrews(now) {
                         <strong>${progressText}</strong>
                     </div>
 
-                    <div class="progress-track" role="progressbar" aria-label="${progressText}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(stage.key === "brewing" ? progress : stage.freshnessPercent ?? 0)}">
-                        <div class="progress-fill" style="--progress: ${progress.toFixed(2)}%"></div>
+                    <div class="progress-track" role="progressbar" aria-label="${progressText}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(barProgress)}">
+                        <div class="progress-fill" style="--progress: ${barProgress.toFixed(2)}%"></div>
                     </div>
 
                     <div class="progress-meta">

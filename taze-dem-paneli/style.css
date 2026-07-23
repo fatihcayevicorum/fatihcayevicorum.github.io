@@ -480,8 +480,8 @@ button {
 }
 
 .brew-card.state-brewing {
-  --state-color: #cf9524;
-  --state-soft: rgba(207, 149, 36, 0.13);
+  --state-color: #8f1d2c;
+  --state-soft: rgba(143, 29, 44, 0.13);
 }
 
 .brew-card.state-new {
