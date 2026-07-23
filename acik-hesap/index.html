@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Açık Hesap | Fatih Çay Evi</title>
+    <meta name="theme-color" content="#5a1018">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand">
+                <img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu">
+                <div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Açık Hesap</h1></div>
+            </div>
+            <div class="header-actions">
+                <details class="panel-menu">
+                    <summary><i class="fa-solid fa-grip" aria-hidden="true"></i><span>Paneller</span></summary>
+                    <nav class="panel-menu-list" aria-label="Yönetim panelleri">
+                        <a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a>
+                        <a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a>
+                        <a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a>
+                        <a class="is-current" href="./"><i class="fa-solid fa-address-book"></i>Açık Hesap</a>
+                        <span class="is-soon"><i class="fa-solid fa-receipt"></i>Adisyon <small>yakında</small></span>
+                        <span class="is-soon"><i class="fa-solid fa-chart-column"></i>Raporlar <small>yakında</small></span>
+                    </nav>
+                </details>
+                <div class="live-time" aria-live="off"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
+                <button class="logout-button" id="logoutButton" type="button" aria-label="Çıkış yap"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="panel summary-panel">
+            <div class="section-heading">
+                <div><p class="kicker">Kontrol merkezi</p><h2>Açık Hesap Özeti</h2></div>
+                <span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span>
+            </div>
+            <div class="stats">
+                <article><span>Yetkili müşteri</span><strong id="customerCount">0</strong></article>
+                <article><span>Toplam alacak</span><strong id="totalBalance">₺0</strong></article>
+                <article class="warning-stat"><span>Limiti aşan</span><strong id="overLimitCount">0</strong></article>
+                <article><span>Bugünkü tahsilat</span><strong id="todayPayment">₺0</strong></article>
+            </div>
+        </section>
+
+        <section class="panel form-panel">
+            <div class="section-heading"><div><p class="kicker">Müşteri bilgileri</p><h2 id="customerFormTitle">Yeni Açık Hesap Müşterisi</h2></div></div>
+            <form id="customerForm">
+                <input id="editingCustomerId" type="hidden">
+                <div class="field-grid">
+                    <label><span>Adı veya lakabı</span><input id="customerName" type="text" maxlength="70" required placeholder="Örn. Mehmet Abi"></label>
+                    <label><span>Telefon numarası</span><input id="customerPhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx"></label>
+                    <label><span>Borç uyarı limiti (TL)</span><input id="customerLimit" type="number" min="0" max="9999999" step="0.01" required placeholder="500"></label>
+                    <label class="full-field"><span>Not <small>(isteğe bağlı)</small></span><textarea id="customerNote" maxlength="200" rows="2" placeholder="Müşteriyle ilgili kısa not"></textarea></label>
+                </div>
+                <label class="switch-row"><input id="creditEnabled" type="checkbox" checked><span>Bu müşteriye açık hesap kullanılabilsin</span></label>
+                <div class="form-actions">
+                    <button class="secondary-button" id="cancelEditButton" type="button" hidden>Vazgeç</button>
+                    <button class="primary-button" id="saveCustomerButton" type="submit"><i class="fa-solid fa-floppy-disk"></i> Müşteriyi Kaydet</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel customer-panel">
+            <div class="section-heading list-heading">
+                <div><p class="kicker">Müşteri listesi</p><h2>Açık Hesaplar</h2></div>
+                <div class="list-tools"><select id="customerFilter" aria-label="Müşteri filtresi"><option value="enabled">Yetkili müşteriler</option><option value="debt">Borcu olanlar</option><option value="over-limit">Limiti aşanlar</option><option value="disabled">Yetkisi kapalı</option><option value="all">Tüm müşteriler</option></select><input id="customerSearch" type="search" placeholder="Müşteri ara"></div>
+            </div>
+            <p class="empty-copy" id="customerEmpty">Henüz açık hesap müşterisi eklenmedi.</p>
+            <div class="customer-list" id="customerList"></div>
+        </section>
+
+        <section class="panel movement-panel">
+            <div class="section-heading"><div><p class="kicker">Hesap hareketleri</p><h2>Son Borç ve Tahsilatlar</h2></div></div>
+            <p class="empty-copy" id="movementEmpty">Henüz hesap hareketi yok.</p>
+            <div class="movement-list" id="movementList"></div>
+        </section>
+    </main>
+
+    <dialog id="movementDialog">
+        <form id="movementForm" method="dialog">
+            <div class="dialog-heading"><div><p class="kicker">Hesap hareketi</p><h2 id="movementTitle">Müşteri</h2></div><button class="icon-button" id="closeMovementDialog" type="button" aria-label="Pencereyi kapat"><i class="fa-solid fa-xmark"></i></button></div>
+            <input id="movementCustomerId" type="hidden">
+            <div class="movement-types" role="group" aria-label="Hareket türü">
+                <label><input type="radio" name="movementType" value="debt" checked><span><i class="fa-solid fa-plus"></i> Borç Ekle</span></label>
+                <label><input type="radio" name="movementType" value="payment"><span><i class="fa-solid fa-money-bill-wave"></i> Nakit Tahsilat</span></label>
+            </div>
+            <label class="dialog-field"><span id="movementAmountLabel">Eklenecek borç (TL)</span><input id="movementAmount" type="number" min="0.01" max="9999999" step="0.01" required></label>
+            <label class="dialog-field"><span>İşlem tarihi</span><input id="movementDate" type="date" required></label>
+            <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="movementNote" maxlength="200" rows="2" placeholder="Örn. Önceki hesap veya nakit ödeme"></textarea></label>
+            <div class="dialog-summary" id="movementPreview">Yeni bakiye: —</div>
+            <div class="form-actions"><button class="secondary-button" id="cancelMovementButton" type="button">Vazgeç</button><button class="primary-button" id="saveMovementButton" type="submit">İşlemi Kaydet</button></div>
+        </form>
+    </dialog>
+
+    <dialog class="confirm-dialog" id="limitDialog">
+        <form method="dialog">
+            <div class="dialog-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h2>Borç limiti aşılıyor</h2>
+            <p id="limitDialogText">Bu işlem müşterinin belirlenen borç limitini aşacak.</p>
+            <div class="dialog-actions"><button class="secondary-button" type="submit" value="cancel">Vazgeç</button><button class="danger-button" id="confirmLimitButton" type="submit" value="confirm">Yine de Ekle</button></div>
+        </form>
+    </dialog>
+
+    <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="script.js?v=1"></script>
+</body>
+</html>

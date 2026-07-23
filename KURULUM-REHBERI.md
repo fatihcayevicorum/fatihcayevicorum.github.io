@@ -1,6 +1,6 @@
 # Fatih Çay Evi — Canlı Taze Dem Sistemi
 
-Bu paket müşteri ana sayfasını, canlı Taze Dem sistemini, Menü Yönetimini ve Stok Yönetimini birlikte içerir.
+Bu paket müşteri ana sayfasını, canlı Taze Dem sistemini, Menü Yönetimini, Stok Yönetimini ve Açık Hesap panelini birlikte içerir.
 
 ## Sayfalar
 
@@ -10,14 +10,25 @@ Bu paket müşteri ana sayfasını, canlı Taze Dem sistemini, Menü Yönetimini
 - `/menu.html`: Müşterilerin gördüğü canlı ürün ve fiyat listesi.
 - `/menu-yonetimi/index.html`: Kategori, ürün, fiyat ve satış durumu yönetim paneli.
 - `/stok-yonetimi/index.html`: Stok kartları, kritik seviye ve stok hareketleri yönetim paneli.
+- `/acik-hesap/index.html`: Müşteri borcu, nakit tahsilat, limit ve mesajla bakiye paylaşımı paneli.
+
+## Açık hesap akışı
+
+1. Müşteri adı, telefon numarası ve uyarı limitiyle bir hesap kartı oluşturulur.
+2. “Borç Ekle” işlemi müşterinin bakiyesini artırır; limit aşılırsa işlem engellenmez, yalnızca onay uyarısı gösterilir.
+3. “Tahsilat” işlemi nakit ve kısmi ödeme kaydeder; kalan borç otomatik hesaplanır.
+4. Açık hesap yetkisi müşteri bazında açılıp kapatılabilir. Kapatılan müşterinin eski borcu ve hareketleri korunur.
+5. Mesaj düğmesi telefonda paylaşım ekranını açar. Desteklenmeyen cihazlarda hazırlanmış metinle WhatsApp açılır; mesaj kullanıcı onayı olmadan gönderilmez.
 
 ## Stok akışı
 
-1. Yönetici yeni stok kartına ürün adı, miktar, serbest ölçü birimi, alış tarihi, satış fiyatı ve kritik seviyeyi girer.
-2. Şişe içecek veya atıştırmalık, menüdeki karşılığına bağlanıp “otomatik düşüm” için hazırlanabilir.
-3. Çay, şeker ve benzeri hammaddelerde “Kullanım / Çıkış” işlemi elle kaydedilir.
-4. Her stok girişi, kullanım ve sayım düzeltmesi tarihçede saklanır.
-5. Kritik seviyedeki ve tükenen stoklar özet alanında ayrıca gösterilir.
+1. Yönetici ürünü doğrudan Menü Yönetimi listesinden seçebilir; çay ve şeker gibi hammaddeleri elle yazabilir.
+2. Stok kartına miktar, ölçü birimi, alış tarihi, alış fiyatı, satış fiyatı ve kritik seviye girilir.
+3. Koli veya paket girişinde `1 koli = 12/24 adet` dönüşümü tanımlanır; stok adet bazında saklanır.
+4. Şişe içecek veya atıştırmalık, menüdeki karşılığına bağlanıp “otomatik düşüm” için hazırlanabilir. Adisyondaki 1 satış yalnızca tanımlanan adet kadar düşer.
+5. Çay, şeker ve benzeri hammaddelerde “Kullanım / Çıkış” işlemi elle kaydedilir.
+6. Her stok girişi, kullanım ve sayım düzeltmesi tarihçede saklanır.
+7. Kritik seviyedeki ve tükenen stoklar özet alanında ayrıca gösterilir.
 
 ## Menü akışı
 
@@ -49,6 +60,7 @@ Kuralların sonucu:
 - Müşteriler yalnızca `publicTea/status` ve `publicMenu/catalog` belgelerini okuyabilir.
 - Yalnızca UID değeri `obuZLQXuPAWsHE20bZxcAxCNsO02` olan yönetici yazabilir.
 - Stok kartları ve stok hareketleri yalnızca yönetici tarafından okunup yazılabilir.
+- Açık hesap müşterileri ve borç hareketleri yalnızca yönetici tarafından okunup yazılabilir.
 - Yönetici geçmişi müşteriler tarafından okunamaz.
 - Diğer bütün Firestore erişimleri kapalıdır.
 
@@ -68,6 +80,7 @@ Yükleme sonrası adresler:
 - Müşteri menüsü: `https://fatihcayevicorum.github.io/menu.html`
 - Menü yönetimi: `https://fatihcayevicorum.github.io/menu-yonetimi/`
 - Stok yönetimi: `https://fatihcayevicorum.github.io/stok-yonetimi/`
+- Açık hesap: `https://fatihcayevicorum.github.io/acik-hesap/`
 
 Panel adresi doğrudan açılırsa giriş yapılmamış kullanıcı otomatik olarak yönetici girişine yönlendirilir.
 
