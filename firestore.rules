@@ -21,6 +21,25 @@ service cloud.firestore {
       allow write: if isFatihAdmin();
     }
 
+    match /publicSite/config {
+      allow read: if true;
+      allow write: if isFatihAdmin();
+    }
+
+    match /publicSite/stats {
+      allow read: if true;
+      allow create: if request.resource.data.totalVisits == 1;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['totalVisits', 'updatedAt'])
+        && request.resource.data.totalVisits == resource.data.totalVisits + 1;
+    }
+
+    match /publicPresence/{sessionId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.lastSeenMs is int;
+      allow delete: if false;
+    }
+
     match /adminStockItems/{document} {
       allow read, write: if isFatihAdmin();
     }

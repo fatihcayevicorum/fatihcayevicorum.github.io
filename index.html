@@ -19,7 +19,7 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="stylesheet" href="style.css?v=12"><link rel="stylesheet" href="home-dynamic.css?v=1">
 </head>
 
 <body>
@@ -27,10 +27,10 @@
         <div class="hero-overlay">
             <img src="logo.png" alt="Fatih Çay Evi logosu" class="logo" width="300" height="300">
 
-            <h1>Fatih Çay Evi</h1>
-            <h2 class="hero-title">Çorum'un Sıcak Sohbet Noktası</h2>
-            <p class="subtitle">Kaliteli Çay • Samimi Sohbet</p>
-            <p class="slogan">“Oksijeni bilmem ama yaşamak için <strong>ÇAY</strong> şart.”</p>
+            <h1 id="dynamicBusinessName">Fatih Çay Evi</h1>
+            <h2 class="hero-title" id="dynamicHeroTitle">Çorum'un Sıcak Sohbet Noktası</h2>
+            <p class="subtitle" id="dynamicSubtitle">Kaliteli Çay • Samimi Sohbet</p>
+            <p class="slogan" id="dynamicSlogan">“Oksijeni bilmem ama yaşamak için ÇAY şart.”</p>
 
             <div class="status">
                 <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
@@ -43,10 +43,13 @@
         <section class="panel welcome-panel">
             <h2>
                 <i class="fa-solid fa-heart" aria-hidden="true"></i>
-                <span>Hoş Geldiniz</span>
+                <span id="dynamicWelcomeTitle">Hoş Geldiniz</span>
             </h2>
-            <p>Fatih Çay Evi’nde taze demlenmiş çay, samimi sohbet ve güler yüzlü hizmet sizi bekliyor.</p>
+            <p id="dynamicWelcomeText">Fatih Çay Evi’nde taze demlenmiş çay, samimi sohbet ve güler yüzlü hizmet sizi bekliyor.</p>
         </section>
+
+        <section class="panel" id="announcementsSection" hidden><h2><i class="fa-solid fa-bullhorn"></i><span>Duyurular</span></h2><div id="announcementList" class="content-grid"></div></section>
+        <section class="panel" id="campaignsSection" hidden><h2><i class="fa-solid fa-gift"></i><span>Kampanyalarımız</span></h2><div id="campaignList" class="content-grid"></div></section>
 
         <section class="panel weather-card" aria-labelledby="weatherTitle">
             <h2 id="weatherTitle">
@@ -119,7 +122,7 @@
             </h2>
             <p>İşletmemizden güncel fotoğraflar çok yakında burada yer alacaktır.</p>
 
-            <div class="gallery-placeholder" role="group" aria-label="Yakında eklenecek galeri görselleri">
+            <div class="gallery-placeholder dynamic-gallery" id="dynamicGallery" role="group" aria-label="İşletme görselleri">
                 <div class="gallery-box">
                     <i class="fa-solid fa-image" aria-hidden="true"></i>
                     <span>Yakında</span>
@@ -145,27 +148,27 @@
             </p>
 
             <div class="quick-actions">
-                <a href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank"
+                <a id="dynamicMaps" href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank"
                     rel="noopener noreferrer" class="card">
                     <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
                     <h3>Yol Tarifi</h3>
                     <p>Haritada Aç</p>
                 </a>
 
-                <a href="https://www.instagram.com/fatihcayevicorum" target="_blank"
+                <a id="dynamicInstagram" href="https://www.instagram.com/fatihcayevicorum" target="_blank"
                     rel="noopener noreferrer" class="card">
                     <i class="fa-brands fa-instagram" aria-hidden="true"></i>
                     <h3>Instagram</h3>
                     <p>Bizi Takip Et</p>
                 </a>
 
-                <a href="tel:+905541180806" class="card">
+                <a id="dynamicPhone" href="tel:+905541180806" class="card">
                     <i class="fa-solid fa-phone" aria-hidden="true"></i>
                     <h3>Hemen&nbsp;Ara</h3>
                     <p>0554&nbsp;118&nbsp;08&nbsp;06</p>
                 </a>
 
-                <a href="https://g.page/r/CSOIVY6sAnqOEAE/review" target="_blank"
+                <a id="dynamicReview" href="https://g.page/r/CSOIVY6sAnqOEAE/review" target="_blank"
                     rel="noopener noreferrer" class="card">
                     <i class="fa-solid fa-star" aria-hidden="true"></i>
                     <h3>Yorum Yap</h3>
@@ -174,6 +177,9 @@
             </div>
         </section>
     </main>
+
+    <div class="visitor-strip"><div><span>Şu anda aktif</span><strong id="activeVisitors">1</strong></div><div><span>Toplam ziyaret</span><strong id="totalVisitors">—</strong></div></div>
+    <nav class="panel-entry-links" aria-label="Panel girişleri"><a href="yonetici-giris.html"><i class="fa-solid fa-user-shield"></i>Yönetici Girişi</a><a href="esnaf-giris.html"><i class="fa-solid fa-store"></i>Esnaf Girişi</a></nav>
 
     <footer class="site-footer">
         <p>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</p>
@@ -185,6 +191,8 @@
 
     <script src="script.js"></script>
     <script type="module" src="tea-live.js?v=6"></script>
+    <script type="module" src="site-dynamic.js?v=1"></script>
+    <script type="module" src="system-ui.js?v=1"></script>
 </body>
 
 </html>
