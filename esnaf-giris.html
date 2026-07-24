@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Esnaf Girişi | Fatih Çay Evi</title><meta name="theme-color" content="#64151d">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="esnaf-giris.css?v=1">
+</head>
+<body>
+  <main class="login-shell">
+    <section class="login-card">
+      <img src="logo.png" alt="Fatih Çay Evi" width="112" height="112">
+      <p class="eyebrow">Fatih Çay Evi</p><h1>Esnaf Paneli</h1>
+      <p class="lead">Çay bakiyenizi ve siparişlerinizi tek yerden takip edin.</p>
+      <form id="loginForm">
+        <label><span>Kullanıcı adı</span><div class="input-wrap"><i class="fa-solid fa-user"></i><input id="username" autocomplete="username" required maxlength="40" placeholder="Kullanıcı adınız"></div></label>
+        <label><span>Şifre</span><div class="input-wrap"><i class="fa-solid fa-lock"></i><input id="password" type="password" autocomplete="current-password" required minlength="6" placeholder="Şifreniz"><button id="showPassword" type="button" aria-label="Şifreyi göster"><i class="fa-solid fa-eye"></i></button></div></label>
+        <p id="loginMessage" class="message" aria-live="polite"></p>
+        <button class="login-button" id="loginButton" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Giriş Yap</button>
+      </form>
+      <small>Giriş bilginizi Fatih Çay Evi yöneticisinden alabilirsiniz.</small>
+    </section>
+  </main>
+  <script type="module" src="esnaf-giris.js?v=1"></script>
+</body></html>

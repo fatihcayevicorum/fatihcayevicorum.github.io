@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "categories": [
+    { "id": "sicak-icecekler", "name": "Sıcak İçecekler", "order": 1 },
+    { "id": "soguk-icecekler", "name": "Soğuk İçecekler", "order": 2 },
+    { "id": "atistirmaliklar", "name": "Atıştırmalıklar", "order": 3 }
+  ],
+  "items": [
+    { "id": "cay", "name": "Çay", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 1 },
+    { "id": "duble-cay", "name": "Duble Çay", "categoryId": "sicak-icecekler", "price": 30, "description": "", "available": true, "order": 2 },
+    { "id": "nescafe", "name": "Nescafe", "categoryId": "sicak-icecekler", "price": 20, "description": "", "available": true, "order": 3 },
+    { "id": "duble-nescafe", "name": "Duble Nescafe", "categoryId": "sicak-icecekler", "price": 40, "description": "", "available": true, "order": 4 },
+    { "id": "sutlu-kakao", "name": "Sütlü Kakao", "categoryId": "sicak-icecekler", "price": 20, "description": "", "available": true, "order": 5 },
+    { "id": "cilekli-sut", "name": "Çilekli Süt", "categoryId": "sicak-icecekler", "price": 20, "description": "", "available": true, "order": 6 },
+    { "id": "muzlu-sut", "name": "Muzlu Süt", "categoryId": "sicak-icecekler", "price": 20, "description": "", "available": true, "order": 7 },
+    { "id": "portakalli-oralet", "name": "Portakallı Oralet", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 8 },
+    { "id": "limonlu-oralet", "name": "Limonlu Oralet", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 9 },
+    { "id": "kivili-oralet", "name": "Kivili Oralet", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 10 },
+    { "id": "atom", "name": "Atom", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 11 },
+    { "id": "kusburnu", "name": "Kuşburnu", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 12 },
+    { "id": "karadut", "name": "Karadut", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 13 },
+    { "id": "elmali-oralet", "name": "Elmalı Oralet", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 14 },
+    { "id": "nane-limon", "name": "Nane Limon", "categoryId": "sicak-icecekler", "price": 15, "description": "", "available": true, "order": 15 },
+
+    { "id": "su", "name": "Su", "categoryId": "soguk-icecekler", "price": 15, "description": "", "available": true, "order": 1 },
+    { "id": "beypazari-sade-soda", "name": "Beypazarı Sade Soda", "categoryId": "soguk-icecekler", "price": 20, "description": "", "available": true, "order": 2 },
+    { "id": "beypazari-c-limonlu-soda", "name": "Beypazarı C+ Limonlu Soda", "categoryId": "soguk-icecekler", "price": 25, "description": "", "available": true, "order": 3 },
+    { "id": "beypazari-elmali-soda", "name": "Beypazarı Elmalı Soda", "categoryId": "soguk-icecekler", "price": 25, "description": "", "available": true, "order": 4 },
+    { "id": "kizilay-portakal-biskuvili-soda", "name": "Kızılay Portakal Bisküvili Soda", "categoryId": "soguk-icecekler", "price": 25, "description": "", "available": true, "order": 5 },
+    { "id": "kizilay-mandalinali-soda", "name": "Kızılay Mandalinalı Soda", "categoryId": "soguk-icecekler", "price": 25, "description": "", "available": true, "order": 6 },
+    { "id": "kizilay-narli-soda", "name": "Kızılay Narlı Soda", "categoryId": "soguk-icecekler", "price": 25, "description": "", "available": true, "order": 7 },
+    { "id": "kizilay-mango-ananas", "name": "Kızılay Mango-Ananas", "categoryId": "soguk-icecekler", "price": 25, "description": "", "available": true, "order": 8 },
+    { "id": "kizilay-karadut-frenk-uzumu", "name": "Kızılay Karadut-Frenk Üzümü", "categoryId": "soguk-icecekler", "price": 25, "description": "", "available": true, "order": 9 },
+    { "id": "kizilay-karpuz-cilek", "name": "Kızılay Karpuz-Çilek", "categoryId": "soguk-icecekler", "price": 25, "description": "", "available": true, "order": 10 },
+    { "id": "nigde-gazozu", "name": "Niğde Gazozu", "categoryId": "soguk-icecekler", "price": 30, "description": "", "available": true, "order": 11 },
+    { "id": "sise-kola", "name": "Şişe Kola", "categoryId": "soguk-icecekler", "price": 45, "description": "", "available": true, "order": 12 },
+    { "id": "sise-fanta", "name": "Şişe Fanta", "categoryId": "soguk-icecekler", "price": 45, "description": "", "available": true, "order": 13 },
+    { "id": "red-bull-enerji-icecegi", "name": "Red Bull Enerji İçeceği", "categoryId": "soguk-icecekler", "price": 80, "description": "", "available": true, "order": 14 },
+    { "id": "brox-enerji-icecegi", "name": "Brox Enerji İçeceği", "categoryId": "soguk-icecekler", "price": 40, "description": "", "available": true, "order": 15 },
+
+    { "id": "pop-kek-cesitleri", "name": "Pop Kek Çeşitleri", "categoryId": "atistirmaliklar", "price": 20, "description": "", "available": true, "order": 1 },
+    { "id": "eti-tutku", "name": "Eti Tutku", "categoryId": "atistirmaliklar", "price": 35, "description": "", "available": true, "order": 2 },
+    { "id": "eti-crax", "name": "Eti Crax", "categoryId": "atistirmaliklar", "price": 25, "description": "", "available": true, "order": 3 },
+    { "id": "eti-nero", "name": "Eti Nero", "categoryId": "atistirmaliklar", "price": 35, "description": "", "available": true, "order": 4 }
+  ]
+}

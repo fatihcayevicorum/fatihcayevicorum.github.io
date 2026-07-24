@@ -53,6 +53,42 @@ service cloud.firestore {
       allow read, write: if isFatihAdmin();
     }
 
+    function isActiveMerchant() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid)).data.active == true;
+    }
+
+    match /merchantProfiles/{merchantId} {
+      allow read: if isFatihAdmin()
+        || (request.auth != null && request.auth.uid == merchantId);
+      allow create, update, delete: if isFatihAdmin();
+    }
+
+    match /merchantBalanceMovements/{movementId} {
+      allow read: if isFatihAdmin()
+        || (request.auth != null && resource.data.merchantId == request.auth.uid);
+      allow create, update, delete: if isFatihAdmin();
+    }
+
+    match /merchantOrders/{orderId} {
+      allow read: if isFatihAdmin()
+        || (request.auth != null && resource.data.merchantId == request.auth.uid);
+      allow create: if isActiveMerchant()
+        && request.resource.data.merchantId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.quantity >= 1
+        && request.resource.data.quantity <= 50;
+      allow update: if isFatihAdmin()
+        || (isActiveMerchant()
+          && resource.data.merchantId == request.auth.uid
+          && resource.data.status == 'pending'
+          && request.resource.data.status == 'cancelled'
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'cancelledAt', 'updatedAt']));
+      allow delete: if isFatihAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
