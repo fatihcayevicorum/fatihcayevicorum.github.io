@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="polish.css?v=3"><link rel="stylesheet" href="../panel-header.css?v=5">
+  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="polish.css?v=4"><link rel="stylesheet" href="../panel-header.css?v=5">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -48,7 +48,7 @@
         <div id="orderItems" class="order-items"></div><p id="orderEmpty" class="empty">Ürünlere dokunarak adisyonu başlatın.</p>
         <div class="order-bottom">
           <div class="totals"><div><span>Ara toplam</span><b id="subtotal">₺0</b></div><div><span>İkram</span><b id="complimentaryTotal">−₺0</b></div><div id="previousPaidRow" hidden><span>Önceden ödenen</span><b id="previousPaid">−₺0</b></div><div class="grand"><span>Kalan hesap</span><b id="grandTotal">₺0</b></div></div>
-          <div class="checkout"><button id="clearOrder" class="danger ghost"><i class="fa-solid fa-trash"></i> İptal</button><button id="checkoutButton" class="primary"><i class="fa-solid fa-wallet"></i> Ödeme Al</button></div>
+          <div class="checkout"><button id="clearOrder" class="danger ghost"><i class="fa-solid fa-trash"></i> İptal</button><button id="roundAccount" class="secondary round-account" hidden><i class="fa-solid fa-scale-balanced"></i> Hesabı Sıfırla</button><button id="checkoutButton" class="primary"><i class="fa-solid fa-wallet"></i> Ödeme Al</button></div>
         </div>
       </section>
     </div>
@@ -61,16 +61,17 @@
 <dialog id="tableEditDialog"><form id="tableEditForm" class="dialog-card"><div class="dialog-head"><h2 id="tableEditTitle">Masa Bilgileri</h2><button type="button" data-close="tableEditDialog">×</button></div><label>Masa adı<input id="tableNameInput" maxlength="30" placeholder="Örn. Bahçe Masası"></label><label>Bağlı açık hesap müşterisi<select id="tableCustomerSelect"></select></label><p class="notice">Müşteri bağlandığında açık hesap ödemesinde otomatik seçilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="tableEditDialog">Vazgeç</button><button class="primary">Kaydet</button></div></form></dialog>
 <dialog id="checkoutDialog"><form id="checkoutForm" class="dialog-card wide">
   <div class="dialog-head"><h2>Nakit Ödeme Al</h2><button type="button" data-close="checkoutDialog">×</button></div>
-  <div class="payment-summary"><div><span>Hesap</span><b id="checkoutBase">₺0</b></div><div><span>Bu ödeme</span><b id="checkoutPaid">₺0</b></div><div class="remaining"><span>Kalan</span><b id="checkoutRemaining">₺0</b></div></div>
+  <div class="payment-summary"><div><span>Mevcut borç</span><b id="checkoutBase">₺0</b></div><div><span>Bu ödeme</span><b id="checkoutPaid">₺0</b></div><div class="remaining"><span>Kalan</span><b id="checkoutRemaining">₺0</b></div></div>
   <label>Alınan nakit<input id="paidAmount" type="number" min="0.01" step="0.01" required></label>
   <div id="changeText" class="notice">Alınan nakit tutarını girin.</div>
   <div id="paymentConfirmText" class="payment-confirm" hidden></div>
   <div class="dialog-actions"><button type="button" class="secondary" data-close="checkoutDialog">Vazgeç</button><button id="confirmCheckout" class="primary">Ödemeyi Onayla</button></div>
 </form></dialog>
 <dialog id="cancelDialog"><div class="dialog-card confirm-card"><div class="confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h2>Adisyon İptal Edilsin mi?</h2><p id="cancelMessage"></p><div class="dialog-actions"><button type="button" class="secondary" data-close="cancelDialog">Vazgeç</button><button type="button" id="confirmCancel" class="danger">Adisyonu İptal Et</button></div></div></dialog>
+<dialog id="roundDialog"><div class="dialog-card confirm-card compact-confirm"><div class="confirm-icon round-icon"><i class="fa-solid fa-scale-balanced"></i></div><h2>Hesap Sıfırlansın mı?</h2><p id="roundMessage"></p><div class="dialog-actions"><button type="button" class="secondary" data-close="roundDialog">Vazgeç</button><button type="button" id="confirmRound" class="primary">Yuvarlama Uygula</button></div></div></dialog>
 <dialog id="dailyDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Bugünün Durumu</h2><button type="button" data-close="dailyDialog">×</button></div><p id="dailyPeriod" class="notice"></p><div id="dailyReport" class="daily-report"></div><div class="dialog-actions"><button type="button" class="primary" data-close="dailyDialog">Kapat</button></div></div></dialog>
 <dialog id="closeDayDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Günü Kapat</h2><button type="button" data-close="closeDayDialog">×</button></div><p id="closeDayPeriod" class="notice"></p><div id="closeDayReport" class="close-day-report"></div><div class="export-actions"><button type="button" id="exportPdf" class="secondary"><i class="fa-solid fa-file-pdf"></i> PDF</button><button type="button" id="exportExcel" class="secondary"><i class="fa-solid fa-file-excel"></i> Excel</button></div><p class="notice warning-note">Gün kapatıldığında rapor sisteme kaydedilir ve yeni iş gününe geçilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="closeDayDialog">Vazgeç</button><button type="button" id="confirmCloseDay" class="primary">Günü Kapat</button></div></div></dialog>
 <dialog id="moveDialog"><form id="moveForm" class="dialog-card"><div class="dialog-head"><h2>Taşı veya Birleştir</h2><button type="button" data-close="moveDialog">×</button></div><label>Hedef masa / adisyon<select id="moveTarget" required></select></label><p class="notice">Hedef boşsa adisyon taşınır; doluysa iki adisyon birleştirilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="moveDialog">Vazgeç</button><button class="primary">Devam Et</button></div></form></dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=5"></script>
+<script type="module" src="script.js?v=6"></script>
 </body></html>
