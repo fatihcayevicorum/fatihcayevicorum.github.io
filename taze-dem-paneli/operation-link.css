@@ -1,0 +1,5 @@
+.primary-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+.operation-link{display:flex;min-height:4.5rem;align-items:center;gap:.75rem;padding:.72rem .85rem;border-radius:16px;color:#fff;text-decoration:none;background:linear-gradient(135deg,#3b2d68,#6251a1);box-shadow:0 12px 22px rgba(58,43,103,.22)}
+.operation-link .button-icon{color:#fff;background:rgba(255,255,255,.16)}
+@media(max-width:720px){.primary-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.operation-link{grid-column:1/-1}}
+@media(max-width:520px){.operation-link{min-height:4rem;padding:.55rem}.operation-link .button-icon{width:2.1rem;height:2.1rem}.operation-link .button-copy strong{font-size:.72rem}.operation-link .button-copy small{font-size:.52rem}}
