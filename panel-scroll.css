@@ -16,14 +16,8 @@
   .merchant-list,
   .order-list,
   .history-list,
-  .brew-list,
   .gallery-admin,
-  #contentAdmin,
-  .table-grid,
-  .product-grid,
-  .order-items,
-  .daily-report,
-  .close-day-report
+  #contentAdmin
 ) {
   min-height: 0;
   max-height: clamp(15rem, 42vh, 32rem);
@@ -45,14 +39,8 @@
   .merchant-list,
   .order-list,
   .history-list,
-  .brew-list,
   .gallery-admin,
-  #contentAdmin,
-  .table-grid,
-  .product-grid,
-  .order-items,
-  .daily-report,
-  .close-day-report
+  #contentAdmin
 )::-webkit-scrollbar {
   width: 7px;
 }
@@ -66,14 +54,8 @@
   .merchant-list,
   .order-list,
   .history-list,
-  .brew-list,
   .gallery-admin,
-  #contentAdmin,
-  .table-grid,
-  .product-grid,
-  .order-items,
-  .daily-report,
-  .close-day-report
+  #contentAdmin
 )::-webkit-scrollbar-track {
   border-radius: 999px;
   background: var(--panel-scrollbar-track);
@@ -88,14 +70,8 @@
   .merchant-list,
   .order-list,
   .history-list,
-  .brew-list,
   .gallery-admin,
-  #contentAdmin,
-  .table-grid,
-  .product-grid,
-  .order-items,
-  .daily-report,
-  .close-day-report
+  #contentAdmin
 )::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
@@ -107,35 +83,13 @@
   max-height: clamp(11rem, 30vh, 20rem);
 }
 
-.active-orders-panel .order-list,
-.brew-list {
+.active-orders-panel .order-list {
   max-height: clamp(12rem, 34vh, 24rem);
 }
 
-.order-items {
-  flex: 1 1 auto;
-  max-height: none;
-}
-
-.category-tabs {
-  flex: 0 0 auto;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-}
-
-@media (min-width: 701px) {
-  .pos-layout {
-    min-height: 0;
-  }
-
-  .products,
-  .order {
-    min-height: 0;
-    overflow: hidden;
-  }
+.stock-list.is-four-row-scroll,
+.customer-list.is-four-row-scroll {
+  overflow-y: auto;
 }
 
 @media (max-width: 700px) {
@@ -148,18 +102,9 @@
     .merchant-list,
     .order-list,
     .history-list,
-    .brew-list,
     .gallery-admin,
-    #contentAdmin,
-    .table-grid,
-    .product-grid,
-    .daily-report,
-    .close-day-report
+    #contentAdmin
   ) {
     max-height: min(48vh, 28rem);
-  }
-
-  .order-items {
-    max-height: min(46vh, 25rem);
   }
 }
