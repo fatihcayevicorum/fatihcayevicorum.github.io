@@ -1,0 +1,20 @@
+.head-info{gap:9px}
+.head-info>div:first-child,.head-info .weather,.head-info>button{height:52px;border:1px solid #eadfce;border-radius:15px}
+.head-info>div:first-child{min-width:92px;padding:6px 11px;display:grid;place-content:center;text-align:center;background:#f8f1e6}
+.head-info>div:first-child strong{font-size:1rem;line-height:1.1}
+.head-info>div:first-child span{font-size:.66rem;line-height:1.2}
+.head-info .weather{min-width:82px;justify-content:center;padding:0 12px;gap:8px}
+.head-info .weather i{font-size:1.12rem;color:#c77b17}
+.head-info .weather span{font-size:.92rem;font-weight:800;color:#302725}
+.head-info>button{width:52px;background:#64151d}
+@media(max-width:700px){
+  .head-info{gap:5px}
+  .head-info>div:first-child{display:grid;min-width:70px;height:46px;padding:4px 7px}
+  .head-info .weather{min-width:60px;height:46px;padding:0 7px;gap:5px}
+  .head-info>button{width:46px;height:46px}
+  .head-info .weather i{font-size:.95rem}.head-info .weather span{font-size:.8rem}
+}
+@media(max-width:420px){
+  .brand div{display:none}.brand img{width:47px;height:47px}
+  .head-info>div:first-child{min-width:66px}
+}

@@ -1,0 +1,5 @@
+.active-orders-panel{border:2px solid #e8c4a0;background:linear-gradient(135deg,#fff,#fff9f0)}
+.active-orders-panel h2 i{color:var(--red2);margin-right:7px}
+.active-count{padding:7px 11px;border-radius:999px;background:var(--red);color:#fff;font-size:.72rem;font-weight:800}
+.active-orders-panel .order-card:first-child{border-color:#dba56e;box-shadow:0 8px 22px #7c321112}
+@media(max-width:560px){.active-orders-panel .heading{align-items:flex-start}.active-count{white-space:nowrap}}
