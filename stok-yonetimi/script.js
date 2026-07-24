@@ -28,7 +28,7 @@ const elements = {
     stockName: document.getElementById("stockName"), stockEntryMode: document.getElementById("stockEntryMode"), stockQuantity: document.getElementById("stockQuantity"), stockQuantityLabel: document.getElementById("stockQuantityLabel"), stockUnit: document.getElementById("stockUnit"), packageUnit: document.getElementById("packageUnit"), packageUnitField: document.getElementById("packageUnitField"), unitsPerPackage: document.getElementById("unitsPerPackage"), unitsPerPackageField: document.getElementById("unitsPerPackageField"), stockThreshold: document.getElementById("stockThreshold"), stockThresholdLabel: document.getElementById("stockThresholdLabel"), stockPurchaseDate: document.getElementById("stockPurchaseDate"), stockPurchasePrice: document.getElementById("stockPurchasePrice"), purchasePriceLabel: document.getElementById("purchasePriceLabel"), stockSalePrice: document.getElementById("stockSalePrice"), linkedMenuItem: document.getElementById("linkedMenuItem"), stockNote: document.getElementById("stockNote"), conversionPreview: document.getElementById("conversionPreview"), automaticDeduction: document.getElementById("automaticDeduction"), deductionField: document.getElementById("deductionField"), deductionAmount: document.getElementById("deductionAmount"), cancelEditButton: document.getElementById("cancelEditButton"), saveStockButton: document.getElementById("saveStockButton"), unitSuggestions: document.getElementById("unitSuggestions"),
     itemCount: document.getElementById("itemCount"), criticalCount: document.getElementById("criticalCount"), emptyCount: document.getElementById("emptyCount"), automaticCount: document.getElementById("automaticCount"), saveStatus: document.getElementById("saveStatus"),
     stockFilter: document.getElementById("stockFilter"), stockSearch: document.getElementById("stockSearch"), stockEmpty: document.getElementById("stockEmpty"), stockList: document.getElementById("stockList"), movementEmpty: document.getElementById("movementEmpty"), movementList: document.getElementById("movementList"),
-    movementDialog: document.getElementById("movementDialog"), movementForm: document.getElementById("movementForm"), movementTitle: document.getElementById("movementTitle"), movementStockId: document.getElementById("movementStockId"), movementAmount: document.getElementById("movementAmount"), movementAmountLabel: document.getElementById("movementAmountLabel"), movementPackageRow: document.getElementById("movementPackageRow"), movementAsPackage: document.getElementById("movementAsPackage"), movementPackageText: document.getElementById("movementPackageText"), movementDate: document.getElementById("movementDate"), movementNote: document.getElementById("movementNote"), movementPreview: document.getElementById("movementPreview"), closeMovementDialog: document.getElementById("closeMovementDialog"), cancelMovementButton: document.getElementById("cancelMovementButton"), saveMovementButton: document.getElementById("saveMovementButton"),
+    movementDialog: document.getElementById("movementDialog"), movementForm: document.getElementById("movementForm"), movementTitle: document.getElementById("movementTitle"), movementStockId: document.getElementById("movementStockId"), movementAmount: document.getElementById("movementAmount"), movementAmountLabel: document.getElementById("movementAmountLabel"), movementPackageRow: document.getElementById("movementPackageRow"), movementAsPackage: document.getElementById("movementAsPackage"), movementPackageText: document.getElementById("movementPackageText"), movementPurchasePriceRow: document.getElementById("movementPurchasePriceRow"), movementPurchasePrice: document.getElementById("movementPurchasePrice"), movementPurchasePriceLabel: document.getElementById("movementPurchasePriceLabel"), movementDate: document.getElementById("movementDate"), movementNote: document.getElementById("movementNote"), movementPreview: document.getElementById("movementPreview"), closeMovementDialog: document.getElementById("closeMovementDialog"), cancelMovementButton: document.getElementById("cancelMovementButton"), saveMovementButton: document.getElementById("saveMovementButton"),
     currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast")
 };
 
@@ -153,8 +153,8 @@ async function archiveItem(id, shouldRestore) {
 
 function openMovementDialog(id) {
     const item = stockItems.find((entry) => entry.id === id); if (!item) return;
-    elements.movementStockId.value = id; elements.movementTitle.textContent = item.name; elements.movementAmount.value = ""; elements.movementNote.value = ""; elements.movementDate.value = getIstanbulDate();
-    elements.movementAsPackage.checked = false;
+    elements.movementStockId.value = id; elements.movementTitle.textContent = item.name; elements.movementAmount.value = ""; elements.movementPurchasePrice.value = item.purchasePrice > 0 ? String(item.purchasePrice) : ""; elements.movementNote.value = ""; elements.movementDate.value = getIstanbulDate();
+    elements.movementAsPackage.checked = item.packageMode;
     elements.movementForm.querySelector('input[name="movementType"][value="in"]').checked = true;
     updateMovementPreview(); elements.movementDialog.showModal();
 }
@@ -170,6 +170,8 @@ async function saveMovement(event) {
     const currentItem = stockItems.find((entry) => entry.id === itemId);
     const asPackage = type === "in" && elements.movementAsPackage.checked && currentItem?.packageMode;
     const amount = asPackage ? enteredAmount * currentItem.unitsPerPackage : enteredAmount;
+    const hasPurchasePrice = type === "in" && elements.movementPurchasePrice.value.trim() !== "";
+    const purchasePrice = hasPurchasePrice ? positiveNumber(elements.movementPurchasePrice.value) : 0;
     if (!itemId || (type !== "set" && amount <= 0)) { showToast("Geçerli bir miktar girin."); return; }
     setBusy(true); elements.saveMovementButton.disabled = true;
     try {
@@ -184,8 +186,10 @@ async function saveMovement(event) {
             if (type === "out") resultingQuantity -= amount;
             if (type === "set") resultingQuantity = amount;
             if (resultingQuantity < 0) throw new Error("insufficient-stock");
-            transaction.update(itemReference, { quantity: resultingQuantity, updatedAt: serverTimestamp() });
-            transaction.set(movementReference, { stockItemId: item.id, stockName: item.name, type, amount, enteredAmount, enteredUnit: asPackage ? item.packageUnit : item.unit, previousQuantity: item.quantity, resultingQuantity, unit: item.unit, operationDate: elements.movementDate.value, note: elements.movementNote.value.trim(), createdAt: serverTimestamp(), createdBy: auth.currentUser.uid });
+            const priceBasis = asPackage ? "package" : "unit";
+            const unitCost = hasPurchasePrice ? purchasePrice / (asPackage ? item.unitsPerPackage : 1) : 0;
+            transaction.update(itemReference, { quantity: resultingQuantity, ...(hasPurchasePrice ? { purchasePrice, purchasePriceBasis: priceBasis, purchaseDate: elements.movementDate.value } : {}), updatedAt: serverTimestamp() });
+            transaction.set(movementReference, { stockItemId: item.id, stockName: item.name, type, amount, enteredAmount, enteredUnit: asPackage ? item.packageUnit : item.unit, previousQuantity: item.quantity, resultingQuantity, unit: item.unit, operationDate: elements.movementDate.value, ...(hasPurchasePrice ? { purchasePrice, purchasePriceBasis: priceBasis, unitCost } : {}), note: elements.movementNote.value.trim(), createdAt: serverTimestamp(), createdBy: auth.currentUser.uid });
         });
         closeMovementDialog(); showToast("Stok hareketi kaydedildi.");
     } catch (error) {
@@ -205,9 +209,13 @@ function updateMovementPreview() {
     if (type === "out") result -= amount;
     if (type === "set") result = amount;
     elements.movementPackageRow.hidden = type !== "in" || !item.packageMode;
+    elements.movementPurchasePriceRow.hidden = type !== "in";
     elements.movementPackageText.textContent = `Girişi ${item.packageUnit} olarak yap (1 ${item.packageUnit} = ${formatNumber(item.unitsPerPackage)} ${item.unit})`;
     elements.movementAmountLabel.textContent = type === "in" ? (asPackage ? `Eklenecek ${item.packageUnit} sayısı` : "Eklenecek miktar") : type === "out" ? "Kullanılan / çıkarılan miktar" : "Yeni toplam miktar";
-    elements.movementPreview.textContent = `Mevcut: ${formatNumber(item.quantity)} ${item.unit} → Yeni: ${formatNumber(result)} ${item.unit}`;
+    elements.movementPurchasePriceLabel.textContent = asPackage ? `Bir ${item.packageUnit} alış fiyatı (TL)` : `Birim alış fiyatı (TL / ${item.unit})`;
+    const enteredPrice = positiveNumber(elements.movementPurchasePrice.value);
+    const costText = type === "in" && enteredPrice > 0 ? ` • Birim maliyet: ${formatMoney(enteredPrice / (asPackage ? item.unitsPerPackage : 1))}/${item.unit}` : "";
+    elements.movementPreview.textContent = `Mevcut: ${formatNumber(item.quantity)} ${item.unit} → Yeni: ${formatNumber(result)} ${item.unit}${costText}`;
     elements.movementPreview.style.color = result < 0 ? "#a22a32" : "";
 }
 
@@ -256,7 +264,8 @@ function renderMovements() {
         const label = type === "initial" ? "İlk stok" : type === "in" ? "Stok girişi" : type === "out" ? "Kullanım / çıkış" : type === "sale" ? "Gün sonu satışı" : "Sayım düzeltmesi";
         const sign = isIncoming ? "+" : type === "out" || type === "sale" ? "−" : "=";
         const enteredInfo = movement.enteredUnit && movement.enteredUnit !== movement.unit ? `${formatNumber(movement.enteredAmount)} ${escapeHtml(movement.enteredUnit)} = ` : "";
-        return `<article class="movement-item"><span class="movement-icon ${type}"><i class="fa-solid ${icon}"></i></span><div class="movement-copy"><strong>${escapeHtml(movement.stockName || "Stok")}</strong><span>${label} • ${formatDate(movement.operationDate)}${movement.note ? ` • ${escapeHtml(movement.note)}` : ""}</span></div><div class="movement-amount">${enteredInfo}${sign}${formatNumber(movement.amount)} ${escapeHtml(movement.unit || "")}<span class="movement-result">Kalan: ${formatNumber(movement.resultingQuantity)}</span></div></article>`;
+        const priceInfo = positiveNumber(movement.purchasePrice) > 0 ? ` • Alış: ${formatMoney(movement.purchasePrice)}/${escapeHtml(movement.purchasePriceBasis === "package" ? movement.enteredUnit : movement.unit)}${positiveNumber(movement.unitCost) > 0 ? ` • Birim: ${formatMoney(movement.unitCost)}/${escapeHtml(movement.unit)}` : ""}` : "";
+        return `<article class="movement-item"><span class="movement-icon ${type}"><i class="fa-solid ${icon}"></i></span><div class="movement-copy"><strong>${escapeHtml(movement.stockName || "Stok")}</strong><span>${label} • ${formatDate(movement.operationDate)}${priceInfo}${movement.note ? ` • ${escapeHtml(movement.note)}` : ""}</span></div><div class="movement-amount">${enteredInfo}${sign}${formatNumber(movement.amount)} ${escapeHtml(movement.unit || "")}<span class="movement-result">Kalan: ${formatNumber(movement.resultingQuantity)}</span></div></article>`;
     }).join("");
 }
 

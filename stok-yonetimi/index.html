@@ -109,6 +109,7 @@
             </div>
             <label class="dialog-field"><span id="movementAmountLabel">Eklenecek miktar</span><input id="movementAmount" type="number" min="0" max="999999" step="0.001" required></label>
             <label class="switch-row dialog-package-switch" id="movementPackageRow" hidden><input id="movementAsPackage" type="checkbox"><span id="movementPackageText">Girişi koli olarak yap</span></label>
+            <label class="dialog-field" id="movementPurchasePriceRow"><span id="movementPurchasePriceLabel">Alış fiyatı (TL)</span><input id="movementPurchasePrice" type="number" min="0" max="999999" step="0.01" placeholder="0"></label>
             <label class="dialog-field"><span>İşlem tarihi</span><input id="movementDate" type="date" required></label>
             <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="movementNote" maxlength="180" rows="2" placeholder="Örn. Haftalık 1 kg çay kullanıldı"></textarea></label>
             <div class="dialog-summary" id="movementPreview">Yeni stok miktarı: —</div>
@@ -118,7 +119,7 @@
 
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="script.js?v=2"></script>
+    <script type="module" src="script.js?v=3"></script>
     <script type="module" src="../merchant-order-alert.js?v=2"></script>
     <script type="module" src="../system-ui.js?v=4"></script>
     <script src="../panel-scroll.js?v=2"></script>
