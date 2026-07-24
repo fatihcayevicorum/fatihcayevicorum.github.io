@@ -5,13 +5,12 @@ import{ADMIN_UID,firebaseConfig}from"./firebase-config.js";
 
 const app=getApps().find(item=>item.name==="[DEFAULT]")||(getApps().length?getApp():initializeApp(firebaseConfig));
 const auth=getAuth(app),db=getFirestore(app);
-const embedded=new URLSearchParams(location.search).get("embed")==="1";
 let initial=true,known=new Set(),audioContext=null,popupTimer;
 
 document.addEventListener("pointerdown",()=>{if(!audioContext)audioContext=new(window.AudioContext||window.webkitAudioContext)()},{once:true});
 
 onAuthStateChanged(auth,user=>{
-  if(embedded||!user||user.uid!==ADMIN_UID)return;
+  if(!user||user.uid!==ADMIN_UID)return;
   buildAlertUi();
   onSnapshot(query(collection(db,"merchantOrders"),where("status","in",["pending","preparing","on_the_way"])),snapshot=>{
     const active=snapshot.docs.map(item=>({id:item.id,...item.data()}));

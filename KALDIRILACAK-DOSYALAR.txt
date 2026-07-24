@@ -1,0 +1,8 @@
+Operasyon panelini tamamen kaldırmak için yayındaki projeden aşağıdaki dosya ve klasörleri silin:
+
+- operasyon-paneli/ klasörünün tamamı
+- operasyon-taslak/ klasörünün tamamı
+- embed-mode.js
+- taze-dem-paneli/operation-link.css
+
+Ardından bu paketteki güncellenen dosyaları ana dizin yapısını koruyarak yükleyin.
