@@ -49,6 +49,10 @@ service cloud.firestore {
       allow read, write: if isFatihAdmin();
     }
 
+    match /adminDailyClosings/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
