@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Raporlar | Fatih Çay Evi</title>
+  <meta name="theme-color" content="#5a1018">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="../panel-header.css?v=5">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi">
+        <div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Raporlar</h1></div>
+      </div>
+      <div class="header-actions">
+        <div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
+        <details class="panel-menu">
+          <summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary>
+          <nav class="panel-menu-list" aria-label="Yönetim panelleri">
+            <a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a>
+            <a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a>
+            <a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a>
+            <a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a>
+            <a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a>
+            <a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a>
+            <a class="is-current" href="./"><i class="fa-solid fa-chart-column"></i>Raporlar</a>
+          </nav>
+        </details>
+        <button id="logoutButton" class="logout-button" type="button"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="panel filter-panel">
+      <div class="section-heading">
+        <div><p class="kicker">Tarih seçimi</p><h2>Rapor Dönemi</h2></div>
+        <span class="connection" id="connection"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span>
+      </div>
+      <div class="period-buttons" id="periodButtons">
+        <button class="active" data-period="today">Bugün</button>
+        <button data-period="week">Bu Hafta</button>
+        <button data-period="month">Bu Ay</button>
+        <button data-period="custom">Tarih Aralığı</button>
+      </div>
+      <div class="date-range" id="dateRange" hidden>
+        <label>Başlangıç<input id="startDate" type="date"></label>
+        <label>Bitiş<input id="endDate" type="date"></label>
+        <button id="applyRange" class="primary" type="button">Raporu Getir</button>
+      </div>
+      <div class="report-period"><i class="fa-regular fa-calendar"></i><strong id="periodLabel">Bugün</strong></div>
+    </section>
+
+    <section class="summary-grid" aria-label="Rapor özeti">
+      <article><i class="fa-solid fa-chart-line"></i><span>Toplam satış</span><strong id="salesTotal">₺0</strong></article>
+      <article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit kasa</span><strong id="cashTotal">₺0</strong></article>
+      <article><i class="fa-solid fa-address-book"></i><span>Açık hesap</span><strong id="creditTotal">₺0</strong></article>
+      <article><i class="fa-solid fa-mug-hot"></i><span>Satılan ürün</span><strong id="itemCount">0</strong></article>
+      <article><i class="fa-solid fa-receipt"></i><span>Kapanan adisyon</span><strong id="orderCount">0</strong></article>
+      <article><i class="fa-solid fa-gift"></i><span>İkram</span><strong id="giftCount">0</strong></article>
+      <article><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></article>
+      <article><i class="fa-solid fa-scale-balanced"></i><span>Hesap yuvarlama</span><strong id="roundingTotal">₺0</strong></article>
+    </section>
+
+    <section class="report-layout">
+      <article class="panel product-panel">
+        <div class="section-heading">
+          <div><p class="kicker">Ürün performansı</p><h2>Ürünlere Göre Satışlar</h2></div>
+          <input id="productSearch" class="search" type="search" placeholder="Ürün ara">
+        </div>
+        <div id="categoryTabs" class="category-tabs"></div>
+        <div id="productReport" class="product-report"></div>
+        <p id="productEmpty" class="empty">Seçilen dönemde ürün satışı bulunmuyor.</p>
+      </article>
+
+      <article class="panel ranking-panel">
+        <div class="section-heading"><div><p class="kicker">Sıralama</p><h2>En Çok ve En Az Satanlar</h2></div></div>
+        <div id="rankingList" class="ranking-list"></div>
+        <p id="rankingEmpty" class="empty">Henüz sıralanacak satış yok.</p>
+      </article>
+    </section>
+
+    <section class="panel category-panel">
+      <div class="section-heading"><div><p class="kicker">Kategori özeti</p><h2>Kategorilere Göre Dağılım</h2></div></div>
+      <div id="categoryReport" class="category-report"></div>
+    </section>
+
+    <section class="panel closing-panel">
+      <div class="section-heading">
+        <div><p class="kicker">Arşiv</p><h2>Geçmiş Gün Sonu Raporları</h2></div>
+        <div class="export-actions">
+          <button id="exportPdf" class="secondary" type="button"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+          <button id="exportExcel" class="secondary" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button>
+        </div>
+      </div>
+      <div id="closingList" class="closing-list"></div>
+      <p id="closingEmpty" class="empty">Henüz kapatılmış gün raporu bulunmuyor.</p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script type="module" src="script.js?v=1"></script>
+  <script type="module" src="../merchant-order-alert.js?v=2"></script>
+  <script type="module" src="../system-ui.js?v=4"></script>
+</body>
+</html>
