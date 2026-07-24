@@ -327,6 +327,79 @@
   margin-top: 10px;
 }
 
+/* Son Adisyon düzenlemeleri */
+.table-edit {
+  top: 9px;
+  bottom: auto;
+  border: 0;
+  color: #fff;
+  background: transparent !important;
+  box-shadow: none;
+  backdrop-filter: none;
+  font-size: 0.95rem;
+}
+
+.close-day-icon {
+  color: var(--ink);
+  background: #eee2d6;
+}
+
+.order-dialog .product:active {
+  color: inherit;
+  background: linear-gradient(180deg, #fffefd, #fff5e9);
+  border-color: #d8c5b3;
+  box-shadow: inset 0 3px 8px rgba(79, 39, 31, 0.16);
+  transform: scale(0.96);
+}
+
+.order-dialog .product:active strong {
+  color: var(--ink);
+}
+
+.order-dialog .product:active span {
+  color: var(--red);
+}
+
+.credit-order {
+  color: #fff;
+  background: var(--green);
+}
+
+.credit-dialog {
+  width: min(92vw, 440px);
+}
+
+.credit-customer-box {
+  margin-bottom: 10px;
+  padding: 11px 13px;
+  border-radius: 11px;
+  color: var(--green2);
+  background: #e9f5ee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.75rem;
+}
+
+.credit-dialog .payment-summary {
+  grid-template-columns: 1fr;
+}
+
+.credit-dialog .payment-summary > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checkout {
+  flex-wrap: wrap;
+}
+
+.checkout button {
+  flex: 1 1 auto;
+}
+
 .summary article {
   width: auto;
   min-width: 145px;
