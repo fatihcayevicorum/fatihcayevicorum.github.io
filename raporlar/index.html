@@ -92,6 +92,29 @@
       <div id="categoryReport" class="category-report"></div>
     </section>
 
+    <section class="panel stock-report-panel">
+      <div class="section-heading">
+        <div><p class="kicker">Alım ve satış takibi</p><h2>Stok Ürünü Raporu</h2></div>
+        <select id="stockProductSelect" class="stock-select"><option value="">Stok ürünü seçin</option></select>
+      </div>
+      <p id="stockReportHint" class="empty">Yukarıdan Su, Kola veya takip ettiğiniz başka bir stok ürününü seçin.</p>
+      <div id="stockReportContent" hidden>
+        <div class="stock-summary">
+          <article><span>Alınan koli</span><strong id="stockPackages">0</strong></article>
+          <article><span>Alınan adet</span><strong id="stockReceived">0</strong></article>
+          <article><span>Toplam alış</span><strong id="stockPurchaseTotal">₺0</strong></article>
+          <article><span>Ortalama maliyet</span><strong id="stockAverageCost">₺0</strong></article>
+          <article><span>Satılan adet</span><strong id="stockSold">0</strong></article>
+          <article><span>Satış geliri</span><strong id="stockRevenue">₺0</strong></article>
+          <article><span>Tahmini kâr</span><strong id="stockProfit">₺0</strong></article>
+          <article><span>Güncel kalan</span><strong id="stockRemaining">0</strong></article>
+        </div>
+        <div class="stock-history-head"><h3>Stok Girişleri</h3><span id="stockEntryCount">0 işlem</span></div>
+        <div id="stockEntryList" class="stock-entry-list"></div>
+        <p id="stockEntryEmpty" class="empty">Seçilen tarihlerde stok girişi bulunmuyor.</p>
+      </div>
+    </section>
+
     <section class="panel closing-panel">
       <div class="section-heading">
         <div><p class="kicker">Arşiv</p><h2>Geçmiş Gün Sonu Raporları</h2></div>
@@ -106,7 +129,7 @@
   </main>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=1"></script>
+  <script type="module" src="script.js?v=2"></script>
   <script type="module" src="../merchant-order-alert.js?v=2"></script>
   <script type="module" src="../system-ui.js?v=4"></script>
 </body>

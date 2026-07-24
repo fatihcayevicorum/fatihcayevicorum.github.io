@@ -1,127 +1,118 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Stok Yönetimi | Fatih Çay Evi</title>
-    <meta name="theme-color" content="#5a1018">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=3">
-    <link rel="stylesheet" href="../panel-scroll.css?v=2">
-    <link rel="stylesheet" href="../panel-header.css?v=4">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Stok Yönetimi | Fatih Çay Evi</title>
+  <meta name="theme-color" content="#5a1018">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="simple-stock.css?v=1">
+  <link rel="stylesheet" href="../panel-header.css?v=5">
+  <link rel="stylesheet" href="../panel-scroll.css?v=2">
 </head>
 <body>
-    <header class="app-header">
-        <div class="header-inner">
-            <div class="brand">
-                <img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu">
-                <div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Stok Yönetimi</h1></div>
-            </div>
-            <div class="header-actions">
-                <details class="panel-menu">
-                    <summary><i class="fa-solid fa-grip" aria-hidden="true"></i><span>Paneller</span></summary>
-                    <nav class="panel-menu-list" aria-label="Yönetim panelleri">
-                        <a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a>
-                        <a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a>
-                        <a class="is-current" href="./"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a>
-                        <a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a>
-                        <a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a>
-                        <a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a>
-                        <a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a>
-                    </nav>
-                </details>
-                <div class="live-time" aria-live="off"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
-                <button class="logout-button" id="logoutButton" type="button" aria-label="Çıkış yap"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span>Güvenli Çıkış</span></button>
-            </div>
+  <header class="app-header"><div class="header-inner">
+    <div class="brand"><img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Stok Yönetimi</h1></div></div>
+    <div class="header-actions">
+      <div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
+      <details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list">
+        <a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a>
+        <a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a>
+        <a class="is-current" href="./"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a>
+        <a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a>
+        <a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a>
+        <a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a>
+        <a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a>
+      </nav></details>
+      <button id="logoutButton" class="logout-button" type="button"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button>
+    </div>
+  </div></header>
+
+  <main class="page-shell">
+    <section class="panel summary-panel">
+      <div class="section-heading"><div><p class="kicker">Kontrol merkezi</p><h2>Stok Özeti</h2></div><span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span></div>
+      <div class="stats">
+        <article><span>Takip edilen ürün</span><strong id="itemCount">0</strong></article>
+        <article><span>Toplam stok</span><strong id="totalUnits">0</strong></article>
+        <article class="critical-stat"><span>Kritik stok</span><strong id="criticalCount">0</strong></article>
+        <article class="empty-stat"><span>Tükenen</span><strong id="emptyCount">0</strong></article>
+      </div>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="section-heading list-heading">
+        <div><p class="kicker">Canlı stok</p><h2>Stok Kartları</h2></div>
+        <div class="stock-toolbar">
+          <input id="stockSearch" type="search" placeholder="Ürün ara">
+          <button id="manageProductsButton" class="primary-button" type="button"><i class="fa-solid fa-box-open"></i> Stok Ürünleri</button>
         </div>
-    </header>
+      </div>
+      <p class="empty-copy" id="stockEmpty">Henüz stok ürünü tanımlanmadı.</p>
+      <div class="stock-list" id="stockList"></div>
+    </section>
 
-    <main class="page-shell">
-        <section class="panel summary-panel">
-            <div class="section-heading">
-                <div><p class="kicker">Kontrol merkezi</p><h2>Stok Özeti</h2></div>
-                <span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> Bağlanıyor</span>
-            </div>
-            <div class="stats">
-                <article><span>Aktif stok kartı</span><strong id="itemCount">0</strong></article>
-                <article class="critical-stat"><span>Kritik seviyede</span><strong id="criticalCount">0</strong></article>
-                <article class="empty-stat"><span>Tükenen</span><strong id="emptyCount">0</strong></article>
-                <article><span>Otomatik düşüm</span><strong id="automaticCount">0</strong></article>
-            </div>
-        </section>
+    <section class="panel movement-panel">
+      <div class="section-heading"><div><p class="kicker">İşlem geçmişi</p><h2>Son Stok Hareketleri</h2></div></div>
+      <p class="empty-copy" id="movementEmpty">Henüz stok hareketi yok.</p>
+      <div class="movement-list" id="movementList"></div>
+    </section>
+  </main>
 
-        <section class="panel form-panel">
-            <div class="section-heading"><div><p class="kicker">Stok bilgileri</p><h2 id="stockFormTitle">Yeni Stok Kartı</h2></div></div>
-            <form id="stockForm">
-                <input id="editingStockId" type="hidden">
-                <div class="field-grid">
-                    <label class="full-field"><span>Menüden ürün seç <small>(hammadde için boş bırak)</small></span><select id="linkedMenuItem"><option value="">Menü ürünü seç veya elle yaz</option></select></label>
-                    <label><span>Malzeme veya ürün adı</span><input id="stockName" type="text" maxlength="80" required placeholder="Menüden seç veya elle yaz"></label>
-                    <label><span>Stok giriş şekli</span><select id="stockEntryMode"><option value="single">Tek birim olarak</option><option value="package">Koli / paket olarak</option></select></label>
-                    <label><span id="stockQuantityLabel">Mevcut miktar</span><input id="stockQuantity" type="number" min="0" max="999999" step="0.001" required placeholder="0"></label>
-                    <label><span>Stok takip birimi</span><input id="stockUnit" type="text" maxlength="24" list="unitSuggestions" required placeholder="adet, kg, kutu..."></label>
-                    <label class="package-field" id="packageUnitField" hidden><span>Paketleme birimi</span><input id="packageUnit" type="text" maxlength="24" value="koli" placeholder="koli, kasa, paket..."></label>
-                    <label class="package-field" id="unitsPerPackageField" hidden><span>Bir kolideki adet</span><input id="unitsPerPackage" type="number" min="1" max="999999" step="1" value="24"></label>
-                    <label><span id="stockThresholdLabel">Kritik seviye uyarısı</span><input id="stockThreshold" type="number" min="0" max="999999" step="0.001" required placeholder="0"></label>
-                    <label><span>Son alış tarihi</span><input id="stockPurchaseDate" type="date" required></label>
-                    <label><span id="purchasePriceLabel">Alış fiyatı (TL)</span><input id="stockPurchasePrice" type="number" min="0" max="999999" step="0.01" placeholder="0"></label>
-                    <label><span>Güncel satış fiyatı (TL)</span><input id="stockSalePrice" type="number" min="0" max="999999" step="0.01" placeholder="0"></label>
-                    <label class="full-field"><span>Not <small>(isteğe bağlı)</small></span><textarea id="stockNote" maxlength="180" rows="2" placeholder="Marka, koli içeriği veya hatırlatma"></textarea></label>
-                </div>
-                <div class="conversion-preview" id="conversionPreview" hidden>Toplam stok: —</div>
-                <label class="switch-row"><input id="automaticDeduction" type="checkbox"><span>Bu ürün adisyonda satıldığında gün sonunda stoktan otomatik düşsün</span></label>
-                <label class="deduction-field" id="deductionField" hidden><span>Bir satışta düşülecek miktar</span><input id="deductionAmount" type="number" min="0.001" max="999999" step="0.001" value="1"></label>
-                <div class="form-actions">
-                    <button class="secondary-button" id="cancelEditButton" type="button" hidden>Vazgeç</button>
-                    <button class="primary-button" id="saveStockButton" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Stok Kartını Kaydet</button>
-                </div>
-            </form>
-            <datalist id="unitSuggestions"></datalist>
-        </section>
+  <dialog id="productsDialog">
+    <form id="productForm">
+      <div class="dialog-heading"><div><p class="kicker">Ürün tanımları</p><h2>Stok Ürünleri</h2></div><button class="icon-button" type="button" data-close="productsDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <label class="dialog-field"><span>Menüden ürün seç</span><select id="menuProduct" required><option value="">Ürün seçin</option></select></label>
+      <div class="compact-grid">
+        <label class="dialog-field"><span>Bir kolideki adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
+        <label class="dialog-field"><span>Kritik stok uyarısı</span><input id="warningThreshold" type="number" min="0" max="999999" step="1" value="10" required></label>
+      </div>
+      <p class="notice">Bu ürün adisyonda satıldığında stoktan otomatik 1 adet düşer.</p>
+      <button class="primary-button full-button" type="submit"><i class="fa-solid fa-plus"></i> Ürünü Stok Takibine Ekle</button>
+      <div class="defined-products" id="definedProducts"></div>
+    </form>
+  </dialog>
 
-        <section class="panel list-panel">
-            <div class="section-heading list-heading">
-                <div><p class="kicker">Canlı liste</p><h2>Stok Kartları</h2></div>
-                <div class="list-tools"><select id="stockFilter" aria-label="Stok filtresi"><option value="active">Tüm aktif stoklar</option><option value="critical">Kritik ve tükenen</option><option value="automatic">Otomatik düşenler</option><option value="manual">Manuel kullanılanlar</option><option value="archived">Arşivlenenler</option></select><input id="stockSearch" type="search" placeholder="Stok ara"></div>
-            </div>
-            <p class="empty-copy" id="stockEmpty">Henüz stok kartı eklenmedi.</p>
-            <div class="stock-list" id="stockList"></div>
-        </section>
+  <dialog id="entryDialog">
+    <form id="entryForm">
+      <div class="dialog-heading"><div><p class="kicker">Yeni ürün alımı</p><h2 id="entryTitle">Stok Girişi</h2></div><button class="icon-button" type="button" data-close="entryDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <input id="entryStockId" type="hidden">
+      <div class="compact-grid">
+        <label class="dialog-field"><span>Koli sayısı</span><input id="packageCount" type="number" min=".001" max="999999" step=".001" required placeholder="Örn. 2"></label>
+        <label class="dialog-field"><span>Bir kolideki adet</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
+      </div>
+      <label class="dialog-field"><span>Toplam ödenen tutar (TL)</span><input id="purchaseTotal" type="number" min="0" max="99999999" step=".01" required placeholder="Örn. 300"></label>
+      <label class="dialog-field"><span>Alış tarihi</span><input id="entryDate" type="date" required></label>
+      <label class="dialog-field"><span>Not <small>(isteğe bağlı)</small></span><textarea id="entryNote" maxlength="180" rows="2"></textarea></label>
+      <div class="cost-preview" id="costPreview"><span>Toplam adet: —</span><strong>Birim maliyet: —</strong></div>
+      <button class="primary-button full-button" type="submit"><i class="fa-solid fa-boxes-stacked"></i> Stoka Ekle</button>
+    </form>
+  </dialog>
 
-        <section class="panel movement-panel">
-            <div class="section-heading"><div><p class="kicker">İşlem geçmişi</p><h2>Son Stok Hareketleri</h2></div></div>
-            <p class="empty-copy" id="movementEmpty">Henüz stok hareketi yok.</p>
-            <div class="movement-list" id="movementList"></div>
-        </section>
-    </main>
+  <dialog id="adjustDialog">
+    <form id="adjustForm">
+      <div class="dialog-heading"><div><p class="kicker">Manuel işlem</p><h2 id="adjustTitle">Stok Düzelt</h2></div><button class="icon-button" type="button" data-close="adjustDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <input id="adjustStockId" type="hidden">
+      <div class="movement-types">
+        <label><input type="radio" name="adjustType" value="out" checked><span><i class="fa-solid fa-minus"></i> Stoktan Düş</span></label>
+        <label><input type="radio" name="adjustType" value="set"><span><i class="fa-solid fa-pen"></i> Sayımı Düzelt</span></label>
+      </div>
+      <label class="dialog-field"><span id="adjustAmountLabel">Düşülecek adet</span><input id="adjustAmount" type="number" min="0" max="999999" step=".001" required></label>
+      <label class="dialog-field"><span>İşlem tarihi</span><input id="adjustDate" type="date" required></label>
+      <label class="dialog-field"><span>Açıklama</span><textarea id="adjustNote" maxlength="180" rows="2"></textarea></label>
+      <div class="dialog-summary" id="adjustPreview">Yeni stok: —</div>
+      <button class="primary-button full-button" type="submit">İşlemi Kaydet</button>
+    </form>
+  </dialog>
 
-    <dialog id="movementDialog">
-        <form id="movementForm" method="dialog">
-            <div class="dialog-heading"><div><p class="kicker">Stok hareketi</p><h2 id="movementTitle">Miktar Güncelle</h2></div><button class="icon-button" id="closeMovementDialog" type="button" aria-label="Pencereyi kapat"><i class="fa-solid fa-xmark"></i></button></div>
-            <input id="movementStockId" type="hidden">
-            <div class="movement-types" role="group" aria-label="Hareket türü">
-                <label><input type="radio" name="movementType" value="in" checked><span><i class="fa-solid fa-plus"></i> Stok Girişi</span></label>
-                <label><input type="radio" name="movementType" value="out"><span><i class="fa-solid fa-minus"></i> Kullanım / Çıkış</span></label>
-                <label><input type="radio" name="movementType" value="set"><span><i class="fa-solid fa-pen"></i> Sayım Düzeltmesi</span></label>
-            </div>
-            <label class="dialog-field"><span id="movementAmountLabel">Eklenecek miktar</span><input id="movementAmount" type="number" min="0" max="999999" step="0.001" required></label>
-            <label class="switch-row dialog-package-switch" id="movementPackageRow" hidden><input id="movementAsPackage" type="checkbox"><span id="movementPackageText">Girişi koli olarak yap</span></label>
-            <label class="dialog-field" id="movementPurchasePriceRow"><span id="movementPurchasePriceLabel">Alış fiyatı (TL)</span><input id="movementPurchasePrice" type="number" min="0" max="999999" step="0.01" placeholder="0"></label>
-            <label class="dialog-field"><span>İşlem tarihi</span><input id="movementDate" type="date" required></label>
-            <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="movementNote" maxlength="180" rows="2" placeholder="Örn. Haftalık 1 kg çay kullanıldı"></textarea></label>
-            <div class="dialog-summary" id="movementPreview">Yeni stok miktarı: —</div>
-            <div class="form-actions"><button class="secondary-button" id="cancelMovementButton" type="button">Vazgeç</button><button class="primary-button" id="saveMovementButton" type="submit">Hareketi Kaydet</button></div>
-        </form>
-    </dialog>
-
-    <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="script.js?v=3"></script>
-    <script type="module" src="../merchant-order-alert.js?v=2"></script>
-    <script type="module" src="../system-ui.js?v=4"></script>
-    <script src="../panel-scroll.js?v=2"></script>
+  <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
+  <div class="toast" id="toast"></div>
+  <script type="module" src="script.js?v=4"></script>
+  <script type="module" src="../merchant-order-alert.js?v=2"></script>
+  <script type="module" src="../system-ui.js?v=4"></script>
+  <script src="../panel-scroll.js?v=2"></script>
 </body>
 </html>

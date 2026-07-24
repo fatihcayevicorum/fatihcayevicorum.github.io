@@ -1,346 +1,51 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import {
-    collection,
-    doc,
-    getFirestore,
-    limit,
-    onSnapshot,
-    orderBy,
-    query,
-    runTransaction,
-    serverTimestamp,
-    setDoc,
-    updateDoc,
-    writeBatch
-} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import{collection,doc,getFirestore,onSnapshot,runTransaction,serverTimestamp,setDoc,updateDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getFirestore(app);
-const stockCollection = collection(database, "adminStockItems");
-const movementCollection = collection(database, "adminStockMovements");
-const menuReference = doc(database, "publicMenu", "catalog");
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+const stocksCol=collection(db,"adminStockItems"),movesCol=collection(db,"adminStockMovements"),menuRef=doc(db,"publicMenu","catalog");
+const el={itemCount:$("itemCount"),totalUnits:$("totalUnits"),criticalCount:$("criticalCount"),emptyCount:$("emptyCount"),saveStatus:$("saveStatus"),stockSearch:$("stockSearch"),stockEmpty:$("stockEmpty"),stockList:$("stockList"),movementEmpty:$("movementEmpty"),movementList:$("movementList"),manageProductsButton:$("manageProductsButton"),productsDialog:$("productsDialog"),productForm:$("productForm"),menuProduct:$("menuProduct"),defaultUnitsPerPackage:$("defaultUnitsPerPackage"),warningThreshold:$("warningThreshold"),definedProducts:$("definedProducts"),entryDialog:$("entryDialog"),entryForm:$("entryForm"),entryTitle:$("entryTitle"),entryStockId:$("entryStockId"),packageCount:$("packageCount"),entryUnitsPerPackage:$("entryUnitsPerPackage"),purchaseTotal:$("purchaseTotal"),entryDate:$("entryDate"),entryNote:$("entryNote"),costPreview:$("costPreview"),adjustDialog:$("adjustDialog"),adjustForm:$("adjustForm"),adjustTitle:$("adjustTitle"),adjustStockId:$("adjustStockId"),adjustAmount:$("adjustAmount"),adjustAmountLabel:$("adjustAmountLabel"),adjustDate:$("adjustDate"),adjustNote:$("adjustNote"),adjustPreview:$("adjustPreview"),logoutButton:$("logoutButton"),toast:$("toast")};
+let stocks=[],movements=[],catalog={categories:[],items:[]},busy=false,toastTimer;
 
-const elements = {
-    stockForm: document.getElementById("stockForm"), editingStockId: document.getElementById("editingStockId"), stockFormTitle: document.getElementById("stockFormTitle"),
-    stockName: document.getElementById("stockName"), stockEntryMode: document.getElementById("stockEntryMode"), stockQuantity: document.getElementById("stockQuantity"), stockQuantityLabel: document.getElementById("stockQuantityLabel"), stockUnit: document.getElementById("stockUnit"), packageUnit: document.getElementById("packageUnit"), packageUnitField: document.getElementById("packageUnitField"), unitsPerPackage: document.getElementById("unitsPerPackage"), unitsPerPackageField: document.getElementById("unitsPerPackageField"), stockThreshold: document.getElementById("stockThreshold"), stockThresholdLabel: document.getElementById("stockThresholdLabel"), stockPurchaseDate: document.getElementById("stockPurchaseDate"), stockPurchasePrice: document.getElementById("stockPurchasePrice"), purchasePriceLabel: document.getElementById("purchasePriceLabel"), stockSalePrice: document.getElementById("stockSalePrice"), linkedMenuItem: document.getElementById("linkedMenuItem"), stockNote: document.getElementById("stockNote"), conversionPreview: document.getElementById("conversionPreview"), automaticDeduction: document.getElementById("automaticDeduction"), deductionField: document.getElementById("deductionField"), deductionAmount: document.getElementById("deductionAmount"), cancelEditButton: document.getElementById("cancelEditButton"), saveStockButton: document.getElementById("saveStockButton"), unitSuggestions: document.getElementById("unitSuggestions"),
-    itemCount: document.getElementById("itemCount"), criticalCount: document.getElementById("criticalCount"), emptyCount: document.getElementById("emptyCount"), automaticCount: document.getElementById("automaticCount"), saveStatus: document.getElementById("saveStatus"),
-    stockFilter: document.getElementById("stockFilter"), stockSearch: document.getElementById("stockSearch"), stockEmpty: document.getElementById("stockEmpty"), stockList: document.getElementById("stockList"), movementEmpty: document.getElementById("movementEmpty"), movementList: document.getElementById("movementList"),
-    movementDialog: document.getElementById("movementDialog"), movementForm: document.getElementById("movementForm"), movementTitle: document.getElementById("movementTitle"), movementStockId: document.getElementById("movementStockId"), movementAmount: document.getElementById("movementAmount"), movementAmountLabel: document.getElementById("movementAmountLabel"), movementPackageRow: document.getElementById("movementPackageRow"), movementAsPackage: document.getElementById("movementAsPackage"), movementPackageText: document.getElementById("movementPackageText"), movementPurchasePriceRow: document.getElementById("movementPurchasePriceRow"), movementPurchasePrice: document.getElementById("movementPurchasePrice"), movementPurchasePriceLabel: document.getElementById("movementPurchasePriceLabel"), movementDate: document.getElementById("movementDate"), movementNote: document.getElementById("movementNote"), movementPreview: document.getElementById("movementPreview"), closeMovementDialog: document.getElementById("closeMovementDialog"), cancelMovementButton: document.getElementById("cancelMovementButton"), saveMovementButton: document.getElementById("saveMovementButton"),
-    currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast")
-};
+el.manageProductsButton.onclick=()=>{renderProductManager();el.productsDialog.showModal()};
+el.productForm.onsubmit=addTrackedProduct;
+el.definedProducts.onclick=e=>{const button=e.target.closest("[data-archive]");if(button)archiveProduct(button.dataset.archive)};
+el.stockList.onclick=e=>{const entry=e.target.closest("[data-entry]"),adjust=e.target.closest("[data-adjust]");if(entry)openEntry(entry.dataset.entry);if(adjust)openAdjust(adjust.dataset.adjust)};
+el.stockSearch.oninput=renderStocks;
+el.entryForm.oninput=renderCostPreview;
+el.entryForm.onsubmit=saveEntry;
+el.adjustForm.oninput=renderAdjustPreview;
+el.adjustForm.onsubmit=saveAdjustment;
+document.addEventListener("click",e=>{const close=e.target.closest("[data-close]");if(close)$(close.dataset.close).close();const menu=document.querySelector(".panel-menu");if(menu?.open&&!menu.contains(e.target))menu.removeAttribute("open")});
+el.logoutButton.onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
+updateClock();setInterval(updateClock,1000);
 
-let stockItems = [];
-let movements = [];
-let menuCatalog = { categories: [], items: [] };
-let isBusy = false;
-let toastTimer = null;
-let unsubscribeItems = null;
-let unsubscribeMovements = null;
-let unsubscribeMenu = null;
-
-elements.stockForm.addEventListener("submit", saveStockItem);
-elements.cancelEditButton.addEventListener("click", resetStockForm);
-elements.automaticDeduction.addEventListener("change", updateDeductionVisibility);
-elements.stockEntryMode.addEventListener("change", updatePackageFields);
-elements.stockForm.addEventListener("input", updateConversionPreview);
-elements.linkedMenuItem.addEventListener("change", fillFromMenuProduct);
-elements.stockList.addEventListener("click", handleStockAction);
-elements.stockFilter.addEventListener("change", renderStockItems);
-elements.stockSearch.addEventListener("input", renderStockItems);
-elements.movementForm.addEventListener("submit", saveMovement);
-elements.movementForm.addEventListener("input", updateMovementPreview);
-elements.closeMovementDialog.addEventListener("click", closeMovementDialog);
-elements.cancelMovementButton.addEventListener("click", closeMovementDialog);
-elements.logoutButton.addEventListener("click", async () => { await signOut(auth); window.location.replace("../yonetici-giris.html"); });
-document.addEventListener("click", (event) => { const menu = document.querySelector(".panel-menu"); if (menu?.open && !menu.contains(event.target)) menu.removeAttribute("open"); });
-
-setTodayInputs();
-updatePackageFields();
-updateClock();
-window.setInterval(updateClock, 1000);
-
-onAuthStateChanged(auth, async (user) => {
-    if (!user || user.uid !== ADMIN_UID) {
-        if (user) await signOut(auth);
-        window.location.replace("../yonetici-giris.html?next=stok-yonetimi/");
-        return;
-    }
-    subscribeData();
-});
-
-function subscribeData() {
-    unsubscribeItems?.(); unsubscribeMovements?.(); unsubscribeMenu?.();
-    unsubscribeItems = onSnapshot(stockCollection, (snapshot) => {
-        stockItems = snapshot.docs.map((entry) => normalizeStockItem(entry.id, entry.data()));
-        setConnection(true); renderAll();
-    }, handleConnectionError);
-    unsubscribeMovements = onSnapshot(query(movementCollection, orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
-        movements = snapshot.docs.map((entry) => ({ id: entry.id, ...entry.data() }));
-        renderMovements();
-    }, handleConnectionError);
-    unsubscribeMenu = onSnapshot(menuReference, (snapshot) => {
-        const data = snapshot.exists() ? snapshot.data() : {};
-        menuCatalog = { categories: Array.isArray(data.categories) ? data.categories : [], items: Array.isArray(data.items) ? data.items : [] };
-        renderMenuOptions();
-    }, handleConnectionError);
+onAuthStateChanged(auth,async user=>{if(!user||user.uid!==ADMIN_UID){if(user)await signOut(auth);location.replace("../yonetici-giris.html?next=stok-yonetimi/");return}subscribe()});
+function subscribe(){
+  onSnapshot(stocksCol,s=>{stocks=s.docs.map(d=>normalizeStock(d.id,d.data()));connected();renderAll()},fail);
+  onSnapshot(movesCol,s=>{movements=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>timestamp(b.createdAt)-timestamp(a.createdAt)).slice(0,80);renderMovements()},fail);
+  onSnapshot(menuRef,s=>{const d=s.data()||{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[]};renderProductManager()},fail);
 }
+function connected(){el.saveStatus.innerHTML='<i class="fa-solid fa-circle-check"></i> Canlı bağlantı';el.saveStatus.classList.remove("is-error")}
+function fail(error){console.error(error);el.saveStatus.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Bağlantı hatası';el.saveStatus.classList.add("is-error");show("Stok verileri alınamadı.")}
 
-async function saveStockItem(event) {
-    event.preventDefault();
-    if (isBusy) return;
-    const editingId = elements.editingStockId.value;
-    const linkedMenuItemId = elements.linkedMenuItem.value;
-    const automaticDeduction = elements.automaticDeduction.checked;
-    const packageMode = elements.stockEntryMode.value === "package";
-    const unitsPerPackage = packageMode ? Math.max(1, positiveNumber(elements.unitsPerPackage.value)) : 1;
-    if (automaticDeduction && !linkedMenuItemId) { showToast("Otomatik düşüm için bağlı menü ürününü seçin."); return; }
-    const baseData = {
-        name: elements.stockName.value.trim(), unit: normalizeUnit(elements.stockUnit.value), warningThreshold: positiveNumber(elements.stockThreshold.value), purchaseDate: elements.stockPurchaseDate.value,
-        purchasePrice: positiveNumber(elements.stockPurchasePrice.value), purchasePriceBasis: packageMode ? "package" : "unit", packageMode, packageUnit: packageMode ? normalizeUnit(elements.packageUnit.value || "koli") : "", unitsPerPackage,
-        salePrice: positiveNumber(elements.stockSalePrice.value), linkedMenuItemId, automaticDeduction, deductionAmount: automaticDeduction ? Math.max(0.001, positiveNumber(elements.deductionAmount.value)) : 0,
-        note: elements.stockNote.value.trim(), active: true, updatedAt: serverTimestamp()
-    };
-    if (!baseData.name || !baseData.unit || !baseData.purchaseDate || (packageMode && !baseData.packageUnit)) return;
-    setBusy(true);
-    try {
-        if (editingId) {
-            await updateDoc(doc(stockCollection, editingId), baseData);
-            showToast("Stok kartı güncellendi.");
-        } else {
-            const itemReference = doc(stockCollection);
-            const movementReference = doc(movementCollection);
-            const enteredQuantity = positiveNumber(elements.stockQuantity.value);
-            const quantity = enteredQuantity * unitsPerPackage;
-            const batch = writeBatch(database);
-            batch.set(itemReference, { ...baseData, quantity, createdAt: serverTimestamp() });
-            batch.set(movementReference, { stockItemId: itemReference.id, stockName: baseData.name, type: "initial", amount: quantity, enteredAmount: enteredQuantity, enteredUnit: packageMode ? baseData.packageUnit : baseData.unit, previousQuantity: 0, resultingQuantity: quantity, unit: baseData.unit, operationDate: baseData.purchaseDate, note: packageMode ? `${formatNumber(enteredQuantity)} ${baseData.packageUnit} × ${formatNumber(unitsPerPackage)} ${baseData.unit}` : "İlk stok miktarı", createdAt: serverTimestamp(), createdBy: auth.currentUser.uid });
-            await batch.commit();
-            showToast("Stok kartı oluşturuldu.");
-        }
-        resetStockForm();
-    } catch (error) {
-        console.error(error); showToast("Stok kartı kaydedilemedi. Bağlantıyı kontrol edin.");
-    } finally { setBusy(false); }
-}
+function renderAll(){const active=stocks.filter(x=>x.active);el.itemCount.textContent=active.length;el.totalUnits.textContent=formatNumber(active.reduce((sum,x)=>sum+x.quantity,0));el.criticalCount.textContent=active.filter(x=>x.quantity>0&&x.quantity<=x.warningThreshold).length;el.emptyCount.textContent=active.filter(x=>x.quantity<=0).length;renderStocks();renderProductManager()}
+function renderStocks(){const q=el.stockSearch.value.trim().toLocaleLowerCase("tr-TR"),items=stocks.filter(x=>x.active&&x.name.toLocaleLowerCase("tr-TR").includes(q)).sort((a,b)=>a.name.localeCompare(b.name,"tr"));el.stockList.innerHTML=items.map(x=>`<article class="stock-card ${x.quantity<=0?"is-empty":x.quantity<=x.warningThreshold?"is-critical":""}"><div class="stock-main"><div class="stock-title-row"><strong>${esc(x.name)}</strong><span class="status-badge ${x.quantity<=0?"is-empty":x.quantity<=x.warningThreshold?"is-critical":"is-ok"}">${x.quantity<=0?"Tükendi":x.quantity<=x.warningThreshold?"Kritik":"Stokta"}</span></div><div class="stock-quantity-row"><strong>${formatNumber(x.quantity)}</strong><span>${esc(x.unit)}</span></div><div class="stock-cost"><span>1 koli: ${formatNumber(x.unitsPerPackage)} ${esc(x.unit)}</span>${x.unitCost>0?`<span>Birim maliyet: ${money(x.unitCost)}</span>`:""}${x.lastPurchaseTotal>0?`<span>Son alım: ${money(x.lastPurchaseTotal)}</span>`:""}</div></div><div class="card-actions"><button class="entry-button" data-entry="${x.id}"><i class="fa-solid fa-plus"></i> Stok Ekle</button><button class="icon-button" data-adjust="${x.id}" title="Stok düzelt"><i class="fa-solid fa-pen"></i></button></div></article>`).join("");el.stockEmpty.hidden=items.length>0}
+function renderProductManager(){if(!el.menuProduct)return;const activeIds=new Set(stocks.filter(x=>x.active).map(x=>x.linkedMenuItemId)),available=catalog.items.filter(x=>x.available!==false&&!activeIds.has(x.id)).sort((a,b)=>String(a.name).localeCompare(String(b.name),"tr"));el.menuProduct.innerHTML='<option value="">Ürün seçin</option>'+available.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");const defined=stocks.filter(x=>x.active).sort((a,b)=>a.name.localeCompare(b.name,"tr"));el.definedProducts.innerHTML=defined.map(x=>`<div class="defined-product"><div><strong>${esc(x.name)}</strong><small>1 koli = ${formatNumber(x.unitsPerPackage)} ${esc(x.unit)} • Adisyondan otomatik düşer</small></div><button class="icon-button is-danger" type="button" data-archive="${x.id}" title="Takipten çıkar"><i class="fa-solid fa-trash"></i></button></div>`).join("")}
 
-function handleStockAction(event) {
-    const movementButton = event.target.closest("[data-movement]");
-    const editButton = event.target.closest("[data-edit]");
-    const archiveButton = event.target.closest("[data-archive]");
-    const restoreButton = event.target.closest("[data-restore]");
-    if (movementButton) openMovementDialog(movementButton.dataset.movement);
-    if (editButton) beginEdit(editButton.dataset.edit);
-    if (archiveButton) archiveItem(archiveButton.dataset.archive, false);
-    if (restoreButton) archiveItem(restoreButton.dataset.restore, true);
-}
+async function addTrackedProduct(e){e.preventDefault();if(busy)return;const menuItem=catalog.items.find(x=>x.id===el.menuProduct.value);if(!menuItem)return show("Menüden ürün seçin.");const archived=stocks.find(x=>x.linkedMenuItemId===menuItem.id&&!x.active),data={name:menuItem.name,linkedMenuItemId:menuItem.id,quantity:archived?.quantity||0,unit:"adet",packageMode:true,packageUnit:"koli",unitsPerPackage:Math.max(1,num(el.defaultUnitsPerPackage.value)),warningThreshold:Math.max(0,num(el.warningThreshold.value)),automaticDeduction:true,deductionAmount:1,active:true,updatedAt:serverTimestamp()};busy=true;try{if(archived)await updateDoc(doc(stocksCol,archived.id),data);else await setDoc(doc(stocksCol),{...data,createdAt:serverTimestamp()});el.productForm.reset();el.defaultUnitsPerPackage.value=24;el.warningThreshold.value=10;show("Ürün stok takibine eklendi.")}catch(error){console.error(error);show("Ürün eklenemedi.")}finally{busy=false}}
+async function archiveProduct(id){const item=stocks.find(x=>x.id===id);if(!item)return;try{await updateDoc(doc(stocksCol,id),{active:false,automaticDeduction:false,updatedAt:serverTimestamp()});show(`${item.name} stok takibinden çıkarıldı.`)}catch(error){console.error(error);show("Ürün kaldırılamadı.")}}
 
-function beginEdit(id) {
-    const item = stockItems.find((entry) => entry.id === id); if (!item) return;
-    elements.editingStockId.value = item.id; elements.stockName.value = item.name; elements.stockEntryMode.value = item.packageMode ? "package" : "single"; elements.stockQuantity.value = String(item.packageMode ? item.quantity / item.unitsPerPackage : item.quantity); elements.stockQuantity.disabled = true; elements.stockUnit.value = item.unit; elements.packageUnit.value = item.packageUnit || "koli"; elements.unitsPerPackage.value = item.unitsPerPackage || 1; elements.stockThreshold.value = String(item.warningThreshold); elements.stockPurchaseDate.value = item.purchaseDate; elements.stockPurchasePrice.value = item.purchasePrice || ""; elements.stockSalePrice.value = item.salePrice || ""; elements.linkedMenuItem.value = item.linkedMenuItemId; elements.stockNote.value = item.note; elements.automaticDeduction.checked = item.automaticDeduction; elements.deductionAmount.value = item.deductionAmount || 1;
-    elements.stockFormTitle.textContent = "Stok Kartını Düzenle"; elements.cancelEditButton.hidden = false; elements.saveStockButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Değişiklikleri Kaydet';
-    updatePackageFields(); updateDeductionVisibility(); elements.stockForm.scrollIntoView({ behavior: "smooth", block: "start" });
-}
+function openEntry(id){const item=stocks.find(x=>x.id===id);if(!item)return;el.entryStockId.value=id;el.entryTitle.textContent=`${item.name} Stok Girişi`;el.packageCount.value="";el.entryUnitsPerPackage.value=item.unitsPerPackage;el.purchaseTotal.value="";el.entryDate.value=today();el.entryNote.value="";renderCostPreview();el.entryDialog.showModal()}
+function renderCostPreview(){const count=num(el.packageCount.value),perPackage=num(el.entryUnitsPerPackage.value),totalUnits=count*perPackage,totalPaid=num(el.purchaseTotal.value),unitCost=totalUnits>0?totalPaid/totalUnits:0;el.costPreview.innerHTML=`<span>Toplam adet: <b>${formatNumber(totalUnits)}</b></span><strong>Birim maliyet: ${totalUnits>0?money(unitCost):"—"}</strong>`}
+async function saveEntry(e){e.preventDefault();if(busy)return;const item=stocks.find(x=>x.id===el.entryStockId.value),packageCount=num(el.packageCount.value),unitsPerPackage=num(el.entryUnitsPerPackage.value),purchaseTotal=num(el.purchaseTotal.value),amount=packageCount*unitsPerPackage;if(!item||packageCount<=0||unitsPerPackage<=0||purchaseTotal<0)return show("Koli, adet ve tutar bilgilerini kontrol edin.");busy=true;try{const itemRef=doc(stocksCol,item.id),moveRef=doc(movesCol);await runTransaction(db,async tx=>{const snap=await tx.get(itemRef);if(!snap.exists())throw new Error("missing");const fresh=normalizeStock(snap.id,snap.data()),result=fresh.quantity+amount,unitCost=amount>0?purchaseTotal/amount:0;tx.update(itemRef,{quantity:result,unitsPerPackage,lastPurchaseTotal:purchaseTotal,unitCost,purchasePrice:purchaseTotal,purchasePriceBasis:"total",purchaseDate:el.entryDate.value,updatedAt:serverTimestamp()});tx.set(moveRef,{stockItemId:item.id,linkedMenuItemId:item.linkedMenuItemId,stockName:item.name,type:"in",packageCount,unitsPerPackage,amount,enteredAmount:packageCount,enteredUnit:"koli",purchaseTotal,unitCost,previousQuantity:fresh.quantity,resultingQuantity:result,unit:item.unit,operationDate:el.entryDate.value,note:el.entryNote.value.trim(),createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})});el.entryDialog.close();show(`${formatNumber(amount)} adet stoka eklendi.`)}catch(error){console.error(error);show("Stok girişi kaydedilemedi.")}finally{busy=false}}
 
-async function archiveItem(id, shouldRestore) {
-    const item = stockItems.find((entry) => entry.id === id); if (!item || isBusy) return;
-    if (!shouldRestore && !window.confirm(`${item.name} stok kartı arşivlensin mi? Hareket geçmişi silinmez.`)) return;
-    try { await updateDoc(doc(stockCollection, id), { active: shouldRestore, updatedAt: serverTimestamp() }); showToast(shouldRestore ? "Stok kartı yeniden etkinleştirildi." : "Stok kartı arşivlendi."); }
-    catch (error) { console.error(error); showToast("İşlem tamamlanamadı."); }
-}
+function openAdjust(id){const item=stocks.find(x=>x.id===id);if(!item)return;el.adjustStockId.value=id;el.adjustTitle.textContent=`${item.name} Stok Düzeltme`;el.adjustAmount.value="";el.adjustDate.value=today();el.adjustNote.value="";el.adjustForm.elements.adjustType.value="out";renderAdjustPreview();el.adjustDialog.showModal()}
+function renderAdjustPreview(){const item=stocks.find(x=>x.id===el.adjustStockId.value);if(!item)return;const type=el.adjustForm.elements.adjustType.value,amount=num(el.adjustAmount.value),result=type==="out"?item.quantity-amount:amount;el.adjustAmountLabel.textContent=type==="out"?"Düşülecek adet":"Yeni toplam adet";el.adjustPreview.textContent=`Mevcut: ${formatNumber(item.quantity)} → Yeni: ${formatNumber(result)}`;el.adjustPreview.style.color=result<0?"#a22a32":""}
+async function saveAdjustment(e){e.preventDefault();if(busy)return;const item=stocks.find(x=>x.id===el.adjustStockId.value),type=el.adjustForm.elements.adjustType.value,amount=num(el.adjustAmount.value);if(!item||amount<0)return;busy=true;try{const itemRef=doc(stocksCol,item.id),moveRef=doc(movesCol);await runTransaction(db,async tx=>{const snap=await tx.get(itemRef);if(!snap.exists())throw new Error("missing");const fresh=normalizeStock(snap.id,snap.data()),result=type==="out"?fresh.quantity-amount:amount;if(result<0)throw new Error("insufficient");tx.update(itemRef,{quantity:result,updatedAt:serverTimestamp()});tx.set(moveRef,{stockItemId:item.id,linkedMenuItemId:item.linkedMenuItemId,stockName:item.name,type,amount,previousQuantity:fresh.quantity,resultingQuantity:result,unit:item.unit,operationDate:el.adjustDate.value,note:el.adjustNote.value.trim(),createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})});el.adjustDialog.close();show("Stok işlemi kaydedildi.")}catch(error){console.error(error);show(error.message==="insufficient"?"Stok miktarı sıfırın altına düşemez.":"İşlem kaydedilemedi.")}finally{busy=false}}
 
-function openMovementDialog(id) {
-    const item = stockItems.find((entry) => entry.id === id); if (!item) return;
-    elements.movementStockId.value = id; elements.movementTitle.textContent = item.name; elements.movementAmount.value = ""; elements.movementPurchasePrice.value = item.purchasePrice > 0 ? String(item.purchasePrice) : ""; elements.movementNote.value = ""; elements.movementDate.value = getIstanbulDate();
-    elements.movementAsPackage.checked = item.packageMode;
-    elements.movementForm.querySelector('input[name="movementType"][value="in"]').checked = true;
-    updateMovementPreview(); elements.movementDialog.showModal();
-}
+function renderMovements(){const items=movements.slice(0,50);el.movementList.innerHTML=items.map(x=>{const incoming=x.type==="in"||x.type==="initial",sign=incoming?"+":x.type==="out"||x.type==="sale"?"−":"=",label=x.type==="in"?"Stok girişi":x.type==="out"?"Stoktan düşüm":x.type==="sale"?"Adisyon satışı":x.type==="initial"?"İlk stok":"Sayım düzeltmesi",purchase=num(x.purchaseTotal)||(x.purchasePriceBasis==="total"?num(x.purchasePrice):0);return`<article class="movement-item"><span class="movement-icon ${incoming?"":"out"}"><i class="fa-solid ${incoming?"fa-plus":x.type==="set"?"fa-pen":"fa-minus"}"></i></span><div class="movement-copy"><strong>${esc(x.stockName||"Stok")}</strong><span>${label} • ${formatDate(x.operationDate)}${num(x.packageCount)>0?` • ${formatNumber(x.packageCount)} koli`:""}${purchase>0?` • ${money(purchase)} alış`:""}${x.note?` • ${esc(x.note)}`:""}</span></div><div class="movement-amount">${sign}${formatNumber(x.amount)} ${esc(x.unit||"")}<span class="movement-result">Kalan: ${formatNumber(x.resultingQuantity)}</span></div></article>`}).join("");el.movementEmpty.hidden=items.length>0}
 
-function closeMovementDialog() { elements.movementDialog.close(); }
-
-async function saveMovement(event) {
-    event.preventDefault();
-    if (isBusy) return;
-    const itemId = elements.movementStockId.value;
-    const type = elements.movementForm.elements.movementType.value;
-    const enteredAmount = positiveNumber(elements.movementAmount.value);
-    const currentItem = stockItems.find((entry) => entry.id === itemId);
-    const asPackage = type === "in" && elements.movementAsPackage.checked && currentItem?.packageMode;
-    const amount = asPackage ? enteredAmount * currentItem.unitsPerPackage : enteredAmount;
-    const hasPurchasePrice = type === "in" && elements.movementPurchasePrice.value.trim() !== "";
-    const purchasePrice = hasPurchasePrice ? positiveNumber(elements.movementPurchasePrice.value) : 0;
-    if (!itemId || (type !== "set" && amount <= 0)) { showToast("Geçerli bir miktar girin."); return; }
-    setBusy(true); elements.saveMovementButton.disabled = true;
-    try {
-        const itemReference = doc(stockCollection, itemId);
-        const movementReference = doc(movementCollection);
-        await runTransaction(database, async (transaction) => {
-            const snapshot = await transaction.get(itemReference);
-            if (!snapshot.exists()) throw new Error("stock-not-found");
-            const item = normalizeStockItem(snapshot.id, snapshot.data());
-            let resultingQuantity = item.quantity;
-            if (type === "in") resultingQuantity += amount;
-            if (type === "out") resultingQuantity -= amount;
-            if (type === "set") resultingQuantity = amount;
-            if (resultingQuantity < 0) throw new Error("insufficient-stock");
-            const priceBasis = asPackage ? "package" : "unit";
-            const unitCost = hasPurchasePrice ? purchasePrice / (asPackage ? item.unitsPerPackage : 1) : 0;
-            transaction.update(itemReference, { quantity: resultingQuantity, ...(hasPurchasePrice ? { purchasePrice, purchasePriceBasis: priceBasis, purchaseDate: elements.movementDate.value } : {}), updatedAt: serverTimestamp() });
-            transaction.set(movementReference, { stockItemId: item.id, stockName: item.name, type, amount, enteredAmount, enteredUnit: asPackage ? item.packageUnit : item.unit, previousQuantity: item.quantity, resultingQuantity, unit: item.unit, operationDate: elements.movementDate.value, ...(hasPurchasePrice ? { purchasePrice, purchasePriceBasis: priceBasis, unitCost } : {}), note: elements.movementNote.value.trim(), createdAt: serverTimestamp(), createdBy: auth.currentUser.uid });
-        });
-        closeMovementDialog(); showToast("Stok hareketi kaydedildi.");
-    } catch (error) {
-        console.error(error); showToast(error.message === "insufficient-stock" ? "Çıkış miktarı mevcut stoktan fazla olamaz." : "Stok hareketi kaydedilemedi.");
-    } finally { setBusy(false); elements.saveMovementButton.disabled = false; }
-}
-
-function updateMovementPreview() {
-    const item = stockItems.find((entry) => entry.id === elements.movementStockId.value);
-    if (!item) return;
-    const type = elements.movementForm.elements.movementType.value;
-    const enteredAmount = positiveNumber(elements.movementAmount.value);
-    const asPackage = type === "in" && elements.movementAsPackage.checked && item.packageMode;
-    const amount = asPackage ? enteredAmount * item.unitsPerPackage : enteredAmount;
-    let result = item.quantity;
-    if (type === "in") result += amount;
-    if (type === "out") result -= amount;
-    if (type === "set") result = amount;
-    elements.movementPackageRow.hidden = type !== "in" || !item.packageMode;
-    elements.movementPurchasePriceRow.hidden = type !== "in";
-    elements.movementPackageText.textContent = `Girişi ${item.packageUnit} olarak yap (1 ${item.packageUnit} = ${formatNumber(item.unitsPerPackage)} ${item.unit})`;
-    elements.movementAmountLabel.textContent = type === "in" ? (asPackage ? `Eklenecek ${item.packageUnit} sayısı` : "Eklenecek miktar") : type === "out" ? "Kullanılan / çıkarılan miktar" : "Yeni toplam miktar";
-    elements.movementPurchasePriceLabel.textContent = asPackage ? `Bir ${item.packageUnit} alış fiyatı (TL)` : `Birim alış fiyatı (TL / ${item.unit})`;
-    const enteredPrice = positiveNumber(elements.movementPurchasePrice.value);
-    const costText = type === "in" && enteredPrice > 0 ? ` • Birim maliyet: ${formatMoney(enteredPrice / (asPackage ? item.unitsPerPackage : 1))}/${item.unit}` : "";
-    elements.movementPreview.textContent = `Mevcut: ${formatNumber(item.quantity)} ${item.unit} → Yeni: ${formatNumber(result)} ${item.unit}${costText}`;
-    elements.movementPreview.style.color = result < 0 ? "#a22a32" : "";
-}
-
-function renderAll() { renderSummary(); renderStockItems(); renderUnits(); }
-
-function renderSummary() {
-    const activeItems = stockItems.filter((item) => item.active);
-    elements.itemCount.textContent = String(activeItems.length);
-    elements.emptyCount.textContent = String(activeItems.filter((item) => item.quantity <= 0).length);
-    elements.criticalCount.textContent = String(activeItems.filter((item) => item.quantity > 0 && item.quantity <= item.warningThreshold).length);
-    elements.automaticCount.textContent = String(activeItems.filter((item) => item.automaticDeduction).length);
-}
-
-function renderStockItems() {
-    const filter = elements.stockFilter.value;
-    const search = elements.stockSearch.value.trim().toLocaleLowerCase("tr-TR");
-    const filtered = stockItems.filter((item) => {
-        if (`${item.name} ${item.unit} ${item.note}`.toLocaleLowerCase("tr-TR").includes(search) === false) return false;
-        if (filter === "archived") return !item.active;
-        if (!item.active) return false;
-        if (filter === "critical") return item.quantity <= item.warningThreshold;
-        if (filter === "automatic") return item.automaticDeduction;
-        if (filter === "manual") return !item.automaticDeduction;
-        return true;
-    }).sort((a, b) => stockRank(a) - stockRank(b) || a.name.localeCompare(b.name, "tr"));
-    elements.stockEmpty.hidden = filtered.length > 0;
-    elements.stockEmpty.textContent = stockItems.length ? "Bu filtreye uygun stok kartı bulunamadı." : "Henüz stok kartı eklenmedi.";
-    elements.stockList.innerHTML = filtered.map(stockCardHtml).join("");
-}
-
-function stockCardHtml(item) {
-    const state = item.quantity <= 0 ? "empty" : item.quantity <= item.warningThreshold ? "critical" : "ok";
-    const stateText = state === "empty" ? "Tükendi" : state === "critical" ? "Kritik" : "Yeterli";
-    const menuItem = menuCatalog.items.find((entry) => String(entry.id) === item.linkedMenuItemId);
-    const packageInfo = item.packageMode ? `<span>1 ${escapeHtml(item.packageUnit)} = ${formatNumber(item.unitsPerPackage)} ${escapeHtml(item.unit)}</span><span>Yaklaşık ${formatNumber(item.quantity / item.unitsPerPackage)} ${escapeHtml(item.packageUnit)}</span>` : "";
-    const purchaseInfo = item.purchasePrice > 0 ? `<span>Alış: ${formatMoney(item.purchasePrice)}/${escapeHtml(item.purchasePriceBasis === "package" ? item.packageUnit : item.unit)}</span>${item.packageMode ? `<span>Birim maliyet: ${formatMoney(item.purchasePrice / item.unitsPerPackage)}/${escapeHtml(item.unit)}</span>` : ""}` : '<span>Alış fiyatı girilmedi</span>';
-    return `<article class="stock-card is-${state} ${item.active ? "" : "is-archived"}"><div class="stock-main"><div class="stock-title-row"><strong>${escapeHtml(item.name)}</strong><span class="status-badge is-${state}">${stateText}</span></div><div class="stock-quantity">${formatNumber(item.quantity)} ${escapeHtml(item.unit)}</div><div class="stock-meta"><span>Kritik: ${formatNumber(item.warningThreshold)} ${escapeHtml(item.unit)}</span>${packageInfo}<span>Alış tarihi: ${formatDate(item.purchaseDate)}</span>${purchaseInfo}<span>Satış: ${formatMoney(item.salePrice)}</span><span>${item.automaticDeduction ? `1 satışta −${formatNumber(item.deductionAmount)} ${escapeHtml(item.unit)}` : "Manuel kullanım"}</span>${menuItem ? `<span>Menü: ${escapeHtml(menuItem.name)}</span>` : ""}</div>${item.note ? `<p class="stock-note">${escapeHtml(item.note)}</p>` : ""}</div><div class="item-actions">${item.active ? `<button class="icon-button" type="button" data-movement="${item.id}" aria-label="Stok hareketi ekle"><i class="fa-solid fa-arrow-right-arrow-left"></i></button><button class="icon-button" type="button" data-edit="${item.id}" aria-label="Stok kartını düzenle"><i class="fa-solid fa-pen"></i></button><button class="icon-button is-danger" type="button" data-archive="${item.id}" aria-label="Stok kartını arşivle"><i class="fa-solid fa-box-archive"></i></button>` : `<button class="secondary-button" type="button" data-restore="${item.id}">Etkinleştir</button>`}</div></article>`;
-}
-
-function renderMovements() {
-    elements.movementEmpty.hidden = movements.length > 0;
-    elements.movementList.innerHTML = movements.map((movement) => {
-        const type = movement.type || "set";
-        const isIncoming = type === "in" || type === "initial";
-        const icon = isIncoming ? "fa-plus" : type === "out" ? "fa-minus" : "fa-pen";
-        const label = type === "initial" ? "İlk stok" : type === "in" ? "Stok girişi" : type === "out" ? "Kullanım / çıkış" : type === "sale" ? "Gün sonu satışı" : "Sayım düzeltmesi";
-        const sign = isIncoming ? "+" : type === "out" || type === "sale" ? "−" : "=";
-        const enteredInfo = movement.enteredUnit && movement.enteredUnit !== movement.unit ? `${formatNumber(movement.enteredAmount)} ${escapeHtml(movement.enteredUnit)} = ` : "";
-        const priceInfo = positiveNumber(movement.purchasePrice) > 0 ? ` • Alış: ${formatMoney(movement.purchasePrice)}/${escapeHtml(movement.purchasePriceBasis === "package" ? movement.enteredUnit : movement.unit)}${positiveNumber(movement.unitCost) > 0 ? ` • Birim: ${formatMoney(movement.unitCost)}/${escapeHtml(movement.unit)}` : ""}` : "";
-        return `<article class="movement-item"><span class="movement-icon ${type}"><i class="fa-solid ${icon}"></i></span><div class="movement-copy"><strong>${escapeHtml(movement.stockName || "Stok")}</strong><span>${label} • ${formatDate(movement.operationDate)}${priceInfo}${movement.note ? ` • ${escapeHtml(movement.note)}` : ""}</span></div><div class="movement-amount">${enteredInfo}${sign}${formatNumber(movement.amount)} ${escapeHtml(movement.unit || "")}<span class="movement-result">Kalan: ${formatNumber(movement.resultingQuantity)}</span></div></article>`;
-    }).join("");
-}
-
-function renderMenuOptions() {
-    const selected = elements.linkedMenuItem.value;
-    const categories = [...menuCatalog.categories].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
-    elements.linkedMenuItem.innerHTML = '<option value="">Menü ürünü seç veya elle yaz</option>' + categories.map((category) => {
-        const options = menuCatalog.items.filter((item) => String(item.categoryId) === String(category.id)).sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0)).map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} — ${formatMoney(item.price)}</option>`).join("");
-        return options ? `<optgroup label="${escapeHtml(category.name)}">${options}</optgroup>` : "";
-    }).join("");
-    if (menuCatalog.items.some((item) => String(item.id) === selected)) elements.linkedMenuItem.value = selected;
-}
-
-function renderUnits() {
-    const defaults = ["adet", "paket", "kutu", "koli", "kasa", "kg", "gram", "litre"];
-    const units = [...new Set([...defaults, ...stockItems.map((item) => item.unit).filter(Boolean)])];
-    elements.unitSuggestions.innerHTML = units.map((unit) => `<option value="${escapeHtml(unit)}"></option>`).join("");
-}
-
-function fillFromMenuProduct() {
-    const menuItem = menuCatalog.items.find((item) => String(item.id) === elements.linkedMenuItem.value);
-    if (!menuItem) return;
-    elements.stockName.value = String(menuItem.name || "");
-    elements.stockSalePrice.value = positiveNumber(menuItem.price) || "";
-    if (!elements.stockUnit.value.trim()) elements.stockUnit.value = "adet";
-    updateConversionPreview();
-}
-
-function updatePackageFields() {
-    const packageMode = elements.stockEntryMode.value === "package";
-    elements.packageUnitField.hidden = !packageMode;
-    elements.unitsPerPackageField.hidden = !packageMode;
-    elements.packageUnit.required = packageMode;
-    elements.unitsPerPackage.required = packageMode;
-    const packageUnit = normalizeUnit(elements.packageUnit.value || "koli");
-    elements.stockQuantityLabel.textContent = packageMode ? `${capitalize(packageUnit)} sayısı` : "Mevcut miktar";
-    elements.purchasePriceLabel.textContent = packageMode ? `Bir ${packageUnit} alış fiyatı (TL)` : "Birim alış fiyatı (TL)";
-    elements.stockThresholdLabel.textContent = packageMode ? `Kritik seviye (${normalizeUnit(elements.stockUnit.value || "adet")})` : "Kritik seviye uyarısı";
-    updateConversionPreview();
-}
-
-function updateConversionPreview() {
-    const packageMode = elements.stockEntryMode.value === "package";
-    elements.conversionPreview.hidden = !packageMode;
-    if (!packageMode) return;
-    const packageCount = positiveNumber(elements.stockQuantity.value);
-    const unitsPerPackage = Math.max(1, positiveNumber(elements.unitsPerPackage.value));
-    const packageUnit = normalizeUnit(elements.packageUnit.value || "koli");
-    const unit = normalizeUnit(elements.stockUnit.value || "adet");
-    const purchasePrice = positiveNumber(elements.stockPurchasePrice.value);
-    const total = packageCount * unitsPerPackage;
-    const unitCost = purchasePrice > 0 ? ` • Birim maliyet: ${formatMoney(purchasePrice / unitsPerPackage)}/${unit}` : "";
-    elements.conversionPreview.textContent = `${formatNumber(packageCount)} ${packageUnit} × ${formatNumber(unitsPerPackage)} ${unit} = ${formatNumber(total)} ${unit}${unitCost}`;
-    elements.stockQuantityLabel.textContent = `${capitalize(packageUnit)} sayısı`;
-    elements.purchasePriceLabel.textContent = `Bir ${packageUnit} alış fiyatı (TL)`;
-    elements.stockThresholdLabel.textContent = `Kritik seviye (${unit})`;
-}
-
-function resetStockForm() {
-    elements.stockForm.reset(); elements.editingStockId.value = ""; elements.stockQuantity.disabled = false; elements.packageUnit.value = "koli"; elements.unitsPerPackage.value = "24"; elements.stockFormTitle.textContent = "Yeni Stok Kartı"; elements.cancelEditButton.hidden = true; elements.saveStockButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Stok Kartını Kaydet'; elements.deductionAmount.value = "1"; setTodayInputs(); updatePackageFields(); updateDeductionVisibility();
-}
-function updateDeductionVisibility() { elements.deductionField.hidden = !elements.automaticDeduction.checked; elements.deductionAmount.required = elements.automaticDeduction.checked; }
-function setBusy(value) { isBusy = value; elements.saveStockButton.disabled = value; }
-function setConnection(connected) { elements.saveStatus.classList.toggle("is-error", !connected); elements.saveStatus.innerHTML = connected ? '<i class="fa-solid fa-circle-check"></i> Canlı bağlantı' : '<i class="fa-solid fa-triangle-exclamation"></i> Bağlantı yok'; }
-function handleConnectionError(error) { console.error(error); setConnection(false); showToast("Firestore bağlantısı kurulamadı. Güvenlik kurallarını kontrol edin."); }
-function showToast(message) { clearTimeout(toastTimer); elements.toast.textContent = message; elements.toast.classList.add("show"); toastTimer = setTimeout(() => elements.toast.classList.remove("show"), 3000); }
-function normalizeStockItem(id, data) { const packageMode = data.packageMode === true; return { id, name: String(data.name || ""), quantity: positiveNumber(data.quantity), unit: String(data.unit || "adet"), packageMode, packageUnit: String(data.packageUnit || (packageMode ? "koli" : "")), unitsPerPackage: packageMode ? Math.max(1, positiveNumber(data.unitsPerPackage)) : 1, warningThreshold: positiveNumber(data.warningThreshold), purchaseDate: String(data.purchaseDate || ""), purchasePrice: positiveNumber(data.purchasePrice), purchasePriceBasis: data.purchasePriceBasis === "package" ? "package" : "unit", salePrice: positiveNumber(data.salePrice), linkedMenuItemId: String(data.linkedMenuItemId || ""), automaticDeduction: data.automaticDeduction === true, deductionAmount: positiveNumber(data.deductionAmount), note: String(data.note || ""), active: data.active !== false }; }
-function normalizeUnit(value) { return value.trim().toLocaleLowerCase("tr-TR").replace(/\s+/g, " "); }
-function capitalize(value) { return value ? value.charAt(0).toLocaleUpperCase("tr-TR") + value.slice(1) : ""; }
-function positiveNumber(value) { const number = Number(value); return Number.isFinite(number) ? Math.max(0, number) : 0; }
-function stockRank(item) { if (!item.active) return 3; if (item.quantity <= 0) return 0; if (item.quantity <= item.warningThreshold) return 1; return 2; }
-function formatNumber(value) { return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 3 }).format(Number(value) || 0); }
-function formatMoney(value) { return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", minimumFractionDigits: Number(value) % 1 ? 2 : 0 }).format(Number(value) || 0); }
-function formatDate(value) { if (!value) return "—"; const parts = String(value).split("-"); return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}` : String(value); }
-function getIstanbulDate() { return new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Europe/Istanbul" }).format(new Date()); }
-function setTodayInputs() { elements.stockPurchaseDate.value = getIstanbulDate(); elements.movementDate.value = getIstanbulDate(); }
-function updateClock() { const now = new Date(); elements.currentDate.textContent = new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Istanbul" }).format(now).replace(/\./g, "/"); elements.currentTime.textContent = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Istanbul" }).format(now); }
-function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }
+function normalizeStock(id,d){const units=Math.max(1,num(d.unitsPerPackage)||1),legacyUnitCost=d.purchasePriceBasis==="package"?num(d.purchasePrice)/units:d.purchasePriceBasis==="unit"?num(d.purchasePrice):0;return{id,name:String(d.name||"Ürün"),linkedMenuItemId:String(d.linkedMenuItemId||""),quantity:num(d.quantity),unit:String(d.unit||"adet"),unitsPerPackage:units,warningThreshold:num(d.warningThreshold),unitCost:num(d.unitCost)||legacyUnitCost,lastPurchaseTotal:num(d.lastPurchaseTotal),active:d.active!==false}}
+function timestamp(v){return v?.toMillis?.()||0}function num(v){return Number(v)||0}function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}function formatDate(v){const[y,m,d]=String(v||"").split("-");return y&&m&&d?`${d}.${m}.${y}`:"—"}function formatNumber(v){return new Intl.NumberFormat("tr-TR",{maximumFractionDigits:2}).format(num(v))}function money(v){return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",minimumFractionDigits:num(v)%1?2:0}).format(num(v))}function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}function updateClock(){const n=new Date();$("currentTime").textContent=new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Europe/Istanbul"}).format(n);$("currentDate").textContent=new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit",timeZone:"Europe/Istanbul"}).format(n).replace(/\./g,"/")}function show(message){clearTimeout(toastTimer);el.toast.textContent=message;el.toast.classList.add("show");toastTimer=setTimeout(()=>el.toast.classList.remove("show"),3000)}
