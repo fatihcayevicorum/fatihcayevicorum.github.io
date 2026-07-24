@@ -1,10 +1,12 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{addDoc,collection,doc,getFirestore,limit,onSnapshot,orderBy,query,serverTimestamp,updateDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{firebaseConfig}from"../firebase-config.js";
+import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
+const defaultApp=initializeApp(firebaseConfig),legacyAuth=getAuth(defaultApp);
 const app=initializeApp(firebaseConfig,"merchant-portal"),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let profile=null,orders=[],movements=[],uid="",toastTimer;
 const statusNames={pending:"Sipariş alındı",preparing:"Hazırlanıyor",on_the_way:"Yola çıktı",delivered:"Teslim edildi",cancelled:"İptal edildi"};
+onAuthStateChanged(legacyAuth,user=>{if(user&&user.uid!==ADMIN_UID)signOut(legacyAuth).catch(console.error);});
 $("logout").onclick=async()=>{await signOut(auth);location.replace("../esnaf-giris.html")};$("orderButton").onclick=()=>{if(!profile?.active)return toast("Hesabınız kullanıma kapalı.");$("dialogBalance").textContent=`${profile.balance||0} çay`;$("orderDialog").showModal()};$("closeDialog").onclick=()=>$("orderDialog").close();
 $("quick").onclick=e=>{const b=e.target.closest("[data-count]");if(!b)return;$("quantity").value=b.dataset.count;document.querySelectorAll(".quick button").forEach(x=>x.classList.toggle("active",x===b))};
 $("orderFilter").onchange=renderOrders;$("orderList").onclick=async e=>{const b=e.target.closest("[data-cancel]");if(!b||!confirm("Bu siparişi iptal etmek istiyor musunuz?"))return;try{await updateDoc(doc(db,"merchantOrders",b.dataset.cancel),{status:"cancelled",cancelledAt:serverTimestamp(),updatedAt:serverTimestamp()});toast("Sipariş iptal edildi.");}catch{toast("Sipariş iptal edilemedi.")}};
