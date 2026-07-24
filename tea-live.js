@@ -54,7 +54,7 @@ function renderCustomerTeaStatus() {
         const stage = getCustomerStage(brew, now);
         const stageProgress = Math.min(100, Math.max(0, stage.progress ?? 100));
         const freshnessPercent = Math.min(100, Math.max(0, stage.freshnessPercent ?? 0));
-        const barProgress = stage.key === "brewing" ? stageProgress : 100;
+        const barProgress = stage.key === "brewing" ? stageProgress : freshnessPercent;
         const progressText = stage.key === "brewing"
             ? `Demleme %${Math.round(stageProgress)}`
             : `Tazelik %${Math.round(freshnessPercent)}`;

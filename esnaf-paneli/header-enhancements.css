@@ -18,3 +18,4 @@
   .brand div{display:none}.brand img{width:47px;height:47px}
   .head-info>div:first-child{min-width:66px}
 }
+.system-confirm form{text-align:center;gap:12px}.system-confirm .confirm-icon{width:58px;height:58px;margin:0 auto;border-radius:18px;background:#fff0e3;color:#b95f20;display:grid;place-items:center;font-size:1.45rem}.system-confirm p{margin:0;color:#776b67;font-size:.84rem}.confirm-actions{display:flex;justify-content:center;gap:9px;margin-top:5px}.confirm-actions button{border:0;border-radius:12px;padding:11px 15px;font-weight:800;cursor:pointer;background:#f1ebe3;color:#302725}.confirm-actions .confirm-danger{background:#8d2630;color:#fff}
