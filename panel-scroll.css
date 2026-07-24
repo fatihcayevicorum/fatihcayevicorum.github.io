@@ -10,8 +10,6 @@
 :where(
   .category-list,
   .product-list,
-  .stock-list,
-  .customer-list,
   .movement-list,
   .merchant-list,
   .order-list,
@@ -90,14 +88,24 @@
 .stock-list.is-four-row-scroll,
 .customer-list.is-four-row-scroll {
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--panel-scrollbar) var(--panel-scrollbar-track);
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.stock-list,
+.customer-list {
+  max-height: none;
+  overflow: visible;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 @media (max-width: 700px) {
   :where(
     .category-list,
     .product-list,
-    .stock-list,
-    .customer-list,
     .movement-list,
     .merchant-list,
     .order-list,
