@@ -1,0 +1,165 @@
+/*
+ * Fatih Çay Evi ortak panel kaydırma düzeni
+ * Kayıtlar çoğaldığında sayfayı uzatmak yerine ilgili listenin içinde kaydırır.
+ */
+:root {
+  --panel-scrollbar: rgba(90, 16, 24, 0.42);
+  --panel-scrollbar-track: rgba(90, 16, 24, 0.06);
+}
+
+:where(
+  .category-list,
+  .product-list,
+  .stock-list,
+  .customer-list,
+  .movement-list,
+  .merchant-list,
+  .order-list,
+  .history-list,
+  .brew-list,
+  .gallery-admin,
+  #contentAdmin,
+  .table-grid,
+  .product-grid,
+  .order-items,
+  .daily-report,
+  .close-day-report
+) {
+  min-height: 0;
+  max-height: clamp(15rem, 42vh, 32rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--panel-scrollbar) var(--panel-scrollbar-track);
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+:where(
+  .category-list,
+  .product-list,
+  .stock-list,
+  .customer-list,
+  .movement-list,
+  .merchant-list,
+  .order-list,
+  .history-list,
+  .brew-list,
+  .gallery-admin,
+  #contentAdmin,
+  .table-grid,
+  .product-grid,
+  .order-items,
+  .daily-report,
+  .close-day-report
+)::-webkit-scrollbar {
+  width: 7px;
+}
+
+:where(
+  .category-list,
+  .product-list,
+  .stock-list,
+  .customer-list,
+  .movement-list,
+  .merchant-list,
+  .order-list,
+  .history-list,
+  .brew-list,
+  .gallery-admin,
+  #contentAdmin,
+  .table-grid,
+  .product-grid,
+  .order-items,
+  .daily-report,
+  .close-day-report
+)::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: var(--panel-scrollbar-track);
+}
+
+:where(
+  .category-list,
+  .product-list,
+  .stock-list,
+  .customer-list,
+  .movement-list,
+  .merchant-list,
+  .order-list,
+  .history-list,
+  .brew-list,
+  .gallery-admin,
+  #contentAdmin,
+  .table-grid,
+  .product-grid,
+  .order-items,
+  .daily-report,
+  .close-day-report
+)::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--panel-scrollbar);
+  background-clip: padding-box;
+}
+
+.category-list {
+  max-height: clamp(11rem, 30vh, 20rem);
+}
+
+.active-orders-panel .order-list,
+.brew-list {
+  max-height: clamp(12rem, 34vh, 24rem);
+}
+
+.order-items {
+  flex: 1 1 auto;
+  max-height: none;
+}
+
+.category-tabs {
+  flex: 0 0 auto;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+@media (min-width: 701px) {
+  .pos-layout {
+    min-height: 0;
+  }
+
+  .products,
+  .order {
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 700px) {
+  :where(
+    .category-list,
+    .product-list,
+    .stock-list,
+    .customer-list,
+    .movement-list,
+    .merchant-list,
+    .order-list,
+    .history-list,
+    .brew-list,
+    .gallery-admin,
+    #contentAdmin,
+    .table-grid,
+    .product-grid,
+    .daily-report,
+    .close-day-report
+  ) {
+    max-height: min(48vh, 28rem);
+  }
+
+  .order-items {
+    max-height: min(46vh, 25rem);
+  }
+}
