@@ -22,13 +22,13 @@ const auth = getAuth(app);
 const database = getFirestore(app);
 const adminStateReference = doc(database, "adminTea", "state");
 const publicStatusReference = doc(database, "publicTea", "status");
+const posSettingsReference = doc(database, "adminAppSettings", "pos");
 
 const elements = {
     currentDate: document.getElementById("currentDate"),
     currentTime: document.getElementById("currentTime"),
     activeCount: document.getElementById("activeCount"),
     todayCount: document.getElementById("todayCount"),
-    resetTodayCountButton: document.getElementById("resetTodayCountButton"),
     currentStatus: document.getElementById("currentStatus"),
     saveStatus: document.getElementById("saveStatus"),
     startButton: document.getElementById("startBrewButton"),
@@ -44,8 +44,6 @@ const elements = {
     finishDialog: document.getElementById("finishDialog"),
     finishDialogText: document.getElementById("finishDialogText"),
     confirmFinishButton: document.getElementById("confirmFinishButton"),
-    resetCountDialog: document.getElementById("resetCountDialog"),
-    confirmResetCountButton: document.getElementById("confirmResetCountButton"),
     logoutButton: document.getElementById("logoutButton"),
     toast: document.getElementById("toast")
 };
@@ -53,19 +51,19 @@ const elements = {
 let appState = createEmptyState();
 let pendingFinishId = null;
 let unsubscribeState = null;
+let unsubscribeSettings = null;
 let toastTimeout = null;
 let isBusy = false;
+let currentBusinessDate = getDateKey(Date.now());
 
 elements.startButton.disabled = true;
 elements.startButton.addEventListener("click", startNewBrew);
 elements.serviceToggleButton.addEventListener("click", toggleTeaService);
-elements.resetTodayCountButton.addEventListener("click", resetTodayCount);
 elements.brewList.addEventListener("click", handleBrewListClick);
 elements.finishDialog.addEventListener("close", handleDialogClose);
 elements.confirmFinishButton.addEventListener("click", () => {
     if (pendingFinishId) finishBrew(pendingFinishId);
 });
-elements.confirmResetCountButton.addEventListener("click", performResetTodayCount);
 elements.logoutButton.addEventListener("click", async () => {
     await signOut(auth);
     window.location.replace("../yonetici-giris.html");
@@ -79,6 +77,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     subscribeToAdminState();
+    subscribeToBusinessDay();
 });
 
 updateClock();
@@ -119,6 +118,18 @@ function subscribeToAdminState() {
     });
 }
 
+function subscribeToBusinessDay() {
+    if (unsubscribeSettings) unsubscribeSettings();
+    unsubscribeSettings = onSnapshot(posSettingsReference, (snapshot) => {
+        const data = snapshot.exists() ? snapshot.data() : {};
+        currentBusinessDate = data.currentBusinessDate || getDateKey(Date.now());
+        render();
+    }, (error) => {
+        console.error(error);
+        showToast("İş günü bilgisi alınamadı. Bağlantıyı kontrol edin.");
+    });
+}
+
 async function startNewBrew() {
     if (isBusy) return;
     setBusy(true);
@@ -136,7 +147,8 @@ async function startNewBrew() {
 
             state.activeBrews.push({
                 id: createId(),
-                startedAtMs: Date.now()
+                startedAtMs: Date.now(),
+                businessDate: currentBusinessDate
             });
             newBrewNumber = state.activeBrews.length;
 
@@ -250,35 +262,6 @@ async function toggleTeaService() {
     }
 }
 
-function resetTodayCount() {
-    if (isBusy) return;
-    if (typeof elements.resetCountDialog.showModal === "function") {
-        elements.resetCountDialog.showModal();
-        return;
-    }
-    performResetTodayCount();
-}
-
-async function performResetTodayCount() {
-    if (isBusy) return;
-    setBusy(true);
-
-    try {
-        await runTransaction(database, async (transaction) => {
-            const snapshot = await transaction.get(adminStateReference);
-            const state = normalizeState(snapshot.exists() ? snapshot.data() : createEmptyState());
-            state.todayCountResetAtMs = Date.now();
-            transaction.set(adminStateReference, { ...state, updatedAt: serverTimestamp() });
-        });
-        showToast("Bugünkü Dem sayacı sıfırlandı.");
-    } catch (error) {
-        console.error(error);
-        showToast("Bugünkü Dem sayacı sıfırlanamadı.");
-    } finally {
-        setBusy(false);
-    }
-}
-
 function handleDialogClose() {
     if (elements.finishDialog.returnValue !== "confirm") {
         pendingFinishId = null;
@@ -306,7 +289,7 @@ async function finishBrew(brewId) {
                 ...finishedBrew,
                 finishedAtMs: Date.now()
             });
-            state.history = state.history.slice(0, 30);
+            state.history = state.history.slice(0, 200);
 
             transaction.set(adminStateReference, {
                 ...state,
@@ -348,17 +331,14 @@ function render() {
 
 function renderSummary(now) {
     const activeCount = appState.activeBrews.length;
-    const todayKey = getDateKey(now);
-    const resetAtMs = getDateKey(appState.todayCountResetAtMs) === todayKey ? appState.todayCountResetAtMs : 0;
-    const todayCount = [
+    const businessDayCount = [
         ...appState.activeBrews,
         ...appState.history
-    ].filter((brew) => getDateKey(brew.startedAtMs) === todayKey && Number(brew.startedAtMs) > resetAtMs).length;
+    ].filter((brew) => getBrewBusinessDate(brew) === currentBusinessDate).length;
 
     elements.activeCount.textContent = `${activeCount} / ${MAX_ACTIVE_BREWS}`;
-    elements.todayCount.textContent = String(todayCount);
+    elements.todayCount.textContent = String(businessDayCount);
     elements.startButton.disabled = isBusy || activeCount >= MAX_ACTIVE_BREWS;
-    elements.resetTodayCountButton.disabled = isBusy;
     elements.capacityNote.textContent = activeCount >= MAX_ACTIVE_BREWS
         ? "Üç demlik aktif. Yeni dem için önce bir demliği bitirin."
         : "Aynı anda en fazla üç demlik takip edilir.";
@@ -455,8 +435,7 @@ function renderActiveBrews(now) {
 }
 
 function renderHistory() {
-    const todayKey = getDateKey(Date.now());
-    const todayHistory = appState.history.filter((brew) => getDateKey(brew.finishedAtMs) === todayKey);
+    const todayHistory = appState.history.filter((brew) => getBrewBusinessDate(brew) === currentBusinessDate);
 
     elements.historyEmpty.hidden = todayHistory.length > 0;
     elements.historyList.innerHTML = todayHistory.map((brew, index) => {
@@ -475,6 +454,10 @@ function renderHistory() {
             </article>
         `;
     }).join("");
+}
+
+function getBrewBusinessDate(brew) {
+    return brew?.businessDate || getDateKey(Number(brew?.startedAtMs) || 0);
 }
 
 function getBrewStage(brew, now = Date.now()) {

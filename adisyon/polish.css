@@ -418,6 +418,61 @@
   font-size: 0.94rem;
 }
 
+.close-day-warning {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 14px;
+  padding: 13px 14px;
+  border: 1px solid #e7b6b6;
+  border-radius: 14px;
+  background: #fff2f2;
+  color: #7f1d1d;
+}
+
+.close-day-warning i {
+  margin-top: 3px;
+  font-size: 1.1rem;
+}
+
+.close-day-warning strong,
+.close-day-warning p {
+  display: block;
+  margin: 0;
+}
+
+.close-day-warning p {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.close-day-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f7f3ee;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.close-day-check input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: #8f2028;
+}
+
+#confirmCloseDay:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
+}
+
 @media (max-width: 700px) {
   .view {
     padding: 11px;

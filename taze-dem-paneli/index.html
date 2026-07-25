@@ -60,7 +60,7 @@
             <div class="section-heading summary-heading">
                 <div>
                     <p class="section-kicker">Kontrol merkezi</p>
-                    <h2 id="summaryTitle">Bugünkü Demler</h2>
+                    <h2 id="summaryTitle">İş Günü Demleri</h2>
                 </div>
 
                 <span class="connection-badge" id="saveStatus">
@@ -76,7 +76,7 @@
                 </article>
 
                 <article class="stat-card">
-                    <span>Bugünkü Dem</span>
+                    <span>İş Günü Demi</span>
                     <strong id="todayCount">0</strong>
                 </article>
 
@@ -85,13 +85,6 @@
                     <strong id="currentStatus">Demlik bekleniyor</strong>
                 </article>
 
-                <article class="stat-card stat-action-card">
-                    <span>Günlük Sayaç</span>
-                    <button class="reset-count-button" id="resetTodayCountButton" type="button">
-                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
-                        <strong>Sayacı Sıfırla</strong>
-                    </button>
-                </article>
             </div>
 
             <div class="primary-actions">
@@ -146,7 +139,7 @@
                 </div>
             </div>
 
-            <p class="history-empty" id="historyEmpty">Bugün tamamlanan dem bulunmuyor.</p>
+            <p class="history-empty" id="historyEmpty">Bu iş gününde tamamlanan dem bulunmuyor.</p>
             <div class="history-list" id="historyList"></div>
         </section>
     </main>
@@ -170,24 +163,9 @@
         </form>
     </dialog>
 
-    <dialog class="confirm-dialog" id="resetCountDialog">
-        <form method="dialog">
-            <div class="dialog-icon" aria-hidden="true">
-                <i class="fa-solid fa-rotate-left"></i>
-            </div>
-            <h2>Bugünkü sayaç sıfırlansın mı?</h2>
-            <p>Aktif demlikler ve günlük kayıtlar silinmeyecek. Yalnızca Bugünkü Dem sayısı sıfırdan başlayacak.</p>
-
-            <div class="dialog-actions">
-                <button class="secondary-button" type="submit" value="cancel">Vazgeç</button>
-                <button class="danger-button" id="confirmResetCountButton" type="submit" value="confirm">Sayacı Sıfırla</button>
-            </div>
-        </form>
-    </dialog>
-
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="script.js?v=9"></script>
+    <script type="module" src="script.js?v=10"></script>
     <script type="module" src="../merchant-order-alert.js?v=2"></script>
     <script type="module" src="../system-ui.js?v=4"></script>
 </body>
