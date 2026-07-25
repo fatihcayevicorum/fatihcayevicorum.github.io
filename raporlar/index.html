@@ -92,6 +92,18 @@
       <div id="categoryReport" class="category-report"></div>
     </section>
 
+    <section class="panel purchases-panel">
+      <div class="section-heading"><div><p class="kicker">Seçilen dönem</p><h2>Alınan Stoklar</h2></div></div>
+      <div class="purchase-summary">
+        <article><span>Alınan ürün çeşidi</span><strong id="purchaseProductCount">0</strong></article>
+        <article><span>Toplam koli</span><strong id="purchasePackageCount">0</strong></article>
+        <article><span>Toplam adet</span><strong id="purchaseUnitCount">0</strong></article>
+        <article><span>Toplam alış tutarı</span><strong id="allPurchaseTotal">₺0</strong></article>
+      </div>
+      <div id="purchaseList" class="purchase-list"></div>
+      <p id="purchaseEmpty" class="empty">Seçilen tarihlerde stok alımı bulunmuyor.</p>
+    </section>
+
     <section class="panel stock-report-panel">
       <div class="section-heading">
         <div><p class="kicker">Alım ve satış takibi</p><h2>Stok Ürünü Raporu</h2></div>
@@ -129,7 +141,7 @@
   </main>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=2"></script>
+  <script type="module" src="script.js?v=3"></script>
   <script type="module" src="../merchant-order-alert.js?v=2"></script>
   <script type="module" src="../system-ui.js?v=4"></script>
 </body>
