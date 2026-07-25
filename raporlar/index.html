@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../panel-header.css?v=5">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header class="app-header">
@@ -61,6 +61,7 @@
     <section class="summary-grid" aria-label="Rapor özeti">
       <article><i class="fa-solid fa-chart-line"></i><span>Toplam satış</span><strong id="salesTotal">₺0</strong></article>
       <article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit kasa</span><strong id="cashTotal">₺0</strong></article>
+      <article><i class="fa-solid fa-building-columns"></i><span>Banka havalesi</span><strong id="transferTotal">₺0</strong></article>
       <article><i class="fa-solid fa-address-book"></i><span>Açık hesap</span><strong id="creditTotal">₺0</strong></article>
       <article><i class="fa-solid fa-mug-hot"></i><span>Satılan ürün</span><strong id="itemCount">0</strong></article>
       <article><i class="fa-solid fa-receipt"></i><span>Kapanan adisyon</span><strong id="orderCount">0</strong></article>
@@ -160,7 +161,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=4"></script>
+  <script type="module" src="script.js?v=5"></script>
   <script type="module" src="../merchant-order-alert.js?v=2"></script>
   <script type="module" src="../system-ui.js?v=4"></script>
 </body>

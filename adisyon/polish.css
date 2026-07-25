@@ -473,6 +473,133 @@
   transform: none;
 }
 
+.active-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+#orderInfoButton {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--red);
+  background: #f1e6dc;
+}
+
+.payment-type-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.payment-type-switch label {
+  margin: 0;
+}
+
+.payment-type-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.payment-type-switch span {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  color: var(--ink);
+  background: #fff;
+}
+
+.payment-type-switch input:checked + span {
+  border-color: var(--red);
+  color: #fff;
+  background: linear-gradient(135deg, var(--red), var(--red2));
+}
+
+#paidAmount {
+  font-size: 1.12rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.recent-payments-list {
+  display: grid;
+  gap: 8px;
+  max-height: 390px;
+  overflow-y: auto;
+}
+
+.recent-payment-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffaf4;
+}
+
+.recent-payment-row strong,
+.recent-payment-row small {
+  display: block;
+}
+
+.recent-payment-row strong {
+  color: var(--red2);
+  font-size: 0.75rem;
+}
+
+.recent-payment-row small {
+  color: var(--muted);
+  font-size: 0.6rem;
+}
+
+.recent-payment-row b {
+  font-size: 0.72rem;
+}
+
+.recent-payment-row button {
+  min-height: 35px;
+  padding: 0 10px;
+  border-radius: 9px;
+  color: #9c242c;
+  background: #f8e7e7;
+  font-size: 0.62rem;
+}
+
+button,
+.product,
+.category-tabs button,
+.table-open {
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+@media (max-width: 520px) {
+  .recent-payment-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .recent-payment-row button {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 700px) {
   .view {
     padding: 11px;
