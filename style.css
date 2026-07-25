@@ -92,10 +92,7 @@ a {
 }
 
 .hero::after {
-  right: -6rem;
-  bottom: -8rem;
-  background: #d45e4d;
-  animation-delay: -5s;
+  display: none;
 }
 
 .hero-overlay {

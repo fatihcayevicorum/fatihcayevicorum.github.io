@@ -33,6 +33,11 @@ function installGlobalInteractionStyle(){
       outline:2px solid rgba(125,27,36,.48)!important;
       outline-offset:2px!important;
     }
+    .app-header::after,
+    .hero::after,
+    .menu-hero::after{
+      display:none!important;
+    }
     :where(html,body,*,*::before,*::after){
       scrollbar-width:none!important;
       scrollbar-color:transparent transparent!important;
