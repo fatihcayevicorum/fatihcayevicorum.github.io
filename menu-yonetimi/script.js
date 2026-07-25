@@ -69,7 +69,7 @@ async function importMenuFile(event) {
     if (!file || isBusy) return;
     try {
         const importedCatalog = validateImport(JSON.parse(await file.text()));
-        const shouldReplace = window.confirm(`${importedCatalog.categories.length} kategori ve ${importedCatalog.items.length} ürün içe aktarılacak. Mevcut menünün tamamı silinip değiştirilsin mi?`);
+        const shouldReplace = window.confirm(`${importedCatalog.categories.length} kategori ve ${importedCatalog.items.length} Ürün içe aktarılacak. Mevcut menünün tamamı silinip değiştirilsin mi?`);
         if (!shouldReplace) return;
         const succeeded = await persistCatalog(importedCatalog, "Menü listesi başarıyla içe aktarıldı.");
         if (succeeded) resetProductForm();
@@ -102,7 +102,7 @@ function handleCategoryAction(event) {
     const deleteButton = event.target.closest("[data-delete-category]");
     if (!deleteButton || isBusy) return;
     const categoryId = deleteButton.dataset.deleteCategory;
-    if (catalog.items.some((item) => item.categoryId === categoryId)) { showToast("Bu kategoride ürün var. Önce ürünleri silin veya taşıyın."); return; }
+    if (catalog.items.some((item) => item.categoryId === categoryId)) { showToast("Bu kategoride Ürün var. Önce Ürünleri silin veya taşıyın."); return; }
     if (!window.confirm("Kategori silinsin mi?")) return;
     persistCatalog({ ...catalog, categories: catalog.categories.filter((category) => category.id !== categoryId) }, "Kategori silindi.");
 }
@@ -145,7 +145,7 @@ async function persistCatalog(nextCatalog, successMessage) {
 function render() {
     elements.categoryCount.textContent = String(catalog.categories.length); elements.productCount.textContent = String(catalog.items.length); elements.availableCount.textContent = String(catalog.items.filter((item) => item.available).length);
     elements.categoryEmpty.hidden = catalog.categories.length > 0; elements.productEmpty.hidden = catalog.items.length > 0;
-    elements.categoryList.innerHTML = catalog.categories.map((category) => `<article class="category-item"><div class="category-copy"><strong>${escapeHtml(category.name)}</strong><span>Sıra: ${category.order} • ${catalog.items.filter((item) => item.categoryId === category.id).length} ürün</span></div><div class="item-actions"><button class="icon-button is-danger" type="button" data-delete-category="${escapeHtml(category.id)}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`).join("");
+    elements.categoryList.innerHTML = catalog.categories.map((category) => `<article class="category-item"><div class="category-copy"><strong>${escapeHtml(category.name)}</strong><span>Sıra: ${category.order} • ${catalog.items.filter((item) => item.categoryId === category.id).length} Ürün</span></div><div class="item-actions"><button class="icon-button is-danger" type="button" data-delete-category="${escapeHtml(category.id)}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`).join("");
     const previousCategory = elements.productCategory.value;
     elements.productCategory.innerHTML = catalog.categories.length ? '<option value="">Kategori seçin</option>' + catalog.categories.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("") : '<option value="">Önce kategori ekleyin</option>';
     if (catalog.categories.some((category) => category.id === previousCategory)) elements.productCategory.value = previousCategory;

@@ -41,7 +41,7 @@ function renderCategoryReport() {
             .filter((item) => item.categoryId === category.id && quantities.get(item.id))
             .map((item) => ({ name: item.name, quantity: quantities.get(item.id) }))
     })).filter((group) => group.items.length);
-    target.innerHTML = `<span>Ürünlere göre adet</span><div class="category-report-grid">${groups.map((group) => `<article><h4>${escapeHtml(group.name)}</h4>${group.items.map((item) => `<div><span>${escapeHtml(item.name)}</span><b>${item.quantity} adet</b></div>`).join("")}</article>`).join("") || "<p>Henüz ürün satışı yok.</p>"}</div>`;
+    target.innerHTML = `<span>Ürünlere göre Adet</span><div class="category-report-grid">${groups.map((group) => `<article><h4>${escapeHtml(group.name)}</h4>${group.items.map((item) => `<div><span>${escapeHtml(item.name)}</span><b>${item.quantity} Adet</b></div>`).join("")}</article>`).join("") || "<p>Henüz Ürün Satışı yok.</p>"}</div>`;
 }
 
 function getIstanbulDate() {

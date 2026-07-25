@@ -167,7 +167,7 @@ async function startNewBrew() {
     } catch (error) {
         console.error(error);
         showToast(error.message === "max-active-brews"
-            ? "Aynı anda en fazla üç demlik takip edilebilir."
+            ? "Aynı anda en fazla üç Demlik takip edilebilir."
             : "Yeni dem başlatılamadı. İnternet bağlantısını kontrol edin.");
     } finally {
         setBusy(false);
@@ -189,7 +189,7 @@ function handleBrewListClick(event) {
     if (brewIndex < 0) return;
 
     pendingFinishId = brewId;
-    elements.finishDialogText.textContent = `Demlik ${brewIndex + 1} bitirilecek. Arkadaki demlikler otomatik olarak öne geçecek ve müşteri ekranı güncellenecek.`;
+    elements.finishDialogText.textContent = `Demlik ${brewIndex + 1} bitirilecek. Arkadaki Demlikler otomatik olarak öne geçecek ve müşteri ekranı güncellenecek.`;
 
     if (typeof elements.finishDialog.showModal === "function") {
         elements.finishDialog.showModal();
@@ -340,8 +340,8 @@ function renderSummary(now) {
     elements.todayCount.textContent = String(businessDayCount);
     elements.startButton.disabled = isBusy || activeCount >= MAX_ACTIVE_BREWS;
     elements.capacityNote.textContent = activeCount >= MAX_ACTIVE_BREWS
-        ? "Üç demlik aktif. Yeni dem için önce bir demliği bitirin."
-        : "Aynı anda en fazla üç demlik takip edilir.";
+        ? "Üç Demlik aktif. Yeni dem için önce bir demliği bitirin."
+        : "Aynı anda en fazla üç Demlik takip edilir.";
 
     elements.serviceToggleButton.disabled = isBusy;
     elements.serviceToggleButton.classList.toggle("is-open", appState.serviceOpen);

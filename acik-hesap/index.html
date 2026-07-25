@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=1">
+    <link rel="stylesheet" href="style.css?v=2">
     <link rel="stylesheet" href="../panel-scroll.css?v=2">
     <link rel="stylesheet" href="../panel-header.css?v=6">
 </head>
@@ -61,9 +61,11 @@
                     <label><span>Adı veya lakabı</span><input id="customerName" type="text" maxlength="70" required placeholder="Örn. Mehmet Abi"></label>
                     <label><span>Telefon numarası</span><input id="customerPhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx"></label>
                     <label><span>Borç uyarı limiti (TL)</span><input id="customerLimit" type="number" min="0" max="9999999" step="0.01" required placeholder="500"></label>
+                    <label><span>Başlangıç Bakiyesi (TL)</span><input id="openingBalance" type="number" min="0" max="9999999" step="0.01" value="0"></label>
                     <label class="full-field"><span>Not <small>(isteğe bağlı)</small></span><textarea id="customerNote" maxlength="200" rows="2" placeholder="Müşteriyle ilgili kısa not"></textarea></label>
                 </div>
-                <label class="switch-row"><input id="creditEnabled" type="checkbox" checked><span>Bu müşteriye açık hesap kullanılabilsin</span></label>
+                <label class="switch-row"><input id="creditEnabled" type="checkbox" checked><span>Bu müşteriye Açık Hesap kullanılabilsin</span></label>
+                <label class="switch-row"><input id="resetEnabled" type="checkbox"><span>Bu müşteri için Hesabı Sıfırla butonu eklensin</span></label>
                 <div class="form-actions">
                     <button class="secondary-button" id="cancelEditButton" type="button" hidden>Vazgeç</button>
                     <button class="primary-button" id="saveCustomerButton" type="submit"><i class="fa-solid fa-floppy-disk"></i> Müşteriyi Kaydet</button>
@@ -76,7 +78,7 @@
                 <div><p class="kicker">Müşteri listesi</p><h2>Açık Hesaplar</h2></div>
                 <div class="list-tools"><select id="customerFilter" aria-label="Müşteri filtresi"><option value="enabled">Yetkili müşteriler</option><option value="debt">Borcu olanlar</option><option value="over-limit">Limiti aşanlar</option><option value="disabled">Yetkisi kapalı</option><option value="all">Tüm müşteriler</option></select><input id="customerSearch" type="search" placeholder="Müşteri ara"></div>
             </div>
-            <p class="empty-copy" id="customerEmpty">Henüz açık hesap müşterisi eklenmedi.</p>
+            <p class="empty-copy" id="customerEmpty">Henüz Açık Hesap müşterisi eklenmedi.</p>
             <div class="customer-list" id="customerList"></div>
         </section>
 
@@ -94,27 +96,45 @@
             <div class="movement-types" role="group" aria-label="Hareket türü">
                 <label><input type="radio" name="movementType" value="debt" checked><span><i class="fa-solid fa-plus"></i> Borç Ekle</span></label>
                 <label><input type="radio" name="movementType" value="payment"><span><i class="fa-solid fa-money-bill-wave"></i> Nakit Tahsilat</span></label>
+                <label><input type="radio" name="movementType" value="transfer"><span><i class="fa-solid fa-building-columns"></i> Banka Havalesi</span></label>
             </div>
             <label class="dialog-field"><span id="movementAmountLabel">Eklenecek borç (TL)</span><input id="movementAmount" type="number" min="0.01" max="9999999" step="0.01" required></label>
             <label class="dialog-field"><span>İşlem tarihi</span><input id="movementDate" type="date" required></label>
-            <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="movementNote" maxlength="200" rows="2" placeholder="Örn. Önceki hesap veya nakit ödeme"></textarea></label>
+            <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="movementNote" maxlength="200" rows="2" placeholder="Örn. Önceki hesap veya Nakit ödeme"></textarea></label>
             <div class="dialog-summary" id="movementPreview">Yeni bakiye: —</div>
             <div class="form-actions"><button class="secondary-button" id="cancelMovementButton" type="button">Vazgeç</button><button class="primary-button" id="saveMovementButton" type="submit">İşlemi Kaydet</button></div>
         </form>
+    </dialog>
+
+    <dialog class="confirm-dialog" id="resetDialog">
+        <form method="dialog">
+            <div class="dialog-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h2>Hesap Sıfırlansın mı?</h2>
+            <p id="resetDialogText">Müşterinin geçmiş dönem bakiyesi sıfırlanacak.</p>
+            <div class="dialog-actions"><button class="secondary-button" type="submit" value="cancel">Vazgeç</button><button class="danger-button" id="confirmResetButton" type="button">Hesabı Sıfırla</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="summaryDialog" class="summary-dialog">
+        <div class="summary-card">
+            <div class="dialog-heading"><div><p class="kicker">Müşteri Hesabı</p><h2 id="summaryTitle">Hesap Özeti</h2></div><button class="icon-button" id="closeSummaryDialog" type="button"><i class="fa-solid fa-xmark"></i></button></div>
+            <div id="summaryContent"></div>
+            <div class="form-actions summary-actions"><button class="secondary-button" id="shareSummaryButton" type="button"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button><button class="primary-button" id="pdfSummaryButton" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Kaydet</button></div>
+        </div>
     </dialog>
 
     <dialog class="confirm-dialog" id="limitDialog">
         <form method="dialog">
             <div class="dialog-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
             <h2>Borç limiti aşılıyor</h2>
-            <p id="limitDialogText">Bu işlem müşterinin belirlenen borç limitini aşacak.</p>
+            <p id="limitDialogText">Bu İşlem müşterinin belirlenen borç limitini aşacak.</p>
             <div class="dialog-actions"><button class="secondary-button" type="submit" value="cancel">Vazgeç</button><button class="danger-button" id="confirmLimitButton" type="submit" value="confirm">Yine de Ekle</button></div>
         </form>
     </dialog>
 
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="script.js?v=1"></script>
+    <script type="module" src="script.js?v=2"></script>
     <script type="module" src="../merchant-order-alert.js?v=2"></script>
     <script type="module" src="../system-ui.js?v=7"></script>
     <script src="../panel-scroll.js?v=2"></script>

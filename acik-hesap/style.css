@@ -7,3 +7,18 @@ dialog{width:min(calc(100% - 1.25rem),520px);padding:0;border:0;border-radius:18
 @media(min-width:700px){body{font-size:1rem}.app-header{padding:1rem 0}.header-inner{width:min(calc(100% - 3rem),920px)}.brand-logo{width:4.3rem;height:4.3rem}.page-shell{grid-template-columns:1fr 1fr;padding-top:1.3rem}.summary-panel,.customer-panel,.movement-panel{grid-column:1/-1}.field-grid{grid-template-columns:1fr 1fr}.full-field{grid-column:1/-1}.panel{padding:1.25rem}.customer-list{grid-template-columns:1fr 1fr}}
 @media(min-width:1050px){.header-inner{width:min(calc(100% - 3rem),1180px)}.form-panel{grid-column:1/-1}.field-grid{grid-template-columns:repeat(3,1fr)}.full-field{grid-column:auto}.customer-list{grid-template-columns:repeat(3,1fr)}}
 @media(hover:hover) and (pointer:fine){.header-actions button:hover,.panel-menu summary:hover,.icon-button:hover{filter:brightness(1.08)}.primary-button:hover{filter:brightness(1.1)}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.movement-types{grid-template-columns:repeat(3,1fr)}
+.summary-dialog{width:min(96vw,920px);max-height:92vh;padding:0;border:0;border-radius:22px;background:transparent}
+.summary-dialog::backdrop{background:rgba(31,9,11,.65);backdrop-filter:blur(3px)}
+.summary-card{max-height:92vh;padding:1.1rem;overflow:auto;border:1px solid var(--line);border-radius:22px;background:#fffdf9;box-shadow:0 28px 70px rgba(35,7,10,.3)}
+.account-summary-head{display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;margin:.8rem 0}
+.account-summary-head span{display:flex;justify-content:space-between;gap:1rem;padding:.75rem;border:1px solid var(--line);border-radius:12px;background:#fff6ea;color:var(--muted);font-size:.65rem}
+.account-summary-head b{color:var(--burgundy-800)}
+.account-table{display:grid;min-width:650px;border:1px solid var(--line);border-radius:13px;overflow:hidden}
+.account-row{display:grid;grid-template-columns:2.5rem 6.5rem minmax(13rem,1fr) 7rem 7rem;align-items:center}
+.account-row:nth-child(odd){background:#fff8ef}
+.account-row>span{min-width:0;padding:.65rem;border-right:1px solid var(--line);font-size:.6rem}
+.account-row>span:last-child{border-right:0}.account-row small{display:block;margin-top:.18rem;color:var(--muted)}
+.account-row-head{color:#fff;background:var(--burgundy-800)!important;font-weight:700}
+.summary-actions{position:sticky;bottom:-1.1rem;padding:.8rem 0 1.1rem;background:#fffdf9}
+@media(max-width:700px){.movement-types{grid-template-columns:1fr}.account-summary-head{grid-template-columns:1fr}.summary-card{overflow:auto}}

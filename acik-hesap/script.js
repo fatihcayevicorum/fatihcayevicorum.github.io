@@ -3,193 +3,73 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 import { collection, doc, getFirestore, limit, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getFirestore(app);
-const customerCollection = collection(database, "adminCreditCustomers");
-const movementCollection = collection(database, "adminCreditMovements");
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const customersCol=collection(db,"adminCreditCustomers"),movesCol=collection(db,"adminCreditMovements"),salesCol=collection(db,"adminSales");
+const $=id=>document.getElementById(id);
+const el={customerForm:$("customerForm"),editingCustomerId:$("editingCustomerId"),customerFormTitle:$("customerFormTitle"),customerName:$("customerName"),customerPhone:$("customerPhone"),customerLimit:$("customerLimit"),openingBalance:$("openingBalance"),customerNote:$("customerNote"),creditEnabled:$("creditEnabled"),resetEnabled:$("resetEnabled"),cancelEditButton:$("cancelEditButton"),saveCustomerButton:$("saveCustomerButton"),customerCount:$("customerCount"),totalBalance:$("totalBalance"),overLimitCount:$("overLimitCount"),todayPayment:$("todayPayment"),saveStatus:$("saveStatus"),customerFilter:$("customerFilter"),customerSearch:$("customerSearch"),customerEmpty:$("customerEmpty"),customerList:$("customerList"),movementEmpty:$("movementEmpty"),movementList:$("movementList"),movementDialog:$("movementDialog"),movementForm:$("movementForm"),movementTitle:$("movementTitle"),movementCustomerId:$("movementCustomerId"),movementAmount:$("movementAmount"),movementAmountLabel:$("movementAmountLabel"),movementDate:$("movementDate"),movementNote:$("movementNote"),movementPreview:$("movementPreview"),closeMovementDialog:$("closeMovementDialog"),cancelMovementButton:$("cancelMovementButton"),limitDialog:$("limitDialog"),limitDialogText:$("limitDialogText"),confirmLimitButton:$("confirmLimitButton"),resetDialog:$("resetDialog"),resetDialogText:$("resetDialogText"),confirmResetButton:$("confirmResetButton"),summaryDialog:$("summaryDialog"),summaryTitle:$("summaryTitle"),summaryContent:$("summaryContent"),closeSummaryDialog:$("closeSummaryDialog"),shareSummaryButton:$("shareSummaryButton"),pdfSummaryButton:$("pdfSummaryButton"),currentDate:$("currentDate"),currentTime:$("currentTime"),logoutButton:$("logoutButton"),toast:$("toast")};
+let customers=[],movements=[],pendingMovement=null,pendingResetId="",summaryCustomerId="",busy=false,toastTimer;
 
-const elements = {
-    customerForm: document.getElementById("customerForm"), editingCustomerId: document.getElementById("editingCustomerId"), customerFormTitle: document.getElementById("customerFormTitle"), customerName: document.getElementById("customerName"), customerPhone: document.getElementById("customerPhone"), customerLimit: document.getElementById("customerLimit"), customerNote: document.getElementById("customerNote"), creditEnabled: document.getElementById("creditEnabled"), cancelEditButton: document.getElementById("cancelEditButton"), saveCustomerButton: document.getElementById("saveCustomerButton"),
-    customerCount: document.getElementById("customerCount"), totalBalance: document.getElementById("totalBalance"), overLimitCount: document.getElementById("overLimitCount"), todayPayment: document.getElementById("todayPayment"), saveStatus: document.getElementById("saveStatus"),
-    customerFilter: document.getElementById("customerFilter"), customerSearch: document.getElementById("customerSearch"), customerEmpty: document.getElementById("customerEmpty"), customerList: document.getElementById("customerList"), movementEmpty: document.getElementById("movementEmpty"), movementList: document.getElementById("movementList"),
-    movementDialog: document.getElementById("movementDialog"), movementForm: document.getElementById("movementForm"), movementTitle: document.getElementById("movementTitle"), movementCustomerId: document.getElementById("movementCustomerId"), movementAmount: document.getElementById("movementAmount"), movementAmountLabel: document.getElementById("movementAmountLabel"), movementDate: document.getElementById("movementDate"), movementNote: document.getElementById("movementNote"), movementPreview: document.getElementById("movementPreview"), closeMovementDialog: document.getElementById("closeMovementDialog"), cancelMovementButton: document.getElementById("cancelMovementButton"), saveMovementButton: document.getElementById("saveMovementButton"),
-    limitDialog: document.getElementById("limitDialog"), limitDialogText: document.getElementById("limitDialogText"), confirmLimitButton: document.getElementById("confirmLimitButton"), currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast")
-};
+el.customerForm.onsubmit=saveCustomer;el.cancelEditButton.onclick=resetForm;el.customerList.onclick=customerAction;el.customerFilter.onchange=renderCustomers;el.customerSearch.oninput=renderCustomers;el.movementForm.onsubmit=prepareMovement;el.movementForm.oninput=updatePreview;el.closeMovementDialog.onclick=closeMovement;el.cancelMovementButton.onclick=closeMovement;el.confirmLimitButton.onclick=()=>pendingMovement&&executeMovement(pendingMovement);el.confirmResetButton.onclick=resetAccount;el.closeSummaryDialog.onclick=()=>el.summaryDialog.close();el.shareSummaryButton.onclick=shareSummary;el.pdfSummaryButton.onclick=printSummary;el.logoutButton.onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
+document.addEventListener("click",e=>{const menu=document.querySelector(".panel-menu");if(menu?.open&&!menu.contains(e.target))menu.removeAttribute("open")});
+updateClock();setInterval(updateClock,1000);
+onAuthStateChanged(auth,async user=>{if(!user||user.uid!==ADMIN_UID){if(user)await signOut(auth);location.replace("../yonetici-giris.html?next=acik-hesap/");return}subscribe()});
 
-let customers = [];
-let movements = [];
-let pendingMovement = null;
-let isBusy = false;
-let toastTimer = null;
-
-elements.customerForm.addEventListener("submit", saveCustomer);
-elements.cancelEditButton.addEventListener("click", resetCustomerForm);
-elements.customerList.addEventListener("click", handleCustomerAction);
-elements.customerFilter.addEventListener("change", renderCustomers);
-elements.customerSearch.addEventListener("input", renderCustomers);
-elements.movementForm.addEventListener("submit", prepareMovement);
-elements.movementForm.addEventListener("input", updateMovementPreview);
-elements.closeMovementDialog.addEventListener("click", closeMovementDialog);
-elements.cancelMovementButton.addEventListener("click", closeMovementDialog);
-elements.confirmLimitButton.addEventListener("click", () => { if (pendingMovement) executeMovement(pendingMovement); });
-elements.logoutButton.addEventListener("click", async () => { await signOut(auth); window.location.replace("../yonetici-giris.html"); });
-document.addEventListener("click", (event) => { const menu = document.querySelector(".panel-menu"); if (menu?.open && !menu.contains(event.target)) menu.removeAttribute("open"); });
-
-setToday(); updateClock(); window.setInterval(updateClock, 1000);
-
-onAuthStateChanged(auth, async (user) => {
-    if (!user || user.uid !== ADMIN_UID) {
-        if (user) await signOut(auth);
-        window.location.replace("../yonetici-giris.html?next=acik-hesap/");
-        return;
+function subscribe(){
+  onSnapshot(customersCol,s=>{customers=s.docs.map(d=>normalizeCustomer(d.id,d.data()));connection(true);renderAll()},connectionError);
+  onSnapshot(query(movesCol,orderBy("createdAt","desc"),limit(300)),s=>{movements=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},connectionError);
+}
+async function saveCustomer(e){
+  e.preventDefault();if(busy)return;
+  const id=el.editingCustomerId.value,phone=normalizePhone(el.customerPhone.value),opening=amount(el.openingBalance.value);
+  if(phone.length!==10)return toast("Telefon numarasını 05xx xxx xx xx şeklinde girin.");
+  if(customers.some(c=>c.phone===phone&&c.id!==id))return toast("Bu telefon numarası başka bir müşteride kayıtlı.");
+  const data={name:el.customerName.value.trim(),phone,creditLimit:amount(el.customerLimit.value),note:el.customerNote.value.trim(),creditEnabled:el.creditEnabled.checked,resetEnabled:el.resetEnabled.checked,updatedAt:serverTimestamp()};
+  if(!data.name)return;
+  busy=true;
+  try{
+    if(id){await updateDoc(doc(customersCol,id),data);toast("Müşteri bilgileri güncellendi.")}
+    else{
+      const customerRef=doc(customersCol),moveRef=doc(movesCol);
+      await runTransaction(db,async tx=>{tx.set(customerRef,{...data,openingBalance:opening,balance:opening,createdAt:serverTimestamp()});if(opening>0)tx.set(moveRef,{customerId:customerRef.id,customerName:data.name,type:"opening",amount:opening,previousBalance:0,resultingBalance:opening,operationDate:today(),note:"Başlangıç Bakiyesi",source:"opening",createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})});
+      toast("Açık Hesap müşterisi oluşturuldu.");
     }
-    subscribeData();
-});
-
-function subscribeData() {
-    onSnapshot(customerCollection, (snapshot) => {
-        customers = snapshot.docs.map((entry) => normalizeCustomer(entry.id, entry.data()));
-        setConnection(true); renderAll();
-    }, handleConnectionError);
-    onSnapshot(query(movementCollection, orderBy("createdAt", "desc"), limit(100)), (snapshot) => {
-        movements = snapshot.docs.map((entry) => ({ id: entry.id, ...entry.data() }));
-        renderSummary(); renderMovements();
-    }, handleConnectionError);
+    resetForm();
+  }catch(err){console.error(err);toast("Müşteri kaydedilemedi.")}finally{busy=false}
 }
-
-async function saveCustomer(event) {
-    event.preventDefault(); if (isBusy) return;
-    const id = elements.editingCustomerId.value;
-    const phone = normalizePhone(elements.customerPhone.value);
-    if (phone.length !== 10) { showToast("Telefon numarasını 05xx xxx xx xx şeklinde girin."); return; }
-    if (customers.some((customer) => customer.phone === phone && customer.id !== id)) { showToast("Bu telefon numarası başka bir müşteride kayıtlı."); return; }
-    const data = { name: elements.customerName.value.trim(), phone, creditLimit: positiveNumber(elements.customerLimit.value), note: elements.customerNote.value.trim(), creditEnabled: elements.creditEnabled.checked, updatedAt: serverTimestamp() };
-    if (!data.name) return;
-    setBusy(true);
-    try {
-        if (id) { await updateDoc(doc(customerCollection, id), data); showToast("Müşteri bilgileri güncellendi."); }
-        else { const reference = doc(customerCollection); await setDoc(reference, { ...data, balance: 0, createdAt: serverTimestamp() }); showToast("Açık hesap müşterisi oluşturuldu."); }
-        resetCustomerForm();
-    } catch (error) { console.error(error); showToast("Müşteri kaydedilemedi."); }
-    finally { setBusy(false); }
+function customerAction(e){
+  const debt=e.target.closest("[data-debt]"),payment=e.target.closest("[data-payment]"),edit=e.target.closest("[data-edit]"),toggle=e.target.closest("[data-toggle]"),reset=e.target.closest("[data-reset]"),summary=e.target.closest("[data-summary]");
+  if(debt)openMovement(debt.dataset.debt,"debt");if(payment)openMovement(payment.dataset.payment,"payment");if(edit)beginEdit(edit.dataset.edit);if(toggle)toggleCustomer(toggle.dataset.toggle);if(reset)confirmReset(reset.dataset.reset);if(summary)openSummary(summary.dataset.summary);
 }
-
-function handleCustomerAction(event) {
-    const debt = event.target.closest("[data-debt]"); const payment = event.target.closest("[data-payment]"); const edit = event.target.closest("[data-edit]"); const toggle = event.target.closest("[data-toggle]"); const share = event.target.closest("[data-share]");
-    if (debt) openMovementDialog(debt.dataset.debt, "debt");
-    if (payment) openMovementDialog(payment.dataset.payment, "payment");
-    if (edit) beginEdit(edit.dataset.edit);
-    if (toggle) toggleCustomer(toggle.dataset.toggle);
-    if (share) shareDebtInfo(share.dataset.share);
+function beginEdit(id){const c=customers.find(x=>x.id===id);if(!c)return;el.editingCustomerId.value=id;el.customerName.value=c.name;el.customerPhone.value=formatPhone(c.phone);el.customerLimit.value=c.creditLimit;el.openingBalance.value=c.openingBalance;el.openingBalance.disabled=true;el.customerNote.value=c.note;el.creditEnabled.checked=c.creditEnabled;el.resetEnabled.checked=c.resetEnabled;el.customerFormTitle.textContent="Müşteriyi Düzenle";el.cancelEditButton.hidden=false;el.saveCustomerButton.innerHTML='<i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet';el.customerForm.scrollIntoView({behavior:"smooth"})}
+async function toggleCustomer(id){const c=customers.find(x=>x.id===id);if(!c||busy)return;try{await updateDoc(doc(customersCol,id),{creditEnabled:!c.creditEnabled,updatedAt:serverTimestamp()});toast(c.creditEnabled?"Açık Hesap yetkisi kapatıldı.":"Açık Hesap yetkisi açıldı.")}catch(err){console.error(err);toast("Müşteri yetkisi değiştirilemedi.")}}
+function openMovement(id,type){const c=customers.find(x=>x.id===id);if(!c)return;if(type==="debt"&&!c.creditEnabled)return toast("Bu müşterinin Açık Hesap yetkisi kapalı.");if(type!=="debt"&&c.balance<=0)return toast("Bu müşterinin tahsil edilecek borcu yok.");el.movementCustomerId.value=id;el.movementTitle.textContent=c.name;el.movementAmount.value="";el.movementNote.value="";el.movementDate.value=today();el.movementForm.querySelector(`[name="movementType"][value="${type}"]`).checked=true;updatePreview();el.movementDialog.showModal()}
+function closeMovement(){el.movementDialog.close();pendingMovement=null}
+function prepareMovement(e){e.preventDefault();if(busy)return;const c=customers.find(x=>x.id===el.movementCustomerId.value);if(!c)return;const type=el.movementForm.elements.movementType.value,m={customerId:c.id,type,amount:amount(el.movementAmount.value),operationDate:el.movementDate.value,note:el.movementNote.value.trim()};if(m.amount<=0)return toast("Geçerli bir tutar girin.");if(type!=="debt"&&m.amount>c.balance)return toast("Tahsilat tutarı mevcut borçtan fazla olamaz.");const next=type==="debt"?c.balance+m.amount:c.balance-m.amount;if(type==="debt"&&c.creditLimit>0&&next>c.creditLimit){pendingMovement=m;el.limitDialogText.textContent=`${c.name} için yeni borç ${money(next)} olacak. Belirlenen limit ${money(c.creditLimit)}.`;el.movementDialog.close();el.limitDialog.showModal();return}executeMovement(m)}
+async function executeMovement(m){
+  if(busy)return;busy=true;
+  try{
+    const customerRef=doc(customersCol,m.customerId),moveRef=doc(movesCol),saleRef=m.type==="debt"?null:doc(salesCol);
+    await runTransaction(db,async tx=>{const snap=await tx.get(customerRef);if(!snap.exists())throw Error("missing");const c=normalizeCustomer(snap.id,snap.data()),result=m.type==="debt"?c.balance+m.amount:c.balance-m.amount;if(result<0)throw Error("high");tx.update(customerRef,{balance:result,updatedAt:serverTimestamp()});tx.set(moveRef,{customerId:c.id,customerName:c.name,type:m.type,amount:m.amount,previousBalance:c.balance,resultingBalance:result,operationDate:m.operationDate,note:m.note,source:"manual",createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});if(saleRef)tx.set(saleRef,{recordType:"credit-payment",customerId:c.id,customerName:c.name,amount:m.amount,cashAmount:m.type==="payment"?m.amount:0,transferAmount:m.type==="transfer"?m.amount:0,paymentType:m.type==="transfer"?"transfer":"cash",businessDate:m.operationDate,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})});
+    pendingMovement=null;el.limitDialog.close();el.movementDialog.close();toast(m.type==="debt"?"Borç hesaba eklendi.":m.type==="transfer"?"Banka Havalesi kaydedildi.":"Nakit tahsilat kaydedildi.");
+  }catch(err){console.error(err);toast(err.message==="high"?"Tahsilat mevcut borçtan fazla olamaz.":"Hesap hareketi kaydedilemedi.")}finally{busy=false}
 }
-
-function beginEdit(id) {
-    const customer = customers.find((entry) => entry.id === id); if (!customer) return;
-    elements.editingCustomerId.value = id; elements.customerName.value = customer.name; elements.customerPhone.value = formatPhone(customer.phone); elements.customerLimit.value = String(customer.creditLimit); elements.customerNote.value = customer.note; elements.creditEnabled.checked = customer.creditEnabled;
-    elements.customerFormTitle.textContent = "Müşteriyi Düzenle"; elements.cancelEditButton.hidden = false; elements.saveCustomerButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet';
-    elements.customerForm.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-async function toggleCustomer(id) {
-    const customer = customers.find((entry) => entry.id === id); if (!customer || isBusy) return;
-    try { await updateDoc(doc(customerCollection, id), { creditEnabled: !customer.creditEnabled, updatedAt: serverTimestamp() }); showToast(customer.creditEnabled ? "Açık hesap yetkisi kapatıldı." : "Açık hesap yetkisi açıldı."); }
-    catch (error) { console.error(error); showToast("Müşteri yetkisi değiştirilemedi."); }
-}
-
-function openMovementDialog(id, type) {
-    const customer = customers.find((entry) => entry.id === id); if (!customer) return;
-    if (type === "debt" && !customer.creditEnabled) { showToast("Bu müşterinin açık hesap yetkisi kapalı."); return; }
-    if (type === "payment" && customer.balance <= 0) { showToast("Bu müşterinin tahsil edilecek borcu yok."); return; }
-    elements.movementCustomerId.value = id; elements.movementTitle.textContent = customer.name; elements.movementAmount.value = ""; elements.movementNote.value = ""; elements.movementDate.value = getIstanbulDate(); elements.movementForm.querySelector(`input[name="movementType"][value="${type}"]`).checked = true;
-    updateMovementPreview(); elements.movementDialog.showModal();
-}
-
-function closeMovementDialog() { elements.movementDialog.close(); pendingMovement = null; }
-
-function prepareMovement(event) {
-    event.preventDefault(); if (isBusy) return;
-    const customer = customers.find((entry) => entry.id === elements.movementCustomerId.value); if (!customer) return;
-    const movement = { customerId: customer.id, type: elements.movementForm.elements.movementType.value, amount: positiveNumber(elements.movementAmount.value), operationDate: elements.movementDate.value, note: elements.movementNote.value.trim() };
-    if (movement.amount <= 0) { showToast("Geçerli bir tutar girin."); return; }
-    if (movement.type === "payment" && movement.amount > customer.balance) { showToast("Tahsilat tutarı mevcut borçtan fazla olamaz."); return; }
-    const nextBalance = movement.type === "debt" ? customer.balance + movement.amount : customer.balance - movement.amount;
-    if (movement.type === "debt" && customer.creditLimit > 0 && nextBalance > customer.creditLimit) {
-        pendingMovement = movement; elements.limitDialogText.textContent = `${customer.name} için yeni borç ${formatMoney(nextBalance)} olacak. Belirlenen limit ${formatMoney(customer.creditLimit)}.`; elements.movementDialog.close(); elements.limitDialog.showModal(); return;
-    }
-    executeMovement(movement);
-}
-
-async function executeMovement(movement) {
-    if (isBusy) return; setBusy(true);
-    try {
-        const customerReference = doc(customerCollection, movement.customerId); const movementReference = doc(movementCollection);
-        await runTransaction(database, async (transaction) => {
-            const snapshot = await transaction.get(customerReference); if (!snapshot.exists()) throw new Error("customer-not-found");
-            const customer = normalizeCustomer(snapshot.id, snapshot.data());
-            const resultingBalance = movement.type === "debt" ? customer.balance + movement.amount : customer.balance - movement.amount;
-            if (resultingBalance < 0) throw new Error("payment-too-high");
-            transaction.update(customerReference, { balance: resultingBalance, updatedAt: serverTimestamp() });
-            transaction.set(movementReference, { customerId: customer.id, customerName: customer.name, type: movement.type, amount: movement.amount, previousBalance: customer.balance, resultingBalance, operationDate: movement.operationDate, note: movement.note, source: "manual", createdAt: serverTimestamp(), createdBy: auth.currentUser.uid });
-        });
-        pendingMovement = null; elements.movementDialog.close(); showToast(movement.type === "debt" ? "Borç hesaba eklendi." : "Nakit tahsilat kaydedildi.");
-    } catch (error) { console.error(error); showToast(error.message === "payment-too-high" ? "Tahsilat mevcut borçtan fazla olamaz." : "Hesap hareketi kaydedilemedi."); }
-    finally { setBusy(false); }
-}
-
-function updateMovementPreview() {
-    const customer = customers.find((entry) => entry.id === elements.movementCustomerId.value); if (!customer) return;
-    const type = elements.movementForm.elements.movementType.value; const amount = positiveNumber(elements.movementAmount.value); const next = type === "debt" ? customer.balance + amount : Math.max(0, customer.balance - amount);
-    elements.movementAmountLabel.textContent = type === "debt" ? "Eklenecek borç (TL)" : "Nakit tahsilat (TL)";
-    elements.movementPreview.textContent = `Mevcut borç: ${formatMoney(customer.balance)} → Yeni borç: ${formatMoney(next)}`;
-}
-
-async function shareDebtInfo(id) {
-    const customer = customers.find((entry) => entry.id === id); if (!customer) return;
-    const text = `Merhaba ${customer.name}, Fatih Çay Evi açık hesap bakiyeniz ${formatMoney(customer.balance)}'dir. Tarih: ${formatLongDate(new Date())}. Bilginize.`;
-    try {
-        if (navigator.share) { await navigator.share({ title: "Fatih Çay Evi Açık Hesap", text }); return; }
-        const phone = `90${customer.phone}`; window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
-    } catch (error) { if (error?.name !== "AbortError") { console.error(error); showToast("Mesaj paylaşımı açılamadı."); } }
-}
-
-function renderAll() { renderSummary(); renderCustomers(); }
-function renderSummary() {
-    const enabled = customers.filter((customer) => customer.creditEnabled); const today = getIstanbulDate();
-    elements.customerCount.textContent = String(enabled.length); elements.totalBalance.textContent = formatMoney(customers.reduce((sum, customer) => sum + customer.balance, 0)); elements.overLimitCount.textContent = String(customers.filter((customer) => customer.creditLimit > 0 && customer.balance > customer.creditLimit).length); elements.todayPayment.textContent = formatMoney(movements.filter((movement) => movement.type === "payment" && movement.operationDate === today).reduce((sum, movement) => sum + positiveNumber(movement.amount), 0));
-}
-
-function renderCustomers() {
-    const filter = elements.customerFilter.value; const search = elements.customerSearch.value.trim().toLocaleLowerCase("tr-TR");
-    const filtered = customers.filter((customer) => {
-        if (!`${customer.name} ${customer.phone} ${customer.note}`.toLocaleLowerCase("tr-TR").includes(search)) return false;
-        if (filter === "enabled") return customer.creditEnabled; if (filter === "disabled") return !customer.creditEnabled; if (filter === "debt") return customer.balance > 0; if (filter === "over-limit") return customer.creditLimit > 0 && customer.balance > customer.creditLimit; return true;
-    }).sort((a, b) => b.balance - a.balance || a.name.localeCompare(b.name, "tr"));
-    elements.customerEmpty.hidden = filtered.length > 0; elements.customerEmpty.textContent = customers.length ? "Bu filtreye uygun müşteri bulunamadı." : "Henüz açık hesap müşterisi eklenmedi."; elements.customerList.innerHTML = filtered.map(customerCardHtml).join("");
-}
-
-function customerCardHtml(customer) {
-    const over = customer.creditLimit > 0 && customer.balance > customer.creditLimit; const remaining = Math.max(0, customer.creditLimit - customer.balance);
-    return `<article class="customer-card ${over ? "is-over" : ""} ${customer.creditEnabled ? "" : "is-disabled"}"><div><div class="customer-title"><strong>${escapeHtml(customer.name)}</strong><span class="badge ${over ? "is-over" : "is-ok"}">${over ? "Limit aşıldı" : customer.creditEnabled ? "Açık hesap aktif" : "Yetki kapalı"}</span></div><div class="balance">${formatMoney(customer.balance)} borç</div><div class="customer-meta"><span>${formatPhone(customer.phone)}</span><span>Limit: ${formatMoney(customer.creditLimit)}</span><span>Kalan limit: ${formatMoney(remaining)}</span></div>${customer.note ? `<p class="customer-note">${escapeHtml(customer.note)}</p>` : ""}</div><div class="item-actions">${customer.creditEnabled ? `<button class="icon-button" type="button" data-debt="${customer.id}" aria-label="Borç ekle"><i class="fa-solid fa-plus"></i></button>` : ""}<button class="icon-button is-payment" type="button" data-payment="${customer.id}" aria-label="Tahsilat ekle"><i class="fa-solid fa-money-bill-wave"></i></button><button class="icon-button is-share" type="button" data-share="${customer.id}" aria-label="Borç bilgisini mesajla gönder"><i class="fa-solid fa-paper-plane"></i></button><button class="icon-button" type="button" data-edit="${customer.id}" aria-label="Müşteriyi düzenle"><i class="fa-solid fa-pen"></i></button><button class="icon-button is-danger" type="button" data-toggle="${customer.id}" aria-label="Açık hesap yetkisini değiştir"><i class="fa-solid ${customer.creditEnabled ? "fa-lock" : "fa-lock-open"}"></i></button></div></article>`;
-}
-
-function renderMovements() {
-    elements.movementEmpty.hidden = movements.length > 0; elements.movementList.innerHTML = movements.map((movement) => { const payment = movement.type === "payment"; return `<article class="movement-item"><span class="movement-icon ${payment ? "payment" : ""}"><i class="fa-solid ${payment ? "fa-money-bill-wave" : "fa-plus"}"></i></span><div class="movement-copy"><strong>${escapeHtml(movement.customerName || "Müşteri")}</strong><span>${payment ? "Nakit tahsilat" : "Borç eklendi"} • ${formatDate(movement.operationDate)}${movement.note ? ` • ${escapeHtml(movement.note)}` : ""}</span></div><div class="movement-amount">${payment ? "−" : "+"}${formatMoney(movement.amount)}<span class="movement-result">Kalan: ${formatMoney(movement.resultingBalance)}</span></div></article>`; }).join("");
-}
-
-function resetCustomerForm() { elements.customerForm.reset(); elements.editingCustomerId.value = ""; elements.creditEnabled.checked = true; elements.customerFormTitle.textContent = "Yeni Açık Hesap Müşterisi"; elements.cancelEditButton.hidden = true; elements.saveCustomerButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Müşteriyi Kaydet'; }
-function normalizeCustomer(id, data) { return { id, name: String(data.name || ""), phone: normalizePhone(data.phone || ""), creditLimit: positiveNumber(data.creditLimit), balance: positiveNumber(data.balance), note: String(data.note || ""), creditEnabled: data.creditEnabled !== false }; }
-function normalizePhone(value) { let digits = String(value).replace(/\D/g, ""); if (digits.startsWith("90")) digits = `0${digits.slice(2)}`; if (digits.length === 10 && digits.startsWith("5")) digits = `0${digits}`; return digits.slice(-11).replace(/^0/, ""); }
-function formatPhone(value) { const d = normalizePhone(value); return d.length === 10 ? `0${d.slice(0,3)} ${d.slice(3,6)} ${d.slice(6,8)} ${d.slice(8,10)}` : value; }
-function positiveNumber(value) { const number = Number(value); return Number.isFinite(number) ? Math.max(0, number) : 0; }
-function formatMoney(value) { return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", minimumFractionDigits: Number(value) % 1 ? 2 : 0 }).format(Number(value) || 0); }
-function formatDate(value) { if (!value) return "—"; const parts = String(value).split("-"); return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}` : value; }
-function formatLongDate(date) { return new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Istanbul" }).format(date); }
-function getIstanbulDate() { return new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Europe/Istanbul" }).format(new Date()); }
-function setToday() { elements.movementDate.value = getIstanbulDate(); }
-function updateClock() { const now = new Date(); elements.currentDate.textContent = new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Istanbul" }).format(now).replace(/\./g, "/"); elements.currentTime.textContent = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Istanbul" }).format(now); }
-function setBusy(value) { isBusy = value; elements.saveCustomerButton.disabled = value; elements.saveMovementButton.disabled = value; }
-function setConnection(value) { elements.saveStatus.classList.toggle("is-error", !value); elements.saveStatus.innerHTML = value ? '<i class="fa-solid fa-circle-check"></i> Canlı bağlantı' : '<i class="fa-solid fa-triangle-exclamation"></i> Bağlantı yok'; }
-function handleConnectionError(error) { console.error(error); setConnection(false); showToast("Firebase bağlantısı kurulamadı. Güvenlik kurallarını kontrol edin."); }
-function showToast(message) { clearTimeout(toastTimer); elements.toast.textContent = message; elements.toast.classList.add("show"); toastTimer = setTimeout(() => elements.toast.classList.remove("show"), 3000); }
-function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }
+function updatePreview(){const c=customers.find(x=>x.id===el.movementCustomerId.value);if(!c)return;const type=el.movementForm.elements.movementType.value,value=amount(el.movementAmount.value),next=type==="debt"?c.balance+value:Math.max(0,c.balance-value),labels={debt:"Eklenecek Borç (TL)",payment:"Nakit Tahsilat (TL)",transfer:"Banka Havalesi (TL)"};el.movementAmountLabel.textContent=labels[type];el.movementPreview.textContent=`Mevcut Borç: ${money(c.balance)} → Yeni Borç: ${money(next)}`}
+function confirmReset(id){const c=customers.find(x=>x.id===id);if(!c)return;pendingResetId=id;el.resetDialogText.textContent=`${c.name} müşterisinin ${money(c.balance)} geçmiş dönem bakiyesi sıfırlanacak. Sıfırlamak istiyor musunuz?`;el.resetDialog.showModal()}
+async function resetAccount(){const c=customers.find(x=>x.id===pendingResetId);if(!c||busy)return;busy=true;try{const customerRef=doc(customersCol,c.id),moveRef=doc(movesCol);await runTransaction(db,async tx=>{const snap=await tx.get(customerRef);if(!snap.exists())throw Error("missing");const fresh=normalizeCustomer(snap.id,snap.data());tx.update(customerRef,{balance:0,lastResetAt:serverTimestamp(),updatedAt:serverTimestamp()});tx.set(moveRef,{customerId:fresh.id,customerName:fresh.name,type:"reset",amount:fresh.balance,previousBalance:fresh.balance,resultingBalance:0,operationDate:today(),note:"Geçmiş Dönem Hesabı Sıfırlandı",source:"reset",createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})});el.resetDialog.close();pendingResetId="";toast("Müşterinin geçmiş dönem hesabı sıfırlandı.")}catch(err){console.error(err);toast("Hesap sıfırlanamadı.")}finally{busy=false}}
+function customerMovements(id){return movements.filter(m=>m.customerId===id).sort((a,b)=>movementTime(a)-movementTime(b))}
+function openSummary(id){const c=customers.find(x=>x.id===id);if(!c)return;summaryCustomerId=id;el.summaryTitle.textContent=`${c.name} Hesap Özeti`;el.summaryContent.innerHTML=summaryHtml(c,customerMovements(id));el.summaryDialog.showModal()}
+function summaryHtml(c,list){return`<div class="account-summary-head"><span>Başlangıç Bakiyesi <b>${money(c.openingBalance)}</b></span><span>Güncel Bakiye <b>${money(c.balance)}</b></span></div><div class="account-table"><div class="account-row account-row-head"><span>No</span><span>Tarih</span><span>İşlem</span><span>Tutar</span><span>Bakiye</span></div>${list.map((m,i)=>`<div class="account-row"><span>${i+1}</span><span>${formatDate(m.operationDate)}</span><span>${movementName(m)}${m.note?`<small>${escapeHtml(m.note)}</small>`:""}</span><span>${movementSign(m)}${money(m.amount)}</span><span>${money(m.resultingBalance)}</span></div>`).join("")||'<p class="empty-copy">Hesap hareketi bulunmuyor.</p>'}</div>`}
+function summaryText(c,list){return[`FATİH ÇAY EVİ`,`Müşteri Hesap Özeti`,`Müşteri: ${c.name}`,`Başlangıç Bakiyesi: ${money(c.openingBalance)}`,...list.map((m,i)=>`${i+1}. ${formatDate(m.operationDate)} - ${movementName(m)} - ${movementSign(m)}${money(m.amount)} - Bakiye: ${money(m.resultingBalance)}`),`Güncel Bakiye: ${money(c.balance)}`].join("\n")}
+async function shareSummary(){const c=customers.find(x=>x.id===summaryCustomerId);if(!c)return;const text=summaryText(c,customerMovements(c.id));try{if(navigator.share){await navigator.share({title:`${c.name} Hesap Özeti`,text});return}window.open(`https://wa.me/90${c.phone}?text=${encodeURIComponent(text)}`,"_blank","noopener")}catch(err){if(err?.name!=="AbortError"){console.error(err);toast("WhatsApp paylaşımı açılamadı.")}}}
+function printSummary(){const c=customers.find(x=>x.id===summaryCustomerId);if(!c)return;const list=customerMovements(c.id),rows=list.map((m,i)=>`<tr><td>${i+1}</td><td>${formatDate(m.operationDate)}</td><td>${escapeHtml(movementName(m))}${m.note?`<small>${escapeHtml(m.note)}</small>`:""}</td><td>${movementSign(m)}${money(m.amount)}</td><td>${money(m.resultingBalance)}</td></tr>`).join("");openReportPrint(`${c.name} — Müşteri Hesap Özeti`,`<table><thead><tr><th>No</th><th>Tarih</th><th>İşlem</th><th>Tutar</th><th>Bakiye</th></tr></thead><tbody>${rows}</tbody></table>`,[["Başlangıç Bakiyesi",money(c.openingBalance)],["Güncel Bakiye",money(c.balance)]])}
+function openReportPrint(title,body,totals){const popup=window.open("","_blank","width=1000,height=760");if(!popup)return toast("PDF penceresi açılamadı.");popup.document.write(reportDocument(title,body,totals));popup.document.close()}
+function reportDocument(title,body,totals){const logo=new URL("../logo.png",location.href).href,created=new Intl.DateTimeFormat("tr-TR",{dateStyle:"full",timeStyle:"short",timeZone:"Europe/Istanbul"}).format(new Date());return`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>@page{size:A4;margin:15mm}*{box-sizing:border-box}body{margin:0;color:#342522;font:12px Arial,sans-serif}.watermark{position:fixed;inset:20% 15%;width:70%;height:60%;object-fit:contain;opacity:.045;z-index:-1}.head{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid #7d1b24;padding-bottom:12px}.brand img{width:90px}.brand p{margin:2px 0}.date{text-align:right}.title{text-align:center;color:#7d1b24;margin:22px 0 14px}table{width:100%;border-collapse:collapse}thead{display:table-header-group}th{background:#7d1b24;color:#fff}th,td{padding:9px;border:1px solid #d8c6ba;text-align:left}tbody tr:nth-child(even){background:#fff7ef}td small{display:block;color:#76635d;margin-top:3px}.totals{width:48%;margin:16px 0 0 auto;border:1px solid #d8c6ba}.totals div{display:flex;justify-content:space-between;padding:9px;border-bottom:1px solid #eaded6}.totals div:last-child{border:0;background:#fff2e2;color:#7d1b24;font-weight:bold}</style></head><body><img class="watermark" src="${logo}"><header class="head"><div class="brand"><img src="${logo}"><p><b>Fatih Ali Altınlı</b></p><p>0554 118 08 06</p><p>Ulukavak Mah. Osmancık Cad. No:285<br>Çorum/Merkez</p></div><div class="date"><b>Oluşturma Tarihi</b><p>${created}</p></div></header><h1 class="title">${escapeHtml(title)}</h1>${body}<section class="totals">${totals.map(x=>`<div><span>${x[0]}</span><b>${x[1]}</b></div>`).join("")}</section><script>window.onload=()=>setTimeout(()=>window.print(),350)<\/script></body></html>`}
+function renderAll(){renderSummary();renderCustomers();renderMovements()}
+function renderSummary(){const enabled=customers.filter(c=>c.creditEnabled),date=today();el.customerCount.textContent=enabled.length;el.totalBalance.textContent=money(customers.reduce((s,c)=>s+c.balance,0));el.overLimitCount.textContent=customers.filter(c=>c.creditLimit>0&&c.balance>c.creditLimit).length;el.todayPayment.textContent=money(movements.filter(m=>["payment","transfer"].includes(m.type)&&m.operationDate===date).reduce((s,m)=>s+amount(m.amount),0))}
+function renderCustomers(){const filter=el.customerFilter.value,q=el.customerSearch.value.trim().toLocaleLowerCase("tr-TR"),list=customers.filter(c=>`${c.name} ${c.phone} ${c.note}`.toLocaleLowerCase("tr-TR").includes(q)).filter(c=>filter==="enabled"?c.creditEnabled:filter==="disabled"?!c.creditEnabled:filter==="debt"?c.balance>0:filter==="over-limit"?c.creditLimit>0&&c.balance>c.creditLimit:true).sort((a,b)=>b.balance-a.balance||a.name.localeCompare(b.name,"tr"));el.customerEmpty.hidden=list.length>0;el.customerList.innerHTML=list.map(customerCard).join("")}
+function customerCard(c){const over=c.creditLimit>0&&c.balance>c.creditLimit,remaining=Math.max(0,c.creditLimit-c.balance);return`<article class="customer-card ${over?"is-over":""} ${c.creditEnabled?"":"is-disabled"}"><div><div class="customer-title"><strong>${escapeHtml(c.name)}</strong><span class="badge ${over?"is-over":"is-ok"}">${over?"Limit Aşıldı":c.creditEnabled?"Açık Hesap Aktif":"Yetki Kapalı"}</span></div><div class="balance">${money(c.balance)} Borç</div><div class="customer-meta"><span>${formatPhone(c.phone)}</span><span>Başlangıç: ${money(c.openingBalance)}</span><span>Limit: ${money(c.creditLimit)}</span><span>Kalan Limit: ${money(remaining)}</span></div>${c.note?`<p class="customer-note">${escapeHtml(c.note)}</p>`:""}</div><div class="item-actions">${c.creditEnabled?`<button class="icon-button" data-debt="${c.id}" title="Borç Ekle"><i class="fa-solid fa-plus"></i></button>`:""}<button class="icon-button is-payment" data-payment="${c.id}" title="Tahsilat"><i class="fa-solid fa-money-bill-wave"></i></button><button class="icon-button is-share" data-summary="${c.id}" title="Hesap Özeti"><i class="fa-solid fa-file-invoice"></i></button>${c.resetEnabled?`<button class="icon-button is-danger" data-reset="${c.id}" title="Hesabı Sıfırla"><i class="fa-solid fa-rotate-left"></i></button>`:""}<button class="icon-button" data-edit="${c.id}" title="Düzenle"><i class="fa-solid fa-pen"></i></button><button class="icon-button is-danger" data-toggle="${c.id}" title="Yetkiyi Değiştir"><i class="fa-solid ${c.creditEnabled?"fa-lock":"fa-lock-open"}"></i></button></div></article>`}
+function renderMovements(){el.movementEmpty.hidden=movements.length>0;el.movementList.innerHTML=movements.slice(0,100).map(m=>{const incoming=["payment","transfer","reset"].includes(m.type);return`<article class="movement-item"><span class="movement-icon ${incoming?"payment":""}"><i class="fa-solid ${m.type==="transfer"?"fa-building-columns":incoming?"fa-money-bill-wave":"fa-plus"}"></i></span><div class="movement-copy"><strong>${escapeHtml(m.customerName||"Müşteri")}</strong><span>${movementName(m)} • ${formatDate(m.operationDate)}${m.note?` • ${escapeHtml(m.note)}`:""}</span></div><div class="movement-amount">${movementSign(m)}${money(m.amount)}<span class="movement-result">Kalan: ${money(m.resultingBalance)}</span></div></article>`}).join("")}
+function movementName(m){return m.type==="opening"?"Başlangıç Bakiyesi":m.type==="debt"?"Borç Eklendi":m.type==="transfer"?"Banka Havalesi":m.type==="reset"?"Hesap Sıfırlandı":"Nakit Tahsilat"}function movementSign(m){return["payment","transfer","reset"].includes(m.type)?"−":"+"}function movementTime(m){return m.createdAt?.toMillis?.()||new Date(`${m.operationDate||"1970-01-01"}T00:00:00+03:00`).getTime()}
+function resetForm(){el.customerForm.reset();el.editingCustomerId.value="";el.creditEnabled.checked=true;el.resetEnabled.checked=false;el.openingBalance.value=0;el.openingBalance.disabled=false;el.customerFormTitle.textContent="Yeni Açık Hesap Müşterisi";el.cancelEditButton.hidden=true;el.saveCustomerButton.innerHTML='<i class="fa-solid fa-floppy-disk"></i> Müşteriyi Kaydet'}
+function normalizeCustomer(id,d){return{id,name:String(d.name||""),phone:normalizePhone(d.phone||""),creditLimit:amount(d.creditLimit),openingBalance:amount(d.openingBalance),balance:amount(d.balance),note:String(d.note||""),creditEnabled:d.creditEnabled!==false,resetEnabled:d.resetEnabled===true}}
+function normalizePhone(v){let d=String(v).replace(/\D/g,"");if(d.startsWith("90"))d=`0${d.slice(2)}`;if(d.length===10&&d.startsWith("5"))d=`0${d}`;return d.slice(-11).replace(/^0/,"")}function formatPhone(v){const d=normalizePhone(v);return d.length===10?`0${d.slice(0,3)} ${d.slice(3,6)} ${d.slice(6,8)} ${d.slice(8)}`:v}function amount(v){const n=Number(v);return Number.isFinite(n)?Math.max(0,n):0}function money(v){return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",minimumFractionDigits:2}).format(amount(v))}function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}function formatDate(v){const[y,m,d]=String(v||"").split("-");return y&&m&&d?`${d}.${m}.${y}`:"—"}function updateClock(){const n=new Date();el.currentTime.textContent=new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Europe/Istanbul"}).format(n);el.currentDate.textContent=new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit",timeZone:"Europe/Istanbul"}).format(n).replace(/\./g,"/")}function escapeHtml(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}function connection(ok){el.saveStatus.innerHTML=ok?'<i class="fa-solid fa-circle-check"></i> Canlı Bağlantı':'<i class="fa-solid fa-triangle-exclamation"></i> Bağlantı Hatası'}function connectionError(err){console.error(err);connection(false);toast("Veriler alınamadı.")}function toast(message){clearTimeout(toastTimer);el.toast.textContent=message;el.toast.classList.add("show");toastTimer=setTimeout(()=>el.toast.classList.remove("show"),3200)}

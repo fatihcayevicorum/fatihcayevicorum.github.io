@@ -36,7 +36,7 @@
     <section class="panel summary-panel">
       <div class="section-heading"><div><p class="kicker">Kontrol merkezi</p><h2>Stok Özeti</h2></div><span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span></div>
       <div class="stats">
-        <article><span>Takip edilen ürün</span><strong id="itemCount">0</strong></article>
+        <article><span>Takip edilen Ürün</span><strong id="itemCount">0</strong></article>
         <article><span>Toplam stok</span><strong id="totalUnits">0</strong></article>
         <article class="critical-stat"><span>Kritik stok</span><strong id="criticalCount">0</strong></article>
         <article class="empty-stat"><span>Tükenen</span><strong id="emptyCount">0</strong></article>
@@ -51,7 +51,7 @@
           <button id="manageProductsButton" class="primary-button" type="button"><i class="fa-solid fa-box-open"></i> Stok Ürünleri</button>
         </div>
       </div>
-      <p class="empty-copy" id="stockEmpty">Henüz stok ürünü tanımlanmadı.</p>
+      <p class="empty-copy" id="stockEmpty">Henüz stok Ürünü tanımlanmadı.</p>
       <div class="stock-list" id="stockList"></div>
     </section>
 
@@ -65,12 +65,12 @@
   <dialog id="productsDialog">
     <form id="productForm">
       <div class="dialog-heading"><div><p class="kicker">Ürün tanımları</p><h2>Stok Ürünleri</h2></div><button class="icon-button" type="button" data-close="productsDialog"><i class="fa-solid fa-xmark"></i></button></div>
-      <label class="dialog-field"><span>Menüden ürün seç</span><select id="menuProduct" required><option value="">Ürün seçin</option></select></label>
+      <label class="dialog-field"><span>Menüden Ürün seç</span><select id="menuProduct" required><option value="">Ürün seçin</option></select></label>
       <div class="compact-grid">
-        <label class="dialog-field"><span>Bir kolideki adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
+        <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
         <label class="dialog-field"><span>Kritik stok uyarısı</span><input id="warningThreshold" type="number" min="0" max="999999" step="1" value="10" required></label>
       </div>
-      <p class="notice">Bu ürün adisyonda satıldığında stoktan otomatik 1 adet düşer.</p>
+      <p class="notice">Bu Ürün Adisyonda satıldığında stoktan otomatik 1 Adet düşer.</p>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-plus"></i> Ürünü Stok Takibine Ekle</button>
       <div class="defined-products" id="definedProducts"></div>
     </form>
@@ -78,29 +78,29 @@
 
   <dialog id="entryDialog">
     <form id="entryForm">
-      <div class="dialog-heading"><div><p class="kicker">Yeni ürün alımı</p><h2 id="entryTitle">Stok Girişi</h2></div><button class="icon-button" type="button" data-close="entryDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="dialog-heading"><div><p class="kicker">Yeni Ürün alımı</p><h2 id="entryTitle">Stok Girişi</h2></div><button class="icon-button" type="button" data-close="entryDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <input id="entryStockId" type="hidden">
       <div class="compact-grid">
         <label class="dialog-field"><span>Koli sayısı</span><input id="packageCount" type="number" min=".001" max="999999" step=".001" required placeholder="Örn. 2"></label>
-        <label class="dialog-field"><span>Bir kolideki adet</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
+        <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
       </div>
       <label class="dialog-field"><span>Toplam ödenen tutar (TL)</span><input id="purchaseTotal" type="number" min="0" max="99999999" step=".01" required placeholder="Örn. 300"></label>
       <label class="dialog-field"><span>Alış tarihi</span><input id="entryDate" type="date" required></label>
       <label class="dialog-field"><span>Not <small>(isteğe bağlı)</small></span><textarea id="entryNote" maxlength="180" rows="2"></textarea></label>
-      <div class="cost-preview" id="costPreview"><span>Toplam adet: —</span><strong>Birim maliyet: —</strong></div>
+      <div class="cost-preview" id="costPreview"><span>Toplam Adet: —</span><strong>Birim maliyet: —</strong></div>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-boxes-stacked"></i> Stoka Ekle</button>
     </form>
   </dialog>
 
   <dialog id="adjustDialog">
     <form id="adjustForm">
-      <div class="dialog-heading"><div><p class="kicker">Manuel işlem</p><h2 id="adjustTitle">Stok Düzelt</h2></div><button class="icon-button" type="button" data-close="adjustDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="dialog-heading"><div><p class="kicker">Manuel İşlem</p><h2 id="adjustTitle">Stok Düzelt</h2></div><button class="icon-button" type="button" data-close="adjustDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <input id="adjustStockId" type="hidden">
       <div class="movement-types">
         <label><input type="radio" name="adjustType" value="out" checked><span><i class="fa-solid fa-minus"></i> Stoktan Düş</span></label>
         <label><input type="radio" name="adjustType" value="set"><span><i class="fa-solid fa-pen"></i> Sayımı Düzelt</span></label>
       </div>
-      <label class="dialog-field"><span id="adjustAmountLabel">Düşülecek adet</span><input id="adjustAmount" type="number" min="0" max="999999" step=".001" required></label>
+      <label class="dialog-field"><span id="adjustAmountLabel">Düşülecek Adet</span><input id="adjustAmount" type="number" min="0" max="999999" step=".001" required></label>
       <label class="dialog-field"><span>İşlem tarihi</span><input id="adjustDate" type="date" required></label>
       <label class="dialog-field"><span>Açıklama</span><textarea id="adjustNote" maxlength="180" rows="2"></textarea></label>
       <div class="dialog-summary" id="adjustPreview">Yeni stok: —</div>
