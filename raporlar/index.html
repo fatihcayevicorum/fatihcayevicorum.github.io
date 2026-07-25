@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../panel-header.css?v=5">
-  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
   <header class="app-header">
@@ -140,8 +140,27 @@
     </section>
   </main>
 
+  <dialog id="closingDetailDialog" class="closing-detail-dialog">
+    <div class="closing-detail-card">
+      <div class="closing-detail-head">
+        <div><p class="kicker">Gün sonu arşivi</p><h2 id="closingDetailTitle">Gün Sonu Raporu</h2></div>
+        <button id="closeClosingDetail" type="button" aria-label="Kapat">×</button>
+      </div>
+      <p id="closingDetailPeriod" class="closing-detail-period"></p>
+      <div id="closingDetailSummary" class="closing-detail-summary"></div>
+      <div class="closing-products-head"><h3>Ürünlere Göre Satışlar</h3><span id="closingProductCount">0 ürün</span></div>
+      <div id="closingDetailProducts" class="closing-detail-products"></div>
+      <p id="closingDetailEmpty" class="empty">Bu gün sonu kaydında ürün satışı bulunmuyor.</p>
+      <div class="closing-detail-actions">
+        <button id="closingDetailPdf" class="secondary" type="button"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+        <button id="closingDetailExcel" class="secondary" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button>
+        <button id="closeClosingDetailBottom" class="primary" type="button">Kapat</button>
+      </div>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=3"></script>
+  <script type="module" src="script.js?v=4"></script>
   <script type="module" src="../merchant-order-alert.js?v=2"></script>
   <script type="module" src="../system-ui.js?v=4"></script>
 </body>
