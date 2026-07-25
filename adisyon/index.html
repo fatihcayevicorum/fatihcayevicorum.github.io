@@ -64,14 +64,7 @@
   <div class="dialog-head"><h2>Ödeme Al</h2><button type="button" data-close="checkoutDialog">×</button></div>
   <div class="payment-summary"><div><span>Mevcut borç</span><b id="checkoutBase">₺0</b></div><div><span>Bu ödeme</span><b id="checkoutPaid">₺0</b></div><div class="remaining"><span>Kalan</span><b id="checkoutRemaining">₺0</b></div></div>
   <div class="payment-type-switch"><label><input type="radio" name="paymentType" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label><label><input type="radio" name="paymentType" value="transfer"><span><i class="fa-solid fa-building-columns"></i>Banka Havalesi</span></label></div>
-  <label id="paidAmountLabel">Alınan tutar<input id="paidAmount" type="text" inputmode="none" autocomplete="off" required readonly></label>
-  <div id="cashKeypad" class="cash-keypad" aria-label="Ödeme tuş takımı">
-    <button type="button" data-cash-key="1">1</button><button type="button" data-cash-key="2">2</button><button type="button" data-cash-key="3">3</button>
-    <button type="button" data-cash-key="4">4</button><button type="button" data-cash-key="5">5</button><button type="button" data-cash-key="6">6</button>
-    <button type="button" data-cash-key="7">7</button><button type="button" data-cash-key="8">8</button><button type="button" data-cash-key="9">9</button>
-    <button type="button" class="key-soft" data-cash-key="clear">Temizle</button><button type="button" data-cash-key="0">0</button><button type="button" class="key-soft" data-cash-key="back"><i class="fa-solid fa-delete-left"></i></button>
-    <button type="button" class="key-exact" data-cash-key="exact">Kalan Borcun Tamamı</button>
-  </div>
+  <label id="paidAmountLabel">Alınan Tutar<input id="paidAmount" type="number" inputmode="decimal" min="0.01" step="0.01" autocomplete="off" required></label>
   <div id="changeText" class="notice">Alınan Nakit tutarını girin.</div>
   <div id="paymentConfirmText" class="payment-confirm" hidden></div>
   <div class="dialog-actions"><button type="button" class="secondary" data-close="checkoutDialog">Vazgeç</button><button id="confirmCheckout" class="primary">Ödemeyi Onayla</button></div>
@@ -84,7 +77,7 @@
 <dialog id="closeDayDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Günü Kapat</h2><button type="button" data-close="closeDayDialog">×</button></div><p id="closeDayPeriod" class="notice"></p><div id="closeDayReport" class="close-day-report"></div><div class="export-actions"><button type="button" id="exportPdf" class="secondary"><i class="fa-solid fa-file-pdf"></i> PDF</button><button type="button" id="exportExcel" class="secondary"><i class="fa-solid fa-file-excel"></i> Excel</button></div><div class="close-day-warning"><i class="fa-solid fa-triangle-exclamation"></i><div><strong>Bu İşlem geri alınamaz.</strong><p>Rapor sisteme kaydedilecek, Taze Dem sayacı yeni iş günü için sıfırdan başlayacak ve eski iş gününe tekrar kayıt eklenemeyecek.</p></div></div><label class="close-day-check"><input id="closeDayConfirmed" type="checkbox"><span>Raporu kontrol ettim, bu iş gününü kapatmak istiyorum.</span></label><div class="dialog-actions"><button type="button" class="secondary" data-close="closeDayDialog">Vazgeç</button><button type="button" id="confirmCloseDay" class="danger" disabled>Günü Kesin Olarak Kapat</button></div></div></dialog>
 <dialog id="moveDialog"><form id="moveForm" class="dialog-card"><div class="dialog-head"><h2>Taşı veya Birleştir</h2><button type="button" data-close="moveDialog">×</button></div><label>Hedef masa / Adisyon<select id="moveTarget" required></select></label><p class="notice">Hedef boşsa Adisyon taşınır; doluysa iki Adisyon birleştirilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="moveDialog">Vazgeç</button><button class="primary">Devam Et</button></div></form></dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=12"></script>
+<script type="module" src="script.js?v=13"></script>
 <script type="module" src="enhancements.js?v=5"></script>
 <script type="module" src="../merchant-order-alert.js?v=2"></script>
 <script type="module" src="../system-ui.js?v=7"></script>
