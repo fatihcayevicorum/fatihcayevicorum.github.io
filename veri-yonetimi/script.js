@@ -84,12 +84,12 @@ async function runCleanup(selected){
     if(selected.includes("stockQuantities"))await updateCollection("adminStockItems",()=>({quantity:0,updatedAtMs:Date.now()}));
     if(selected.includes("stockItems"))await deleteCollection("adminStockItems");
     if(selected.includes("menu"))await setDoc(doc(db,"publicMenu","catalog"),{categories:[],items:[],updatedAtMs:Date.now()});
-    if(selected.includes("creditActivity")){await deleteCollection("adminCreditMovements");await updateCollection("adminCreditCustomers",()=>({balance:0,openingBalance:0,updatedAtMs:Date.now()}))}
+    if(selected.includes("creditActivity"))await clearCreditActivity();
     if(selected.includes("creditCustomers")){await deleteCollection("adminCreditMovements");await deleteCollection("adminCreditCustomers")}
     if(selected.includes("merchantActivity")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await updateCollection("merchantProfiles",()=>({balance:0,updatedAtMs:Date.now()}))}
     if(selected.includes("merchantProfiles")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await deleteCollection("merchantProfiles")}
     if(selected.includes("tea")){await setDoc(doc(db,"adminTea","state"),{activeBrews:[],history:[],updatedAtMs:Date.now()},{merge:true});await setDoc(doc(db,"publicTea","status"),{activeBrews:[],updatedAtMs:Date.now()},{merge:true})}
-    if(selected.includes("businessDate")){const date=today(),previous=previousDate(date);await setDoc(doc(db,"adminAppSettings","pos"),{currentBusinessDate:date,currentBusinessDayStartedAtMs:startOfTodayMs(),lastClosedDate:previous,updatedAtMs:Date.now()},{merge:true})}
+    if(selected.includes("businessDate")){const date=today(),now=Date.now(),previous=previousDate(date);await setDoc(doc(db,"adminAppSettings","pos"),{currentBusinessDate:date,currentBusinessDayStartedAtMs:now,lastClosedDate:previous,updatedAtMs:now},{merge:true})}
     document.querySelectorAll("#cleanupOptions input").forEach(x=>x.checked=false);updateSelection();toast("Seçilen veriler güvenle temizlendi.");
   }catch(error){console.error(error);toast("Temizleme tamamlanamadı. Otomatik yedek korundu.")}finally{setBusy(false)}
 }
@@ -118,6 +118,12 @@ async function restoreBackup(mode){
 async function deleteCollection(name){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.map(x=>({type:"delete",ref:x.ref})))}
 async function deleteFiltered(name,test){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.filter(x=>test(x.data())).map(x=>({type:"delete",ref:x.ref})))}
 async function updateCollection(name,makeData){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.map(x=>({type:"set",ref:x.ref,data:makeData(x.data()),merge:true})))}
+async function clearCreditActivity(){
+  await deleteCollection("adminCreditMovements");
+  const remaining=await getDocs(collection(db,"adminCreditMovements"));
+  if(!remaining.empty)throw Error("credit-movements-not-cleared");
+  await updateCollection("adminCreditCustomers",()=>({balance:0,creditBalance:0,openingBalance:0,lastResetAt:null,updatedAtMs:Date.now()}));
+}
 async function writeItems(name,items){await runBatches((items||[]).map(x=>({type:"set",ref:doc(db,name,x.id),data:decode(x.data),merge:false})))}
 async function runBatches(operations){for(let i=0;i<operations.length;i+=400){const batch=writeBatch(db);for(const op of operations.slice(i,i+400)){if(op.type==="delete")batch.delete(op.ref);else batch.set(op.ref,op.data,{merge:op.merge===true})}await batch.commit()}}
 
