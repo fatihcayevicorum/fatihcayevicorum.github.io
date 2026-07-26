@@ -12,7 +12,7 @@ let busy=false,pendingRestore=null,pendingAction=null,toastTimer;
 
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 $("backupButton").onclick=()=>createBackup({download:true,reason:"manual"});
-$("cleanupOptions").onchange=updateSelection;
+$("cleanupOptions").onchange=handleCleanupChange;
 $("prepareCleanup").onclick=prepareCleanup;
 $("restoreFile").onchange=readRestoreFile;
 $("restoreButton").onclick=prepareRestore;
@@ -64,16 +64,24 @@ async function enforceBackupLimit(){
   const result=await listAll(storageRef(storage,BACKUP_PREFIX)),rows=await Promise.all(result.items.map(async item=>({item,meta:await getMetadata(item)})));rows.sort((a,b)=>new Date(b.meta.timeCreated)-new Date(a.meta.timeCreated));for(const x of rows.slice(10))await deleteObject(x.item)
 }
 
+function handleCleanupChange(e){
+  const value=e.target?.value;
+  if(e.target?.checked&&value==="creditActivity")document.querySelector('#cleanupOptions input[value="creditCustomers"]').checked=false;
+  if(e.target?.checked&&value==="creditCustomers")document.querySelector('#cleanupOptions input[value="creditActivity"]').checked=false;
+  updateSelection();
+}
 function updateSelection(){const selected=selectedCleanup();$("selectionCount").textContent=selected.length?`${selected.length} veri bölümü seçildi`:"Henüz seçim yapılmadı";$("prepareCleanup").disabled=!selected.length||busy}
 function selectedCleanup(){return[...document.querySelectorAll('#cleanupOptions input:checked')].map(x=>x.value)}
 function prepareCleanup(){
   const selected=selectedCleanup();if(!selected.length)return;
   const labels=selected.map(v=>document.querySelector(`#cleanupOptions input[value="${v}"]+span b`)?.textContent).filter(Boolean);
-  confirmAction({title:"Seçilen Veriler Temizlensin mi?",text:`Önce otomatik tam yedek alınacak. Ardından şu bölümler temizlenecek: ${labels.join(", ")}.`,phrase:"VERİLERİ SİL",action:()=>runCleanup(selected)});
+  const deletesCustomers=selected.includes("creditCustomers");
+  confirmAction({title:deletesCustomers?"Açık Hesap Müşterileri Silinsin mi?":"Seçilen Veriler Temizlensin mi?",text:`Önce otomatik tam yedek alınacak. Ardından şu bölümler temizlenecek: ${labels.join(", ")}.${deletesCustomers?" Müşteri kartları kalıcı olarak silinecek.":""}`,phrase:deletesCustomers?"MÜŞTERİLERİ SİL":"VERİLERİ SİL",action:()=>runCleanup(selected)});
 }
 
 async function runCleanup(selected){
   if(busy)return;
+  if(selected.includes("creditActivity")&&selected.includes("creditCustomers"))return toast("Hareketler ile müşteri kartları aynı anda seçilemez.");
   try{
     await createBackup({download:true,reason:"before-cleanup"});
     setBusy(true,"Seçilen veriler temizleniyor…");
