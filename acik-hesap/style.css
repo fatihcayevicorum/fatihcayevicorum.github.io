@@ -22,3 +22,13 @@ dialog{width:min(calc(100% - 1.25rem),520px);padding:0;border:0;border-radius:18
 .account-row-head{color:#fff;background:var(--burgundy-800)!important;font-weight:700}
 .summary-actions{position:sticky;bottom:-1.1rem;padding:.8rem 0 1.1rem;background:#fffdf9}
 @media(max-width:700px){.movement-types{grid-template-columns:1fr}.account-summary-head{grid-template-columns:1fr}.summary-card{overflow:auto}}
+
+/* Artı bakiye */
+.stats{grid-template-columns:repeat(5,minmax(0,1fr))}
+.stats .credit-stat strong{color:#176f7a}
+.customer-card.has-credit{border-color:rgba(23,111,122,.24);background:linear-gradient(180deg,#fff,#eefafb)}
+.balance.is-credit{color:#176f7a}
+.icon-button.is-topup{color:#176f7a;background:rgba(23,111,122,.08)}
+.movement-icon.topup{color:#176f7a;background:rgba(23,111,122,.1)}
+.movement-types.topup-types{grid-template-columns:repeat(2,1fr)}
+@media(max-width:620px){.stats{grid-template-columns:1fr 1fr}.movement-types.topup-types{grid-template-columns:1fr 1fr}}

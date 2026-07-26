@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
     <link rel="stylesheet" href="../panel-scroll.css?v=2">
     <link rel="stylesheet" href="../panel-header.css?v=6">
 </head>
@@ -48,6 +48,7 @@
             <div class="stats">
                 <article><span>Yetkili müşteri</span><strong id="customerCount">0</strong></article>
                 <article><span>Toplam alacak</span><strong id="totalBalance">₺0</strong></article>
+                <article class="credit-stat"><span>Toplam Artı Bakiye</span><strong id="totalCredit">₺0</strong></article>
                 <article class="warning-stat"><span>Limiti aşan</span><strong id="overLimitCount">0</strong></article>
                 <article><span>Bugünkü tahsilat</span><strong id="todayPayment">₺0</strong></article>
             </div>
@@ -76,7 +77,7 @@
         <section class="panel customer-panel">
             <div class="section-heading list-heading">
                 <div><p class="kicker">Müşteri listesi</p><h2>Açık Hesaplar</h2></div>
-                <div class="list-tools"><select id="customerFilter" aria-label="Müşteri filtresi"><option value="enabled">Yetkili müşteriler</option><option value="debt">Borcu olanlar</option><option value="over-limit">Limiti aşanlar</option><option value="disabled">Yetkisi kapalı</option><option value="all">Tüm müşteriler</option></select><input id="customerSearch" type="search" placeholder="Müşteri ara"></div>
+                <div class="list-tools"><select id="customerFilter" aria-label="Müşteri filtresi"><option value="enabled">Yetkili müşteriler</option><option value="debt">Borcu olanlar</option><option value="credit">Artı bakiyesi olanlar</option><option value="over-limit">Limiti aşanlar</option><option value="disabled">Yetkisi kapalı</option><option value="all">Tüm müşteriler</option></select><input id="customerSearch" type="search" placeholder="Müşteri ara"></div>
             </div>
             <p class="empty-copy" id="customerEmpty">Henüz Açık Hesap müşterisi eklenmedi.</p>
             <div class="customer-list" id="customerList"></div>
@@ -103,6 +104,22 @@
             <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="movementNote" maxlength="200" rows="2" placeholder="Örn. Önceki hesap veya Nakit ödeme"></textarea></label>
             <div class="dialog-summary" id="movementPreview">Yeni bakiye: —</div>
             <div class="form-actions"><button class="secondary-button" id="cancelMovementButton" type="button">Vazgeç</button><button class="primary-button" id="saveMovementButton" type="submit">İşlemi Kaydet</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="topupDialog">
+        <form id="topupForm" method="dialog">
+            <div class="dialog-heading"><div><p class="kicker">Ön Ödeme</p><h2 id="topupTitle">Artı Bakiye Yükle</h2></div><button class="icon-button" id="closeTopupDialog" type="button" aria-label="Pencereyi kapat"><i class="fa-solid fa-xmark"></i></button></div>
+            <input id="topupCustomerId" type="hidden">
+            <div class="movement-types topup-types" role="group" aria-label="Ödeme türü">
+                <label><input type="radio" name="topupType" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i> Nakit</span></label>
+                <label><input type="radio" name="topupType" value="transfer"><span><i class="fa-solid fa-building-columns"></i> Banka Havalesi</span></label>
+            </div>
+            <label class="dialog-field"><span>Yüklenecek Tutar (TL)</span><input id="topupAmount" type="number" min="0.01" max="9999999" step="0.01" required></label>
+            <label class="dialog-field"><span>İşlem Tarihi</span><input id="topupDate" type="date" required></label>
+            <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="topupNote" maxlength="200" rows="2" placeholder="Örn. Peşin bakiye yüklemesi"></textarea></label>
+            <div class="dialog-summary" id="topupPreview">Yeni bakiye: —</div>
+            <div class="form-actions"><button class="secondary-button" id="cancelTopupButton" type="button">Vazgeç</button><button class="primary-button" type="submit"><i class="fa-solid fa-wallet"></i> Bakiyeyi Yükle</button></div>
         </form>
     </dialog>
 
@@ -134,7 +151,7 @@
 
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="script.js?v=2"></script>
+    <script type="module" src="script.js?v=3"></script>
     <script type="module" src="../merchant-order-alert.js?v=2"></script>
     <script type="module" src="../system-ui.js?v=10"></script>
     <script src="../panel-scroll.js?v=2"></script>
