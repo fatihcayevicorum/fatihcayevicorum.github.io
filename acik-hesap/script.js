@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, doc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, doc, getDocs, getDocsFromServer, getFirestore, limit, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
@@ -33,8 +33,15 @@ async function saveCustomer(e){
       await runTransaction(db,async tx=>{tx.set(customerRef,{...data,openingBalance:opening,balance:opening,createdAt:serverTimestamp()});if(opening>0)tx.set(moveRef,{customerId:customerRef.id,customerName:data.name,type:"opening",amount:opening,previousBalance:0,resultingBalance:opening,operationDate:today(),note:"Başlangıç Bakiyesi",source:"opening",createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})});
       toast("Açık Hesap müşterisi oluşturuldu.");
     }
+    el.customerFilter.value="all";el.customerSearch.value="";
+    await refreshCustomersFromServer();
     resetForm();
   }catch(err){console.error(err);toast("Müşteri kaydedilemedi.")}finally{busy=false}
+}
+async function refreshCustomersFromServer(){
+  const snap=await getDocsFromServer(customersCol);
+  customers=snap.docs.map(d=>normalizeCustomer(d.id,d.data()));
+  connection(true);renderAll();
 }
 function customerAction(e){
   const debt=e.target.closest("[data-debt]"),payment=e.target.closest("[data-payment]"),topup=e.target.closest("[data-topup]"),edit=e.target.closest("[data-edit]"),toggle=e.target.closest("[data-toggle]"),reset=e.target.closest("[data-reset]"),remove=e.target.closest("[data-delete]"),summary=e.target.closest("[data-summary]");
