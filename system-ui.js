@@ -1,6 +1,7 @@
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"./firebase-config.js";
+import("./pwa.js").catch(error=>console.error("PWA başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),db=getFirestore(app);
 ensureFooter();
 installGlobalInteractionStyle();
