@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Veri ve Yedekleme | Fatih Çay Evi</title>
+  <meta name="theme-color" content="#5a1018">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="../panel-header.css?v=6">
+  <link rel="stylesheet" href="../panel-scroll.css?v=2">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand"><img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Veri ve Yedekleme</h1></div></div>
+      <div class="header-actions">
+        <div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
+        <details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a><a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a><a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a><a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a><a class="is-current" href="./"><i class="fa-solid fa-database"></i>Veri ve Yedekleme</a></nav></details>
+        <button class="logout-button" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="intro panel">
+      <div><p class="kicker">Güvenli veri merkezi</p><h2>Sistem Verilerini Koru ve Yönet</h2><p>Yedekler hem bu cihaza indirilir hem de sistemde saklanır. Sistem en güncel 10 bulut yedeğini korur.</p></div>
+      <span id="connection" class="connection"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span>
+    </section>
+
+    <section class="panel backup-panel">
+      <div class="section-heading"><div><p class="kicker">Tek dokunuşla</p><h2><i class="fa-solid fa-cloud-arrow-up"></i> Tam Yedek Al</h2></div><button id="backupButton" class="primary"><i class="fa-solid fa-shield-halved"></i> Şimdi Tam Yedek Al</button></div>
+      <p class="description">Menü, stok, satış, gün sonu, açık hesap, Esnaf ve sistem ayarlarının tamamı yedeklenir. Firebase kullanıcı şifreleri güvenlik nedeniyle yedeğe dahil değildir.</p>
+      <div id="backupProgress" class="progress" hidden><i></i><span>Yedek hazırlanıyor…</span></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><p class="kicker">Sistemde saklanan</p><h2><i class="fa-solid fa-clock-rotate-left"></i> Kayıtlı Yedekler</h2></div><span class="count" id="backupCount">0 Yedek</span></div>
+      <p id="backupEmpty" class="empty">Henüz sistem yedeği bulunmuyor.</p>
+      <div id="backupList" class="backup-list"></div>
+    </section>
+
+    <section class="panel danger-panel">
+      <div class="section-heading"><div><p class="kicker">Seçerek temizle</p><h2><i class="fa-solid fa-broom"></i> Deneme Verilerini Temizle</h2></div></div>
+      <p class="description">Sadece işaretlediğin bölümler temizlenir. Temizlemeden hemen önce otomatik tam yedek alınır.</p>
+      <div class="selection-grid" id="cleanupOptions">
+        <label><input type="checkbox" value="sales"><span><i class="fa-solid fa-receipt"></i><b>Satışlar ve Adisyonlar</b><small>Satış, ödeme ve açık Adisyon kayıtları</small></span></label>
+        <label><input type="checkbox" value="closings"><span><i class="fa-solid fa-calendar-check"></i><b>Gün Sonları ve Raporlar</b><small>Kapatılan iş günü arşivi</small></span></label>
+        <label><input type="checkbox" value="purchases"><span><i class="fa-solid fa-cart-shopping"></i><b>Alış Kayıtları</b><small>Stok girişleri ve alış hareketleri</small></span></label>
+        <label><input type="checkbox" value="stockMovements"><span><i class="fa-solid fa-arrow-right-arrow-left"></i><b>Stok Hareketleri</b><small>Giriş, çıkış ve düzeltme geçmişi</small></span></label>
+        <label><input type="checkbox" value="stockQuantities"><span><i class="fa-solid fa-boxes-stacked"></i><b>Stok Miktarları</b><small>Ürün kartları kalır, miktarlar sıfırlanır</small></span></label>
+        <label><input type="checkbox" value="stockItems"><span><i class="fa-solid fa-box-open"></i><b>Stok Ürün Kartları</b><small>Tüm kayıtlı stok ürünlerini siler</small></span></label>
+        <label><input type="checkbox" value="menu"><span><i class="fa-solid fa-utensils"></i><b>Menü ve Fiyatlar</b><small>Kategori, ürün ve fiyatları temizler</small></span></label>
+        <label><input type="checkbox" value="creditActivity"><span><i class="fa-solid fa-wallet"></i><b>Açık Hesap Hareketleri</b><small>Müşteriler kalır, bakiye ve hareketler sıfırlanır</small></span></label>
+        <label><input type="checkbox" value="creditCustomers"><span><i class="fa-solid fa-address-book"></i><b>Açık Hesap Müşterileri</b><small>Müşteri kartları dahil tamamen siler</small></span></label>
+        <label><input type="checkbox" value="merchantActivity"><span><i class="fa-solid fa-mug-hot"></i><b>Esnaf Hareketleri</b><small>Sipariş, hareket ve bakiyeleri sıfırlar</small></span></label>
+        <label><input type="checkbox" value="merchantProfiles"><span><i class="fa-solid fa-store-slash"></i><b>Esnaf Müşteri Kartları</b><small>Profilleri siler; giriş kullanıcıları Firebase'de kalır</small></span></label>
+        <label><input type="checkbox" value="tea"><span><i class="fa-solid fa-fire-burner"></i><b>Taze Dem Geçmişi</b><small>Aktif ve geçmiş Demlik kayıtları</small></span></label>
+        <label><input type="checkbox" value="businessDate"><span><i class="fa-solid fa-calendar-day"></i><b>İş Tarihini Bugüne Getir</b><small>Adisyon iş gününü gerçek tarihe döndürür</small></span></label>
+      </div>
+      <div class="cleanup-footer"><span id="selectionCount">Henüz seçim yapılmadı</span><button id="prepareCleanup" class="danger" disabled><i class="fa-solid fa-trash-can"></i> Seçilenleri Temizle</button></div>
+    </section>
+
+    <section class="panel restore-panel">
+      <div class="section-heading"><div><p class="kicker">Dosyadan kurtar</p><h2><i class="fa-solid fa-file-arrow-up"></i> Yedek Yükle</h2></div></div>
+      <p class="description">Daha önce indirilen Fatih Çay Evi JSON yedeğini seç. Dosya doğrulanmadan hiçbir veri değiştirilmez.</p>
+      <label class="file-picker"><input id="restoreFile" type="file" accept=".json,application/json"><i class="fa-solid fa-folder-open"></i><span><b>Yedek Dosyası Seç</b><small id="restoreFileName">JSON dosyası seçilmedi</small></span></label>
+      <div id="restorePreview" class="restore-preview" hidden></div>
+      <div class="restore-actions">
+        <label><input type="radio" name="restoreMode" value="merge" checked><span><b>Birleştir</b><small>Mevcut verileri korur, yedekteki kayıtları ekler veya günceller.</small></span></label>
+        <label><input type="radio" name="restoreMode" value="replace"><span><b>Tam Geri Yükle</b><small>Mevcut yönetim verilerini temizleyip yedeği aynen kurar.</small></span></label>
+      </div>
+      <button id="restoreButton" class="primary" disabled><i class="fa-solid fa-rotate-left"></i> Yedeği Geri Yükle</button>
+    </section>
+  </main>
+
+  <dialog id="confirmDialog">
+    <form method="dialog">
+      <i class="fa-solid fa-triangle-exclamation warning-icon"></i>
+      <h2 id="confirmTitle">İşlemi Onayla</h2>
+      <p id="confirmText"></p>
+      <label class="confirm-input"><span id="confirmInstruction"></span><input id="confirmInput" autocomplete="off"></label>
+      <div class="dialog-actions"><button class="secondary" value="cancel">Vazgeç</button><button id="confirmAction" class="danger" value="confirm" disabled>Onayla</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+  <script type="module" src="script.js?v=1"></script>
+  <script type="module" src="../system-ui.js?v=9"></script>
+</body>
+</html>
