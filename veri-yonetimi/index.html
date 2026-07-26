@@ -88,7 +88,25 @@
   </dialog>
 
   <div id="toast" class="toast"></div>
-  <script type="module" src="script.js?v=1"></script>
+  <script>
+    window.addEventListener("error",function(event){
+      var status=document.getElementById("connection");
+      if(status&&status.textContent.includes("Bağlanıyor")){
+        status.classList.add("error");
+        status.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Panel başlatılamadı';
+        status.title=event.message||"JavaScript yükleme hatası";
+      }
+    });
+    window.addEventListener("unhandledrejection",function(event){
+      var status=document.getElementById("connection");
+      if(status&&status.textContent.includes("Bağlanıyor")){
+        status.classList.add("error");
+        status.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Bağlantı kurulamadı';
+        status.title=String(event.reason&&event.reason.message||event.reason||"Bağlantı hatası");
+      }
+    });
+  </script>
+  <script type="module" src="script.js?v=3"></script>
   <script type="module" src="../system-ui.js?v=9"></script>
 </body>
 </html>

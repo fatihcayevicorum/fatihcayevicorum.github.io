@@ -1,10 +1,10 @@
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{Timestamp,collection,deleteDoc,doc,getDocs,getFirestore,getDoc,setDoc,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{deleteObject,getBlob,getDownloadURL,getMetadata,getStorage,listAll,ref as storageRef,uploadBytes}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
+import{deleteObject,getDownloadURL,getMetadata,getStorage,listAll,ref as storageRef,uploadBytes}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
 import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
 
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),$=id=>document.getElementById(id);
+const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),$=id=>document.getElementById(id);
 const COLLECTIONS=["adminStockItems","adminStockMovements","adminCreditCustomers","adminCreditMovements","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders"];
 const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"]];
 const BACKUP_PREFIX="system-backups/";
@@ -56,7 +56,7 @@ async function renderBackups(){
 async function backupListAction(e){
   const download=e.target.closest("[data-download]"),restore=e.target.closest("[data-restore]"),remove=e.target.closest("[data-delete]");
   if(download){try{const item=storageRef(storage,`${BACKUP_PREFIX}${download.dataset.download}`),url=await getDownloadURL(item),a=document.createElement("a");a.href=url;a.download=download.dataset.download;a.target="_blank";a.click()}catch(error){console.error(error);toast("Yedek indirilemedi.")}}
-  if(restore){try{setBusy(true,"Yedek açılıyor…");const blob=await getBlob(storageRef(storage,`${BACKUP_PREFIX}${restore.dataset.restore}`)),data=validateBackup(JSON.parse(await blob.text()));pendingRestore=data;showRestorePreview(data,restore.dataset.restore);$("restoreFileName").textContent=restore.dataset.restore;$("restoreButton").disabled=false;document.querySelector(".restore-panel").scrollIntoView({behavior:"smooth"})}catch(error){console.error(error);toast("Yedek dosyası açılamadı.")}finally{setBusy(false)}}
+  if(restore){try{setBusy(true,"Yedek açılıyor…");const url=await getDownloadURL(storageRef(storage,`${BACKUP_PREFIX}${restore.dataset.restore}`)),response=await fetch(url);if(!response.ok)throw Error("download-failed");const data=validateBackup(await response.json());pendingRestore=data;showRestorePreview(data,restore.dataset.restore);$("restoreFileName").textContent=restore.dataset.restore;$("restoreButton").disabled=false;document.querySelector(".restore-panel").scrollIntoView({behavior:"smooth"})}catch(error){console.error(error);toast("Yedek dosyası açılamadı.")}finally{setBusy(false)}}
   if(remove)confirmAction({title:"Yedek Silinsin mi?",text:`${remove.dataset.delete} sistemden kalıcı olarak silinecek.`,phrase:"YEDEĞİ SİL",action:async()=>{try{await deleteObject(storageRef(storage,`${BACKUP_PREFIX}${remove.dataset.delete}`));await renderBackups();toast("Yedek silindi.")}catch(error){console.error(error);toast("Yedek silinemedi.")}})}
 }
 
