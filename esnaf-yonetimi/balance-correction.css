@@ -26,6 +26,16 @@
   color: var(--red);
 }
 
+.correction-message {
+  padding: 11px 12px;
+  border: 1px solid #efb8b8;
+  border-radius: 11px;
+  color: #9c222b;
+  background: #fff0f0;
+  font-size: .75rem;
+  font-weight: 700;
+}
+
 .correction-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
