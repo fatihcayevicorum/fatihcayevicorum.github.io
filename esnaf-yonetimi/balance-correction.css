@@ -1,0 +1,44 @@
+.card-actions .correct {
+  color: #965d0a;
+  background: #fff0d8;
+}
+
+.current-balance-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px;
+  border-radius: 12px;
+  background: #f7f0e6;
+}
+
+.current-balance-box span {
+  color: var(--muted);
+  font-size: .75rem;
+}
+
+.current-balance-box strong {
+  color: var(--red);
+  font-size: 1.08rem;
+}
+
+.correction-preview strong {
+  color: var(--red);
+}
+
+.correction-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  border-radius: 11px;
+  color: var(--muted);
+  background: #fff8e8;
+  font-size: .68rem;
+}
+
+.correction-notice i {
+  margin-top: 2px;
+  color: #b97816;
+}
