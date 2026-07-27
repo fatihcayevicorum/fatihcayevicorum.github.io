@@ -1,7 +1,7 @@
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{Timestamp,collection,deleteDoc,doc,getDocs,getFirestore,getDoc,setDoc,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{deleteObject,getDownloadURL,getMetadata,getStorage,listAll,ref as storageRef,uploadBytes}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
+import{deleteObject,getBytes,getMetadata,getStorage,listAll,ref as storageRef,uploadBytes}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
 import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),$=id=>document.getElementById(id);
@@ -55,8 +55,8 @@ async function renderBackups(){
 
 async function backupListAction(e){
   const download=e.target.closest("[data-download]"),restore=e.target.closest("[data-restore]"),remove=e.target.closest("[data-delete]");
-  if(download){try{setBusy(true,"Yedek indiriliyor…");const name=download.dataset.download,item=storageRef(storage,`${BACKUP_PREFIX}${name}`),url=await getDownloadURL(item),response=await fetch(url);if(!response.ok)throw Error("download-failed");downloadBlob(await response.blob(),name);toast("Yedek bilgisayara indirildi.")}catch(error){console.error(error);toast("Yedek indirilemedi.")}finally{setBusy(false)}}
-  if(restore){try{setBusy(true,"Yedek açılıyor…");const url=await getDownloadURL(storageRef(storage,`${BACKUP_PREFIX}${restore.dataset.restore}`)),response=await fetch(url);if(!response.ok)throw Error("download-failed");const data=validateBackup(await response.json());pendingRestore=data;showRestorePreview(data,restore.dataset.restore);$("restoreFileName").textContent=restore.dataset.restore;$("restoreButton").disabled=false;document.querySelector(".restore-panel").scrollIntoView({behavior:"smooth"})}catch(error){console.error(error);toast("Yedek dosyası açılamadı.")}finally{setBusy(false)}}
+  if(download){try{setBusy(true,"Yedek indiriliyor…");const name=download.dataset.download,item=storageRef(storage,`${BACKUP_PREFIX}${name}`),bytes=await getBytes(item),blob=new Blob([bytes],{type:"application/json"});downloadBlob(blob,name);toast("Yedek bilgisayara indirildi.")}catch(error){console.error(error);toast(backupReadMessage(error,"Yedek indirilemedi."))}finally{setBusy(false)}}
+  if(restore){try{setBusy(true,"Yedek açılıyor…");const item=storageRef(storage,`${BACKUP_PREFIX}${restore.dataset.restore}`),bytes=await getBytes(item),raw=new TextDecoder().decode(bytes),data=validateBackup(JSON.parse(raw));pendingRestore=data;showRestorePreview(data,restore.dataset.restore);$("restoreFileName").textContent=restore.dataset.restore;$("restoreButton").disabled=false;document.querySelector(".restore-panel").scrollIntoView({behavior:"smooth"})}catch(error){console.error(error);toast(backupReadMessage(error,"Yedek dosyası açılamadı."))}finally{setBusy(false)}}
   if(remove)confirmAction({title:"Yedek Silinsin mi?",text:`${remove.dataset.delete} sistemden kalıcı olarak silinecek.`,phrase:"YEDEĞİ SİL",action:async()=>{try{await deleteObject(storageRef(storage,`${BACKUP_PREFIX}${remove.dataset.delete}`));await renderBackups();toast("Yedek silindi.")}catch(error){console.error(error);toast("Yedek silinemedi.")}}});
 }
 
@@ -135,7 +135,15 @@ async function clearCreditActivity(){
 async function writeItems(name,items){await runBatches((items||[]).map(x=>({type:"set",ref:doc(db,name,x.id),data:decode(x.data),merge:false})))}
 async function runBatches(operations){for(let i=0;i<operations.length;i+=400){const batch=writeBatch(db);for(const op of operations.slice(i,i+400)){if(op.type==="delete")batch.delete(op.ref);else batch.set(op.ref,op.data,{merge:op.merge===true})}await batch.commit()}}
 
-function validateBackup(data){if(!data||data.app!=="Fatih Çay Evi"||data.type!=="full-firestore-backup"||!data.collections||!data.documents)throw Error("invalid-backup");return data}
+function validateBackup(data){
+  if(!data)throw Error("invalid-backup");
+  const app=data.app||data.uygulama,type=data.type||data["tür"],sourceCollections=data.collections||data.koleksiyonlar,sourceDocuments=data.documents||data.belgeler||{};
+  if(app!=="Fatih Çay Evi"||!["full-firestore-backup","tam-firestore-yedeklemesi"].includes(type)||!sourceCollections)throw Error("invalid-backup");
+  const collections=Object.fromEntries(Object.entries(sourceCollections).map(([name,items])=>[name,(items||[]).map(item=>({id:item.id,data:normalizeLegacyTypes(item.data??item.veri??{})}))]));
+  const documents=Object.fromEntries(Object.entries(sourceDocuments).map(([path,item])=>[path,item?{id:item.id,data:normalizeLegacyTypes(item.data??item.veri??{})}:null]));
+  return{...data,app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:data.backupVersion??data["yedeklemeSürümü"]??1,createdAt:data.createdAt||data["oluşturulmaTarihi"]||new Date().toISOString(),createdAtMs:data.createdAtMs||data["oluşturulmaZamanıMs"]||Date.now(),totalRecords:data.totalRecords??data["toplamKayıt"]??0,collections,documents};
+}
+function normalizeLegacyTypes(value){if(Array.isArray(value))return value.map(normalizeLegacyTypes);if(value&&typeof value==="object"){const normalized=Object.fromEntries(Object.entries(value).map(([k,v])=>[k,normalizeLegacyTypes(v)]));if(["zaman damgası","zamanDamgası"].includes(normalized.__fatihType))normalized.__fatihType="timestamp";if(normalized.__fatihType==="tarih")normalized.__fatihType="date";return normalized}return value}
 function encode(value){if(value instanceof Timestamp)return{__fatihType:"timestamp",ms:value.toMillis()};if(value instanceof Date)return{__fatihType:"date",iso:value.toISOString()};if(Array.isArray(value))return value.map(encode);if(value&&typeof value==="object")return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,encode(v)]));return value}
 function decode(value){if(Array.isArray(value))return value.map(decode);if(value&&typeof value==="object"){if(value.__fatihType==="timestamp")return Timestamp.fromMillis(Number(value.ms));if(value.__fatihType==="date")return new Date(value.iso);return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,decode(v)]))}return value}
 function confirmAction({title,text,phrase,action}){$("confirmTitle").textContent=title;$("confirmText").textContent=text;$("confirmInstruction").textContent=`Devam etmek için “${phrase}” yaz:`;$("confirmInput").value="";$("confirmAction").dataset.phrase=phrase.toLocaleUpperCase("tr-TR");$("confirmAction").disabled=true;pendingAction=action;$("confirmDialog").showModal()}
@@ -145,6 +153,7 @@ function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.
 function countBackup(data){return Object.values(data.collections||{}).reduce((n,x)=>n+x.length,0)+Object.values(data.documents||{}).filter(Boolean).length}
 function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminCreditCustomers:"Açık hesaplar",adminCreditMovements:"Açık hesap hareketleri",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri"})[name]||name}
 function storageMessage(error){return String(error?.code||"").includes("unauthorized")?"Yedek saklanamadı. Storage kurallarını yayınlayın.":"Yedek alınamadı. Bağlantıyı kontrol edin."}
+function backupReadMessage(error,fallback){const code=String(error?.code||error?.message||"");if(code.includes("object-not-found"))return"Bu yedek bulutta bulunamadı.";if(code.includes("unauthorized"))return"Yedeğe erişim izni reddedildi.";if(code.includes("invalid-backup")||code.includes("JSON"))return"Yedek dosyasının biçimi okunamadı.";return fallback}
 function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}
 function previousDate(value){const d=new Date(`${value}T12:00:00Z`);d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10)}
 function startOfTodayMs(){const [y,m,d]=today().split("-").map(Number);return Date.UTC(y,m-1,d)-3*60*60*1000}
