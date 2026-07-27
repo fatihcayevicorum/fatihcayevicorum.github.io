@@ -26,9 +26,11 @@ tabs.addEventListener("click", (event) => {
 
 onSnapshot(catalogReference, (snapshot) => {
     const data = snapshot.exists() ? snapshot.data() : {};
+    const categories = normalizeCategories(data.categories);
+    const visibleCategoryIds = new Set(categories.map((category) => category.id));
     catalog = {
-        categories: normalizeCategories(data.categories),
-        items: normalizeItems(data.items)
+        categories,
+        items: normalizeItems(data.items).filter((item) => visibleCategoryIds.has(item.categoryId))
     };
     loading.hidden = true;
     syncBadge.classList.remove("is-error");
@@ -101,6 +103,7 @@ function productCard(item) {
 function normalizeCategories(categories) {
     return (Array.isArray(categories) ? categories : [])
         .filter((category) => category && category.id && category.name)
+        .filter((category) => category.customerVisible !== false)
         .map((category) => ({ id: String(category.id), name: String(category.name), order: Number(category.order) || 0 }))
         .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, "tr"));
 }

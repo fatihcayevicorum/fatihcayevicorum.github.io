@@ -53,6 +53,7 @@
             <form class="inline-form" id="categoryForm">
                 <input id="categoryName" type="text" maxlength="40" placeholder="Örn. Sıcak İçecekler" required>
                 <input id="categoryOrder" type="number" min="0" max="999" value="0" aria-label="Kategori sırası">
+                <label class="category-visibility"><input id="categoryCustomerVisible" type="checkbox" checked><span>Müşteri menüsünde göster</span></label>
                 <button type="submit"><i class="fa-solid fa-plus" aria-hidden="true"></i> Ekle</button>
             </form>
             <p class="empty-copy" id="categoryEmpty">Henüz kategori eklenmedi.</p>
@@ -90,7 +91,7 @@
 
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="script.js?v=4"></script>
+    <script type="module" src="script.js?v=5"></script>
     <script type="module" src="../merchant-order-alert.js?v=10"></script>
     <script type="module" src="../system-ui.js?v=10"></script>
 </body>

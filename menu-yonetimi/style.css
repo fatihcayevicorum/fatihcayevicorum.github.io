@@ -37,6 +37,8 @@ button,input,select,textarea { font:inherit; }
 .import-button { display:inline-flex; flex:0 0 auto; min-height:2.55rem; align-items:center; justify-content:center; gap:.4rem; padding:.5rem .7rem; border:1px solid rgba(90,16,24,.16); border-radius:11px; color:var(--burgundy-800); cursor:pointer; background:#fff; font-size:.62rem; font-weight:700; }
 .import-button input { position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none; }
 .inline-form { display:grid; grid-template-columns:minmax(0,1fr) 4.4rem auto; gap:.45rem; }
+.category-visibility { grid-column:1/-1; display:flex; align-items:center; gap:.45rem; min-height:2.2rem; color:var(--burgundy-800); font-size:.62rem; font-weight:700; }
+.category-visibility input { width:1rem; min-height:1rem; padding:0; accent-color:var(--burgundy-700); }
 input,select,textarea { width:100%; min-width:0; border:1px solid rgba(90,16,24,.16); border-radius:11px; color:var(--ink); outline:none; background:#fffdf9; }
 input,select { min-height:2.65rem; padding:.55rem .65rem; }
 textarea { padding:.65rem; resize:vertical; }
@@ -48,6 +50,8 @@ input:focus,select:focus,textarea:focus { border-color:var(--gold); box-shadow:0
 .category-copy strong,.category-copy span,.product-copy strong,.product-copy span { display:block; }
 .category-copy strong,.product-copy strong { color:var(--burgundy-800); font-size:.72rem; }
 .category-copy span,.product-copy span { color:var(--muted); font-size:.56rem; }
+.category-copy .visibility-badge { display:inline-flex; align-items:center; gap:.28rem; width:max-content; margin-top:.28rem; padding:.18rem .42rem; border-radius:999px; color:#187444; background:rgba(24,116,68,.08); font-size:.51rem; font-style:normal; font-weight:700; }
+.category-copy .visibility-badge.is-hidden { color:#9d2730; background:rgba(180,43,50,.08); }
 .item-actions { display:flex; gap:.35rem; }
 .icon-button { display:grid; width:2.25rem; height:2.25rem; place-items:center; padding:0; border:1px solid var(--line); border-radius:10px; color:var(--burgundy-700); cursor:pointer; background:#fff; }
 .icon-button.is-danger { color:#aa2931; background:rgba(180,43,50,.06); }

@@ -9,7 +9,7 @@ const database = getFirestore(app);
 const catalogReference = doc(database, "publicMenu", "catalog");
 
 const elements = {
-    categoryForm: document.getElementById("categoryForm"), categoryName: document.getElementById("categoryName"), categoryOrder: document.getElementById("categoryOrder"), categoryList: document.getElementById("categoryList"), categoryEmpty: document.getElementById("categoryEmpty"),
+    categoryForm: document.getElementById("categoryForm"), categoryName: document.getElementById("categoryName"), categoryOrder: document.getElementById("categoryOrder"), categoryCustomerVisible: document.getElementById("categoryCustomerVisible"), categoryList: document.getElementById("categoryList"), categoryEmpty: document.getElementById("categoryEmpty"),
     productForm: document.getElementById("productForm"), productFormTitle: document.getElementById("productFormTitle"), editingProductId: document.getElementById("editingProductId"), productName: document.getElementById("productName"), productCategory: document.getElementById("productCategory"), productPrice: document.getElementById("productPrice"), productOrder: document.getElementById("productOrder"), productDescription: document.getElementById("productDescription"), productAvailable: document.getElementById("productAvailable"), cancelEditButton: document.getElementById("cancelEditButton"), saveProductButton: document.getElementById("saveProductButton"), productList: document.getElementById("productList"), productEmpty: document.getElementById("productEmpty"), productSearch: document.getElementById("productSearch"),
     categoryCount: document.getElementById("categoryCount"), productCount: document.getElementById("productCount"), availableCount: document.getElementById("availableCount"), saveStatus: document.getElementById("saveStatus"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast"), currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime"), importMenuFile: document.getElementById("importMenuFile")
 };
@@ -59,9 +59,9 @@ async function addCategory(event) {
     const name = elements.categoryName.value.trim();
     if (!name || isBusy) return;
     if (catalog.categories.some((category) => category.name.toLocaleLowerCase("tr-TR") === name.toLocaleLowerCase("tr-TR"))) { showToast("Bu kategori zaten var."); return; }
-    const categories = [...catalog.categories, { id: createId("category"), name, order: Number(elements.categoryOrder.value) || 0 }];
+    const categories = [...catalog.categories, { id: createId("category"), name, order: Number(elements.categoryOrder.value) || 0, customerVisible: elements.categoryCustomerVisible.checked }];
     await persistCatalog({ ...catalog, categories }, "Kategori eklendi.");
-    elements.categoryForm.reset(); elements.categoryOrder.value = "0";
+    elements.categoryForm.reset(); elements.categoryOrder.value = "0"; elements.categoryCustomerVisible.checked = true;
 }
 
 async function importMenuFile(event) {
@@ -99,7 +99,14 @@ async function saveProduct(event) {
 }
 
 function handleCategoryAction(event) {
+    const visibilityButton = event.target.closest("[data-toggle-category-visibility]");
     const deleteButton = event.target.closest("[data-delete-category]");
+    if (visibilityButton && !isBusy) {
+        const categoryId = visibilityButton.dataset.toggleCategoryVisibility;
+        const categories = catalog.categories.map((category) => category.id === categoryId ? { ...category, customerVisible: !category.customerVisible } : category);
+        persistCatalog({ ...catalog, categories }, "Kategori görünürlüğü güncellendi.");
+        return;
+    }
     if (!deleteButton || isBusy) return;
     const categoryId = deleteButton.dataset.deleteCategory;
     if (catalog.items.some((item) => item.categoryId === categoryId)) { showToast("Bu kategoride Ürün var. Önce Ürünleri silin veya taşıyın."); return; }
@@ -145,7 +152,7 @@ async function persistCatalog(nextCatalog, successMessage) {
 function render() {
     elements.categoryCount.textContent = String(catalog.categories.length); elements.productCount.textContent = String(catalog.items.length); elements.availableCount.textContent = String(catalog.items.filter((item) => item.available).length);
     elements.categoryEmpty.hidden = catalog.categories.length > 0; elements.productEmpty.hidden = catalog.items.length > 0;
-    elements.categoryList.innerHTML = catalog.categories.map((category) => `<article class="category-item"><div class="category-copy"><strong>${escapeHtml(category.name)}</strong><span>Sıra: ${category.order} • ${catalog.items.filter((item) => item.categoryId === category.id).length} Ürün</span></div><div class="item-actions"><button class="icon-button is-danger" type="button" data-delete-category="${escapeHtml(category.id)}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`).join("");
+    elements.categoryList.innerHTML = catalog.categories.map((category) => `<article class="category-item"><div class="category-copy"><strong>${escapeHtml(category.name)}</strong><span>Sıra: ${category.order} • ${catalog.items.filter((item) => item.categoryId === category.id).length} Ürün</span><em class="visibility-badge ${category.customerVisible ? "" : "is-hidden"}"><i class="fa-solid ${category.customerVisible ? "fa-eye" : "fa-eye-slash"}"></i> ${category.customerVisible ? "Müşteri menüsünde görünür" : "Gizli kategori • Yalnız adisyonda"}</em></div><div class="item-actions"><button class="icon-button" type="button" data-toggle-category-visibility="${escapeHtml(category.id)}" aria-label="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}" title="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}"><i class="fa-solid ${category.customerVisible ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i></button><button class="icon-button is-danger" type="button" data-delete-category="${escapeHtml(category.id)}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`).join("");
     const previousCategory = elements.productCategory.value;
     elements.productCategory.innerHTML = catalog.categories.length ? '<option value="">Kategori seçin</option>' + catalog.categories.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("") : '<option value="">Önce kategori ekleyin</option>';
     if (catalog.categories.some((category) => category.id === previousCategory)) elements.productCategory.value = previousCategory;
@@ -159,7 +166,7 @@ function renderProducts() {
 }
 
 function resetProductForm() { elements.productForm.reset(); elements.editingProductId.value = ""; elements.productOrder.value = "0"; elements.productAvailable.checked = true; elements.productFormTitle.textContent = "Yeni Ürün"; elements.cancelEditButton.hidden = true; elements.saveProductButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ürünü Kaydet'; }
-function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0 })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")) }; }
+function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0, customerVisible:x.customerVisible!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")) }; }
 function validateImport(data) { if (!data || !Array.isArray(data.categories) || !Array.isArray(data.items) || !data.categories.length || !data.items.length) throw new Error("invalid-menu-file"); const normalized = normalizeCatalog(data); const categoryIds = new Set(normalized.categories.map((category) => category.id)); const uniqueCategoryIds = new Set(); const uniqueItemIds = new Set(); for (const category of normalized.categories) { if (!category.id || !category.name.trim() || uniqueCategoryIds.has(category.id)) throw new Error("invalid-category"); uniqueCategoryIds.add(category.id); } for (const item of normalized.items) { if (!item.id || !item.name.trim() || !categoryIds.has(item.categoryId) || uniqueItemIds.has(item.id) || !Number.isFinite(item.price)) throw new Error("invalid-item"); uniqueItemIds.add(item.id); } return normalized; }
 function setBusy(value) { isBusy = value; elements.saveProductButton.disabled = value; }
 function setConnection(connected) { elements.saveStatus.classList.toggle("is-error", !connected); elements.saveStatus.innerHTML = connected ? '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Canlı bağlantı' : '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Bağlantı yok'; }
