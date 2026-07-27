@@ -1,4 +1,4 @@
-const VERSION="fatih-cay-evi-pwa-v17",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-pwa-v18",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./logo.png","./style.css","./home-dynamic.css",
   "./menu.html","./menu.css","./yonetici-giris.html","./yonetici-giris.css",
