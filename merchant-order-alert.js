@@ -5,8 +5,10 @@ import{ADMIN_UID,firebaseConfig}from"./firebase-config.js";
 
 const app=getApps().find(item=>item.name==="[DEFAULT]")||(getApps().length?getApp():initializeApp(firebaseConfig));
 const auth=getAuth(app),db=getFirestore(app);
-let initial=true,known=new Set(),audioContext=null,popupTimer;
+let audioContext=null,popupTimer;
 const NOTIFY_ENABLED_KEY="fatihMerchantNotificationsEnabled";
+const ALERTED_ORDERS_KEY="fatihMerchantAlertedOrders";
+const alertedOrders=new Set(readAlertedOrders());
 
 document.addEventListener("pointerdown",unlockSound,{once:true});
 
@@ -16,10 +18,8 @@ onAuthStateChanged(auth,user=>{
   onSnapshot(query(collection(db,"merchantOrders"),where("status","in",["pending","preparing","on_the_way"])),snapshot=>{
     const active=snapshot.docs.map(item=>({id:item.id,...item.data()}));
     updateBadge(active.length);
-    if(initial){known=new Set(active.map(item=>item.id));initial=false;return}
-    const fresh=active.filter(item=>!known.has(item.id)&&item.status==="pending");
-    known=new Set(active.map(item=>item.id));
-    if(fresh.length)showNewOrder(fresh[0],fresh.length);
+    const fresh=active.filter(item=>item.status==="pending"&&!alertedOrders.has(item.id));
+    if(fresh.length){fresh.forEach(item=>alertedOrders.add(item.id));saveAlertedOrders();showNewOrder(fresh[0],fresh.length)}
   },console.error);
 });
 
@@ -33,6 +33,7 @@ function buildAlertUi(){
   document.getElementById("merchantAlertPopup").onclick=()=>location.href=new URL("./esnaf-yonetimi/",import.meta.url).href;
   document.getElementById("merchantNotifyEnable").onclick=enableNotifications;
   refreshPermissionButton();
+  keepAlertAboveDialogs();
 }
 function updateBadge(count){const badge=document.getElementById("merchantAlertCount");if(badge)badge.textContent=count?String(count):""}
 function showNewOrder(order,total){clearTimeout(popupTimer);const business=order.businessName||order.merchantName||"Esnaf",quantity=Number(order.quantity)||0,title=total>1?`${total} yeni esnaf siparişi`:`${business} Çay söyledi`,text=total>1?"Siparişleri görmek için dokunun.":`${quantity} Çay${order.note?` • ${order.note}`:""}`;document.getElementById("merchantAlertTitle").textContent=title;document.getElementById("merchantAlertText").textContent=text;const popup=document.getElementById("merchantAlertPopup");popup.classList.add("show");playBell();vibrate();showSystemNotification(title,text);popupTimer=setTimeout(()=>popup.classList.remove("show"),9000)}
@@ -42,3 +43,6 @@ function vibrate(){try{navigator.vibrate?.([180,80,260])}catch(error){console.de
 async function enableNotifications(){await unlockSound();let permission="denied";try{permission=!("Notification"in window)?"unsupported":await Notification.requestPermission()}catch(error){console.error(error)}if(permission==="granted"){localStorage.setItem(NOTIFY_ENABLED_KEY,"1");playBell();vibrate();showSystemNotification("Bildirimler açıldı","Yeni Esnaf siparişlerinde sesli ve titreşimli uyarı alacaksınız.")}refreshPermissionButton()}
 function refreshPermissionButton(){const button=document.getElementById("merchantNotifyEnable");if(!button)return;const granted="Notification"in window&&Notification.permission==="granted";button.hidden=granted||!("Notification"in window");if(granted)localStorage.setItem(NOTIFY_ENABLED_KEY,"1")}
 async function showSystemNotification(title,body){if(!("Notification"in window)||Notification.permission!=="granted")return;const options={body,icon:new URL("./pwa-icons/icon-192.png",import.meta.url).href,badge:new URL("./pwa-icons/icon-192.png",import.meta.url).href,tag:"fatih-esnaf-siparisi",renotify:true,requireInteraction:true,vibrate:[180,80,260],data:{url:new URL("./esnaf-yonetimi/",import.meta.url).href}};try{const registration=await navigator.serviceWorker?.ready;if(registration)await registration.showNotification(title,options);else new Notification(title,options)}catch(error){console.error(error)}}
+function readAlertedOrders(){try{const value=JSON.parse(localStorage.getItem(ALERTED_ORDERS_KEY)||"[]");return Array.isArray(value)?value:[]}catch{return[]}}
+function saveAlertedOrders(){try{localStorage.setItem(ALERTED_ORDERS_KEY,JSON.stringify([...alertedOrders].slice(-100)))}catch{}}
+function keepAlertAboveDialogs(){const ids=["merchantNotifyEnable","merchantAlertButton","merchantAlertPopup"],move=()=>{const openDialogs=[...document.querySelectorAll("dialog[open]")],host=openDialogs.at(-1)||document.body;for(const id of ids){const node=document.getElementById(id);if(node&&node.parentElement!==host)host.append(node)}};move();new MutationObserver(move).observe(document.body,{subtree:true,attributes:true,attributeFilter:["open"]})}
