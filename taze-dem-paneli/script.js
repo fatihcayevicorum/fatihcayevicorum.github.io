@@ -159,6 +159,7 @@ async function startNewBrew() {
             transaction.set(publicStatusReference, {
                 activeBrews: state.activeBrews,
                 serviceOpen: state.serviceOpen,
+                orderingOpen: state.serviceOpen,
                 updatedAt: serverTimestamp()
             });
         });
@@ -222,6 +223,7 @@ async function markBrewReady(brewId) {
             transaction.set(publicStatusReference, {
                 activeBrews: state.activeBrews,
                 serviceOpen: state.serviceOpen,
+                orderingOpen: state.serviceOpen,
                 updatedAt: serverTimestamp()
             });
         });
@@ -250,6 +252,7 @@ async function toggleTeaService() {
             transaction.set(publicStatusReference, {
                 activeBrews: state.activeBrews,
                 serviceOpen: state.serviceOpen,
+                orderingOpen: state.serviceOpen,
                 updatedAt: serverTimestamp()
             });
         });
@@ -298,6 +301,7 @@ async function finishBrew(brewId) {
             transaction.set(publicStatusReference, {
                 activeBrews: state.activeBrews,
                 serviceOpen: state.serviceOpen,
+                orderingOpen: state.serviceOpen,
                 updatedAt: serverTimestamp()
             });
         });
