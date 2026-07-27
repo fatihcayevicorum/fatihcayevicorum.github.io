@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, doc, getDocs, getDocsFromServer, getFirestore, limit, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, doc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
@@ -39,7 +39,7 @@ async function saveCustomer(e){
   }catch(err){console.error(err);toast("Müşteri kaydedilemedi.")}finally{busy=false}
 }
 async function refreshCustomersFromServer(){
-  const snap=await getDocsFromServer(customersCol);
+  const snap=await getDocs(customersCol);
   customers=snap.docs.map(d=>normalizeCustomer(d.id,d.data()));
   connection(true);renderAll();
 }

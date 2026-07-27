@@ -132,6 +132,15 @@
         </form>
     </dialog>
 
+    <dialog class="confirm-dialog" id="deleteCustomerDialog">
+        <form method="dialog">
+            <div class="dialog-icon"><i class="fa-solid fa-user-xmark"></i></div>
+            <h2>Müşteri Silinsin mi?</h2>
+            <p id="deleteCustomerDialogText">Müşteri kartı ve hesap hareketleri kalıcı olarak silinecek.</p>
+            <div class="dialog-actions"><button class="secondary-button" type="submit" value="cancel">Vazgeç</button><button class="danger-button" id="confirmDeleteCustomerButton" type="button">Kalıcı Olarak Sil</button></div>
+        </form>
+    </dialog>
+
     <dialog id="summaryDialog" class="summary-dialog">
         <div class="summary-card">
             <div class="dialog-heading"><div><p class="kicker">Müşteri Hesabı</p><h2 id="summaryTitle">Hesap Özeti</h2></div><button class="icon-button" id="closeSummaryDialog" type="button"><i class="fa-solid fa-xmark"></i></button></div>
@@ -151,7 +160,7 @@
 
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="script.js?v=3"></script>
+    <script type="module" src="script.js?v=4"></script>
     <script type="module" src="../merchant-order-alert.js?v=2"></script>
     <script type="module" src="../system-ui.js?v=10"></script>
     <script src="../panel-scroll.js?v=2"></script>
