@@ -60,6 +60,14 @@
   background: linear-gradient(145deg, var(--green), var(--green2));
 }
 
+.table-card.credit-table {
+  background: linear-gradient(145deg, #3c718b, #244b61);
+}
+
+.credit-dot {
+  background: #315f77;
+}
+
 .table-open {
   width: 100%;
   min-height: 145px;
@@ -114,6 +122,10 @@
 
 .table-card.occupied .table-edit {
   background: #17643f;
+}
+
+.table-card.credit-table .table-edit {
+  background: #1d4053;
 }
 
 .table-edit i {
