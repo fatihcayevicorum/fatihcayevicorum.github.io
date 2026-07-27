@@ -26,6 +26,12 @@
   color: var(--red);
 }
 
+.correction-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .correction-notice {
   display: flex;
   align-items: flex-start;
@@ -41,4 +47,10 @@
 .correction-notice i {
   margin-top: 2px;
   color: #b97816;
+}
+
+@media (max-width: 560px) {
+  .correction-grid {
+    grid-template-columns: 1fr;
+  }
 }

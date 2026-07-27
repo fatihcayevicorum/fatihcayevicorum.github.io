@@ -40,7 +40,7 @@ function buildReport(){
   const selected=sales.filter(s=>{const date=s.businessDate||dateFromTimestamp(s.closedAt||s.createdAt),inRange=date>=range.start&&date<=range.end;if(!inRange)return false;if(range.start===currentBusinessDate&&range.end===currentBusinessDate)return reportTime(s)>=currentBusinessDayStartedAtMs;return true});
   const result=emptyReport(),products=new Map();
   for(const sale of selected){
-    if(sale.recordType==="merchant-topup"){result.merchantMarkaCount+=num(sale.markaCount);result.merchantTopupTotal+=num(sale.saleTotal);result.salesTotal+=num(sale.saleTotal);result.cashTotal+=num(sale.cashAmount);result.transferTotal+=num(sale.transferAmount);continue}
+    if(["merchant-topup","merchant-topup-correction"].includes(sale.recordType)){result.merchantMarkaCount+=num(sale.markaCount);result.merchantTopupTotal+=num(sale.saleTotal);result.salesTotal+=num(sale.saleTotal);result.cashTotal+=num(sale.cashAmount);result.transferTotal+=num(sale.transferAmount);continue}
     if(sale.recordType==="merchant-delivery"){result.merchantDeliveredTea+=num(sale.deliveredTeaCount);continue}
     if(["payment","credit-payment","credit-topup"].includes(sale.recordType)){result.cashTotal+=num(sale.cashAmount??sale.amount);result.transferTotal+=num(sale.transferAmount);result.tipTotal+=num(sale.tipAmount);continue}
     if(sale.recordType!=="sale"&&sale.items==null)continue;
