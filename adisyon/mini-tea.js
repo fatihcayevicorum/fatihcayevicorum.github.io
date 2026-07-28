@@ -43,7 +43,7 @@ function render(){
   const now=Date.now(),active=state.activeBrews;
   badge.textContent=String(active.length);
   badge.hidden=active.length===0;
-  count.textContent=`${active.length} / ${MAX} Demlik`;
+  count.textContent=`${active.length} / ${MAX}`;
   service.classList.toggle("is-closed",!state.serviceOpen);
   service.innerHTML=`<i></i> Servis ${state.serviceOpen?"Açık":"Kapalı"}`;
   serviceToggle.innerHTML=state.serviceOpen?'<i class="fa-solid fa-power-off"></i><span>Servisi Kapat</span>':'<i class="fa-solid fa-play"></i><span>Servisi Başlat</span>';

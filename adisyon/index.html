@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="polish.css?v=8"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="mini-tea.css?v=1"><link rel="stylesheet" href="../panel-header.css?v=7">
+  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="polish.css?v=8"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="mini-tea.css?v=2"><link rel="stylesheet" href="../panel-header.css?v=7">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -79,12 +79,12 @@
 <dialog id="moveDialog"><form id="moveForm" class="dialog-card"><div class="dialog-head"><h2>Taşı veya Birleştir</h2><button type="button" data-close="moveDialog">×</button></div><label>Hedef masa / Adisyon<select id="moveTarget" required></select></label><p class="notice">Hedef boşsa Adisyon taşınır; doluysa iki Adisyon birleştirilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="moveDialog">Vazgeç</button><button class="primary">Devam Et</button></div></form></dialog>
 <dialog id="miniTeaDialog" class="mini-tea-dialog">
   <section class="mini-tea-card">
-    <header class="mini-tea-head"><div><p>ADİSYONDAN AYRILMADAN</p><h2><i class="fa-solid fa-mug-hot"></i> Mini Taze Dem</h2></div><button id="closeMiniTea" type="button" aria-label="Mini Taze Dem panelini kapat"><i class="fa-solid fa-xmark"></i></button></header>
-    <div class="mini-tea-summary"><span id="miniTeaService"><i></i> Servis Açık</span><b id="miniTeaCount">0 / 3 Demlik</b></div>
+    <header class="mini-tea-head"><div><p>HIZLI DEM KONTROLÜ</p><h2><i class="fa-solid fa-mug-hot"></i> Taze Dem</h2></div><button id="closeMiniTea" type="button" aria-label="Mini Taze Dem panelini kapat"><i class="fa-solid fa-xmark"></i></button></header>
+    <div class="mini-tea-summary"><span id="miniTeaService"><i></i> Servis Açık</span><b id="miniTeaCount">0 / 3</b><button id="miniTeaServiceToggle" type="button" title="Servisi aç veya kapat" aria-label="Çay servisini aç veya kapat"><i class="fa-solid fa-power-off"></i><span>Servisi Kapat</span></button></div>
     <div id="miniTeaList" class="mini-tea-list"></div>
     <div id="miniTeaEmpty" class="mini-tea-empty"><i class="fa-solid fa-mug-saucer"></i><p>Aktif Demlik yok.</p></div>
     <p id="miniTeaMessage" class="mini-tea-message" hidden></p>
-    <footer class="mini-tea-actions"><button id="miniTeaServiceToggle" type="button" class="secondary"><i class="fa-solid fa-power-off"></i><span>Servisi Kapat</span></button><button id="miniTeaStart" type="button" class="primary"><i class="fa-solid fa-plus"></i> Yeni Dem Başlat</button></footer>
+    <footer class="mini-tea-actions"><button id="miniTeaStart" type="button" class="primary"><i class="fa-solid fa-plus"></i> Yeni Dem Başlat</button></footer>
   </section>
 </dialog>
 <dialog id="miniTeaFinishDialog" class="mini-tea-confirm">
@@ -93,7 +93,7 @@
 <div id="toast" class="toast" role="status"></div>
 <script type="module" src="script.js?v=19"></script>
 <script type="module" src="enhancements.js?v=6"></script>
-<script type="module" src="mini-tea.js?v=1"></script>
+<script type="module" src="mini-tea.js?v=2"></script>
 <script type="module" src="../merchant-order-alert.js?v=10"></script>
 <script type="module" src="../system-ui.js?v=10"></script>
 </body></html>
