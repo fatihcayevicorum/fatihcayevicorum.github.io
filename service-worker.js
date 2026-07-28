@@ -6,14 +6,13 @@ backgroundMessaging.onBackgroundMessage(payload=>{
   const data=payload.data||{},title=data.title||"Yeni Esnaf Siparişi";
   return self.registration.showNotification(title,{body:data.body||"Yeni Çay siparişi geldi.",icon:"./pwa-icons/icon-192.png",badge:"./pwa-icons/icon-192.png",tag:data.tag||"fatih-esnaf-siparisi",renotify:true,requireInteraction:true,silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./esnaf-yonetimi/",self.registration.scope).href,orderId:data.orderId||""}});
 });
-const VERSION="fatih-cay-evi-pwa-v21",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r81",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./logo.png","./style.css","./home-dynamic.css",
   "./menu.html","./menu.css","./yonetici-giris.html","./yonetici-giris.css",
   "./firebase-config.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
   "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js",
-  "./kasa-hesap-yonetimi/index.html","./kasa-hesap-yonetimi/style.css","./kasa-hesap-yonetimi/script.js",
   "./stok-yonetimi/index.html","./stok-yonetimi/style.css","./stok-yonetimi/script.js",
   "./acik-hesap/index.html","./acik-hesap/style.css","./acik-hesap/script.js",
   "./raporlar/index.html","./raporlar/style.css","./raporlar/script.js",

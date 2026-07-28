@@ -1,0 +1,1 @@
+R81: R77 sağlam sürüm temel alındı. Dahili Tüketim ayrı modül olarak eklendi; adisyon ana koduna dokunulmadı. Kasa şifre modülündeki import sırası hatası düzeltildi.

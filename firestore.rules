@@ -68,15 +68,16 @@ service cloud.firestore {
       allow read, write: if isFatihAdmin();
     }
 
+    match /adminDailyClosings/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
+
     match /adminInternalConsumptions/{document} {
       allow read, write: if isFatihAdmin();
     }
 
     match /adminCashMovements/{document} {
-      allow read, write: if isFatihAdmin();
-    }
-
-    match /adminDailyClosings/{document} {
       allow read, write: if isFatihAdmin();
     }
 
