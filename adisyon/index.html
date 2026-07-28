@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="polish.css?v=8"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="mini-tea.css?v=2"><link rel="stylesheet" href="../panel-header.css?v=7">
+  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="polish.css?v=8"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="../panel-header.css?v=7">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -20,7 +20,6 @@
     <div class="overview-row">
       <section class="summary"><article><span>Açık Adisyon</span><b id="openCount">0</b></article><article><span>Açık toplam</span><b id="openTotal">₺0</b></article><article><span>Dolu masa</span><b id="occupiedCount">0</b></article></section>
       <div class="quick-actions">
-        <button id="miniTeaButton" class="secondary icon-action mini-tea-trigger" title="Mini Taze Dem" aria-label="Mini Taze Dem panelini aç"><i class="fa-solid fa-mug-hot"></i><span id="miniTeaBadge">0</span></button>
         <button id="dailyStatus" class="secondary icon-action" title="Günlük Durum" aria-label="Günlük Durum"><i class="fa-solid fa-chart-pie"></i></button>
         <button id="recentPaymentsButton" class="secondary icon-action" title="Son Ödemeler" aria-label="Son ödeme İşlemleri"><i class="fa-solid fa-clock-rotate-left"></i></button>
         <button id="closeDayButton" class="secondary icon-action close-day-icon" title="Günü Kapat" aria-label="Günü Kapat"><i class="fa-solid fa-calendar-check"></i></button>
@@ -77,23 +76,9 @@
 <dialog id="recentPaymentsDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Son Ödeme İşlemleri</h2><button type="button" data-close="recentPaymentsDialog">×</button></div><p class="notice">Yanlış girilen son açık Adisyon ödemesini geri alıp doğru tutarla yeniden girebilirsiniz.</p><div id="recentPaymentsList" class="recent-payments-list"></div><p id="recentPaymentsEmpty" class="empty">Bu iş gününde düzeltilebilecek açık Adisyon ödemesi yok.</p><div class="dialog-actions"><button type="button" class="primary" data-close="recentPaymentsDialog">Kapat</button></div></div></dialog>
 <dialog id="closeDayDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Günü Kapat</h2><button type="button" data-close="closeDayDialog">×</button></div><p id="closeDayPeriod" class="notice"></p><div id="closeDayReport" class="close-day-report"></div><div class="export-actions"><button type="button" id="exportPdf" class="secondary"><i class="fa-solid fa-file-pdf"></i> PDF</button><button type="button" id="exportExcel" class="secondary"><i class="fa-solid fa-file-excel"></i> Excel</button></div><div class="close-day-warning"><i class="fa-solid fa-triangle-exclamation"></i><div><strong>Bu İşlem geri alınamaz.</strong><p>Rapor sisteme kaydedilecek, Taze Dem sayacı yeni iş günü için sıfırdan başlayacak ve eski iş gününe tekrar kayıt eklenemeyecek.</p></div></div><label class="close-day-check"><input id="closeDayConfirmed" type="checkbox"><span>Raporu kontrol ettim, bu iş gününü kapatmak istiyorum.</span></label><div class="dialog-actions"><button type="button" class="secondary" data-close="closeDayDialog">Vazgeç</button><button type="button" id="confirmCloseDay" class="danger" disabled>Günü Kesin Olarak Kapat</button></div></div></dialog>
 <dialog id="moveDialog"><form id="moveForm" class="dialog-card"><div class="dialog-head"><h2>Taşı veya Birleştir</h2><button type="button" data-close="moveDialog">×</button></div><label>Hedef masa / Adisyon<select id="moveTarget" required></select></label><p class="notice">Hedef boşsa Adisyon taşınır; doluysa iki Adisyon birleştirilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="moveDialog">Vazgeç</button><button class="primary">Devam Et</button></div></form></dialog>
-<dialog id="miniTeaDialog" class="mini-tea-dialog">
-  <section class="mini-tea-card">
-    <header class="mini-tea-head"><div><p>HIZLI DEM KONTROLÜ</p><h2><i class="fa-solid fa-mug-hot"></i> Taze Dem</h2></div><button id="closeMiniTea" type="button" aria-label="Mini Taze Dem panelini kapat"><i class="fa-solid fa-xmark"></i></button></header>
-    <div class="mini-tea-summary"><span id="miniTeaService"><i></i> Servis Açık</span><b id="miniTeaCount">0 / 3</b><button id="miniTeaServiceToggle" type="button" title="Servisi aç veya kapat" aria-label="Çay servisini aç veya kapat"><i class="fa-solid fa-power-off"></i><span>Servisi Kapat</span></button></div>
-    <div id="miniTeaList" class="mini-tea-list"></div>
-    <div id="miniTeaEmpty" class="mini-tea-empty"><i class="fa-solid fa-mug-saucer"></i><p>Aktif Demlik yok.</p></div>
-    <p id="miniTeaMessage" class="mini-tea-message" hidden></p>
-    <footer class="mini-tea-actions"><button id="miniTeaStart" type="button" class="primary"><i class="fa-solid fa-plus"></i> Yeni Dem Başlat</button></footer>
-  </section>
-</dialog>
-<dialog id="miniTeaFinishDialog" class="mini-tea-confirm">
-  <section class="dialog-card confirm-card"><div class="confirm-icon"><i class="fa-solid fa-mug-hot"></i></div><h2>Demlik bitirilsin mi?</h2><p id="miniTeaFinishText">Seçilen Demlik aktif listeden kaldırılacak.</p><div class="dialog-actions"><button id="cancelMiniTeaFinish" type="button" class="secondary">Vazgeç</button><button id="confirmMiniTeaFinish" type="button" class="danger">Demliği Bitir</button></div></section>
-</dialog>
 <div id="toast" class="toast" role="status"></div>
 <script type="module" src="script.js?v=19"></script>
 <script type="module" src="enhancements.js?v=6"></script>
-<script type="module" src="mini-tea.js?v=2"></script>
 <script type="module" src="../merchant-order-alert.js?v=10"></script>
 <script type="module" src="../system-ui.js?v=10"></script>
 </body></html>
