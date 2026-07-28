@@ -1,0 +1,20 @@
+FATİH ÇAY EVİ - R78 GÜNCELLEME NOTU
+
+1) Dahili Tüketim
+- Adisyon sayfasında masa ayarı düğmesinin yanına küçük düğme eklendi.
+- Yalnızca stokla otomatik bağlantısı bulunan menü ürünleri listelenir.
+- Kaydedilen ürün stoktan düşer.
+- Satış, ikram veya kasa geliri oluşturmaz.
+- Günlük durum ve gün sonu raporunda ayrı görünür.
+
+2) Kasa ve Hesap Yönetimi
+- Yeni adres: /kasa-hesap-yonetimi/
+- İlk girişte 4-6 haneli özel kasa PIN'i oluşturulur.
+- Nakit, banka ve kredi kartı ayrı izlenir.
+- Gelir, gider ve hesaplar arası transfer eklenebilir.
+- Transferler gelir/gider toplamına yazılmaz.
+- 10 dakika işlem yapılmazsa bölüm otomatik kilitlenir.
+
+3) Firebase
+- firestore.rules dosyası güncellendi.
+- GitHub dosyaları yüklendikten sonra yeni firestore.rules kuralları Firebase'de yayınlanmalıdır.

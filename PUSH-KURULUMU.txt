@@ -1,0 +1,24 @@
+FATİH ÇAY EVİ — KAPALI UYGULAMA BİLDİRİM KURULUMU
+
+1. Bu paketteki web dosyalarını GitHub deposuna yükleyin.
+2. firestore.rules dosyasını Firebase Firestore Rules bölümünde yayınlayın.
+3. Bilgisayarda Node.js kurulu olmalıdır.
+4. Proje klasöründe terminal açıp sırasıyla çalıştırın:
+
+   npm install -g firebase-tools
+   firebase login
+   firebase use fatihcayevi
+   cd functions
+   npm install
+   cd ..
+   firebase deploy --only functions,firestore:rules
+
+5. Tablet uygulamasını tamamen kapatıp yeniden açın.
+6. Esnaf Yönetimi sayfasında bildirim düğmesini önce kapatıp tekrar açın.
+7. Ekranda “Uygulama kapalıyken de Esnaf siparişi bildirilecek” mesajını görün.
+8. Uygulamayı tamamen kapatın ve telefondaki Esnaf panelinden deneme siparişi verin.
+
+NOT:
+- Android, kapalı uygulamada sistem bildirim sesini kullanır.
+- Uygulama açıkken seçtiğiniz özel zil sesi kullanılmaya devam eder.
+- Cloud Messaging API (Legacy) kapalı kalabilir; yeni HTTP v1 sistemi kullanılır.
