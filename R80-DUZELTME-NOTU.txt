@@ -1,0 +1,7 @@
+R80
+- Adisyon önbellek uyumsuzluğu giderildi.
+- Saat ve adisyon JavaScript sürümü yenilendi.
+- Dahili tüketim mini adisyon ekranı korundu.
+- Kasa ve Hesap Yönetimi sayfası yeniden menülere bağlandı.
+- Kasa sayfası her açılışta kilit ekranıyla başlar.
+- PWA önbelleği v21 olarak yenilendi.
