@@ -1,7 +1,8 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{ADMIN_UID,firebaseConfig}from"./firebase-config.js";
+import{collection,deleteDoc,doc,getFirestore,onSnapshot,query,serverTimestamp,setDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{deleteToken,getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
+import{ADMIN_UID,FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
 
 const app=getApps().find(item=>item.name==="[DEFAULT]")||(getApps().length?getApp():initializeApp(firebaseConfig));
 const auth=getAuth(app),db=getFirestore(app);
@@ -9,6 +10,7 @@ let audioContext=null,popupTimer;
 let customBellUrl="",customBellAudio=null;
 const NOTIFY_ENABLED_KEY="fatihMerchantNotificationsEnabled";
 const ALERTED_ORDERS_KEY="fatihMerchantAlertedOrders";
+const PUSH_TOKEN_DOC_KEY="fatihMerchantPushTokenDoc";
 const BELL_DB_NAME="fatihMerchantBellDb",BELL_STORE_NAME="sounds",BELL_KEY="customBell";
 const alertedOrders=new Set(readAlertedOrders());
 
@@ -18,6 +20,7 @@ loadCustomBell();
 
 onAuthStateChanged(auth,user=>{
   if(!user||user.uid!==ADMIN_UID){setAlertStatus("Yönetici oturumu bekleniyor.");return}
+  if(notificationsEnabled()&&Notification.permission==="granted")registerPushToken().catch(console.error);
   setAlertStatus("Sipariş bağlantısı kuruluyor…");
   onSnapshot(collection(db,"merchantOrders"),snapshot=>{
     const active=snapshot.docs.map(item=>({id:item.id,...item.data()})).filter(item=>["pending","preparing","on_the_way"].includes(item.status));
@@ -62,10 +65,13 @@ async function readBellBlob(){const db=await openBellDb();return new Promise((re
 function vibrate(){try{navigator.vibrate?.([180,80,260])}catch(error){console.debug(error)}}
 function notificationsEnabled(){return localStorage.getItem(NOTIFY_ENABLED_KEY)!=="0"}
 async function requestNotificationPermission(){if(!("Notification"in window))return"unsupported";try{return Notification.permission==="granted"?"granted":await Notification.requestPermission()}catch(error){console.error(error);return"unsupported"}}
-async function toggleNotifications(){if(notificationsEnabled()){localStorage.setItem(NOTIFY_ENABLED_KEY,"0");showAlertPopup("Bildirimler kapatıldı","Ses, titreşim ve sistem uyarıları durduruldu.");refreshPermissionButton();return}await unlockSound();const permission=await requestNotificationPermission();if(permission==="denied"){showAlertPopup("Bildirim izni engelli","Tablet ayarlarından Fatih Çay Evi Yönetim bildirimlerini açın.");return}localStorage.setItem(NOTIFY_ENABLED_KEY,"1");showAlertPopup("Bildirimler açıldı",permission==="unsupported"?"Sayfa içi ses ve titreşim kullanılacak.":"Esnaf sipariş uyarıları etkin.");refreshPermissionButton()}
+async function toggleNotifications(){if(notificationsEnabled()){localStorage.setItem(NOTIFY_ENABLED_KEY,"0");await unregisterPushToken();showAlertPopup("Bildirimler kapatıldı","Ses, titreşim ve kapalı uygulama push bildirimleri durduruldu.");refreshPermissionButton();return}await unlockSound();const permission=await requestNotificationPermission();if(permission==="denied"){showAlertPopup("Bildirim izni engelli","Tablet ayarlarından Fatih Çay Evi Yönetim bildirimlerini açın.");return}localStorage.setItem(NOTIFY_ENABLED_KEY,"1");let pushReady=false;if(permission==="granted")pushReady=await registerPushToken();showAlertPopup("Bildirimler açıldı",pushReady?"Uygulama kapalıyken de Esnaf siparişi bildirilecek.":permission==="unsupported"?"Sayfa içi ses ve titreşim kullanılacak.":"Açık ekran bildirimi çalışıyor; push kaydı tamamlanamadı.");refreshPermissionButton()}
 async function testNotifications(){if(!notificationsEnabled()){showAlertPopup("Bildirimler kapalı","Önce yanındaki bildirim açma düğmesine dokunun.");return}await unlockSound();const permission=await requestNotificationPermission();showAlertPopup("Test bildirimi","Ses ve titreşim testi çalıştırıldı.");playBell();vibrate();if(permission==="granted")showSystemNotification("Fatih Çay Evi","Esnaf sipariş bildirimleri çalışıyor.");else if(permission==="denied")showAlertPopup("Ses testi çalıştı","Sistem bildirimi tablet ayarlarından engellenmiş.")}
 function refreshPermissionButton(){const button=document.getElementById("merchantNotifyToggle");if(!button)return;const enabled=notificationsEnabled();button.classList.toggle("active",enabled);button.classList.toggle("off",!enabled);button.innerHTML=enabled?'<i class="fa-solid fa-bell"></i>':'<i class="fa-solid fa-bell-slash"></i>';button.title=enabled?"Bildirimleri kapat":"Bildirimleri aç";button.setAttribute("aria-label",button.title)}
 async function showSystemNotification(title,body){if(!("Notification"in window)||Notification.permission!=="granted")return;const options={body,icon:new URL("./pwa-icons/icon-192.png",import.meta.url).href,badge:new URL("./pwa-icons/icon-192.png",import.meta.url).href,tag:"fatih-esnaf-siparisi",renotify:true,requireInteraction:true,vibrate:[180,80,260],data:{url:new URL("./esnaf-yonetimi/",import.meta.url).href}};try{const registration=await navigator.serviceWorker?.ready;if(registration)await registration.showNotification(title,options);else new Notification(title,options)}catch(error){console.error(error)}}
+async function registerPushToken(){try{if(!await isSupported()||Notification.permission!=="granted"||!auth.currentUser)return false;const registration=await navigator.serviceWorker.ready,messaging=getMessaging(app),token=await getToken(messaging,{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:registration});if(!token)return false;const id=await tokenDocumentId(token);await setDoc(doc(db,"adminPushTokens",id),{token,uid:auth.currentUser.uid,enabled:true,platform:navigator.userAgentData?.platform||navigator.platform||"",userAgent:navigator.userAgent||"",updatedAt:serverTimestamp()},{merge:true});localStorage.setItem(PUSH_TOKEN_DOC_KEY,id);setAlertStatus("Kapalı uygulama bildirimi hazır.");return true}catch(error){console.error("Push kaydı yapılamadı:",error);setAlertStatus("Push kaydı tamamlanamadı.");return false}}
+async function unregisterPushToken(){try{const id=localStorage.getItem(PUSH_TOKEN_DOC_KEY);if(id&&auth.currentUser)await deleteDoc(doc(db,"adminPushTokens",id));if(await isSupported())await deleteToken(getMessaging(app));localStorage.removeItem(PUSH_TOKEN_DOC_KEY)}catch(error){console.error("Push kaydı silinemedi:",error)}}
+async function tokenDocumentId(token){const bytes=new TextEncoder().encode(token),digest=await crypto.subtle.digest("SHA-256",bytes);return[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,"0")).join("")}
 function readAlertedOrders(){try{const value=JSON.parse(localStorage.getItem(ALERTED_ORDERS_KEY)||"[]");return Array.isArray(value)?value:[]}catch{return[]}}
 function saveAlertedOrders(){try{localStorage.setItem(ALERTED_ORDERS_KEY,JSON.stringify([...alertedOrders].slice(-100)))}catch{}}
 function keepAlertAboveDialogs(){const ids=["merchantNotifyTest","merchantNotifyToggle","merchantBellSelect","merchantBellFile","merchantAlertButton","merchantAlertPopup"],move=()=>{const openDialogs=[...document.querySelectorAll("dialog[open]")],host=openDialogs.at(-1)||document.body;for(const id of ids){const node=document.getElementById(id);if(node&&node.parentElement!==host)host.append(node)}};move();new MutationObserver(move).observe(document.body,{subtree:true,attributes:true,attributeFilter:["open"]})}

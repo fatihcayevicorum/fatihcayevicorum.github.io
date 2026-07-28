@@ -1,4 +1,12 @@
-const VERSION="fatih-cay-evi-pwa-v19",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
+firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
+const backgroundMessaging=firebase.messaging();
+backgroundMessaging.onBackgroundMessage(payload=>{
+  const data=payload.data||{},title=data.title||"Yeni Esnaf Siparişi";
+  return self.registration.showNotification(title,{body:data.body||"Yeni Çay siparişi geldi.",icon:"./pwa-icons/icon-192.png",badge:"./pwa-icons/icon-192.png",tag:data.tag||"fatih-esnaf-siparisi",renotify:true,requireInteraction:true,silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./esnaf-yonetimi/",self.registration.scope).href,orderId:data.orderId||""}});
+});
+const VERSION="fatih-cay-evi-pwa-v20",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./logo.png","./style.css","./home-dynamic.css",
   "./menu.html","./menu.css","./yonetici-giris.html","./yonetici-giris.css",
@@ -9,7 +17,7 @@ const CORE=[
   "./acik-hesap/index.html","./acik-hesap/style.css","./acik-hesap/script.js",
   "./raporlar/index.html","./raporlar/style.css","./raporlar/script.js",
   "./veri-yonetimi/index.html","./veri-yonetimi/style.css","./veri-yonetimi/script.js",
-  "./panel-header.css","./panel-scroll.css","./system-ui.js","./pwa.js",
+  "./panel-header.css","./panel-scroll.css","./system-ui.js","./pwa.js","./merchant-order-alert.js",
   "./manifest.webmanifest","./admin-manifest.webmanifest",
   "./esnaf-manifest.webmanifest","./pwa-icons/icon-192.png","./pwa-icons/icon-512.png",
   "./pwa-icons/icon-maskable-192.png","./pwa-icons/icon-maskable-512.png"

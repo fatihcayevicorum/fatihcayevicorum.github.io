@@ -72,6 +72,10 @@ service cloud.firestore {
       allow read, write: if isFatihAdmin();
     }
 
+    match /adminPushTokens/{tokenId} {
+      allow read, create, update, delete: if isFatihAdmin();
+    }
+
     function isActiveMerchant() {
       return request.auth != null
         && exists(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid))
