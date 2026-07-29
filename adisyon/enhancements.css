@@ -830,3 +830,172 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* R86 - Dahili Tüketim panelini adisyondan daha kompakt göster */
+.internal-pos-dialog {
+  width: min(86vw, 1120px);
+  height: min(78dvh, 680px);
+  border-radius: 16px;
+}
+
+.internal-pos-card {
+  padding: 11px;
+  border-radius: 16px;
+}
+
+.internal-pos-card > .dialog-head {
+  min-height: 44px;
+  margin-bottom: 8px;
+}
+
+.internal-pos-card > .dialog-head h2 {
+  font-size: 1.05rem;
+}
+
+.internal-pos-card > .dialog-head p {
+  font-size: .65rem;
+}
+
+.internal-pos-card > .dialog-head button {
+  width: 34px;
+  height: 34px;
+}
+
+.internal-pos-layout {
+  grid-template-columns: minmax(0, 1.24fr) minmax(300px, .76fr);
+  gap: 9px;
+}
+
+.internal-products,
+.internal-cart {
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.internal-products .product-search {
+  height: 38px;
+  font-size: .78rem;
+}
+
+.internal-products .category-tabs {
+  padding: 7px 0;
+  gap: 6px;
+}
+
+.internal-products .category-tabs button {
+  min-height: 30px;
+  padding: 6px 10px;
+  font-size: .66rem;
+}
+
+.internal-products .product-grid {
+  gap: 6px;
+}
+
+.internal-products .product,
+.internal-products .product.selected {
+  min-height: 62px;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.internal-products .product strong {
+  font-size: .71rem;
+  line-height: 1.2;
+}
+
+.internal-cart .order-title {
+  font-size: .88rem;
+}
+
+.internal-cart .order-items {
+  margin-top: 7px;
+  gap: 5px;
+}
+
+.internal-cart .order-item {
+  padding: 7px 8px;
+  border-radius: 9px;
+  font-size: .75rem;
+}
+
+.internal-cart .qty button {
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+}
+
+.internal-note {
+  margin-top: 6px;
+}
+
+.internal-note input {
+  height: 35px;
+  font-size: .75rem;
+}
+
+.internal-cart-footer {
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.internal-cart-footer > div:first-child {
+  margin-bottom: 6px;
+  font-size: .8rem;
+}
+
+.internal-cart-footer b {
+  font-size: 1rem;
+}
+
+.internal-cart-footer .dialog-actions {
+  gap: 7px;
+}
+
+.internal-cart-footer .dialog-actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: .75rem;
+  border-radius: 10px;
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  .internal-pos-dialog {
+    width: 88vw;
+    height: min(76dvh, 620px);
+  }
+
+  .internal-pos-layout {
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr);
+  }
+
+  .internal-products .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .internal-products .product,
+  .internal-products .product.selected {
+    min-height: 58px;
+    padding: 7px;
+  }
+}
+
+@media (max-width: 760px) {
+  .internal-pos-dialog {
+    width: calc(100vw - 18px);
+    height: 88dvh;
+  }
+
+  .internal-pos-card {
+    padding: 8px;
+  }
+
+  .internal-pos-layout {
+    grid-template-rows: minmax(260px, 1fr) minmax(220px, .75fr);
+    gap: 7px;
+  }
+
+  .internal-products .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
