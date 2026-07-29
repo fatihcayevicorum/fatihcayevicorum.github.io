@@ -1,1 +1,105 @@
-<!doctype html><html lang="tr" class="cash-locked"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kasa ve Hesap Yönetimi | Fatih Çay Evi</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"><link rel="stylesheet" href="style.css?v=2"></head><body><header><img src="../logo.png"><div><h1>Kasa ve Hesap Yönetimi</h1><p>Yetkili ve özel finans alanı</p></div><a href="../taze-dem-paneli/"><i class="fa-solid fa-arrow-left"></i> Panellere Dön</a></header><main><section id="lockScreen" class="lock card"><i class="fa-solid fa-lock"></i><h2 id="lockTitle">Kasa Şifresi</h2><p id="lockText">Bu özel bölüme girmek için şifrenizi girin.</p><form id="pinForm"><input id="pinInput" inputmode="numeric" type="password" minlength="4" maxlength="8" placeholder="4–8 haneli kasa şifresi" required><button>Giriş Yap</button></form><button id="resetPin" class="link" hidden>PIN'i değiştir</button></section><section id="app" hidden><div class="toolbar"><div><h2>Finans Özeti</h2><small id="todayLabel"></small></div><button id="lockButton" class="secondary"><i class="fa-solid fa-lock"></i> Kilitle</button></div><section class="summary"><article><span>Nakit Kasa</span><b id="cashBalance">₺0</b></article><article><span>Banka</span><b id="bankBalance">₺0</b></article><article><span>Kredi Kartı Borcu</span><b id="cardBalance">₺0</b></article><article><span>Bugünkü Gelir</span><b id="todayIncome">₺0</b></article><article><span>Bugünkü Gider</span><b id="todayExpense">₺0</b></article><article><span>Net Varlık</span><b id="netBalance">₺0</b></article></section><section class="actions"><button data-open="income"><i class="fa-solid fa-arrow-trend-up"></i> Gelir Ekle</button><button data-open="expense"><i class="fa-solid fa-arrow-trend-down"></i> Gider Ekle</button><button data-open="transfer"><i class="fa-solid fa-right-left"></i> Transfer</button></section><section class="card"><div class="section-head"><h3>Son Hareketler</h3><select id="filter"><option value="all">Tümü</option><option value="income">Gelir</option><option value="expense">Gider</option><option value="transfer">Transfer</option></select></div><div id="movementList"></div><p id="empty">Henüz hareket yok.</p></section></section></main><dialog id="movementDialog"><form id="movementForm" class="dialog-card"><div class="dialog-head"><h2 id="dialogTitle">Hareket Ekle</h2><button type="button" id="closeDialog">×</button></div><input type="hidden" id="movementType"><label>Tutar<input id="amount" type="number" min="0.01" step="0.01" required></label><label id="accountLabel">Hesap<select id="account"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label><label id="fromLabel" hidden>Gönderen hesap<select id="fromAccount"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label><label id="toLabel" hidden>Alan hesap<select id="toAccount"><option value="bank">Banka</option><option value="cash">Nakit Kasa</option><option value="card">Kredi Kartı</option></select></label><label>Kategori<select id="category"><option>Malzeme Alışı</option><option>Kira</option><option>Elektrik</option><option>Su</option><option>İnternet</option><option>Temizlik</option><option>Bakım-Onarım</option><option>İşletme Sahibine Çıkış</option><option>İşletmeye Para Girişi</option><option>Diğer</option></select></label><label>Açıklama<input id="description" maxlength="120" placeholder="İşlemin açıklaması" required></label><div class="dialog-actions"><button type="button" class="secondary" id="cancelDialog">Vazgeç</button><button>Kaydet</button></div></form></dialog><div id="toast"></div><script type="module" src="script.js?v=90"></script></body></html>
+<!doctype html>
+<html lang="tr" class="cash-locked">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Kasa ve Hesap Yönetimi | Fatih Çay Evi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css?v=91">
+  <link rel="stylesheet" href="../panel-header.css?v=7">
+</head>
+<body>
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu">
+      <div class="brand-copy">
+        <p class="eyebrow">Fatih Çay Evi</p>
+        <h1>Kasa ve Hesap Yönetimi</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="live-time">
+        <strong id="currentTime">--:--</strong>
+        <span id="currentDate">--/--/--</span>
+      </div>
+      <a class="header-page-link" href="../taze-dem-paneli/" title="Taze Dem" aria-label="Taze Dem sayfasına geç">
+        <i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span>
+      </a>
+      <details class="panel-menu">
+        <summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary>
+        <nav class="panel-menu-list">
+          <a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a>
+          <a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a>
+          <a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a>
+          <a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a>
+          <a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a>
+          <a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a>
+          <a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a>
+          <a class="is-current" href="./"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a>
+        </nav>
+      </details>
+      <button id="logoutButton" class="logout-button" type="button" aria-label="Çıkış">
+        <i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="lockScreen" class="lock card">
+    <i class="fa-solid fa-lock"></i>
+    <h2 id="lockTitle">Kasa Şifresi</h2>
+    <p id="lockText">Bu özel bölüme girmek için şifrenizi girin.</p>
+    <form id="pinForm">
+      <input id="pinInput" inputmode="numeric" type="password" minlength="4" maxlength="8" placeholder="4–8 haneli kasa şifresi" required>
+      <button>Giriş Yap</button>
+    </form>
+    <button id="resetPin" class="link" hidden>PIN'i değiştir</button>
+  </section>
+
+  <section id="app" hidden>
+    <div class="toolbar">
+      <div><h2>Finans Özeti</h2><small id="todayLabel"></small></div>
+      <button id="lockButton" class="secondary"><i class="fa-solid fa-lock"></i> Kilitle</button>
+    </div>
+    <section class="summary">
+      <article><span>Nakit Kasa</span><b id="cashBalance">₺0</b></article>
+      <article><span>Banka</span><b id="bankBalance">₺0</b></article>
+      <article><span>Kredi Kartı Borcu</span><b id="cardBalance">₺0</b></article>
+      <article><span>Bugünkü Gelir</span><b id="todayIncome">₺0</b></article>
+      <article><span>Bugünkü Gider</span><b id="todayExpense">₺0</b></article>
+      <article><span>Net Varlık</span><b id="netBalance">₺0</b></article>
+    </section>
+    <section class="actions">
+      <button data-open="income"><i class="fa-solid fa-arrow-trend-up"></i> Gelir Ekle</button>
+      <button data-open="expense"><i class="fa-solid fa-arrow-trend-down"></i> Gider Ekle</button>
+      <button data-open="transfer"><i class="fa-solid fa-right-left"></i> Transfer</button>
+    </section>
+    <section class="card">
+      <div class="section-head"><h3>Son Hareketler</h3><select id="filter"><option value="all">Tümü</option><option value="income">Gelir</option><option value="expense">Gider</option><option value="transfer">Transfer</option></select></div>
+      <div id="movementList"></div><p id="empty">Henüz hareket yok.</p>
+    </section>
+  </section>
+</main>
+
+<dialog id="movementDialog">
+  <form id="movementForm" class="dialog-card">
+    <div class="dialog-head"><h2 id="dialogTitle">Hareket Ekle</h2><button type="button" id="closeDialog">×</button></div>
+    <input type="hidden" id="movementType">
+    <label>Tutar<input id="amount" type="number" min="0.01" step="0.01" required></label>
+    <label id="accountLabel">Hesap<select id="account"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label>
+    <label id="fromLabel" hidden>Gönderen hesap<select id="fromAccount"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label>
+    <label id="toLabel" hidden>Alan hesap<select id="toAccount"><option value="bank">Banka</option><option value="cash">Nakit Kasa</option><option value="card">Kredi Kartı</option></select></label>
+    <label>Kategori<select id="category"><option>Malzeme Alışı</option><option>Kira</option><option>Elektrik</option><option>Su</option><option>İnternet</option><option>Temizlik</option><option>Bakım-Onarım</option><option>İşletme Sahibine Çıkış</option><option>İşletmeye Para Girişi</option><option>Diğer</option></select></label>
+    <label>Açıklama<input id="description" maxlength="120" placeholder="İşlemin açıklaması" required></label>
+    <div class="dialog-actions"><button type="button" class="secondary" id="cancelDialog">Vazgeç</button><button>Kaydet</button></div>
+  </form>
+</dialog>
+<div id="toast"></div>
+<script type="module" src="script.js?v=91"></script>
+</body>
+</html>

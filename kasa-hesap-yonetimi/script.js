@@ -21,6 +21,25 @@ let isUnlocked = false;
 let authReady = false;
 let movementsListenerStarted = false;
 
+function updateHeaderClock() {
+  const now = new Date();
+  const timeEl = $("currentTime");
+  const dateEl = $("currentDate");
+  if (timeEl) timeEl.textContent = now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+  if (dateEl) dateEl.textContent = now.toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+}
+
+updateHeaderClock();
+setInterval(updateHeaderClock, 1000);
+
+$("logoutButton")?.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } finally {
+    location.replace("../yonetici-giris.html");
+  }
+});
+
 function showLock() {
   isUnlocked = false;
   clearTimeout(timer);
