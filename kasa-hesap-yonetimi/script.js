@@ -1,2 +1,293 @@
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";import{collection,doc,getDoc,getFirestore,onSnapshot,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),movesCol=collection(db,"adminCashMovements"),pinRef=doc(db,"adminAppSettings","cashSecurity"),$=id=>document.getElementById(id);let movements=[],pinHash="",mode="login",timer,isUnlocked=false;lock();onAuthStateChanged(auth,async u=>{if(!u||u.uid!==ADMIN_UID){if(u)await signOut(auth);location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");return}const snap=await getDoc(pinRef);pinHash=snap.data()?.pinHash||"";mode=pinHash?"login":"setup";renderLock();onSnapshot(movesCol,s=>{movements=s.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAtMs||0)-(a.createdAtMs||0));render()})});function renderLock(){$("lockTitle").textContent=mode==="setup"?"Kasa Şifresi Oluştur":"Kasa Şifresi";$('lockText').textContent=mode==='setup'?'Bu bölüme özel 4–8 haneli bir kasa şifresi belirleyin.':'Bu özel bölüme girmek için kasa şifrenizi girin.';$('pinInput').value=''}$('pinForm').onsubmit=async e=>{e.preventDefault();const pin=$('pinInput').value.trim();if(!/^\d{4,8}$/.test(pin))return toast('Kasa şifresi 4–8 rakam olmalıdır.');const hash=await sha(pin);if(mode==='setup'){await setDoc(pinRef,{pinHash:hash,updatedAt:serverTimestamp(),createdBy:auth.currentUser.uid},{merge:true});pinHash=hash;unlock();toast('Kasa şifresi oluşturuldu.')}else if(hash===pinHash)unlock();else toast('Kasa şifresi yanlış.')}function unlock(){isUnlocked=true;$('lockScreen').hidden=true;$('app').hidden=false;document.documentElement.classList.remove('cash-locked');$('pinInput').blur();resetTimer()}function lock(){isUnlocked=false;clearTimeout(timer);$('app').hidden=true;$('lockScreen').hidden=false;document.documentElement.classList.add('cash-locked');mode=pinHash?'login':'setup';renderLock()}function resetTimer(){clearTimeout(timer);timer=setTimeout(lock,10*60*1000)}document.addEventListener('click',()=>{if(isUnlocked)resetTimer()});document.addEventListener('keydown',()=>{if(isUnlocked)resetTimer()});$('lockButton').onclick=lock;$('filter').onchange=render;document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openDialog(b.dataset.open));$('closeDialog').onclick=$('cancelDialog').onclick=()=>$('movementDialog').close();function openDialog(type){$('movementForm').reset();$('movementType').value=type;$('dialogTitle').textContent=type==='income'?'Gelir Ekle':type==='expense'?'Gider Ekle':'Hesaplar Arası Transfer';const transfer=type==='transfer';$('accountLabel').hidden=transfer;$('fromLabel').hidden=!transfer;$('toLabel').hidden=!transfer;$('category').closest('label').hidden=transfer;$('movementDialog').showModal()}$('movementForm').onsubmit=async e=>{e.preventDefault();const type=$('movementType').value,amount=Number($('amount').value);if(!(amount>0))return;const data={type,amount,account:type==='transfer'?'':$('account').value,fromAccount:type==='transfer'?$('fromAccount').value:'',toAccount:type==='transfer'?$('toAccount').value:'',category:type==='transfer'?'Hesaplar Arası Transfer':$('category').value,description:$('description').value.trim(),businessDate:today(),createdAtMs:Date.now(),createdAt:serverTimestamp(),createdBy:auth.currentUser.uid};if(type==='transfer'&&data.fromAccount===data.toAccount)return toast('Gönderen ve alan hesap farklı olmalıdır.');await setDoc(doc(movesCol),data);$('movementDialog').close();toast('Hareket kaydedildi.')}function balances(){let cash=0,bank=0,card=0,income=0,expense=0;for(const m of movements){const a=Number(m.amount)||0;if(m.type==='income'){if(m.account==='cash')cash+=a;if(m.account==='bank')bank+=a;if(m.account==='card')card-=a;if(m.businessDate===today())income+=a}else if(m.type==='expense'){if(m.account==='cash')cash-=a;if(m.account==='bank')bank-=a;if(m.account==='card')card+=a;if(m.businessDate===today())expense+=a}else if(m.type==='transfer'){apply(m.fromAccount,-a);apply(m.toAccount,a)}function apply(acc,v){if(acc==='cash')cash+=v;if(acc==='bank')bank+=v;if(acc==='card')card-=v}}return{cash,bank,card,income,expense}}function render(){const b=balances();$('cashBalance').textContent=money(b.cash);$('bankBalance').textContent=money(b.bank);$('cardBalance').textContent=money(Math.max(0,b.card));$('todayIncome').textContent=money(b.income);$('todayExpense').textContent=money(b.expense);$('netBalance').textContent=money(b.cash+b.bank-b.card);$('todayLabel').textContent=new Intl.DateTimeFormat('tr-TR',{dateStyle:'full',timeZone:'Europe/Istanbul'}).format(new Date());const f=$('filter').value,list=f==='all'?movements:movements.filter(x=>x.type===f);$('empty').hidden=!!list.length;$('movementList').innerHTML=list.slice(0,100).map(m=>`<article class="movement"><div><strong>${esc(m.description||m.category)}</strong><small>${esc(m.category)} • ${accountText(m)}</small></div><b class="${m.type}">${m.type==='income'?'+':m.type==='expense'?'-':'↔'} ${money(m.amount)}</b><small>${formatDate(m.createdAtMs)}</small></article>`).join('')}function accountText(m){const names={cash:'Nakit Kasa',bank:'Banka',card:'Kredi Kartı'};return m.type==='transfer'?`${names[m.fromAccount]} → ${names[m.toAccount]}`:names[m.account]||''}async function sha(v){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul'}).format(new Date())}function money(v){return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(Number(v)||0)}function formatDate(ms){return new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short',timeZone:'Europe/Istanbul'}).format(new Date(ms||Date.now()))}function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}let tt;function toast(v){clearTimeout(tt);$('toast').textContent=v;$('toast').classList.add('show');tt=setTimeout(()=>$('toast').classList.remove('show'),2800)}
-window.addEventListener('pageshow',e=>{if(e.persisted)lock()});
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import {
+  collection, doc, getDoc, getFirestore, onSnapshot,
+  serverTimestamp, setDoc
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+const movesCol = collection(db, "adminCashMovements");
+const pinRef = doc(db, "adminAppSettings", "cashSecurity");
+const $ = (id) => document.getElementById(id);
+
+let movements = [];
+let pinHash = "";
+let mode = "login";
+let timer = null;
+let isUnlocked = false;
+let authReady = false;
+let movementsListenerStarted = false;
+
+function showLock() {
+  isUnlocked = false;
+  clearTimeout(timer);
+  $("app").hidden = true;
+  $("lockScreen").hidden = false;
+  document.documentElement.classList.add("cash-locked");
+  mode = pinHash ? "login" : "setup";
+  renderLock();
+}
+
+function renderLock() {
+  $("lockTitle").textContent = mode === "setup" ? "Kasa Şifresi Oluştur" : "Kasa Şifresi";
+  $("lockText").textContent = mode === "setup"
+    ? "Bu bölüme özel 4–8 haneli bir kasa şifresi belirleyin."
+    : "Bu özel bölüme girmek için kasa şifrenizi girin.";
+  $("pinInput").value = "";
+  $("pinInput").disabled = false;
+  $("pinForm").querySelector("button").disabled = false;
+}
+
+function unlock() {
+  isUnlocked = true;
+  $("lockScreen").hidden = true;
+  $("app").hidden = false;
+  document.documentElement.classList.remove("cash-locked");
+  $("pinInput").blur();
+  resetTimer();
+  render();
+}
+
+function resetTimer() {
+  if (!isUnlocked) return;
+  clearTimeout(timer);
+  timer = setTimeout(showLock, 10 * 60 * 1000);
+}
+
+showLock();
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user || user.uid !== ADMIN_UID) {
+    if (user) await signOut(auth);
+    location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");
+    return;
+  }
+
+  try {
+    const snap = await getDoc(pinRef);
+    pinHash = snap.exists() ? String(snap.data()?.pinHash || "") : "";
+    mode = pinHash ? "login" : "setup";
+    authReady = true;
+    renderLock();
+
+    if (!movementsListenerStarted) {
+      movementsListenerStarted = true;
+      onSnapshot(movesCol, (snapshot) => {
+        movements = snapshot.docs
+          .map((item) => ({ id: item.id, ...item.data() }))
+          .sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+        if (isUnlocked) render();
+      }, (error) => {
+        console.error("Kasa hareketleri okunamadı:", error);
+        toast("Kasa hareketleri yüklenemedi.");
+      });
+    }
+  } catch (error) {
+    console.error("Kasa şifresi okunamadı:", error);
+    toast("Kasa şifresi bilgisi okunamadı. Firebase kurallarını kontrol edin.");
+  }
+});
+
+$("pinForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!authReady || !auth.currentUser) {
+    toast("Oturum hazırlanıyor, birkaç saniye sonra tekrar deneyin.");
+    return;
+  }
+
+  const input = $("pinInput");
+  const submitButton = $("pinForm").querySelector("button");
+  const pin = input.value.trim();
+
+  if (!/^\d{4,8}$/.test(pin)) {
+    toast("Kasa şifresi 4–8 rakam olmalıdır.");
+    return;
+  }
+
+  input.disabled = true;
+  submitButton.disabled = true;
+
+  try {
+    const enteredHash = await sha(pin);
+
+    if (mode === "setup") {
+      await setDoc(pinRef, {
+        pinHash: enteredHash,
+        updatedAt: serverTimestamp(),
+        createdBy: auth.currentUser.uid
+      }, { merge: true });
+
+      pinHash = enteredHash;
+      mode = "login";
+      unlock();
+      toast("Kasa şifresi oluşturuldu.");
+      return;
+    }
+
+    if (enteredHash !== pinHash) {
+      toast("Kasa şifresi yanlış.");
+      input.disabled = false;
+      submitButton.disabled = false;
+      input.value = "";
+      input.focus();
+      return;
+    }
+
+    unlock();
+  } catch (error) {
+    console.error("PIN işlemi başarısız:", error);
+    toast("Şifre işlemi tamamlanamadı. Firebase yetkisini kontrol edin.");
+    input.disabled = false;
+    submitButton.disabled = false;
+  }
+});
+
+$("lockButton").addEventListener("click", showLock);
+document.addEventListener("pointerdown", resetTimer, { passive: true });
+document.addEventListener("keydown", resetTimer);
+
+$("filter").addEventListener("change", render);
+document.querySelectorAll("[data-open]").forEach((button) => {
+  button.addEventListener("click", () => openDialog(button.dataset.open));
+});
+$("closeDialog").addEventListener("click", () => $("movementDialog").close());
+$("cancelDialog").addEventListener("click", () => $("movementDialog").close());
+
+function openDialog(type) {
+  $("movementForm").reset();
+  $("movementType").value = type;
+  $("dialogTitle").textContent = type === "income"
+    ? "Gelir Ekle"
+    : type === "expense" ? "Gider Ekle" : "Hesaplar Arası Transfer";
+  const transfer = type === "transfer";
+  $("accountLabel").hidden = transfer;
+  $("fromLabel").hidden = !transfer;
+  $("toLabel").hidden = !transfer;
+  $("category").closest("label").hidden = transfer;
+  $("movementDialog").showModal();
+}
+
+$("movementForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const type = $("movementType").value;
+  const amount = Number($("amount").value);
+  if (!(amount > 0)) return;
+
+  const data = {
+    type,
+    amount,
+    account: type === "transfer" ? "" : $("account").value,
+    fromAccount: type === "transfer" ? $("fromAccount").value : "",
+    toAccount: type === "transfer" ? $("toAccount").value : "",
+    category: type === "transfer" ? "Hesaplar Arası Transfer" : $("category").value,
+    description: $("description").value.trim(),
+    businessDate: today(),
+    createdAtMs: Date.now(),
+    createdAt: serverTimestamp(),
+    createdBy: auth.currentUser.uid
+  };
+
+  if (type === "transfer" && data.fromAccount === data.toAccount) {
+    toast("Gönderen ve alan hesap farklı olmalıdır.");
+    return;
+  }
+
+  try {
+    await setDoc(doc(movesCol), data);
+    $("movementDialog").close();
+    toast("Hareket kaydedildi.");
+  } catch (error) {
+    console.error("Hareket kaydedilemedi:", error);
+    toast("Hareket kaydedilemedi.");
+  }
+});
+
+function balances() {
+  let cash = 0, bank = 0, card = 0, income = 0, expense = 0;
+  const apply = (account, value) => {
+    if (account === "cash") cash += value;
+    if (account === "bank") bank += value;
+    if (account === "card") card -= value;
+  };
+
+  for (const movement of movements) {
+    const amount = Number(movement.amount) || 0;
+    if (movement.type === "income") {
+      apply(movement.account, amount);
+      if (movement.businessDate === today()) income += amount;
+    } else if (movement.type === "expense") {
+      apply(movement.account, -amount);
+      if (movement.account === "card") card += amount * 2;
+      if (movement.businessDate === today()) expense += amount;
+    } else if (movement.type === "transfer") {
+      apply(movement.fromAccount, -amount);
+      apply(movement.toAccount, amount);
+    }
+  }
+  return { cash, bank, card, income, expense };
+}
+
+function render() {
+  const result = balances();
+  $("cashBalance").textContent = money(result.cash);
+  $("bankBalance").textContent = money(result.bank);
+  $("cardBalance").textContent = money(Math.max(0, result.card));
+  $("todayIncome").textContent = money(result.income);
+  $("todayExpense").textContent = money(result.expense);
+  $("netBalance").textContent = money(result.cash + result.bank - result.card);
+  $("todayLabel").textContent = new Intl.DateTimeFormat("tr-TR", {
+    dateStyle: "full", timeZone: "Europe/Istanbul"
+  }).format(new Date());
+
+  const filter = $("filter").value;
+  const list = filter === "all" ? movements : movements.filter((item) => item.type === filter);
+  $("empty").hidden = Boolean(list.length);
+  $("movementList").innerHTML = list.slice(0, 100).map((movement) => `
+    <article class="movement">
+      <div>
+        <strong>${esc(movement.description || movement.category)}</strong>
+        <small>${esc(movement.category)} • ${accountText(movement)}</small>
+      </div>
+      <b class="${movement.type}">${movement.type === "income" ? "+" : movement.type === "expense" ? "-" : "↔"} ${money(movement.amount)}</b>
+      <small>${formatDate(movement.createdAtMs)}</small>
+    </article>`).join("");
+}
+
+function accountText(movement) {
+  const names = { cash: "Nakit Kasa", bank: "Banka", card: "Kredi Kartı" };
+  return movement.type === "transfer"
+    ? `${names[movement.fromAccount]} → ${names[movement.toAccount]}`
+    : names[movement.account] || "";
+}
+
+async function sha(value) {
+  const buffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(buffer)].map((item) => item.toString(16).padStart(2, "0")).join("");
+}
+
+function today() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(new Date());
+}
+function money(value) {
+  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(Number(value) || 0);
+}
+function formatDate(ms) {
+  return new Intl.DateTimeFormat("tr-TR", {
+    dateStyle: "short", timeStyle: "short", timeZone: "Europe/Istanbul"
+  }).format(new Date(ms || Date.now()));
+}
+function esc(value) {
+  return String(value ?? "").replace(/[&<>'"]/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+  }[char]));
+}
+let toastTimer;
+function toast(message) {
+  clearTimeout(toastTimer);
+  $("toast").textContent = message;
+  $("toast").classList.add("show");
+  toastTimer = setTimeout(() => $("toast").classList.remove("show"), 3000);
+}
