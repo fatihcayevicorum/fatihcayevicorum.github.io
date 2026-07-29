@@ -33,3 +33,10 @@ input,select{height:44px;border:1px solid var(--line);border-radius:10px;padding
 #toast.show{transform:translate(-50%,0);opacity:1}
 [hidden]{display:none!important}.cash-locked #app{display:none!important}.cash-locked #lockScreen{display:block!important}
 @media(max-width:700px){main{margin:14px auto}.lock{margin:4vh auto}.summary{grid-template-columns:1fr 1fr}.actions{grid-template-columns:1fr}.toolbar{align-items:flex-start}.movement{font-size:.8rem}}
+
+/* R92: hareket düzeltme */
+.movement-copy{display:grid;gap:4px;min-width:0}
+.movement-side{display:flex;align-items:flex-end;justify-content:space-between;flex-direction:column;gap:8px}
+.edit-movement{border:1px solid var(--line);border-radius:9px;background:#eee1d6;color:var(--ink);padding:7px 10px;font-size:.72rem;font-weight:600;cursor:pointer;transition:transform .14s ease,filter .14s ease}
+.edit-movement:active{transform:scale(.96)}
+@media(max-width:700px){.movement-side{align-items:flex-end}.edit-movement{padding:6px 9px}}

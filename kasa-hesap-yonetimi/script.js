@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/fireba
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
   collection, doc, getDoc, getFirestore, onSnapshot,
-  serverTimestamp, setDoc
+  serverTimestamp, setDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
 
@@ -175,17 +175,32 @@ document.querySelectorAll("[data-open]").forEach((button) => {
 $("closeDialog").addEventListener("click", () => $("movementDialog").close());
 $("cancelDialog").addEventListener("click", () => $("movementDialog").close());
 
-function openDialog(type) {
+function openDialog(type, movement = null) {
   $("movementForm").reset();
+  $("movementId").value = movement?.id || "";
   $("movementType").value = type;
-  $("dialogTitle").textContent = type === "income"
+  $("dialogTitle").textContent = movement ? "Hareketi Düzelt" : (type === "income"
     ? "Gelir Ekle"
-    : type === "expense" ? "Gider Ekle" : "Hesaplar Arası Transfer";
+    : type === "expense" ? "Gider Ekle" : "Hesaplar Arası Transfer");
+  $("saveMovementButton").textContent = movement ? "Düzeltmeyi Kaydet" : "Kaydet";
   const transfer = type === "transfer";
   $("accountLabel").hidden = transfer;
   $("fromLabel").hidden = !transfer;
   $("toLabel").hidden = !transfer;
   $("category").closest("label").hidden = transfer;
+
+  if (movement) {
+    $("amount").value = Number(movement.amount) || "";
+    $("description").value = movement.description || "";
+    if (transfer) {
+      $("fromAccount").value = movement.fromAccount || "cash";
+      $("toAccount").value = movement.toAccount || "bank";
+    } else {
+      $("account").value = movement.account || "cash";
+      $("category").value = movement.category || "Diğer";
+    }
+  }
+
   $("movementDialog").showModal();
 }
 
@@ -215,9 +230,19 @@ $("movementForm").addEventListener("submit", async (event) => {
   }
 
   try {
-    await setDoc(doc(movesCol), data);
+    const movementId = $("movementId").value;
+    if (movementId) {
+      await updateDoc(doc(db, "adminCashMovements", movementId), {
+        ...data,
+        updatedAt: serverTimestamp(),
+        updatedAtMs: Date.now()
+      });
+      toast("Hareket düzeltildi.");
+    } else {
+      await setDoc(doc(movesCol), data);
+      toast("Hareket kaydedildi.");
+    }
     $("movementDialog").close();
-    toast("Hareket kaydedildi.");
   } catch (error) {
     console.error("Hareket kaydedilemedi:", error);
     toast("Hareket kaydedilemedi.");
@@ -239,7 +264,6 @@ function balances() {
       if (movement.businessDate === today()) income += amount;
     } else if (movement.type === "expense") {
       apply(movement.account, -amount);
-      if (movement.account === "card") card += amount * 2;
       if (movement.businessDate === today()) expense += amount;
     } else if (movement.type === "transfer") {
       apply(movement.fromAccount, -amount);
@@ -266,13 +290,23 @@ function render() {
   $("empty").hidden = Boolean(list.length);
   $("movementList").innerHTML = list.slice(0, 100).map((movement) => `
     <article class="movement">
-      <div>
+      <div class="movement-copy">
         <strong>${esc(movement.description || movement.category)}</strong>
         <small>${esc(movement.category)} • ${accountText(movement)}</small>
+        <small>${formatDate(movement.createdAtMs)}</small>
       </div>
-      <b class="${movement.type}">${movement.type === "income" ? "+" : movement.type === "expense" ? "-" : "↔"} ${money(movement.amount)}</b>
-      <small>${formatDate(movement.createdAtMs)}</small>
+      <div class="movement-side">
+        <b class="${movement.type}">${movement.type === "income" ? "+" : movement.type === "expense" ? "-" : "↔"} ${money(movement.amount)}</b>
+        <button class="edit-movement" type="button" data-edit-id="${esc(movement.id)}"><i class="fa-solid fa-pen"></i> Düzelt</button>
+      </div>
     </article>`).join("");
+
+  document.querySelectorAll("[data-edit-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const movement = movements.find((item) => item.id === button.dataset.editId);
+      if (movement) openDialog(movement.type, movement);
+    });
+  });
 }
 
 function accountText(movement) {

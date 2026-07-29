@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=91">
+  <link rel="stylesheet" href="style.css?v=92">
   <link rel="stylesheet" href="../panel-header.css?v=7">
 </head>
 <body>
@@ -90,16 +90,17 @@
   <form id="movementForm" class="dialog-card">
     <div class="dialog-head"><h2 id="dialogTitle">Hareket Ekle</h2><button type="button" id="closeDialog">×</button></div>
     <input type="hidden" id="movementType">
+    <input type="hidden" id="movementId">
     <label>Tutar<input id="amount" type="number" min="0.01" step="0.01" required></label>
     <label id="accountLabel">Hesap<select id="account"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label>
     <label id="fromLabel" hidden>Gönderen hesap<select id="fromAccount"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label>
     <label id="toLabel" hidden>Alan hesap<select id="toAccount"><option value="bank">Banka</option><option value="cash">Nakit Kasa</option><option value="card">Kredi Kartı</option></select></label>
     <label>Kategori<select id="category"><option>Malzeme Alışı</option><option>Kira</option><option>Elektrik</option><option>Su</option><option>İnternet</option><option>Temizlik</option><option>Bakım-Onarım</option><option>İşletme Sahibine Çıkış</option><option>İşletmeye Para Girişi</option><option>Diğer</option></select></label>
     <label>Açıklama<input id="description" maxlength="120" placeholder="İşlemin açıklaması" required></label>
-    <div class="dialog-actions"><button type="button" class="secondary" id="cancelDialog">Vazgeç</button><button>Kaydet</button></div>
+    <div class="dialog-actions"><button type="button" class="secondary" id="cancelDialog">Vazgeç</button><button id="saveMovementButton">Kaydet</button></div>
   </form>
 </dialog>
 <div id="toast"></div>
-<script type="module" src="script.js?v=91"></script>
+<script type="module" src="script.js?v=92"></script>
 </body>
 </html>
