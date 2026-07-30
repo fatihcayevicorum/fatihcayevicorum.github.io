@@ -85,6 +85,38 @@ service cloud.firestore {
       allow read, create, update, delete: if isFatihAdmin();
     }
 
+    match /pushSubscriptions/{tokenId} {
+      allow read, delete: if isFatihAdmin();
+      allow create: if isFatihAdmin() || (request.resource.data.token is string
+        && request.resource.data.token.size() > 20
+        && request.resource.data.audience in ['customer', 'merchant']
+        && (request.resource.data.audience == 'customer'
+          || (isActiveMerchant() && request.resource.data.merchantId == request.auth.uid)));
+      allow update: if isFatihAdmin() || (request.resource.data.token == resource.data.token
+        && request.resource.data.audience == resource.data.audience
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['token', 'audience', 'merchantId', 'enabled', 'platform', 'userAgent', 'updatedAt'])
+        && (resource.data.audience == 'customer'
+          || (isActiveMerchant() && resource.data.merchantId == request.auth.uid)));
+    }
+
+    match /notificationSchedules/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
+    match /notificationSettings/{document} {
+      allow read, write: if isFatihAdmin();
+    }
+
+    match /notificationOutbox/{document} {
+      allow read, create, update, delete: if isFatihAdmin();
+    }
+
+    match /notificationHistory/{document} {
+      allow read: if isFatihAdmin();
+      allow write: if false;
+    }
+
     function isActiveMerchant() {
       return request.auth != null
         && exists(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid))
