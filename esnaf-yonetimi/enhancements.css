@@ -7,3 +7,11 @@
 .merchant-panel-link{display:inline-flex;height:2.55rem;align-items:center;justify-content:center;gap:.42rem;padding:0 .8rem;border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;text-decoration:none;background:rgba(255,255,255,.1);font-size:.68rem;font-weight:700;white-space:nowrap;order:2}.merchant-panel-link i{color:#f2cb65}.merchant-panel-link:active{transform:scale(.97)}
 @media(max-width:760px){.merchant-panel-link{width:2.55rem;padding:0}.merchant-panel-link span{display:none}}
 .summary-dialog{width:min(920px,94vw)}.summary-dialog form{max-width:none}.summary-balance{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;margin:10px 0;background:#fff4e6;border-radius:14px}.summary-balance strong{font-size:1.3rem;color:#7d1b24}.summary-table{max-height:52vh;overflow:auto;border:1px solid #eaded6;border-radius:14px}.summary-table>div{display:grid;grid-template-columns:130px minmax(220px,1fr) 90px 120px;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid #eaded6}.summary-table>div:last-child{border-bottom:0}.summary-table em{font-style:normal;text-align:right}.summary-dialog .actions{flex-wrap:wrap;margin-top:14px}@media(max-width:700px){.summary-table>div{grid-template-columns:1fr auto}.summary-table>div span:nth-child(2){grid-column:1/-1}.summary-table>div em{grid-column:2}.card-actions{flex-wrap:wrap}}
+
+/* R11 - Esnaf kartından manuel çay düşümü */
+.card-actions .deduct-tea{background:#fff2e4;color:#7d1b24;border:1px solid #e9cdb8}
+.card-actions .deduct-tea:hover{background:#fbe4d1}
+.card-actions .deduct-tea:active{transform:translateY(1px) scale(.98)}
+#deductTeaDialog{width:min(460px,92vw)}
+#deductTeaDialog form{max-width:none}
+#deductTeaDialog .deduct-warning{display:inline-block;margin-top:5px;color:#a51622;font-weight:700}
