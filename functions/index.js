@@ -9,9 +9,9 @@ initializeApp();
 const db=getFirestore();
 const INVALID_CODES=["messaging/registration-token-not-registered","messaging/invalid-registration-token"];
 
-async function sendPush({audience,title,body,url,tag,historyId,source="manual"}){
+async function sendPush({audience,category="",title,body,url,tag,historyId,source="manual"}){
   const snap=await db.collection("pushSubscriptions").where("audience","==",audience).where("enabled","==",true).get();
-  const recipients=snap.docs.filter(d=>d.data().token);
+  const recipients=snap.docs.filter(d=>{const data=d.data();if(!data.token)return false;if(audience!=="customer")return true;if(category==="tea")return data.teaUpdates===true;if(category==="campaign")return data.campaigns===true;return false});
   let successCount=0,failureCount=0;
   for(let offset=0;offset<recipients.length;offset+=500){
     const part=recipients.slice(offset,offset+500);
@@ -25,7 +25,7 @@ async function sendPush({audience,title,body,url,tag,historyId,source="manual"})
     response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i].ref)});
     if(invalid.length){const cleanup=db.batch();invalid.forEach(ref=>cleanup.delete(ref));await cleanup.commit()}
   }
-  await db.collection("notificationHistory").doc(historyId||db.collection("_").doc().id).set({audience,title,body,url:url||defaultUrl(audience),source,successCount,failureCount,recipientCount:recipients.length,createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()},{merge:true});
+  await db.collection("notificationHistory").doc(historyId||db.collection("_").doc().id).set({audience,category,title,body,url:url||defaultUrl(audience),source,successCount,failureCount,recipientCount:recipients.length,createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()},{merge:true});
   return{successCount,failureCount,recipientCount:recipients.length};
 }
 function defaultUrl(audience){if(audience==="admin")return"https://fatihcayevicorum.github.io/bildirim-yonetimi/";if(audience==="merchant")return"https://fatihcayevicorum.github.io/esnaf-paneli/";return"https://fatihcayevicorum.github.io/"}
@@ -44,7 +44,7 @@ exports.sendNotificationOutbox=onDocumentCreated({document:"notificationOutbox/{
 
 exports.sendScheduledNotifications=onSchedule({schedule:"every 5 minutes",timeZone:"Europe/Istanbul",region:"europe-west1",retryCount:0},async()=>{
   const now=istanbulParts(),dateKey=`${now.year}-${pad(now.month)}-${pad(now.day)}`,snap=await db.collection("notificationSchedules").where("active","==",true).get();
-  for(const item of snap.docs){const data=item.data(),[h,m]=String(data.time||"").split(":").map(Number);if(!Number.isFinite(h)||!Number.isFinite(m)||data.lastSentDate===dateKey)continue;const due=h*60+m,current=now.hour*60+now.minute;if(current<due||current-due>4)continue;const claimed=await db.runTransaction(async tx=>{const fresh=await tx.get(item.ref);if(fresh.data()?.lastSentDate===dateKey)return false;tx.update(item.ref,{lastSentDate:dateKey,lastSentAt:FieldValue.serverTimestamp()});return true});if(claimed)await sendPush({...data,historyId:`schedule-${item.id}-${dateKey}`,source:"schedule",tag:`fatih-schedule-${item.id}-${dateKey}`})}
+  for(const item of snap.docs){const data=item.data(),[h,m]=String(data.time||"").split(":").map(Number);if(!Number.isFinite(h)||!Number.isFinite(m)||data.lastSentDate===dateKey)continue;const due=h*60+m,current=now.hour*60+now.minute;if(current<due||current-due>4)continue;const claimed=await db.runTransaction(async tx=>{const fresh=await tx.get(item.ref);if(fresh.data()?.lastSentDate===dateKey)return false;tx.update(item.ref,{lastSentDate:dateKey,lastSentAt:FieldValue.serverTimestamp()});return true});if(claimed)await sendPush({...data,category:data.category||"tea",historyId:`schedule-${item.id}-${dateKey}`,source:"schedule",tag:`fatih-schedule-${item.id}-${dateKey}`})}
 });
 
 exports.checkTeaNotifications=onSchedule({schedule:"every 1 minutes",timeZone:"Europe/Istanbul",region:"europe-west1",retryCount:0},async()=>{

@@ -95,7 +95,7 @@ service cloud.firestore {
       allow update: if isFatihAdmin() || (request.resource.data.token == resource.data.token
         && request.resource.data.audience == resource.data.audience
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['token', 'audience', 'merchantId', 'enabled', 'platform', 'userAgent', 'updatedAt'])
+          .hasOnly(['token', 'audience', 'merchantId', 'enabled', 'teaUpdates', 'campaigns', 'platform', 'userAgent', 'updatedAt'])
         && (resource.data.audience == 'customer'
           || (isActiveMerchant() && resource.data.merchantId == request.auth.uid)));
     }
