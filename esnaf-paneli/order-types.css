@@ -1,0 +1,39 @@
+.tea-types{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.tea-types label{margin:0}
+.tea-types input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.tea-types label>span{
+  display:grid;
+  place-items:center;
+  gap:3px;
+  padding:12px 8px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  cursor:pointer;
+  text-align:center;
+}
+.tea-types label>span i{font-size:1.1rem;color:var(--red2)}
+.tea-types label>span small{font-size:.62rem;color:var(--muted);font-weight:500}
+.tea-types input:checked+span{
+  border-color:var(--red);
+  background:#fff1e9;
+  box-shadow:0 0 0 2px #64151d16;
+}
+.tea-types input:checked+span i{color:var(--red)}
+.order-item.is-double{
+  border-color:#d7a85f;
+  background:#fff9ee;
+}
+.order-item.is-double .order-icon{
+  background:#f6dfb8;
+  color:#7d4b00;
+}
+.order-summary strong.insufficient{color:#a1262e}

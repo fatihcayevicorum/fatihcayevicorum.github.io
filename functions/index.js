@@ -14,6 +14,7 @@ const OWNER_UID="obuZLQXuPAWsHE20bZxcAxCNsO02";
 const PANEL_IDS=["tea","pos","menu","stock","credit","merchant","reports","cash","notifications","home"];
 
 function requireOwner(request){if(request.auth?.uid!==OWNER_UID)throw new HttpsError("permission-denied","Bu işlem yalnızca ana yönetici tarafından yapılabilir.")}
+async function requirePanel(request,panel){if(request.auth?.uid===OWNER_UID)return;if(!request.auth?.uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const snap=await db.doc(`staffUsers/${request.auth.uid}`).get(),data=snap.data()||{};if(!snap.exists||data.active!==true||!Array.isArray(data.permissions)||!data.permissions.includes(panel))throw new HttpsError("permission-denied","Bu işlem için panel yetkiniz bulunmuyor.")}
 function normalizePhone(value){let digits=String(value||"").replace(/\D/g,"");if(digits.startsWith("0090"))digits=digits.slice(2);if(digits.length===11&&digits.startsWith("0"))digits=`90${digits.slice(1)}`;if(digits.length===10)digits=`90${digits}`;if(digits.length!==12||!digits.startsWith("90"))throw new HttpsError("invalid-argument","Telefon numarası geçersiz.");return digits}
 function loginEmail(phone){return`p${phone}@login.fatihcayevi.local`}
 function cleanPermissions(value){const permissions=[...new Set(Array.isArray(value)?value:[])].filter(x=>PANEL_IDS.includes(x));if(!permissions.length)throw new HttpsError("invalid-argument","En az bir panel yetkisi seçin.");return permissions}
@@ -35,6 +36,15 @@ exports.deleteStaffUser=onCall({region:"europe-west1",cors:true},async request=>
 });
 exports.configureOwnerLogin=onCall({region:"europe-west1",cors:true},async request=>{
   requireOwner(request);const phone=normalizePhone(request.data?.phone),password=cleanPassword(request.data?.password);try{await getAuth().updateUser(OWNER_UID,{email:loginEmail(phone),password,displayName:"Fatih Ali Altınlı",disabled:false});await db.doc(`staffUsers/${OWNER_UID}`).set({displayName:"Fatih Ali Altınlı",phone,role:"owner",active:true,permissions:PANEL_IDS,updatedAt:FieldValue.serverTimestamp(),updatedBy:OWNER_UID},{merge:true});await auditUserAction("owner-phone-login",OWNER_UID,OWNER_UID,{phone});return{phone}}catch(error){if(error.code==="auth/email-already-exists")throw new HttpsError("already-exists","Bu telefon numarası başka hesapta kayıtlı.");throw new HttpsError("internal",error.message)}
+});
+exports.deleteMerchantUser=onCall({region:"europe-west1",cors:true},async request=>{
+  await requirePanel(request,"merchant");const uid=String(request.data?.uid||"");if(!uid)throw new HttpsError("invalid-argument","Esnaf hesabı geçersiz.");
+  const profileRef=db.doc(`merchantProfiles/${uid}`),profileSnap=await profileRef.get();if(!profileSnap.exists)throw new HttpsError("not-found","Esnaf hesabı bulunamadı.");
+  const profile=profileSnap.data(),balance=Number(profile.balance)||0;if(balance!==0)throw new HttpsError("failed-precondition","Bakiyesi bulunan esnaf silinemez.");
+  const activeOrders=await db.collection("merchantOrders").where("merchantId","==",uid).where("status","in",["pending","preparing","on_the_way"]).limit(1).get();if(!activeOrders.empty)throw new HttpsError("failed-precondition","Açık siparişi bulunan esnaf silinemez.");
+  const writer=db.bulkWriter();for(const collectionName of["merchantOrders","merchantBalanceMovements","pushSubscriptions"]){const field=collectionName==="pushSubscriptions"?"merchantId":"merchantId",snap=await db.collection(collectionName).where(field,"==",uid).get();snap.docs.forEach(item=>writer.delete(item.ref))}writer.delete(profileRef);await writer.close();
+  try{await getAuth().deleteUser(uid)}catch(error){if(error.code!=="auth/user-not-found")throw error}
+  await auditUserAction("delete-merchant",uid,request.auth.uid,{displayName:profile.name||"",businessName:profile.businessName||"",username:profile.username||""});return{uid}
 });
 
 async function sendPush({audience,category="",title,body,url,tag,historyId,source="manual"}){
@@ -60,7 +70,7 @@ function defaultUrl(audience){if(audience==="admin")return"https://fatihcayevico
 
 exports.notifyMerchantOrder=onDocumentCreated({document:"merchantOrders/{orderId}",region:"europe-west1",retry:false},async event=>{
   const order=event.data?.data();if(!order||order.status!=="pending")return;
-  const business=order.businessName||order.merchantName||"Esnaf",quantity=Math.max(0,Number(order.quantity)||0),note=String(order.note||"").trim(),title=`${business} Çay söyledi`,body=`${quantity} Çay${note?` • ${note}`:""}`;
+  const business=order.businessName||order.merchantName||"Esnaf",quantity=Math.max(0,Number(order.quantity)||0),note=String(order.note||"").trim(),teaLabel=order.teaType==="double"?"Duble Çay":"Çay",title=`${business} Çay söyledi`,body=`${quantity} ${teaLabel}${note?` • ${note}`:""}`;
   const snap=await db.collection("adminPushTokens").where("enabled","==",true).get(),recipients=snap.docs.filter(d=>d.data().token);
   for(let offset=0;offset<recipients.length;offset+=500){const part=recipients.slice(offset,offset+500),response=await getMessaging().sendEachForMulticast({tokens:part.map(d=>d.data().token),data:{title,body,orderId:event.params.orderId,audience:"admin",tag:`fatih-esnaf-${event.params.orderId}`,url:"https://fatihcayevicorum.github.io/esnaf-yonetimi/"},webpush:{headers:{Urgency:"high",TTL:"300"}}}),invalid=[];response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i].ref)});if(invalid.length){const cleanup=db.batch();invalid.forEach(ref=>cleanup.delete(ref));await cleanup.commit()}}
 });
