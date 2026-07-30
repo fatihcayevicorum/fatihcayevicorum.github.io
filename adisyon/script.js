@@ -60,12 +60,12 @@ function openDailyStatus(){
   el.dailyPeriod.textContent=`İş günü ${formatDate(businessDate)} • şu ana kadar`;
   el.dailyReport.innerHTML=`
     <div class="report-item"><span>Toplam Satış</span><b>${money(report.salesTotal)}</b></div>
-    <div class="report-item"><span>Kasaya Giren Nakit</span><b>${money(report.cashTotal)}</b></div>
-    <div class="report-item"><span>Banka Havalesi</span><b>${money(report.transferTotal)}</b></div>
+    <div class="report-item cash-total"><span>Kasaya Giren Nakit</span><b>${money(report.cashTotal)}</b></div>
+    <div class="report-item transfer-total"><span>Banka Havalesi</span><b>${money(report.transferTotal)}</b></div>
 
     <div class="report-item"><span>Açık Hesap Bakiyesi</span><b>${money(report.openAccountTotal)}</b></div>
-    <div class="report-item credit-cash"><span>Açık Hesaba Eklenen Nakit</span><b>+${money(report.creditTopupCash)}</b></div>
-    <div class="report-item credit-transfer"><span>Açık Hesaba Gelen Havale</span><b>+${money(report.creditTopupTransfer)}</b></div>
+    <div class="report-item"><span>Açık Hesaba Eklenen Nakit</span><b>+${money(report.creditTopupCash)}</b></div>
+    <div class="report-item"><span>Açık Hesaba Gelen Havale</span><b>+${money(report.creditTopupTransfer)}</b></div>
 
     <div class="report-item"><span>Demlenen Çay</span><b>${report.brewedPotCount} Demlik</b></div>
     <div class="report-item"><span>Bahşiş</span><b>${money(report.tipTotal)}</b></div>
@@ -76,9 +76,9 @@ function openDailyStatus(){
     <div class="report-item"><span>Satılan Ürün</span><b>${report.itemCount}</b></div>
 
     <div class="report-item"><span>İkram Adedi</span><b>${report.giftCount}</b></div>
-    <div class="report-item report-products"><span>Ürünlere göre Adet</span><p>${report.products.map(p=>`${esc(p.name)}: <b>${p.quantity}</b>`).join(' • ')||'Henüz Satış yok.'}</p></div>
-    <div class="report-item merchant-summary"><span>Esnaf Marka Satışı</span><b>${report.merchantMarkaCount} Marka • ${money(report.merchantTopupTotal)}</b></div>
-    <div class="report-item merchant-summary"><span>Esnafa Teslim Çay</span><b>${report.merchantDeliveredTea} Çay</b></div>`;
+    <div class="report-item"><span>Esnaf Marka Satışı</span><b>${report.merchantMarkaCount} Marka • ${money(report.merchantTopupTotal)}</b></div>
+    <div class="report-item"><span>Esnafa Teslim Çay</span><b>${report.merchantDeliveredTea} Çay</b></div>
+    <div class="report-item report-products"><span>Ürünlere göre Adet</span><p>${report.products.map(p=>`${esc(p.name)}: <b>${p.quantity}</b>`).join(' • ')||'Henüz Satış yok.'}</p></div>`;
   el.dailyDialog.showModal()
 }
 async function checkout(e){e.preventDefault();if(busy)return;const paymentType=currentPaymentType(),o=orderFor(selectedKey),account=orderTotal(o),entered=Math.max(0,Number(String(el.paidAmount.value).replace(',','.'))||0),amount=Math.min(entered,account),tipAmount=paymentType==='cash'?Math.max(0,entered-account):0;if(!o||!amount){show('Geçerli bir ödeme tutarı girin.');return}busy=true;try{let fullyPaid=false;await runTransaction(db,async tx=>{const orderRef=doc(ordersCol,o.id),freshSnap=await tx.get(orderRef);if(!freshSnap.exists())throw new Error('missing');const fresh={id:freshSnap.id,...freshSnap.data()},remainingBefore=orderTotal(fresh),paymentAmount=Math.min(amount,remainingBefore),remainingAfter=Math.max(0,remainingBefore-paymentAmount),saleRef=doc(salesCol),payment={id:newId(),type:paymentType,amount:paymentAmount,cashAmount:paymentType==='cash'?entered:0,transferAmount:paymentType==='transfer'?paymentAmount:0,tipAmount,received:entered,paidAtMs:Date.now()};fullyPaid=remainingAfter<.001;if(!fullyPaid){tx.update(orderRef,{payments:[...(fresh.payments||[]),payment],updatedAt:serverTimestamp()});tx.set(saleRef,{recordType:'payment',paymentId:payment.id,orderId:fresh.id,title:fresh.title,slotKey:fresh.slotKey,amount:paymentAmount,cashAmount:paymentType==='cash'?entered:0,transferAmount:paymentType==='transfer'?paymentAmount:0,tipAmount,paymentType,businessDate:fresh.businessDate||businessDate,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});return}const deductions=[];for(const stock of stocks.filter(s=>s.active!==false&&s.automaticDeduction&&s.linkedMenuItemId)){const qty=fresh.items.filter(i=>i.id===stock.linkedMenuItemId).reduce((n,i)=>n+i.quantity,0)*(Number(stock.deductionAmount)||1);if(qty>0){const ref=doc(stockCol,stock.id),snap=await tx.get(ref);deductions.push({ref,snap,stock,qty})}}for(const d of deductions){const current=Number(d.snap.data()?.quantity)||0,next=current-d.qty;tx.update(d.ref,{quantity:next,updatedAt:serverTimestamp()});tx.set(doc(stockMovesCol),{stockItemId:d.stock.id,stockName:d.stock.name,type:'out',amount:d.qty,previousQuantity:current,resultingQuantity:next,unit:d.stock.unit,operationDate:fresh.businessDate||businessDate,note:`Adisyon ${fresh.title}`,source:'pos',saleId:saleRef.id,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})}tx.set(saleRef,{recordType:'sale',orderId:fresh.id,title:fresh.title,slotKey:fresh.slotKey,items:fresh.items,subtotal:fresh.items.reduce((s,i)=>s+i.unitPrice*i.quantity,0),complimentaryTotal:fresh.items.filter(i=>i.complimentary).reduce((s,i)=>s+i.unitPrice*i.quantity,0),baseTotal:billTotal(fresh),paymentAmount,cashAmount:paymentType==='cash'?entered:0,transferAmount:paymentType==='transfer'?paymentAmount:0,tipAmount,paymentType,businessDate:fresh.businessDate||businessDate,closedAt:serverTimestamp(),createdBy:auth.currentUser.uid});tx.delete(orderRef)});el.checkoutDialog.close();if(fullyPaid){showTables();show(tipAmount?`Hesap kapandı. ${money(tipAmount)} bahşiş kaydedildi.`:'Hesap tamamen ödendi ve Adisyon kapandı.')}else{renderOrder();show(`${money(amount)} ödeme alındı. Kalan hesap masada duruyor.`)}}catch(err){console.error(err);show('Ödeme kaydedilemedi. Bağlantıyı kontrol edin.')}finally{busy=false}}
