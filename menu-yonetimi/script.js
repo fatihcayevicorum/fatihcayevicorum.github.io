@@ -99,8 +99,13 @@ async function saveProduct(event) {
 }
 
 function handleCategoryAction(event) {
+    const moveButton = event.target.closest("[data-move-category]");
     const visibilityButton = event.target.closest("[data-toggle-category-visibility]");
     const deleteButton = event.target.closest("[data-delete-category]");
+    if (moveButton && !isBusy) {
+        moveCategory(moveButton.dataset.moveCategory, Number(moveButton.dataset.direction));
+        return;
+    }
     if (visibilityButton && !isBusy) {
         const categoryId = visibilityButton.dataset.toggleCategoryVisibility;
         const categories = catalog.categories.map((category) => category.id === categoryId ? { ...category, customerVisible: !category.customerVisible } : category);
@@ -112,6 +117,18 @@ function handleCategoryAction(event) {
     if (catalog.items.some((item) => item.categoryId === categoryId)) { showToast("Bu kategoride Ürün var. Önce Ürünleri silin veya taşıyın."); return; }
     if (!window.confirm("Kategori silinsin mi?")) return;
     persistCatalog({ ...catalog, categories: catalog.categories.filter((category) => category.id !== categoryId) }, "Kategori silindi.");
+}
+
+
+async function moveCategory(categoryId, direction) {
+    if (![-1, 1].includes(direction) || isBusy) return;
+    const ordered = [...catalog.categories].sort((a, b) => (a.order || 0) - (b.order || 0) || a.name.localeCompare(b.name, "tr"));
+    const currentIndex = ordered.findIndex((category) => category.id === categoryId);
+    const targetIndex = currentIndex + direction;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= ordered.length) return;
+    [ordered[currentIndex], ordered[targetIndex]] = [ordered[targetIndex], ordered[currentIndex]];
+    const categories = ordered.map((category, index) => ({ ...category, order: (index + 1) * 10 }));
+    await persistCatalog({ ...catalog, categories }, "Kategori sırası güncellendi.");
 }
 
 function handleProductAction(event) {
@@ -152,7 +169,7 @@ async function persistCatalog(nextCatalog, successMessage) {
 function render() {
     elements.categoryCount.textContent = String(catalog.categories.length); elements.productCount.textContent = String(catalog.items.length); elements.availableCount.textContent = String(catalog.items.filter((item) => item.available).length);
     elements.categoryEmpty.hidden = catalog.categories.length > 0; elements.productEmpty.hidden = catalog.items.length > 0;
-    elements.categoryList.innerHTML = catalog.categories.map((category) => `<article class="category-item"><div class="category-copy"><strong>${escapeHtml(category.name)}</strong><span>Sıra: ${category.order} • ${catalog.items.filter((item) => item.categoryId === category.id).length} Ürün</span><em class="visibility-badge ${category.customerVisible ? "" : "is-hidden"}"><i class="fa-solid ${category.customerVisible ? "fa-eye" : "fa-eye-slash"}"></i> ${category.customerVisible ? "Müşteri menüsünde görünür" : "Gizli kategori • Yalnız adisyonda"}</em></div><div class="item-actions"><button class="icon-button" type="button" data-toggle-category-visibility="${escapeHtml(category.id)}" aria-label="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}" title="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}"><i class="fa-solid ${category.customerVisible ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i></button><button class="icon-button is-danger" type="button" data-delete-category="${escapeHtml(category.id)}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`).join("");
+    elements.categoryList.innerHTML = catalog.categories.map((category, index) => `<article class="category-item"><div class="category-copy"><strong>${escapeHtml(category.name)}</strong><span>Sıra: ${index + 1} • ${catalog.items.filter((item) => item.categoryId === category.id).length} Ürün</span><em class="visibility-badge ${category.customerVisible ? "" : "is-hidden"}"><i class="fa-solid ${category.customerVisible ? "fa-eye" : "fa-eye-slash"}"></i> ${category.customerVisible ? "Müşteri menüsünde görünür" : "Gizli kategori • Yalnız adisyonda"}</em></div><div class="item-actions"><button class="icon-button" type="button" data-move-category="${escapeHtml(category.id)}" data-direction="-1" aria-label="Kategoriyi yukarı taşı" title="Yukarı taşı" ${index === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button><button class="icon-button" type="button" data-move-category="${escapeHtml(category.id)}" data-direction="1" aria-label="Kategoriyi aşağı taşı" title="Aşağı taşı" ${index === catalog.categories.length - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button><button class="icon-button" type="button" data-toggle-category-visibility="${escapeHtml(category.id)}" aria-label="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}" title="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}"><i class="fa-solid ${category.customerVisible ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i></button><button class="icon-button is-danger" type="button" data-delete-category="${escapeHtml(category.id)}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`).join("");
     const previousCategory = elements.productCategory.value;
     elements.productCategory.innerHTML = catalog.categories.length ? '<option value="">Kategori seçin</option>' + catalog.categories.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("") : '<option value="">Önce kategori ekleyin</option>';
     if (catalog.categories.some((category) => category.id === previousCategory)) elements.productCategory.value = previousCategory;
