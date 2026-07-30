@@ -42,6 +42,5 @@ export function phoneLoginEmail(value){
   return phone?`p${phone}@login.fatihcayevi.local`:"";
 }
 export function firstAllowedPath(profile){
-  if(profile?.role==="owner")return"taze-dem-paneli/";
-  return PANEL_DEFINITIONS.find(x=>profile?.permissions?.includes(x.id))?.path||"";
+  return profile?"yonetim-merkezi/":"";
 }

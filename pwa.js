@@ -1,5 +1,5 @@
 const base=new URL("./",import.meta.url),path=location.pathname;
-const adminPaths=["yonetici-giris","taze-dem-paneli","menu-yonetimi","stok-yonetimi","acik-hesap","adisyon","esnaf-yonetimi","raporlar","ana-sayfa-yonetimi","veri-yonetimi","kasa-hesap-yonetimi","bildirim-yonetimi","kullanici-yonetimi"];
+const adminPaths=["yonetici-giris","yonetim-merkezi","taze-dem-paneli","menu-yonetimi","stok-yonetimi","acik-hesap","adisyon","esnaf-yonetimi","raporlar","ana-sayfa-yonetimi","veri-yonetimi","kasa-hesap-yonetimi","bildirim-yonetimi","kullanici-yonetimi"];
 const esnafPath=path.includes("/esnaf-giris")||path.includes("/esnaf-paneli/");
 const manifest=esnafPath?"esnaf-manifest.webmanifest":adminPaths.some(x=>path.includes(x))?"admin-manifest.webmanifest":"manifest.webmanifest";
 installHead(manifest);

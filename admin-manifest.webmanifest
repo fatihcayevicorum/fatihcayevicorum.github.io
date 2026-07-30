@@ -5,7 +5,7 @@
   "description": "Fatih Çay Evi yönetim, Taze Dem, Adisyon, stok ve rapor sistemi.",
   "lang": "tr",
   "dir": "ltr",
-  "start_url": "./taze-dem-paneli/?source=pwa",
+  "start_url": "./yonetim-merkezi/?source=pwa",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
@@ -19,6 +19,7 @@
     {"src": "pwa-icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ],
   "shortcuts": [
+    {"name": "Yönetim Merkezi", "short_name": "Yönetim", "url": "./yonetim-merkezi/", "icons": [{"src": "pwa-icons/icon-192.png", "sizes": "192x192"}]},
     {"name": "Taze Dem", "short_name": "Taze Dem", "url": "./taze-dem-paneli/", "icons": [{"src": "pwa-icons/icon-192.png", "sizes": "192x192"}]},
     {"name": "Adisyon", "short_name": "Adisyon", "url": "./adisyon/", "icons": [{"src": "pwa-icons/icon-192.png", "sizes": "192x192"}]},
     {"name": "Veri ve Yedekleme", "short_name": "Yedekleme", "url": "./veri-yonetimi/", "icons": [{"src": "pwa-icons/icon-192.png", "sizes": "192x192"}]}

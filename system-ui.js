@@ -9,22 +9,28 @@ ensureFooter();
 installGlobalInteractionStyle();
 const panelMenu=document.querySelector(".panel-menu-list");
 if(panelMenu){
-  addPanelLink("veri-yonetimi","fa-database","Veri ve Yedekleme");
-  addPanelLink("ana-sayfa-yonetimi","fa-house","Ana Sayfa Yönetimi");
-  addPanelLink("bildirim-yonetimi","fa-bell","Bildirim Yönetimi");
-  addPanelLink("kullanici-yonetimi","fa-users-gear","Kullanıcı Yönetimi");
+  installManagementCenterLink();
   onAuthStateChanged(auth,async user=>{
     if(!user)return;
     const profile=await getManagementProfile(user,db).catch(()=>null);
     if(profile){
       renderWelcome(profile);
-      filterPanelMenu(profile,user);
     }
   });
 }
 const panelBrand=document.querySelector(".app-header .brand");if(panelBrand){panelBrand.classList.add("brand-home-link");panelBrand.tabIndex=0;panelBrand.setAttribute("role","link");panelBrand.setAttribute("title","Taze Dem paneline git");const goTea=()=>location.href=new URL("./taze-dem-paneli/",import.meta.url).href;panelBrand.addEventListener("click",goTea);panelBrand.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();goTea()}});const brandStyle=document.createElement("style");brandStyle.textContent=".brand-home-link{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}.brand-home-link,.brand-home-link:active,.brand-home-link:focus{outline:none!important;filter:none!important;box-shadow:none!important}.brand-home-link .brand-logo,.brand-home-link:active .brand-logo{transform:none!important;filter:none!important;box-shadow:none!important}";document.head.append(brandStyle)}
 onSnapshot(doc(db,"publicSite","config"),snapshot=>{const data=snapshot.data()||{};if(data.logoUrl)document.querySelectorAll("img.logo,img.brand-logo,.login-card img,.brand img").forEach(img=>{img.src=data.logoUrl});});
-function addPanelLink(folder,icon,label){const current=location.pathname.includes(`/${folder}/`),exists=panelMenu.querySelector(`[href*="${folder}"]`)||(current&&panelMenu.querySelector('a[href="./"]'));if(!exists)panelMenu.insertAdjacentHTML("beforeend",`<a href="../${folder}/"><i class="fa-solid ${icon}"></i>${label}</a>`)}
+function installManagementCenterLink(){
+  const details=panelMenu.closest(".panel-menu");
+  if(!details)return;
+  const link=document.createElement("a");
+  link.className="management-center-link";
+  link.href=new URL("./yonetim-merkezi/",import.meta.url).href;
+  link.title="Yönetim Merkezi";
+  link.setAttribute("aria-label","Yönetim Merkezine git");
+  link.innerHTML='<i class="fa-solid fa-grip" aria-hidden="true"></i><span>Yönetim Merkezi</span>';
+  details.replaceWith(link);
+}
 function renderWelcome(profile){
   const brandCopy=document.querySelector(".app-header .brand-copy");
   if(!brandCopy||brandCopy.querySelector(".user-welcome"))return;
@@ -36,7 +42,6 @@ function renderWelcome(profile){
   style.textContent=".brand-copy .user-welcome{margin:.08rem 0 0;color:#fff;font-size:.64rem;font-weight:600;line-height:1.25;white-space:nowrap;max-width:15rem;overflow:hidden;text-overflow:ellipsis}@media(min-width:700px){.brand-copy .user-welcome{margin-top:.12rem;max-width:18rem;font-size:.76rem}}@media(max-width:430px){.brand-copy .user-welcome{max-width:8.5rem;font-size:.55rem}}";
   document.head.append(style);
 }
-function filterPanelMenu(profile,user){const owner=isOwner(user),folderPermission={"taze-dem-paneli":"tea","adisyon":"pos","menu-yonetimi":"menu","stok-yonetimi":"stock","acik-hesap":"credit","esnaf-yonetimi":"merchant","raporlar":"reports","kasa-hesap-yonetimi":"cash","bildirim-yonetimi":"notifications","ana-sayfa-yonetimi":"home"};panelMenu.querySelectorAll("a").forEach(link=>{const url=new URL(link.getAttribute("href")||"",location.href),folder=url.pathname.split("/").filter(Boolean).at(-1)||"";if(["veri-yonetimi","kullanici-yonetimi"].includes(folder)){link.hidden=!owner;return}const permission=folderPermission[folder];if(permission)link.hidden=!owner&&!profile.permissions.includes(permission)})}
 function ensureFooter(){let footer=document.querySelector("footer");if(!footer){footer=document.createElement("footer");document.body.append(footer)}footer.classList.add("system-footer");footer.innerHTML="<p>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</p>";const style=document.createElement("style");style.textContent=".system-footer{width:100%;margin:28px 0 0!important;padding:20px 12px!important;text-align:center!important;background:transparent!important;color:#776b67!important;font:500 .72rem Poppins,Arial,sans-serif!important;border:0!important}.system-footer p{margin:0!important}";document.head.append(style)}
 
 function installGlobalInteractionStyle(){
