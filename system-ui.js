@@ -33,7 +33,7 @@ function renderWelcome(profile){
   welcome.textContent=`Hoş geldin, ${profile.displayName||"Kullanıcı"}`;
   brandCopy.querySelector(".eyebrow")?.insertAdjacentElement("afterend",welcome);
   const style=document.createElement("style");
-  style.textContent=".brand-copy .user-welcome{margin:.08rem 0 0;color:#fff;font-size:.64rem;font-weight:600;line-height:1.25;white-space:nowrap;max-width:15rem;overflow:hidden;text-overflow:ellipsis}@media(max-width:430px){.brand-copy .user-welcome{max-width:8.5rem;font-size:.55rem}}";
+  style.textContent=".brand-copy .user-welcome{margin:.08rem 0 0;color:#fff;font-size:.64rem;font-weight:600;line-height:1.25;white-space:nowrap;max-width:15rem;overflow:hidden;text-overflow:ellipsis}@media(min-width:700px){.brand-copy .user-welcome{margin-top:.12rem;max-width:18rem;font-size:.76rem}}@media(max-width:430px){.brand-copy .user-welcome{max-width:8.5rem;font-size:.55rem}}";
   document.head.append(style);
 }
 function filterPanelMenu(profile,user){const owner=isOwner(user),folderPermission={"taze-dem-paneli":"tea","adisyon":"pos","menu-yonetimi":"menu","stok-yonetimi":"stock","acik-hesap":"credit","esnaf-yonetimi":"merchant","raporlar":"reports","kasa-hesap-yonetimi":"cash","bildirim-yonetimi":"notifications","ana-sayfa-yonetimi":"home"};panelMenu.querySelectorAll("a").forEach(link=>{const url=new URL(link.getAttribute("href")||"",location.href),folder=url.pathname.split("/").filter(Boolean).at(-1)||"";if(["veri-yonetimi","kullanici-yonetimi"].includes(folder)){link.hidden=!owner;return}const permission=folderPermission[folder];if(permission)link.hidden=!owner&&!profile.permissions.includes(permission)})}
