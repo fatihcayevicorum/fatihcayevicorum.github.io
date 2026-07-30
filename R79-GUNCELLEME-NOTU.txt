@@ -1,7 +1,0 @@
-R79 DÜZELTMELERİ
-
-1. Dahili Tüketim artık adisyon benzeri tam ekran mini POS olarak açılır.
-2. Kategori ve ürün kartlarından birden fazla ürün eklenebilir.
-3. Adetler artırılıp azaltılabilir ve tümü tek işlemde stoktan düşürülür.
-4. Kasa ve Hesap Yönetimi her açılışta kasa şifresi ister.
-5. Sayfa arka plana alındığında veya geri getirildiğinde kasa yeniden kilitlenir.
