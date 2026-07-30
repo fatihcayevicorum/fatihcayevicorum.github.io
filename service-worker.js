@@ -6,17 +6,18 @@ backgroundMessaging.onBackgroundMessage(payload=>{
   const data=payload.data||{},title=data.title||"Fatih Çay Evi";
   return self.registration.showNotification(title,{body:data.body||"Yeni bir bildiriminiz var.",icon:"./pwa-icons/icon-192.png",badge:"./pwa-icons/icon-192.png",tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
 });
-const VERSION="fatih-cay-evi-r83",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r84",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./logo.png","./style.css","./home-dynamic.css",
   "./menu.html","./menu.css","./yonetici-giris.html","./yonetici-giris.css",
-  "./firebase-config.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
+  "./firebase-config.js","./admin-access.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
   "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js",
   "./stok-yonetimi/index.html","./stok-yonetimi/style.css","./stok-yonetimi/script.js",
   "./acik-hesap/index.html","./acik-hesap/style.css","./acik-hesap/script.js",
   "./raporlar/index.html","./raporlar/style.css","./raporlar/script.js",
   "./veri-yonetimi/index.html","./veri-yonetimi/style.css","./veri-yonetimi/script.js",
+  "./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
   "./panel-header.css","./panel-scroll.css","./system-ui.js","./pwa.js","./merchant-order-alert.js",
   "./customer-notifications.js","./customer-notifications.css","./merchant-notifications.js","./merchant-notifications.css",
   "./bildirim-yonetimi/","./bildirim-yonetimi/index.html","./bildirim-yonetimi/style.css","./bildirim-yonetimi/script.js",

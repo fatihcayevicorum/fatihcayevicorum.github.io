@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, doc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
+import { firebaseConfig } from "../firebase-config.js";
+import { hasPanelAccess } from "../admin-access.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const customersCol=collection(db,"adminCreditCustomers"),movesCol=collection(db,"adminCreditMovements"),salesCol=collection(db,"adminSales");
@@ -12,7 +13,7 @@ let customers=[],movements=[],pendingMovement=null,pendingResetId="",pendingDele
 el.customerForm.onsubmit=saveCustomer;el.cancelEditButton.onclick=resetForm;el.customerList.onclick=customerAction;el.customerFilter.onchange=renderCustomers;el.customerSearch.oninput=renderCustomers;el.movementForm.onsubmit=prepareMovement;el.movementForm.oninput=updatePreview;el.closeMovementDialog.onclick=closeMovement;el.cancelMovementButton.onclick=closeMovement;el.topupForm.onsubmit=saveTopup;el.topupForm.oninput=updateTopupPreview;el.closeTopupDialog.onclick=closeTopup;el.cancelTopupButton.onclick=closeTopup;el.confirmLimitButton.onclick=()=>pendingMovement&&executeMovement(pendingMovement);el.confirmResetButton.onclick=resetAccount;el.confirmDeleteCustomerButton.onclick=deleteCustomer;el.closeSummaryDialog.onclick=()=>el.summaryDialog.close();el.shareSummaryButton.onclick=shareSummary;el.pdfSummaryButton.onclick=printSummary;el.logoutButton.onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 document.addEventListener("click",e=>{const menu=document.querySelector(".panel-menu");if(menu?.open&&!menu.contains(e.target))menu.removeAttribute("open")});
 updateClock();setInterval(updateClock,1000);
-onAuthStateChanged(auth,async user=>{if(!user||user.uid!==ADMIN_UID){if(user)await signOut(auth);location.replace("../yonetici-giris.html?next=acik-hesap/");return}subscribe()});
+onAuthStateChanged(auth,async user=>{if(!user){location.replace("../yonetici-giris.html?next=acik-hesap/");return}if(!await hasPanelAccess(user,db,"credit")){location.replace("../yonetici-giris.html");return}subscribe()});
 
 function subscribe(){
   onSnapshot(customersCol,s=>{customers=s.docs.map(d=>normalizeCustomer(d.id,d.data()));connection(true);renderAll()},connectionError);

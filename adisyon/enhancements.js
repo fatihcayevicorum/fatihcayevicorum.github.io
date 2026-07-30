@@ -1,7 +1,7 @@
 import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, doc, getFirestore, onSnapshot } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { ADMIN_UID } from "../firebase-config.js";
+import { hasPanelAccess } from "../admin-access.js";
 
 const app = getApp();
 const auth = getAuth(app);
@@ -12,8 +12,8 @@ let catalog = { categories: [], items: [] };
 let businessDate = "";
 let businessDayStartedAtMs = 0;
 
-onAuthStateChanged(auth, (user) => {
-    if (user?.uid !== ADMIN_UID) return;
+onAuthStateChanged(auth, async (user) => {
+    if (!await hasPanelAccess(user, db, "pos")) return;
     onSnapshot(collection(db, "adminSales"), (snapshot) => {
         sales = snapshot.docs.map((entry) => entry.data());
     });

@@ -1,12 +1,13 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{addDoc,collection,deleteDoc,doc,getFirestore,limit,onSnapshot,orderBy,query,serverTimestamp,setDoc,updateDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
+import{firebaseConfig}from"../firebase-config.js";
+import{hasPanelAccess}from"../admin-access.js";
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let schedules=[],toastTimer;
 document.querySelectorAll("[data-tab]").forEach(button=>button.onclick=()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===button));document.querySelectorAll("[data-panel]").forEach(x=>x.classList.toggle("active",x.dataset.panel===button.dataset.tab))});
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
-onAuthStateChanged(auth,async user=>{if(!user||user.uid!==ADMIN_UID){if(user)await signOut(auth);location.replace("../yonetici-giris.html?next=bildirim-yonetimi/");return}subscribe()});
+onAuthStateChanged(auth,async user=>{if(!user){location.replace("../yonetici-giris.html?next=bildirim-yonetimi/");return}if(!await hasPanelAccess(user,db,"notifications")){location.replace("../yonetici-giris.html");return}subscribe()});
 function subscribe(){
   onSnapshot(collection(db,"pushSubscriptions"),snap=>{const counts={customer:0,admin:0,merchant:0},customerPrefs={tea:0,campaign:0};snap.forEach(d=>{const x=d.data();if(x.enabled!==false&&counts[x.audience]!==undefined){counts[x.audience]++;if(x.audience==="customer"){if(x.teaUpdates===true)customerPrefs.tea++;if(x.campaigns===true)customerPrefs.campaign++}}});$("customerCount").textContent=counts.customer;$("customerCount").title=`Taze Dem: ${customerPrefs.tea} • Kampanya: ${customerPrefs.campaign}`;$("adminCount").textContent=counts.admin;$("merchantCount").textContent=counts.merchant});
   onSnapshot(query(collection(db,"notificationSchedules"),orderBy("time"),limit(30)),snap=>{schedules=snap.docs.map(d=>({id:d.id,...d.data()}));renderSchedules()});

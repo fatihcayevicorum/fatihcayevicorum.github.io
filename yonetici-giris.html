@@ -24,15 +24,16 @@
 
             <p class="eyebrow">Fatih Çay Evi</p>
             <h1 id="loginTitle">Yönetici Girişi</h1>
-            <p class="login-intro">Taze Dem ve Menü yönetim panellerine giriş yapın.</p>
+            <p class="login-intro">Telefon numaranız ve şifrenizle yönetim sistemine giriş yapın.</p>
 
             <form id="loginForm">
-                <label class="field-label" for="email">E-posta adresi</label>
+                <label class="field-label" for="login">Telefon numarası</label>
                 <div class="input-wrap">
-                    <i class="fa-regular fa-envelope" aria-hidden="true"></i>
-                    <input id="email" name="email" type="email" autocomplete="username" required
-                        placeholder="ornek@email.com">
+                    <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+                    <input id="login" name="login" type="text" inputmode="tel" autocomplete="username" required
+                        placeholder="05XX XXX XX XX">
                 </div>
+                <small>İlk telefon ayarını yapmadıysanız mevcut yönetici e-postanızla da giriş yapabilirsiniz.</small>
 
                 <label class="field-label" for="password">Şifre</label>
                 <div class="input-wrap">
@@ -67,8 +68,8 @@
 
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
 
-    <script type="module" src="yonetici-giris.js?v=3"></script>
-    <script type="module" src="system-ui.js?v=10"></script>
+    <script type="module" src="yonetici-giris.js?v=5"></script>
+    <script type="module" src="system-ui.js?v=13"></script>
 </body>
 
 </html>

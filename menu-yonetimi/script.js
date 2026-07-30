@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { doc, getFirestore, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
+import { firebaseConfig } from "../firebase-config.js";
+import { hasPanelAccess } from "../admin-access.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -32,9 +33,12 @@ updateClock();
 window.setInterval(updateClock, 1000);
 
 onAuthStateChanged(auth, async (user) => {
-    if (!user || user.uid !== ADMIN_UID) {
-        if (user) await signOut(auth);
+    if (!user) {
         window.location.replace("../yonetici-giris.html?next=menu-yonetimi/");
+        return;
+    }
+    if (!await hasPanelAccess(user, database, "menu")) {
+        window.location.replace("../yonetici-giris.html");
         return;
     }
     subscribeCatalog();

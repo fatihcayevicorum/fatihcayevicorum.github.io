@@ -2,7 +2,8 @@ import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.1
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,deleteDoc,doc,getFirestore,onSnapshot,query,serverTimestamp,setDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{deleteToken,getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
-import{ADMIN_UID,FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
+import{FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
+import{hasPanelAccess}from"./admin-access.js";
 
 const app=getApps().find(item=>item.name==="[DEFAULT]")||(getApps().length?getApp():initializeApp(firebaseConfig));
 const auth=getAuth(app),db=getFirestore(app);
@@ -18,8 +19,8 @@ document.addEventListener("pointerdown",unlockSound,{once:true});
 buildAlertUi();
 loadCustomBell();
 
-onAuthStateChanged(auth,user=>{
-  if(!user||user.uid!==ADMIN_UID){setAlertStatus("Yönetici oturumu bekleniyor.");return}
+onAuthStateChanged(auth,async user=>{
+  if(!await hasPanelAccess(user,db,"merchant")){setAlertStatus("Esnaf paneli yetkisi bekleniyor.");return}
   if(notificationsEnabled()&&Notification.permission==="granted")registerPushToken().catch(console.error);
   setAlertStatus("Sipariş bağlantısı kuruluyor…");
   onSnapshot(collection(db,"merchantOrders"),snapshot=>{

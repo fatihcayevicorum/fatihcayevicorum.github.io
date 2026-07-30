@@ -1,7 +1,8 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
+import{firebaseConfig}from"../firebase-config.js";
+import{hasPanelAccess}from"../admin-access.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const salesCol=collection(db,"adminSales"),closingsCol=collection(db,"adminDailyClosings"),stocksCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),menuRef=doc(db,"publicMenu","catalog"),settingsRef=doc(db,"adminAppSettings","pos");
@@ -24,7 +25,7 @@ el.logoutButton.onclick=async()=>{await signOut(auth);location.replace("../yonet
 document.addEventListener("click",e=>{const menu=document.querySelector(".panel-menu");if(menu?.open&&!menu.contains(e.target))menu.removeAttribute("open")});
 updateClock();setInterval(updateClock,1000);el.startDate.value=range.start;el.endDate.value=range.end;
 
-onAuthStateChanged(auth,async user=>{if(!user||user.uid!==ADMIN_UID){if(user)await signOut(auth);location.replace("../yonetici-giris.html?next=raporlar/");return}subscribe()});
+onAuthStateChanged(auth,async user=>{if(!user){location.replace("../yonetici-giris.html?next=raporlar/");return}if(!await hasPanelAccess(user,db,"reports")){location.replace("../yonetici-giris.html");return}subscribe()});
 function subscribe(){
   onSnapshot(salesCol,s=>{sales=s.docs.map(d=>({id:d.id,...d.data()}));ready()},fail);
   onSnapshot(closingsCol,s=>{closings=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(b.businessDate||b.id).localeCompare(String(a.businessDate||a.id)));ready()},fail);

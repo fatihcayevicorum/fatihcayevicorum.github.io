@@ -11,7 +11,8 @@ import {
     runTransaction,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
+import { firebaseConfig } from "../firebase-config.js";
+import { hasPanelAccess } from "../admin-access.js";
 
 const MAX_ACTIVE_BREWS = 3;
 const BREWING_DURATION_MS = 20 * 60 * 1000;
@@ -70,8 +71,11 @@ elements.logoutButton.addEventListener("click", async () => {
 });
 
 onAuthStateChanged(auth, async (user) => {
-    if (!user || user.uid !== ADMIN_UID) {
-        if (user) await signOut(auth);
+    if (!user) {
+        window.location.replace("../yonetici-giris.html");
+        return;
+    }
+    if (!await hasPanelAccess(user, database, "tea")) {
         window.location.replace("../yonetici-giris.html");
         return;
     }

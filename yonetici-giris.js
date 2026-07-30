@@ -1,110 +1,12 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import {
-    browserLocalPersistence,
-    browserSessionPersistence,
-    getAuth,
-    onAuthStateChanged,
-    setPersistence,
-    signInWithEmailAndPassword,
-    signOut
-} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { ADMIN_UID, firebaseConfig } from "./firebase-config.js";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-const form = document.getElementById("loginForm");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const rememberInput = document.getElementById("rememberMe");
-const loginButton = document.getElementById("loginButton");
-const formMessage = document.getElementById("formMessage");
-const passwordToggle = document.getElementById("passwordToggle");
-const nextPage = getSafeNextPage();
-
-onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
-
-    if (user.uid === ADMIN_UID) {
-        window.location.replace(nextPage);
-        return;
-    }
-
-    await signOut(auth);
-    showError("Bu hesabın yönetici paneline erişim yetkisi yok.");
-});
-
-form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    setLoading(true);
-    formMessage.textContent = "";
-
-    try {
-        const persistence = rememberInput.checked
-            ? browserLocalPersistence
-            : browserSessionPersistence;
-
-        await setPersistence(auth, persistence);
-        const credential = await signInWithEmailAndPassword(
-            auth,
-            emailInput.value.trim(),
-            passwordInput.value
-        );
-
-        if (credential.user.uid !== ADMIN_UID) {
-            await signOut(auth);
-            throw new Error("auth/not-admin");
-        }
-
-        window.location.replace(nextPage);
-    } catch (error) {
-        showError(getLoginErrorMessage(error));
-        setLoading(false);
-    }
-});
-
-passwordToggle.addEventListener("click", () => {
-    const shouldShow = passwordInput.type === "password";
-    passwordInput.type = shouldShow ? "text" : "password";
-    passwordToggle.setAttribute("aria-label", shouldShow ? "Şifreyi gizle" : "Şifreyi göster");
-    passwordToggle.innerHTML = shouldShow
-        ? '<i class="fa-regular fa-eye-slash" aria-hidden="true"></i>'
-        : '<i class="fa-regular fa-eye" aria-hidden="true"></i>';
-});
-
-function setLoading(isLoading) {
-    loginButton.disabled = isLoading;
-    loginButton.querySelector("span").textContent = isLoading ? "Giriş yapılıyor..." : "Giriş Yap";
-}
-
-function showError(message) {
-    formMessage.textContent = message;
-}
-
-function getLoginErrorMessage(error) {
-    if (error?.message === "auth/not-admin") {
-        return "Bu hesabın yönetici yetkisi yok.";
-    }
-
-    switch (error?.code) {
-        case "auth/invalid-credential":
-        case "auth/invalid-login-credentials":
-        case "auth/user-not-found":
-        case "auth/wrong-password":
-            return "E-posta adresi veya şifre hatalı.";
-        case "auth/too-many-requests":
-            return "Çok fazla hatalı deneme yapıldı. Bir süre sonra tekrar deneyin.";
-        case "auth/network-request-failed":
-            return "İnternet bağlantısı kurulamadı.";
-        case "auth/unauthorized-domain":
-            return "Bu alan adı Firebase'de yetkilendirilmemiş.";
-        default:
-            return "Giriş yapılamadı. Bilgilerinizi kontrol edip tekrar deneyin.";
-    }
-}
-
-function getSafeNextPage() {
-    const requestedPage = new URLSearchParams(window.location.search).get("next");
-    const allowedPages = new Set(["taze-dem-paneli/", "menu-yonetimi/", "stok-yonetimi/", "acik-hesap/", "adisyon/", "esnaf-yonetimi/", "ana-sayfa-yonetimi/", "raporlar/", "bildirim-yonetimi/"]);
-    return allowedPages.has(requestedPage) ? requestedPage : "taze-dem-paneli/";
-}
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import{browserLocalPersistence,browserSessionPersistence,getAuth,onAuthStateChanged,setPersistence,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import{getFirestore}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{firebaseConfig}from"./firebase-config.js";
+import{PANEL_DEFINITIONS,firstAllowedPath,getManagementProfile,phoneLoginEmail}from"./admin-access.js";
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),form=document.getElementById("loginForm"),loginInput=document.getElementById("login"),passwordInput=document.getElementById("password"),rememberInput=document.getElementById("rememberMe"),loginButton=document.getElementById("loginButton"),formMessage=document.getElementById("formMessage"),passwordToggle=document.getElementById("passwordToggle");
+let submitting=false;
+onAuthStateChanged(auth,async user=>{if(!user||submitting)return;const profile=await getManagementProfile(user,db).catch(()=>null);if(!profile){await signOut(auth);showError("Bu hesabın yönetim sistemine erişim yetkisi yok.");return}goToAllowedPage(profile)});
+form.addEventListener("submit",async event=>{event.preventDefault();setLoading(true);formMessage.textContent="";submitting=true;try{await setPersistence(auth,rememberInput.checked?browserLocalPersistence:browserSessionPersistence);const raw=loginInput.value.trim(),email=raw.includes("@")?raw:phoneLoginEmail(raw);if(!email)throw Error("invalid-phone");const credential=await signInWithEmailAndPassword(auth,email,passwordInput.value),profile=await getManagementProfile(credential.user,db);if(!profile)throw Error("not-authorized");goToAllowedPage(profile)}catch(error){console.error(error);if(auth.currentUser&&["not-authorized","no-panel"].includes(error.message))await signOut(auth);showError(loginError(error));setLoading(false)}finally{submitting=false}});
+passwordToggle.addEventListener("click",()=>{const show=passwordInput.type==="password";passwordInput.type=show?"text":"password";passwordToggle.setAttribute("aria-label",show?"Şifreyi gizle":"Şifreyi göster");passwordToggle.innerHTML=show?'<i class="fa-regular fa-eye-slash"></i>':'<i class="fa-regular fa-eye"></i>'});
+function goToAllowedPage(profile){const requested=new URLSearchParams(location.search).get("next"),definition=PANEL_DEFINITIONS.find(x=>x.path===requested),ownerPage=["kullanici-yonetimi/","veri-yonetimi/"].includes(requested),allowed=profile.role==="owner"&&(ownerPage||Boolean(requested))||definition&&profile.permissions.includes(definition.id);const target=allowed&&requested?requested:firstAllowedPath(profile);if(!target)throw Error("no-panel");location.replace(target)}
+function setLoading(value){loginButton.disabled=value;loginButton.querySelector("span").textContent=value?"Giriş yapılıyor...":"Giriş Yap"}function showError(value){formMessage.textContent=value}function loginError(error){if(error.message==="invalid-phone")return"Geçerli bir telefon numarası girin.";if(error.message==="not-authorized")return"Bu kullanıcı pasif veya yönetim yetkisi bulunmuyor.";if(error.message==="no-panel")return"Bu kullanıcıya henüz panel yetkisi verilmemiş.";switch(error.code){case"auth/invalid-credential":case"auth/invalid-login-credentials":case"auth/user-not-found":case"auth/wrong-password":return"Telefon numarası veya şifre hatalı.";case"auth/user-disabled":return"Bu kullanıcı hesabı pasif durumda.";case"auth/too-many-requests":return"Çok fazla hatalı deneme yapıldı. Bir süre sonra tekrar deneyin.";case"auth/network-request-failed":return"İnternet bağlantısı kurulamadı.";default:return"Giriş yapılamadı. Bilgilerinizi kontrol edin."}}

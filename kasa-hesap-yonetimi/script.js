@@ -4,7 +4,8 @@ import {
   collection, doc, getDoc, getFirestore, onSnapshot,
   serverTimestamp, setDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { ADMIN_UID, firebaseConfig } from "../firebase-config.js";
+import { firebaseConfig } from "../firebase-config.js";
+import { hasPanelAccess } from "../admin-access.js";
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
@@ -79,9 +80,12 @@ function resetTimer() {
 showLock();
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user || user.uid !== ADMIN_UID) {
-    if (user) await signOut(auth);
+  if (!user) {
     location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");
+    return;
+  }
+  if (!await hasPanelAccess(user, db, "cash")) {
+    location.replace("../yonetici-giris.html");
     return;
   }
 

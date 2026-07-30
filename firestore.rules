@@ -1,39 +1,63 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isFatihAdmin() {
+    function isOwner() {
       return request.auth != null
         && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02';
+    }
+    function isStaff() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/staffUsers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.active == true;
+    }
+    function isManager() {
+      return isOwner() || isStaff();
+    }
+    function hasPanel(panel) {
+      return isOwner() || (isStaff()
+        && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny([panel]));
+    }
+    function hasAnyPanel(panels) {
+      return isOwner() || (isStaff()
+        && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(panels));
+    }
+    function isActiveMerchant() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid)).data.active == true;
+    }
+
+    match /staffUsers/{uid} {
+      allow read: if isOwner() || (request.auth != null && request.auth.uid == uid);
+      allow write: if isOwner();
+    }
+    match /staffUserAudit/{document} {
+      allow read: if isOwner();
+      allow write: if false;
     }
 
     match /publicTea/status {
       allow read: if true;
-      allow write: if isFatihAdmin();
+      allow write: if hasPanel('tea');
     }
-
     match /adminTea/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read, write: if hasPanel('tea');
     }
-
     match /publicMenu/catalog {
       allow read: if true;
-      allow write: if isFatihAdmin();
+      allow write: if hasPanel('menu');
     }
-
     match /publicSite/config {
       allow read: if true;
-      allow write: if isFatihAdmin();
+      allow write: if hasPanel('home');
     }
-
     match /publicSite/stats {
       allow read: if true;
       allow create: if request.resource.data.totalVisits == 1;
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['totalVisits', 'updatedAt'])
+        .hasOnly(['totalVisits', 'updatedAt'])
         && request.resource.data.totalVisits == resource.data.totalVisits + 1;
     }
-
     match /publicPresence/{sessionId} {
       allow read: if true;
       allow create, update: if request.resource.data.lastSeenMs is int;
@@ -41,120 +65,103 @@ service cloud.firestore {
     }
 
     match /adminStockItems/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read: if hasAnyPanel(['stock', 'pos', 'reports']);
+      allow write: if hasAnyPanel(['stock', 'pos']);
     }
-
     match /adminStockMovements/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read: if hasAnyPanel(['stock', 'pos', 'reports']);
+      allow write: if hasAnyPanel(['stock', 'pos']);
     }
-
     match /adminCreditCustomers/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
+      allow write: if hasAnyPanel(['credit', 'pos']);
     }
-
     match /adminCreditMovements/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
+      allow write: if hasAnyPanel(['credit', 'pos']);
     }
-
     match /adminAppSettings/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read: if isManager();
+      allow write: if hasAnyPanel(['pos', 'reports', 'cash']);
     }
-
     match /adminOrders/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read, write: if hasPanel('pos');
     }
-
     match /adminSales/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read: if hasAnyPanel(['pos', 'reports', 'merchant', 'cash']);
+      allow write: if hasAnyPanel(['pos', 'reports', 'merchant']);
     }
-
     match /adminDailyClosings/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read, write: if hasAnyPanel(['reports', 'pos']);
     }
-
-
     match /adminInternalConsumptions/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read, write: if hasPanel('pos');
     }
-
     match /adminCashMovements/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read, write: if hasPanel('cash');
     }
 
     match /adminPushTokens/{tokenId} {
-      allow read, create, update, delete: if isFatihAdmin();
+      allow read, create, update, delete: if isManager();
     }
-
     match /pushSubscriptions/{tokenId} {
-      allow read, delete: if isFatihAdmin();
-      allow create: if isFatihAdmin() || (request.resource.data.token is string
+      allow read, delete: if hasPanel('notifications');
+      allow create: if isManager() || (request.resource.data.token is string
         && request.resource.data.token.size() > 20
         && request.resource.data.audience in ['customer', 'merchant']
         && (request.resource.data.audience == 'customer'
           || (isActiveMerchant() && request.resource.data.merchantId == request.auth.uid)));
-      allow update: if isFatihAdmin() || (request.resource.data.token == resource.data.token
+      allow update: if isManager() || (request.resource.data.token == resource.data.token
         && request.resource.data.audience == resource.data.audience
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['token', 'audience', 'merchantId', 'enabled', 'teaUpdates', 'campaigns', 'platform', 'userAgent', 'updatedAt'])
         && (resource.data.audience == 'customer'
           || (isActiveMerchant() && resource.data.merchantId == request.auth.uid)));
     }
-
     match /notificationSchedules/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read, write: if hasPanel('notifications');
     }
-
     match /notificationSettings/{document} {
-      allow read, write: if isFatihAdmin();
+      allow read, write: if hasPanel('notifications');
     }
-
     match /notificationOutbox/{document} {
-      allow read, create, update, delete: if isFatihAdmin();
+      allow read, create, update, delete: if hasPanel('notifications');
     }
-
     match /notificationHistory/{document} {
-      allow read: if isFatihAdmin();
+      allow read: if hasPanel('notifications');
       allow write: if false;
     }
 
-    function isActiveMerchant() {
-      return request.auth != null
-        && exists(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid))
-        && get(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid)).data.active == true;
-    }
-
     match /merchantProfiles/{merchantId} {
-      allow read: if isFatihAdmin()
+      allow read: if hasPanel('merchant')
         || (request.auth != null && request.auth.uid == merchantId);
-      allow create, update, delete: if isFatihAdmin();
+      allow create, update, delete: if hasPanel('merchant');
     }
-
     match /merchantBalanceMovements/{movementId} {
-      allow read: if isFatihAdmin()
+      allow read: if hasPanel('merchant')
         || (request.auth != null && resource.data.merchantId == request.auth.uid);
-      allow create, update, delete: if isFatihAdmin();
+      allow create, update, delete: if hasPanel('merchant');
     }
-
     match /merchantOrders/{orderId} {
-      allow read: if isFatihAdmin()
+      allow read: if hasPanel('merchant')
         || (request.auth != null && resource.data.merchantId == request.auth.uid);
       allow create: if isActiveMerchant()
         && request.resource.data.merchantId == request.auth.uid
         && request.resource.data.status == 'pending'
         && request.resource.data.quantity >= 1
         && request.resource.data.quantity <= 50;
-      allow update: if isFatihAdmin()
+      allow update: if hasPanel('merchant')
         || (isActiveMerchant()
           && resource.data.merchantId == request.auth.uid
           && resource.data.status == 'pending'
           && request.resource.data.status == 'cancelled'
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['status', 'cancelledAt', 'updatedAt']));
-      allow delete: if isFatihAdmin();
+      allow delete: if hasPanel('merchant');
     }
 
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if isOwner();
     }
   }
 }
