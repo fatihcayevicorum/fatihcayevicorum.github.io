@@ -209,9 +209,17 @@
   border-radius: 13px;
   background: #fff7ef;
   display: grid;
-  gap: 5px;
+  grid-template-columns:minmax(0,1fr) minmax(120px,.9fr);
+  gap: 10px;
   font-size: 0.76rem;
 }
+
+.payment-confirm-info{display:grid;align-content:start;gap:5px;min-width:0}
+.payment-confirm-products{min-width:0;max-height:132px;overflow:hidden;padding:8px;border-radius:9px;background:#f3ede6;display:flex;align-content:flex-start;flex-wrap:wrap;gap:4px}
+.payment-confirm-products>small{width:100%;color:var(--muted);font-size:.52rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.payment-confirm-products>span{padding:2px 5px;border-radius:6px;color:#655955;background:#fffaf4;font-size:.52rem;line-height:1.35}
+.payment-confirm-products>span b{display:inline;color:var(--red);font-size:.56rem}
+.payment-confirm-products>i{width:100%;color:var(--muted);font-size:.49rem;font-style:normal}
 
 .payment-confirm b {
   color: var(--red);
@@ -223,6 +231,8 @@
 .payment-confirm em {
   display: block;
 }
+
+@media(max-width:390px){.payment-confirm{grid-template-columns:minmax(0,1fr) 115px;gap:7px;padding:11px}.payment-confirm-products{padding:6px}.payment-confirm-products>span{font-size:.48rem}}
 
 .payment-confirm em {
   margin-top: 5px;
