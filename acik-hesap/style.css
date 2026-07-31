@@ -30,5 +30,7 @@ dialog{width:min(calc(100% - 1.25rem),520px);padding:0;border:0;border-radius:18
 .balance.is-credit{color:#176f7a}
 .icon-button.is-topup{color:#176f7a;background:rgba(23,111,122,.08)}
 .movement-icon.topup{color:#176f7a;background:rgba(23,111,122,.1)}
-.movement-types.topup-types{grid-template-columns:repeat(2,1fr)}
-@media(max-width:620px){.stats{grid-template-columns:1fr 1fr}.movement-types.topup-types{grid-template-columns:1fr 1fr}}
+.movement-types.topup-types{grid-template-columns:repeat(3,1fr)}
+.movement-undo{min-height:2rem;padding:.35rem .55rem;border:1px solid rgba(180,43,50,.2);border-radius:9px;color:#a22a32;cursor:pointer;background:#fff2f1;font-size:.55rem;font-weight:700}
+.movement-item.is-reversed{opacity:.62}.movement-item.is-reversed .movement-copy strong{text-decoration:line-through}
+@media(max-width:620px){.stats{grid-template-columns:1fr 1fr}.movement-types.topup-types{grid-template-columns:1fr}.movement-undo{grid-column:2;justify-self:end}}

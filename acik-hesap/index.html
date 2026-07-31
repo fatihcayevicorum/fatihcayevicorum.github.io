@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="stylesheet" href="../management-forms.css?v=1">
     <link rel="stylesheet" href="../panel-scroll.css?v=2">
     <link rel="stylesheet" href="../panel-header.css?v=6">
@@ -115,9 +115,10 @@
             <div class="movement-types topup-types" role="group" aria-label="Ödeme türü">
                 <label><input type="radio" name="topupType" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i> Nakit</span></label>
                 <label><input type="radio" name="topupType" value="transfer"><span><i class="fa-solid fa-building-columns"></i> Banka Havalesi</span></label>
+                <label><input type="radio" name="topupType" value="carryover"><span><i class="fa-solid fa-clock-rotate-left"></i> Geçmişten Devreden</span></label>
             </div>
             <label class="dialog-field"><span>Yüklenecek Tutar (TL)</span><input id="topupAmount" type="number" min="0.01" max="9999999" step="0.01" required></label>
-            <label class="dialog-field"><span>İşlem Tarihi</span><input id="topupDate" type="date" required></label>
+            <label class="dialog-field"><span>İşlem Tarihi</span><input id="topupDate" type="date" required><small>Geçmişten devreden bakiye günlük nakit veya havale toplamına eklenmez.</small></label>
             <label class="dialog-field"><span>Açıklama <small>(isteğe bağlı)</small></span><textarea id="topupNote" maxlength="200" rows="2" placeholder="Örn. Peşin bakiye yüklemesi"></textarea></label>
             <div class="dialog-summary" id="topupPreview">Yeni bakiye: —</div>
             <div class="form-actions"><button class="secondary-button" id="cancelTopupButton" type="button">Vazgeç</button><button class="primary-button" type="submit"><i class="fa-solid fa-wallet"></i> Bakiyeyi Yükle</button></div>
@@ -159,10 +160,19 @@
         </form>
     </dialog>
 
+    <dialog class="confirm-dialog" id="undoMovementDialog">
+        <form method="dialog">
+            <div class="dialog-icon"><i class="fa-solid fa-rotate-left"></i></div>
+            <h2>Yanlış İşlem Geri Alınsın mı?</h2>
+            <p id="undoMovementText">Müşteri bakiyesi ve ilgili günlük kayıt birlikte düzeltilecek.</p>
+            <div class="dialog-actions"><button class="secondary-button" type="submit" value="cancel">Vazgeç</button><button class="danger-button" id="confirmUndoMovementButton" type="button">İşlemi Geri Al</button></div>
+        </form>
+    </dialog>
+
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="../management-forms.js?v=1"></script>
-    <script type="module" src="script.js?v=4"></script>
+    <script type="module" src="script.js?v=5"></script>
     <script type="module" src="../merchant-order-alert.js?v=11"></script>
     <script type="module" src="../system-ui.js?v=10"></script>
     <script src="../panel-scroll.js?v=2"></script>
