@@ -23,7 +23,8 @@ onAuthStateChanged(auth,async user=>{
   if(!await hasPanelAccess(user,db,"merchant")){setAlertStatus("Esnaf paneli yetkisi bekleniyor.");return}
   if(notificationsEnabled()&&Notification.permission==="granted")registerPushToken().catch(console.error);
   setAlertStatus("Sipariş bağlantısı kuruluyor…");
-  onSnapshot(collection(db,"merchantOrders"),snapshot=>{
+  const activeOrdersQuery=query(collection(db,"merchantOrders"),where("status","in",["pending","preparing","on_the_way"]));
+  onSnapshot(activeOrdersQuery,snapshot=>{
     const active=snapshot.docs.map(item=>({id:item.id,...item.data()})).filter(item=>["pending","preparing","on_the_way"].includes(item.status));
     updateBadge(active.length);
     setAlertStatus(`Sipariş bağlantısı aktif • ${active.length} açık sipariş`);

@@ -1,6 +1,6 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,doc,getFirestore,onSnapshot,runTransaction,serverTimestamp,setDoc,updateDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getFirestore,limit,onSnapshot,orderBy,query,runTransaction,serverTimestamp,setDoc,updateDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"../firebase-config.js";
 import{hasPanelAccess}from"../admin-access.js";
 
@@ -25,7 +25,7 @@ updateClock();setInterval(updateClock,1000);
 onAuthStateChanged(auth,async user=>{if(!user){location.replace("../yonetici-giris.html?next=stok-yonetimi/");return}if(!await hasPanelAccess(user,db,"stock")){location.replace("../yonetici-giris.html");return}subscribe()});
 function subscribe(){
   onSnapshot(stocksCol,s=>{stocks=s.docs.map(d=>normalizeStock(d.id,d.data()));connected();renderAll()},fail);
-  onSnapshot(movesCol,s=>{movements=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>timestamp(b.createdAt)-timestamp(a.createdAt)).slice(0,80);renderMovements()},fail);
+  onSnapshot(query(movesCol,orderBy("createdAt","desc"),limit(80)),s=>{movements=s.docs.map(d=>({id:d.id,...d.data()}));renderMovements()},fail);
   onSnapshot(menuRef,s=>{const d=s.data()||{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[]};renderProductManager()},fail);
 }
 function connected(){el.saveStatus.innerHTML='<i class="fa-solid fa-circle-check"></i> Canlı bağlantı';el.saveStatus.classList.remove("is-error")}
