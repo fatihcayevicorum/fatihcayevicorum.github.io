@@ -35,6 +35,12 @@ service cloud.firestore {
       allow read: if isOwner();
       allow write: if false;
     }
+    match /adminSecurity/{document} {
+      allow read, write: if false;
+    }
+    match /sensitivePinAttempts/{document} {
+      allow read, write: if false;
+    }
 
     match /publicTea/status {
       allow read: if true;
@@ -66,7 +72,9 @@ service cloud.firestore {
 
     match /adminStockItems/{document} {
       allow read: if hasAnyPanel(['stock', 'pos', 'reports']);
-      allow write: if hasAnyPanel(['stock', 'pos']);
+      allow write: if hasAnyPanel(['stock', 'pos'])
+        && request.resource.data.quantity is number
+        && request.resource.data.quantity >= 0;
     }
     match /adminStockMovements/{document} {
       allow read: if hasAnyPanel(['stock', 'pos', 'reports']);
