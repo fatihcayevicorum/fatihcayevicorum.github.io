@@ -8,6 +8,7 @@ const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig)
 ensureFooter();
 installGlobalInteractionStyle();
 installTopLayerToasts();
+installSensitiveLinkGate();
 const panelMenu=document.querySelector(".panel-menu-list");
 if(panelMenu){
   installManagementCenterLink();
@@ -134,4 +135,21 @@ function installTopLayerToasts(){
   };
   scan(document);
   new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(scan))).observe(document.body,{childList:true,subtree:true});
+}
+
+function installSensitiveLinkGate(){
+  document.addEventListener("click",async event=>{
+    const link=event.target.closest?.("a[href]");
+    if(!link||event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+    const target=new URL(link.href,location.href);
+    if(target.origin!==location.origin)return;
+    const type=target.pathname.includes("/acik-hesap/")?"credit":target.pathname.includes("/kasa-hesap-yonetimi/")?"cash":"";
+    if(!type||target.pathname===location.pathname)return;
+    event.preventDefault();
+    const {requireSensitiveAccess}=await import("./sensitive-access.js");
+    const options=type==="credit"
+      ?{title:"Açık Hesap",message:"Müşteri bakiyelerini görüntülemek ve değiştirmek için yönetici PIN'ini girin."}
+      :{title:"Kasa ve Hesaplar",message:"Kasa ve hesap bilgilerini görmek için yönetici PIN'ini girin."};
+    if(await requireSensitiveAccess(options))location.href=target.href;
+  });
 }
