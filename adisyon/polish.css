@@ -201,7 +201,7 @@
   font-size: 0.84rem;
   font-weight: 800;
 }
-.order-dialog .product{position:relative}.order-dialog .product .stock-label{position:absolute;top:5px;right:5px;max-width:calc(100% - 10px);padding:2px 5px;border-radius:5px;background:#f1e8de;color:#746862;font-size:.47rem;font-weight:700;line-height:1.2;white-space:nowrap}.order-dialog .product .stock-label.is-critical,.order-dialog .product .stock-label.is-empty{background:#f4e8e7;color:#7d1823}.order-dialog .product.stock-empty{opacity:.58}.order-dialog .product.stock-empty:active{transform:none!important}
+.order-dialog .product{position:relative}.order-dialog .product.stock-empty{opacity:.42;filter:grayscale(.55);cursor:not-allowed}.order-dialog .product.stock-empty:active{transform:none!important}
 
 .payment-confirm {
   margin-top: 12px;
