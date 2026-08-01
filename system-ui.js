@@ -7,6 +7,7 @@ import("./pwa.js").catch(error=>console.error("PWA başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 ensureFooter();
 installGlobalInteractionStyle();
+installTopLayerToasts();
 const panelMenu=document.querySelector(".panel-menu-list");
 if(panelMenu){
   installManagementCenterLink();
@@ -95,4 +96,42 @@ function installGlobalInteractionStyle(){
     }
   `;
   document.head.append(style);
+}
+
+function installTopLayerToasts(){
+  if(document.getElementById("systemToastLayerStyle"))return;
+  const style=document.createElement("style");
+  style.id="systemToastLayerStyle";
+  style.textContent=`
+    :where(.toast,#toast)[popover]{
+      position:fixed!important;
+      inset:auto auto 22px 50%!important;
+      margin:0!important;
+      border:0!important;
+      max-width:min(88vw,460px)!important;
+      transform:translateX(-50%)!important;
+      z-index:2147483647!important;
+    }
+    :where(.toast,#toast)[popover]::backdrop{display:none!important}
+  `;
+  document.head.append(style);
+  const connect=toast=>{
+    if(!(toast instanceof HTMLElement)||toast.dataset.systemToastLayer)return;
+    toast.dataset.systemToastLayer="1";
+    toast.setAttribute("popover","manual");
+    const sync=()=>{
+      try{
+        if(toast.classList.contains("show")){if(!toast.matches(":popover-open"))toast.showPopover()}
+        else if(toast.matches(":popover-open"))toast.hidePopover();
+      }catch{}
+    };
+    new MutationObserver(sync).observe(toast,{attributes:true,attributeFilter:["class"]});
+    sync();
+  };
+  const scan=root=>{
+    if(root instanceof Element&&root.matches(".toast,#toast"))connect(root);
+    root.querySelectorAll?.(".toast,#toast").forEach(connect);
+  };
+  scan(document);
+  new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(scan))).observe(document.body,{childList:true,subtree:true});
 }

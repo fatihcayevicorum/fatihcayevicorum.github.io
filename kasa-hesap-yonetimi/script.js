@@ -1,25 +1,20 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
-  collection, doc, getDoc, getFirestore, onSnapshot,
+  collection, doc, getFirestore, onSnapshot,
   serverTimestamp, setDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../firebase-config.js";
 import { hasPanelAccess } from "../admin-access.js";
+import { lockSensitiveAccess, requireSensitiveAccess } from "../sensitive-access.js";
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 const movesCol = collection(db, "adminCashMovements");
-const pinRef = doc(db, "adminAppSettings", "cashSecurity");
 const $ = (id) => document.getElementById(id);
 
 let movements = [];
-let pinHash = "";
-let mode = "login";
-let timer = null;
-let isUnlocked = false;
-let authReady = false;
 let movementsListenerStarted = false;
 
 function updateHeaderClock() {
@@ -41,44 +36,6 @@ $("logoutButton")?.addEventListener("click", async () => {
   }
 });
 
-function showLock() {
-  isUnlocked = false;
-  clearTimeout(timer);
-  $("app").hidden = true;
-  $("lockScreen").hidden = false;
-  document.documentElement.classList.add("cash-locked");
-  mode = pinHash ? "login" : "setup";
-  renderLock();
-}
-
-function renderLock() {
-  $("lockTitle").textContent = mode === "setup" ? "Kasa Şifresi Oluştur" : "Kasa Şifresi";
-  $("lockText").textContent = mode === "setup"
-    ? "Bu bölüme özel 4–8 haneli bir kasa şifresi belirleyin."
-    : "Bu özel bölüme girmek için kasa şifrenizi girin.";
-  $("pinInput").value = "";
-  $("pinInput").disabled = false;
-  $("pinForm").querySelector("button").disabled = false;
-}
-
-function unlock() {
-  isUnlocked = true;
-  $("lockScreen").hidden = true;
-  $("app").hidden = false;
-  document.documentElement.classList.remove("cash-locked");
-  $("pinInput").blur();
-  resetTimer();
-  render();
-}
-
-function resetTimer() {
-  if (!isUnlocked) return;
-  clearTimeout(timer);
-  timer = setTimeout(showLock, 10 * 60 * 1000);
-}
-
-showLock();
-
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");
@@ -90,11 +47,15 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   try {
-    const snap = await getDoc(pinRef);
-    pinHash = snap.exists() ? String(snap.data()?.pinHash || "") : "";
-    mode = pinHash ? "login" : "setup";
-    authReady = true;
-    renderLock();
+    const unlocked = await requireSensitiveAccess({
+      title: "Kasa ve Hesaplar",
+      message: "Kasa ve hesap bilgilerini görmek için yönetici PIN'ini girin."
+    });
+    if (!unlocked) {
+      location.replace("../yonetim-merkezi/");
+      return;
+    }
+    document.documentElement.classList.remove("cash-pending");
 
     if (!movementsListenerStarted) {
       movementsListenerStarted = true;
@@ -102,75 +63,25 @@ onAuthStateChanged(auth, async (user) => {
         movements = snapshot.docs
           .map((item) => ({ id: item.id, ...item.data() }))
           .sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
-        if (isUnlocked) render();
+        render();
       }, (error) => {
         console.error("Kasa hareketleri okunamadı:", error);
         toast("Kasa hareketleri yüklenemedi.");
       });
     }
   } catch (error) {
-    console.error("Kasa şifresi okunamadı:", error);
-    toast("Kasa şifresi bilgisi okunamadı. Firebase kurallarını kontrol edin.");
+    console.error("Kasa bölümü açılamadı:", error);
+    toast("Kasa bölümü açılamadı.");
   }
 });
-
-$("pinForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!authReady || !auth.currentUser) {
-    toast("Oturum hazırlanıyor, birkaç saniye sonra tekrar deneyin.");
-    return;
-  }
-
-  const input = $("pinInput");
-  const submitButton = $("pinForm").querySelector("button");
-  const pin = input.value.trim();
-
-  if (!/^\d{4,8}$/.test(pin)) {
-    toast("Kasa şifresi 4–8 rakam olmalıdır.");
-    return;
-  }
-
-  input.disabled = true;
-  submitButton.disabled = true;
-
-  try {
-    const enteredHash = await sha(pin);
-
-    if (mode === "setup") {
-      await setDoc(pinRef, {
-        pinHash: enteredHash,
-        updatedAt: serverTimestamp(),
-        createdBy: auth.currentUser.uid
-      }, { merge: true });
-
-      pinHash = enteredHash;
-      mode = "login";
-      unlock();
-      toast("Kasa şifresi oluşturuldu.");
-      return;
-    }
-
-    if (enteredHash !== pinHash) {
-      toast("Kasa şifresi yanlış.");
-      input.disabled = false;
-      submitButton.disabled = false;
-      input.value = "";
-      input.focus();
-      return;
-    }
-
-    unlock();
-  } catch (error) {
-    console.error("PIN işlemi başarısız:", error);
-    toast("Şifre işlemi tamamlanamadı. Firebase yetkisini kontrol edin.");
-    input.disabled = false;
-    submitButton.disabled = false;
-  }
+$("lockButton").addEventListener("click", async () => {
+  lockSensitiveAccess();
+  const unlocked = await requireSensitiveAccess({
+    title: "Kasa ve Hesaplar",
+    message: "Kasa ve hesap bilgilerini görmek için yönetici PIN'ini girin."
+  });
+  if (!unlocked) location.replace("../yonetim-merkezi/");
 });
-
-$("lockButton").addEventListener("click", showLock);
-document.addEventListener("pointerdown", resetTimer, { passive: true });
-document.addEventListener("keydown", resetTimer);
 
 $("filter").addEventListener("change", render);
 document.querySelectorAll("[data-open]").forEach((button) => {
@@ -318,11 +229,6 @@ function accountText(movement) {
   return movement.type === "transfer"
     ? `${names[movement.fromAccount]} → ${names[movement.toAccount]}`
     : names[movement.account] || "";
-}
-
-async function sha(value) {
-  const buffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return [...new Uint8Array(buffer)].map((item) => item.toString(16).padStart(2, "0")).join("");
 }
 
 function today() {

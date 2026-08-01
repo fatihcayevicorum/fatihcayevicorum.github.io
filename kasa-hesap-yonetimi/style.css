@@ -31,7 +31,7 @@ label{display:grid;gap:5px;margin:10px 0;font-size:.75rem;font-weight:600}
 input,select{height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:#fff}
 #toast{position:fixed;z-index:100;left:50%;bottom:20px;transform:translate(-50%,100px);opacity:0;background:#2f2523;color:#fff;padding:10px 16px;border-radius:10px;transition:.25s}
 #toast.show{transform:translate(-50%,0);opacity:1}
-[hidden]{display:none!important}.cash-locked #app{display:none!important}.cash-locked #lockScreen{display:block!important}
+[hidden]{display:none!important}.cash-pending #app{visibility:hidden!important}
 @media(max-width:700px){main{margin:14px auto}.lock{margin:4vh auto}.summary{grid-template-columns:1fr 1fr}.actions{grid-template-columns:1fr}.toolbar{align-items:flex-start}.movement{font-size:.8rem}}
 
 /* R92: hareket düzeltme */

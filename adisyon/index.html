@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="polish.css?v=10"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="../panel-header.css?v=8">
+  <link rel="stylesheet" href="style.css?v=3"><link rel="stylesheet" href="polish.css?v=11"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="../panel-header.css?v=8">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -80,9 +80,9 @@
 <dialog id="closeDayDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Günü Kapat</h2><button type="button" data-close="closeDayDialog">×</button></div><p id="closeDayPeriod" class="notice"></p><div id="closeDayReport" class="close-day-report"></div><div class="export-actions"><button type="button" id="exportPdf" class="secondary"><i class="fa-solid fa-file-pdf"></i> PDF</button><button type="button" id="exportExcel" class="secondary"><i class="fa-solid fa-file-excel"></i> Excel</button></div><div class="close-day-warning"><i class="fa-solid fa-triangle-exclamation"></i><div><strong>Bu İşlem geri alınamaz.</strong><p>Rapor sisteme kaydedilecek, Taze Dem sayacı yeni iş günü için sıfırdan başlayacak ve eski iş gününe tekrar kayıt eklenemeyecek.</p></div></div><label class="close-day-check"><input id="closeDayConfirmed" type="checkbox"><span>Raporu kontrol ettim, bu iş gününü kapatmak istiyorum.</span></label><div class="dialog-actions"><button type="button" class="secondary" data-close="closeDayDialog">Vazgeç</button><button type="button" id="confirmCloseDay" class="danger" disabled>Günü Kesin Olarak Kapat</button></div></div></dialog>
 <dialog id="moveDialog"><form id="moveForm" class="dialog-card"><div class="dialog-head"><h2>Taşı veya Birleştir</h2><button type="button" data-close="moveDialog">×</button></div><label>Hedef masa / Adisyon<select id="moveTarget" required></select></label><p class="notice">Hedef boşsa Adisyon taşınır; doluysa iki Adisyon birleştirilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="moveDialog">Vazgeç</button><button class="primary">Devam Et</button></div></form></dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=22"></script>
+<script type="module" src="script.js?v=23"></script>
 <script type="module" src="internal-consumption.js?v=1"></script>
 <script type="module" src="enhancements.js?v=6"></script>
 <script type="module" src="../merchant-order-alert.js?v=11"></script>
-<script type="module" src="../system-ui.js?v=10"></script>
+<script type="module" src="../system-ui.js?v=14"></script>
 </body></html>

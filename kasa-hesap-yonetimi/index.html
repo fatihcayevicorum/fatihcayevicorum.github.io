@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr" class="cash-locked">
+<html lang="tr" class="cash-pending">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -50,18 +50,7 @@
 </header>
 
 <main>
-  <section id="lockScreen" class="lock card">
-    <i class="fa-solid fa-lock"></i>
-    <h2 id="lockTitle">Kasa Şifresi</h2>
-    <p id="lockText">Bu özel bölüme girmek için şifrenizi girin.</p>
-    <form id="pinForm">
-      <input id="pinInput" inputmode="numeric" type="password" minlength="4" maxlength="8" placeholder="4–8 haneli kasa şifresi" required>
-      <button>Giriş Yap</button>
-    </form>
-    <button id="resetPin" class="link" hidden>PIN'i değiştir</button>
-  </section>
-
-  <section id="app" hidden>
+  <section id="app">
     <div class="toolbar">
       <div><h2>Finans Özeti</h2><small id="todayLabel"></small></div>
       <button id="lockButton" class="secondary"><i class="fa-solid fa-lock"></i> Kilitle</button>
@@ -100,8 +89,8 @@
     <div class="dialog-actions"><button type="button" class="secondary" id="cancelDialog">Vazgeç</button><button id="saveMovementButton">Kaydet</button></div>
   </form>
 </dialog>
-<div id="toast"></div>
-<script type="module" src="script.js?v=92"></script>
-<script type="module" src="../system-ui.js?v=13"></script>
+<div id="toast" class="toast"></div>
+<script type="module" src="script.js?v=93"></script>
+<script type="module" src="../system-ui.js?v=14"></script>
 </body>
 </html>
