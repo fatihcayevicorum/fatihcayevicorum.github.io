@@ -58,3 +58,10 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 #incomeSettingsDialog .category-add,#expenseSettingsDialog .category-add{width:100%;margin-bottom:2px}
 #incomeSettingsDialog .settings-note,#expenseSettingsDialog .settings-note{margin:7px 0!important}
 @media(max-width:760px){#openingSettingsDialog .settings-dialog{width:min(94vw,560px);height:auto;max-height:92dvh}#incomeSettingsDialog .category-list,#expenseSettingsDialog .category-list{grid-template-columns:1fr}#incomeSettingsDialog .category-row,#expenseSettingsDialog .category-row{grid-template-columns:minmax(0,1fr) auto}#incomeSettingsDialog .category-row div,#expenseSettingsDialog .category-row div{justify-content:flex-end}}
+
+/* R122: ilk 10 kategori görünür, sonrası gizli çubukla kayar */
+#incomeSettingsDialog .settings-dialog,#expenseSettingsDialog .settings-dialog{width:min(94vw,850px);height:min(88dvh,520px);max-height:520px}
+#incomeSettingsDialog .category-list,#expenseSettingsDialog .category-list{flex:0 0 248px;height:248px;grid-auto-rows:44px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-ms-overflow-style:none}
+#incomeSettingsDialog .category-list::-webkit-scrollbar,#expenseSettingsDialog .category-list::-webkit-scrollbar{display:none;width:0;height:0}
+#incomeSettingsDialog .category-row,#expenseSettingsDialog .category-row{height:44px}
+@media(max-width:760px){#incomeSettingsDialog .settings-dialog,#expenseSettingsDialog .settings-dialog{width:min(94vw,620px);height:92dvh;max-height:92dvh}#incomeSettingsDialog .category-list,#expenseSettingsDialog .category-list{flex:1 1 auto;height:auto;grid-auto-rows:44px}}
