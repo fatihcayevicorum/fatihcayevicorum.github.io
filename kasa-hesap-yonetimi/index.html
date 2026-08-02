@@ -3,94 +3,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Kasa ve Hesap Yönetimi | Fatih Çay Evi</title>
+  <title>Kasa ve Hesaplar | Fatih Çay Evi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=92">
+  <link rel="stylesheet" href="style.css?v=110">
   <link rel="stylesheet" href="../panel-header.css?v=7">
 </head>
 <body>
-<header class="app-header">
-  <div class="header-inner">
-    <div class="brand">
-      <img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu">
-      <div class="brand-copy">
-        <p class="eyebrow">Fatih Çay Evi</p>
-        <h1>Kasa ve Hesap Yönetimi</h1>
-      </div>
-    </div>
-    <div class="header-actions">
-      <div class="live-time">
-        <strong id="currentTime">--:--</strong>
-        <span id="currentDate">--/--/--</span>
-      </div>
-      <a class="header-page-link" href="../taze-dem-paneli/" title="Taze Dem" aria-label="Taze Dem sayfasına geç">
-        <i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span>
-      </a>
-      <details class="panel-menu">
-        <summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary>
-        <nav class="panel-menu-list">
-          <a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a>
-          <a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a>
-          <a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a>
-          <a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a>
-          <a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a>
-          <a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a>
-          <a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a>
-          <a class="is-current" href="./"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a>
-        </nav>
-      </details>
-      <button id="logoutButton" class="logout-button" type="button" aria-label="Çıkış">
-        <i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span>
-      </button>
-    </div>
-  </div>
-</header>
+<header class="app-header"><div class="header-inner">
+  <div class="brand"><img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Kasa ve Hesaplar</h1></div></div>
+  <div class="header-actions"><div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div><a class="header-page-link" href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></a><details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a><a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a><a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a><a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a><a class="is-current" href="./"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a></nav></details><button id="logoutButton" class="logout-button" type="button"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button></div>
+</div></header>
 
-<main>
-  <section id="app">
-    <div class="toolbar">
-      <div><h2>Finans Özeti</h2><small id="todayLabel"></small></div>
-      <button id="lockButton" class="secondary"><i class="fa-solid fa-lock"></i> Kilitle</button>
-    </div>
-    <section class="summary">
-      <article><span>Nakit Kasa</span><b id="cashBalance">₺0</b></article>
-      <article><span>Banka</span><b id="bankBalance">₺0</b></article>
-      <article><span>Kredi Kartı Borcu</span><b id="cardBalance">₺0</b></article>
-      <article><span>Bugünkü Gelir</span><b id="todayIncome">₺0</b></article>
-      <article><span>Bugünkü Gider</span><b id="todayExpense">₺0</b></article>
-      <article><span>Net Varlık</span><b id="netBalance">₺0</b></article>
-    </section>
-    <section class="actions">
-      <button data-open="income"><i class="fa-solid fa-arrow-trend-up"></i> Gelir Ekle</button>
-      <button data-open="expense"><i class="fa-solid fa-arrow-trend-down"></i> Gider Ekle</button>
-      <button data-open="transfer"><i class="fa-solid fa-right-left"></i> Transfer</button>
-    </section>
-    <section class="card">
-      <div class="section-head"><h3>Son Hareketler</h3><select id="filter"><option value="all">Tümü</option><option value="income">Gelir</option><option value="expense">Gider</option><option value="transfer">Transfer</option></select></div>
-      <div id="movementList"></div><p id="empty">Henüz hareket yok.</p>
-    </section>
+<main id="app">
+  <section class="topbar"><div><p class="kicker">Dijital kasa defteri</p><h2>Günlük Hesaplar</h2></div><div class="top-actions"><button id="reportButton" class="soft"><i class="fa-solid fa-chart-pie"></i> Kasa Raporları</button><button id="lockButton" class="soft"><i class="fa-solid fa-lock"></i> Kilitle</button></div></section>
+
+  <section class="date-switcher"><button id="previousDay" aria-label="Önceki gün"><i class="fa-solid fa-chevron-left"></i></button><div><strong id="selectedDateLabel">--.--.----</strong><small id="selectedDayName">—</small></div><button id="nextDay" aria-label="Sonraki gün"><i class="fa-solid fa-chevron-right"></i></button></section>
+
+  <section class="daily-summary">
+    <article class="income-card"><span>Günün Geliri</span><b id="dayIncome">₺0,00</b></article>
+    <article class="expense-card"><span>Günün Gideri</span><b id="dayExpense">₺0,00</b></article>
+    <article><span>Günlük Fark</span><b id="dayNet">₺0,00</b></article>
   </section>
+
+  <section class="main-actions"><button data-open="income"><i class="fa-solid fa-plus"></i><span><b>Gelir Ekle</b><small>Nakit veya banka</small></span></button><button data-open="expense"><i class="fa-solid fa-minus"></i><span><b>Gider Ekle</b><small>Nakit, banka veya kredi kartı</small></span></button><button data-open="transfer" class="soft-action"><i class="fa-solid fa-right-left"></i><span><b>Hesap Aktarımı</b><small>Kart ödemesi dahil</small></span></button></section>
+
+  <section class="ledger-card"><div class="section-head"><div><p class="kicker">Kalem kalem</p><h3>Günün Hareketleri</h3></div><select id="filter"><option value="all">Tüm Hareketler</option><option value="income">Gelirler</option><option value="expense">Giderler</option><option value="transfer">Aktarımlar</option></select></div><div id="movementList" class="movement-list"></div><p id="empty" class="empty">Bu tarihte kayıtlı hareket bulunmuyor.</p></section>
+
+  <section class="balances"><div class="section-head"><div><p class="kicker">Güncel durum</p><h3>Hesap Bakiyeleri</h3></div><small>Seçilen günün sonuna kadar</small></div><div class="balance-grid"><article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Mevcudu</span><b id="cashBalance">₺0,00</b></article><article><i class="fa-solid fa-building-columns"></i><span>Banka Hesabı</span><b id="bankBalance">₺0,00</b></article><article class="debt"><i class="fa-solid fa-credit-card"></i><span>Kredi Kartı Borcu</span><b id="cardBalance">₺0,00</b></article><article class="total"><i class="fa-solid fa-wallet"></i><span>Nakit + Banka</span><b id="netBalance">₺0,00</b></article></div></section>
 </main>
 
-<dialog id="movementDialog">
-  <form id="movementForm" class="dialog-card">
-    <div class="dialog-head"><h2 id="dialogTitle">Hareket Ekle</h2><button type="button" id="closeDialog">×</button></div>
-    <input type="hidden" id="movementType">
-    <input type="hidden" id="movementId">
-    <label>Tutar<input id="amount" type="number" min="0.01" step="0.01" required></label>
-    <label id="accountLabel">Hesap<select id="account"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label>
-    <label id="fromLabel" hidden>Gönderen hesap<select id="fromAccount"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label>
-    <label id="toLabel" hidden>Alan hesap<select id="toAccount"><option value="bank">Banka</option><option value="cash">Nakit Kasa</option><option value="card">Kredi Kartı</option></select></label>
-    <label>Kategori<select id="category"><option>Malzeme Alışı</option><option>Kira</option><option>Elektrik</option><option>Su</option><option>İnternet</option><option>Temizlik</option><option>Bakım-Onarım</option><option>İşletme Sahibine Çıkış</option><option>İşletmeye Para Girişi</option><option>Diğer</option></select></label>
-    <label>Açıklama<input id="description" maxlength="120" placeholder="İşlemin açıklaması" required></label>
-    <div class="dialog-actions"><button type="button" class="secondary" id="cancelDialog">Vazgeç</button><button id="saveMovementButton">Kaydet</button></div>
-  </form>
-</dialog>
+<dialog id="movementDialog"><form id="movementForm" class="dialog-card"><div class="dialog-head"><h2 id="dialogTitle">Hareket Ekle</h2><button type="button" id="closeDialog">×</button></div><input type="hidden" id="movementType"><input type="hidden" id="movementId"><p id="movementDateText" class="form-date"></p><label>Tutar<input id="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label id="accountLabel">Hesap<select id="account"></select></label><label id="fromLabel" hidden>Paranın çıktığı hesap<select id="fromAccount"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label><label id="toLabel" hidden>Paranın girdiği hesap<select id="toAccount"><option value="bank">Banka</option><option value="cash">Nakit Kasa</option><option value="card">Kredi Kartı / Borç Ödeme</option></select></label><label id="categoryLabel">Kategori<select id="category"></select></label><label>Açıklama<input id="description" maxlength="120" placeholder="Örn. PET şişe dönüşüm iadesi" required></label><div class="dialog-actions"><button type="button" class="soft" id="cancelDialog">Vazgeç</button><button id="saveMovementButton">Kaydet</button></div></form></dialog>
+
+<dialog id="deleteDialog"><div class="dialog-card confirm-card"><i class="fa-solid fa-trash-can"></i><h2>Hareket silinsin mi?</h2><p>Bu manuel kayıt kasa bakiyelerinden de çıkarılacak.</p><div class="dialog-actions"><button id="cancelDelete" class="soft">Vazgeç</button><button id="confirmDelete" class="danger-button">Sil</button></div></div></dialog>
+
+<dialog id="reportDialog"><div class="dialog-card report-dialog"><div class="dialog-head"><div><p class="kicker">Gizli mali özet</p><h2>Kasa Raporları</h2></div><button type="button" id="closeReport">×</button></div><label>Rapor ayı<input id="reportMonth" type="month"></label><div id="reportContent"></div></div></dialog>
+
 <div id="toast" class="toast"></div>
-<script type="module" src="script.js?v=93"></script>
-<script type="module" src="../system-ui.js?v=14"></script>
-</body>
-</html>
+<script type="module" src="script.js?v=110"></script><script type="module" src="../system-ui.js?v=14"></script>
+</body></html>

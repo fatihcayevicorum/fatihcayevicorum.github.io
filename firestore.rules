@@ -100,7 +100,8 @@ service cloud.firestore {
       allow write: if hasAnyPanel(['pos', 'reports', 'merchant']);
     }
     match /adminDailyClosings/{document} {
-      allow read, write: if hasAnyPanel(['reports', 'pos']);
+      allow read: if hasAnyPanel(['reports', 'pos', 'cash']);
+      allow write: if hasAnyPanel(['reports', 'pos']);
     }
     match /adminInternalConsumptions/{document} {
       allow read, write: if hasPanel('pos');
