@@ -37,3 +37,11 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .settings-subpanel.category-panel .category-list{flex:1;min-height:0}
 .settings-back{width:max-content;margin-bottom:10px;padding:8px 10px;border:0;border-radius:9px;background:#f0e5da;color:var(--red);font-size:.67rem;font-weight:700}
 @media(max-width:760px){.settings-menu{grid-template-columns:1fr;margin:10px 0;overflow-y:auto;scrollbar-width:none}.settings-menu::-webkit-scrollbar{display:none}.settings-menu>button{min-height:112px;padding:15px}.settings-menu>button>i:first-child{width:43px;height:43px}.settings-menu>button>i:last-child{right:15px;top:15px}.settings-subpanel{margin-top:7px!important}.settings-subpanel.category-panel .category-row{grid-template-columns:1fr auto}.settings-subpanel.category-panel .category-row div{justify-content:flex-end}}
+
+/* R120: ikon üst işlemleri ve ayrı kasa ayar panelleri */
+.icon-actions{flex-wrap:nowrap!important}.icon-actions button{display:grid;width:43px;height:43px;min-width:43px;place-items:center;padding:0!important;font-size:.94rem;transition:transform .14s ease,background .18s ease,box-shadow .18s ease}.icon-actions button:hover{background:#e7d7c9!important;box-shadow:0 6px 14px rgba(73,33,30,.1)}.icon-actions button:active{transform:translateY(2px) scale(.94)}
+.cash-settings-modal::backdrop{background:rgba(36,23,21,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.settings-menu-dialog{height:auto;min-height:310px;max-height:min(88dvh,760px)}
+.settings-child-dialog .settings-dialog{animation:settingsPanelIn .2s ease both}.settings-child-dialog .settings-subpanel{margin-top:13px!important}.settings-child-dialog .category-panel{flex:1;min-height:0}.settings-done{flex:none;margin-top:10px}
+@keyframes settingsPanelIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@media(max-width:760px){.icon-actions{gap:6px}.icon-actions button{width:39px;height:39px;min-width:39px}.settings-menu-dialog{min-height:0}.settings-child-dialog .settings-dialog{height:92dvh;max-height:92dvh}}
