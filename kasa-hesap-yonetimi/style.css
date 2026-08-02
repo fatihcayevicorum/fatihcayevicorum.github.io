@@ -45,3 +45,16 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .settings-child-dialog .settings-dialog{animation:settingsPanelIn .2s ease both}.settings-child-dialog .settings-subpanel{margin-top:13px!important}.settings-child-dialog .category-panel{flex:1;min-height:0}.settings-done{flex:none;margin-top:10px}
 @keyframes settingsPanelIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 @media(max-width:760px){.icon-actions{gap:6px}.icon-actions button{width:39px;height:39px;min-width:39px}.settings-menu-dialog{min-height:0}.settings-child-dialog .settings-dialog{height:92dvh;max-height:92dvh}}
+
+/* R121: kompakt başlangıç paneli ve ikili kalem düzeni */
+#openingSettingsDialog .settings-dialog{width:min(92vw,620px);height:auto;max-height:88dvh}
+#openingSettingsDialog .settings-subpanel{flex:none;overflow:visible}
+#openingSettingsDialog .opening-grid{gap:8px}
+#incomeSettingsDialog .category-list,#expenseSettingsDialog .category-list{grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:7px}
+#incomeSettingsDialog .category-row,#expenseSettingsDialog .category-row{min-width:0;padding:5px;gap:5px;border-radius:9px}
+#incomeSettingsDialog .category-row input,#expenseSettingsDialog .category-row input{height:34px;min-width:0;padding:0 8px;font-size:.68rem}
+#incomeSettingsDialog .category-row div,#expenseSettingsDialog .category-row div{gap:3px}
+#incomeSettingsDialog .category-row button,#expenseSettingsDialog .category-row button{min-width:29px;min-height:30px;height:30px;padding:0 6px;font-size:.55rem;white-space:nowrap}
+#incomeSettingsDialog .category-add,#expenseSettingsDialog .category-add{width:100%;margin-bottom:2px}
+#incomeSettingsDialog .settings-note,#expenseSettingsDialog .settings-note{margin:7px 0!important}
+@media(max-width:760px){#openingSettingsDialog .settings-dialog{width:min(94vw,560px);height:auto;max-height:92dvh}#incomeSettingsDialog .category-list,#expenseSettingsDialog .category-list{grid-template-columns:1fr}#incomeSettingsDialog .category-row,#expenseSettingsDialog .category-row{grid-template-columns:minmax(0,1fr) auto}#incomeSettingsDialog .category-row div,#expenseSettingsDialog .category-row div{justify-content:flex-end}}
