@@ -45,6 +45,9 @@ async function openTableEdit(key){
   el.tableEditTitle.textContent=`${baseSlotTitle(key)} Adisyon Bilgileri`;el.tableNameInput.value=active?.customTitle||'';
   el.tableCustomerSelect.innerHTML='<option value="">Müşteriler sunucudan kontrol ediliyor…</option>';el.tableCustomerSelect.disabled=true;
   el.tableEditDialog.showModal();
+  el.tableNameInput.focus({preventScroll:true});
+  el.tableNameInput.select();
+  requestAnimationFrame(()=>{el.tableNameInput.focus({preventScroll:true});el.tableNameInput.select()});
   try{
     const snap=await getDocs(creditCol);
     creditCustomers=snap.docs.map(x=>({id:x.id,...x.data()})).filter(x=>x.creditEnabled!==false).sort((a,b)=>String(a.name).localeCompare(String(b.name),'tr'));
