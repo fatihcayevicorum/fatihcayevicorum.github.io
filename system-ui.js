@@ -7,6 +7,7 @@ import("./pwa.js").catch(error=>console.error("PWA başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 ensureFooter();
 installGlobalInteractionStyle();
+installKeyboardScrollSupport();
 installTopLayerToasts();
 installSensitiveLinkGate();
 const panelMenu=document.querySelector(".panel-menu-list");
@@ -97,6 +98,48 @@ function installGlobalInteractionStyle(){
     }
   `;
   document.head.append(style);
+}
+
+function installKeyboardScrollSupport(){
+  let hoveredScrollable=null;
+  const isTypingTarget=element=>element instanceof HTMLElement&&(element.matches("input,textarea,select,[contenteditable='true']")||element.isContentEditable);
+  const isVerticalScrollable=element=>{
+    if(!(element instanceof HTMLElement)||element===document.body||element===document.documentElement)return false;
+    const overflow=getComputedStyle(element).overflowY;
+    return /^(auto|scroll)$/.test(overflow)&&element.scrollHeight>element.clientHeight+2;
+  };
+  const findScrollable=element=>{
+    for(let current=element instanceof Element?element:null;current&&current!==document.body;current=current.parentElement){
+      if(isVerticalScrollable(current))return current;
+    }
+    return null;
+  };
+  const firstOpenPanelScrollable=()=>{
+    const panel=document.querySelector("dialog[open], [role='dialog']:not([hidden])");
+    if(!panel)return null;
+    return [...panel.querySelectorAll("*")].find(isVerticalScrollable)||null;
+  };
+  document.addEventListener("pointerover",event=>{hoveredScrollable=findScrollable(event.target)},{passive:true});
+  const remember=event=>{const area=findScrollable(event.target);if(area)hoveredScrollable=area};
+  document.addEventListener("focusin",remember,{passive:true});
+  document.addEventListener("wheel",remember,{passive:true});
+  document.addEventListener("keydown",event=>{
+    if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey||isTypingTarget(event.target))return;
+    const supported=["ArrowDown","ArrowUp","PageDown","PageUp","Home","End"];
+    if(!supported.includes(event.key))return;
+    let area=findScrollable(document.activeElement)||hoveredScrollable;
+    if(area&&(!area.isConnected||area.getClientRects().length===0))area=null;
+    if(!area)area=firstOpenPanelScrollable();
+    if(!area)return;
+    const before=area.scrollTop;
+    const rowStep=Math.max(42,Math.min(72,area.clientHeight*.16));
+    const amount=event.key==="ArrowDown"?rowStep:event.key==="ArrowUp"?-rowStep:event.key==="PageDown"?area.clientHeight*.82:event.key==="PageUp"?-area.clientHeight*.82:0;
+    if(event.key==="Home")area.scrollTo({top:0,behavior:"smooth"});
+    else if(event.key==="End")area.scrollTo({top:area.scrollHeight,behavior:"smooth"});
+    else area.scrollBy({top:amount,behavior:"smooth"});
+    const canMove=event.key==="Home"?before>0:event.key==="End"?before<area.scrollHeight-area.clientHeight:amount>0?before<area.scrollHeight-area.clientHeight:before>0;
+    if(canMove)event.preventDefault();
+  });
 }
 
 function installTopLayerToasts(){
