@@ -109,6 +109,9 @@ service cloud.firestore {
     match /adminCashMovements/{document} {
       allow read, write: if hasPanel('cash');
     }
+    match /adminCashSettings/{document} {
+      allow read, write: if hasPanel('cash');
+    }
 
     match /adminPushTokens/{tokenId} {
       allow read, create, update, delete: if isManager();

@@ -18,7 +18,7 @@
 </div></header>
 
 <main id="app">
-  <section class="topbar"><div><p class="kicker">Dijital kasa defteri</p><h2>Günlük Hesaplar</h2></div><div class="top-actions"><button id="reportButton" class="soft"><i class="fa-solid fa-chart-pie"></i> Kasa Raporları</button><button id="lockButton" class="soft"><i class="fa-solid fa-lock"></i> Kilitle</button></div></section>
+  <section class="topbar"><div><p class="kicker">Dijital kasa defteri</p><h2>Günlük Hesaplar</h2></div><div class="top-actions"><button id="reportButton" class="soft"><i class="fa-solid fa-chart-pie"></i> Kasa Raporları</button><button id="settingsButton" class="soft"><i class="fa-solid fa-gear"></i> Kasa Ayarları</button><button id="lockButton" class="soft"><i class="fa-solid fa-lock"></i> Kilitle</button></div></section>
 
   <section class="date-switcher"><button id="previousDay" aria-label="Önceki gün"><i class="fa-solid fa-chevron-left"></i></button><div><strong id="selectedDateLabel">--.--.----</strong><small id="selectedDayName">—</small></div><button id="nextDay" aria-label="Sonraki gün"><i class="fa-solid fa-chevron-right"></i></button></section>
 
@@ -39,8 +39,10 @@
 
 <dialog id="deleteDialog"><div class="dialog-card confirm-card"><i class="fa-solid fa-trash-can"></i><h2>Hareket silinsin mi?</h2><p>Bu manuel kayıt kasa bakiyelerinden de çıkarılacak.</p><div class="dialog-actions"><button id="cancelDelete" class="soft">Vazgeç</button><button id="confirmDelete" class="danger-button">Sil</button></div></div></dialog>
 
-<dialog id="reportDialog"><div class="dialog-card report-dialog"><div class="dialog-head"><div><p class="kicker">Gizli mali özet</p><h2>Kasa Raporları</h2></div><button type="button" id="closeReport">×</button></div><label>Rapor ayı<input id="reportMonth" type="month" min="2026-08"></label><div id="reportContent"></div></div></dialog>
+<dialog id="reportDialog"><div class="dialog-card report-dialog"><div class="dialog-head"><div><p class="kicker">Gizli mali özet</p><h2>Kasa Raporları</h2></div><button type="button" id="closeReport">×</button></div><div class="report-toolbar"><label>Rapor ayı<input id="reportMonth" type="month" min="2026-08"></label><button id="reportPdfButton" type="button"><i class="fa-solid fa-file-pdf"></i> PDF İndir</button></div><div id="reportContent"></div></div></dialog>
+
+<dialog id="settingsDialog"><div class="dialog-card settings-dialog"><div class="dialog-head"><div><p class="kicker">Kasa kurulumu</p><h2>Kasa Ayarları</h2></div><button type="button" id="closeSettings">×</button></div><section class="settings-section"><h3>Başlangıç Bakiyeleri</h3><p>01.08.2026 tarihindeki gerçek işletme bakiyelerini gir. Bunlar gelir veya gider sayılmaz.</p><form id="openingForm"><div class="opening-grid"><label>Nakit açılış bakiyesi<input id="openingCash" type="number" min="0" step="0.01" inputmode="decimal" required></label><label>Banka açılış bakiyesi<input id="openingBank" type="number" min="0" step="0.01" inputmode="decimal" required></label><label>Kredi kartı açılış borcu<input id="openingCard" type="number" min="0" step="0.01" inputmode="decimal" required></label></div><button class="settings-save" type="submit"><i class="fa-solid fa-floppy-disk"></i> Başlangıç Bakiyelerini Kaydet</button></form></section><section class="settings-section"><div class="category-columns"><div><h3>Gelir Kalemleri</h3><form class="category-add" data-category-form="income"><input maxlength="60" placeholder="Yeni gelir kalemi" required><button type="submit"><i class="fa-solid fa-plus"></i> Ekle</button></form><div id="incomeCategoryList" class="category-list"></div></div><div><h3>Gider Kalemleri</h3><form class="category-add" data-category-form="expense"><input maxlength="60" placeholder="Yeni gider kalemi" required><button type="submit"><i class="fa-solid fa-plus"></i> Ekle</button></form><div id="expenseCategoryList" class="category-list"></div></div></div><p class="settings-note">Pasife alınan kalem geçmiş raporlarda korunur, yeni işlemlerde görünmez.</p></section></div></dialog>
 
 <div id="toast" class="toast"></div>
-<script type="module" src="script.js?v=113"></script><script type="module" src="../system-ui.js?v=14"></script>
+<script type="module" src="script.js?v=114"></script><script type="module" src="../system-ui.js?v=14"></script>
 </body></html>
