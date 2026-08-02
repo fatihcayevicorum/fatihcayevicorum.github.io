@@ -7,6 +7,7 @@ import { lockSensitiveAccess, requireSensitiveAccess } from "../sensitive-access
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const movementsCol=collection(db,"adminCashMovements"),closingsCol=collection(db,"adminDailyClosings");
+const CASH_START_DATE="2026-08-01";
 const incomeCategories=["İşletmeye Para Girişi","PET Şişe Dönüşüm İadesi","Diğer Gelir"];
 const expenseCategories=["Toptancı / Ürün Alımı","Faturalar","Kira","Elektrik","Su","İnternet","Demirbaş","Temizlik","Market","Manav","Bakım ve Onarım","Maaş Ödemesi","Diğer Gider"];
 let manualMovements=[],closings=[],selectedDate=today(),pendingDeleteId="",started=false,toastTimer;
@@ -37,22 +38,22 @@ function loadError(error){console.error(error);toast("Kasa kayıtları yüklenem
 function automaticMovements(){
   const rows=[];
   for(const closing of closings){
-    const date=closing.businessDate;if(!date)continue;
+    const date=closing.businessDate;if(!date||date<CASH_START_DATE)continue;
     const cash=number(closing.cashTotal),bank=number(closing.transferTotal);
     if(cash)rows.push({id:`closing-cash-${closing.id}`,type:"income",account:"cash",amount:cash,category:"Gün Sonu",description:"Nakit Satış Geliri",businessDate:date,createdAtMs:number(closing.closedAtMs),automatic:true,source:"daily-closing"});
     if(bank)rows.push({id:`closing-bank-${closing.id}`,type:"income",account:"bank",amount:bank,category:"Gün Sonu",description:"Banka Havalesi Geliri",businessDate:date,createdAtMs:number(closing.closedAtMs),automatic:true,source:"daily-closing"});
   }
   return rows;
 }
-function allMovements(){return [...manualMovements,...automaticMovements()]}
-function changeDay(offset){selectedDate=shiftDate(selectedDate,offset);if(selectedDate>today())selectedDate=today();render()}
+function allMovements(){return [...manualMovements,...automaticMovements()].filter(m=>m.businessDate>=CASH_START_DATE)}
+function changeDay(offset){selectedDate=shiftDate(selectedDate,offset);if(selectedDate>today())selectedDate=today();if(selectedDate<CASH_START_DATE)selectedDate=CASH_START_DATE;render()}
 
 function render(){
   const dayRows=allMovements().filter(m=>m.businessDate===selectedDate).sort(sortMovements),filter=$("filter").value;
   const shown=filter==="all"?dayRows:dayRows.filter(m=>m.type===filter),totals=dayTotals(dayRows),balances=balancesThrough(selectedDate);
-  $("selectedDateLabel").textContent=formatBusinessDate(selectedDate);$("selectedDayName").textContent=dayName(selectedDate);$("nextDay").disabled=selectedDate>=today();
+  $("selectedDateLabel").textContent=formatBusinessDate(selectedDate);$("selectedDayName").textContent=dayName(selectedDate);$("previousDay").disabled=selectedDate<=CASH_START_DATE;$("nextDay").disabled=selectedDate>=today();
   $("dayIncome").textContent=money(totals.income);$("dayExpense").textContent=money(totals.expense);$("dayNet").textContent=money(totals.income-totals.expense);
-  $("cashBalance").textContent=money(balances.cash);$("bankBalance").textContent=money(balances.bank);$("cardBalance").textContent=money(Math.max(0,balances.cardDebt));$("netBalance").textContent=money(balances.cash+balances.bank);
+  const total=balances.cash+balances.bank;$("cashBalance").textContent=money(balances.cash);$("bankBalance").textContent=money(balances.bank);$("cardBalance").textContent=money(Math.max(0,balances.cardDebt));$("totalBalance").textContent=money(total);$("netBalance").textContent=money(total-Math.max(0,balances.cardDebt));
   $("empty").hidden=shown.length>0;
   $("movementList").innerHTML=shown.map(m=>`<article class="movement"><div class="movement-icon"><i class="fa-solid ${movementIcon(m)}"></i></div><div class="movement-copy"><strong>${esc(m.description||m.category)}</strong><small>${esc(m.category||typeName(m.type))} • ${esc(accountText(m))}</small>${m.automatic?'<span class="system-badge"><i class="fa-solid fa-lock"></i> Gün sonundan otomatik</span>':`<small>${formatTime(m.createdAtMs)}</small>`}</div><div class="movement-side"><b class="${m.type}">${sign(m)} ${money(m.amount)}</b>${m.automatic?'':`<div class="row-actions"><button data-edit="${esc(m.id)}"><i class="fa-solid fa-pen"></i> Düzenle</button><button data-delete="${esc(m.id)}"><i class="fa-solid fa-trash"></i> Sil</button></div>`}</div></article>`).join("");
 }
@@ -82,7 +83,7 @@ function movementAction(e){const edit=e.target.closest("[data-edit]"),remove=e.t
 async function deleteMovement(){if(!pendingDeleteId)return;try{await deleteDoc(doc(db,"adminCashMovements",pendingDeleteId));pendingDeleteId="";$("deleteDialog").close();toast("Hareket silindi.")}catch(error){console.error(error);toast("Hareket silinemedi.")}}
 
 function openReport(){const month=selectedDate.slice(0,7);$("reportMonth").value=month;renderReport();$("reportDialog").showModal()}
-function renderReport(){const month=$("reportMonth").value||today().slice(0,7),rows=allMovements().filter(m=>m.businessDate?.startsWith(month)),totals=dayTotals(rows),endDate=`${month}-31`,balances=balancesThrough(endDate),byExpense=groupAmounts(rows.filter(m=>m.type==="expense"),m=>m.category||"Diğer"),byIncome=groupAmounts(rows.filter(m=>m.type==="income"),m=>m.description||m.category||"Diğer"),products=groupProducts(closings.filter(c=>c.businessDate?.startsWith(month)));$("reportContent").innerHTML=`<div class="report-totals"><div class="report-stat"><span>Toplam Gelir</span><b>${money(totals.income)}</b></div><div class="report-stat"><span>Toplam Gider</span><b>${money(totals.expense)}</b></div><div class="report-stat"><span>Aylık Fark</span><b>${money(totals.income-totals.expense)}</b></div></div><div class="report-accounts"><div class="report-stat"><span>Ay Sonu Nakit</span><b>${money(balances.cash)}</b></div><div class="report-stat"><span>Ay Sonu Banka</span><b>${money(balances.bank)}</b></div><div class="report-stat"><span>Kart Borcu</span><b>${money(Math.max(0,balances.cardDebt))}</b></div></div>${reportSection("Gelirler",byIncome,"Bu ay gelir yok.")}${reportSection("Giderler",byExpense,"Bu ay gider yok.")}${productSection(products)}`}
+function renderReport(){let month=$("reportMonth").value||today().slice(0,7);if(month<"2026-08")month="2026-08";$("reportMonth").value=month;const rows=allMovements().filter(m=>m.businessDate?.startsWith(month)),totals=dayTotals(rows),endDate=`${month}-31`,balances=balancesThrough(endDate),byExpense=groupAmounts(rows.filter(m=>m.type==="expense"),m=>m.category||"Diğer"),byIncome=groupAmounts(rows.filter(m=>m.type==="income"),m=>m.description||m.category||"Diğer"),products=groupProducts(closings.filter(c=>c.businessDate>=CASH_START_DATE&&c.businessDate?.startsWith(month)));$("reportContent").innerHTML=`<div class="report-totals"><div class="report-stat"><span>Toplam Gelir</span><b>${money(totals.income)}</b></div><div class="report-stat"><span>Toplam Gider</span><b>${money(totals.expense)}</b></div><div class="report-stat"><span>Aylık Fark</span><b>${money(totals.income-totals.expense)}</b></div></div><div class="report-accounts"><div class="report-stat"><span>Ay Sonu Nakit</span><b>${money(balances.cash)}</b></div><div class="report-stat"><span>Ay Sonu Banka</span><b>${money(balances.bank)}</b></div><div class="report-stat"><span>Kart Borcu</span><b>${money(Math.max(0,balances.cardDebt))}</b></div></div>${reportSection("Gelirler",byIncome,"Bu ay gelir yok.")}${reportSection("Giderler",byExpense,"Bu ay gider yok.")}${productSection(products)}`}
 function groupAmounts(rows,key){const map=new Map;for(const row of rows){const name=key(row);map.set(name,(map.get(name)||0)+number(row.amount))}return [...map].sort((a,b)=>b[1]-a[1])}
 function groupProducts(items){const map=new Map;for(const closing of items)for(const p of closing.products||[]){const name=p.name||"Ürün",current=map.get(name)||{quantity:0,total:0};current.quantity+=number(p.quantity);current.total+=number(p.total);map.set(name,current)}return [...map].sort((a,b)=>b[1].quantity-a[1].quantity)}
 function reportSection(title,rows,empty){return`<section class="report-section"><h3>${title}</h3>${rows.length?rows.map(([name,total])=>`<div class="report-row"><span>${esc(name)}</span><b>${money(total)}</b></div>`).join(""):`<p class="empty">${empty}</p>`}</section>`}
