@@ -4,9 +4,9 @@ firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDom
 const backgroundMessaging=firebase.messaging();
 backgroundMessaging.onBackgroundMessage(payload=>{
   const data=payload.data||{},title=data.title||"Fatih Çay Evi";
-  return self.registration.showNotification(title,{body:data.body||"Yeni bir bildiriminiz var.",icon:"./assets/icons/icon-192.png",badge:"./assets/icons/icon-192.png",tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
+  return self.registration.showNotification(title,{body:data.body||"Yeni bir bildiriminiz var.",icon:"./assets/icons/notification-icon.png",badge:"./assets/icons/notification-badge.png",tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
 });
-const VERSION="fatih-cay-evi-r131",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r132",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/customer-notifications.js","./assets/css/customer-notifications.css",
@@ -30,7 +30,7 @@ const CORE=[
   "./ana-sayfa-yonetimi/","./ana-sayfa-yonetimi/index.html","./ana-sayfa-yonetimi/style.css","./ana-sayfa-yonetimi/script.js",
   "./kullanici-yonetimi/","./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
   "./manifest.webmanifest","./admin-manifest.webmanifest",
-  "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png",
+  "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png","./assets/icons/notification-icon.png","./assets/icons/notification-badge.png",
   "./assets/icons/icon-maskable-192.png","./assets/icons/icon-maskable-512.png"
 ];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(STATIC_CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
