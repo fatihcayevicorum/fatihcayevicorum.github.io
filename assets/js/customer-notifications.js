@@ -1,12 +1,13 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import{doc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{doc,getFirestore,onSnapshot,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{deleteToken,getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
 import{FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
 
 const app=getApps().length?getApp():initializeApp(firebaseConfig),db=getFirestore(app);
-const TOKEN_KEY="fatihCustomerPushToken",PREF_KEY="fatihCustomerNotificationPreferences";
+const TOKEN_KEY="fatihCustomerPushToken",PREF_KEY="fatihCustomerNotificationPreferences",RESET_KEY="fatihPushResetVersion";
 let busy=false;
 build();
+watchPushReset();
 
 function build(){
   document.body.insertAdjacentHTML("beforeend",`
@@ -66,7 +67,7 @@ async function savePreferences(event){
     const registration=await navigator.serviceWorker.ready,messaging=getMessaging(app);
     const token=await getToken(messaging,{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:registration});
     if(!token)throw Error("token");
-    const id=await tokenId(token);
+    const id=`customer-${await tokenId(token)}`;
     await setDoc(doc(db,"pushSubscriptions",id),{
       token,audience:"customer",enabled:true,teaUpdates,campaigns,
       platform:navigator.userAgentData?.platform||navigator.platform||"",
@@ -109,3 +110,4 @@ function setMessage(value){$("#customerNotifyMessage").textContent=value}
 function showToast(value){const toast=$("#customerNotifyToast");toast.textContent=value;toast.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove("show"),3000)}
 function $(selector){return document.querySelector(selector)}
 async function tokenId(token){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(token));return[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function watchPushReset(){onSnapshot(doc(db,"publicPush","config"),async snap=>{const version=Number(snap.data()?.resetVersion)||0,seen=Number(localStorage.getItem(RESET_KEY))||0;if(!version||version<=seen)return;const hadToken=Boolean(localStorage.getItem(TOKEN_KEY));localStorage.setItem(RESET_KEY,String(version));localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(PREF_KEY);if(await isSupported())await deleteToken(getMessaging(app)).catch(()=>{});refreshBell();if(hadToken)showToast("Bildirim kaydı sıfırlandı. Yeniden açabilirsiniz.")})}

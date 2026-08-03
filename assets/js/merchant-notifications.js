@@ -1,11 +1,11 @@
 import{getApps}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{doc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{doc,getFirestore,onSnapshot,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{deleteToken,getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
 import{FCM_VAPID_KEY}from"./firebase-config.js";
 
 const app=getApps().find(item=>item.name==="merchant-portal");
-const TOKEN_KEY="fatihMerchantAudiencePushToken";
+const TOKEN_KEY="fatihMerchantAudiencePushToken",RESET_KEY="fatihPushResetVersion";
 let busy=false;
 
 if(app)setup();
@@ -17,6 +17,7 @@ function setup(){
   button.className="merchant-push-button";
   document.querySelector(".welcome")?.after(button);
   const auth=getAuth(app),db=getFirestore(app),messaging=getMessaging(app);
+  onSnapshot(doc(db,"publicPush","config"),async snap=>{const version=Number(snap.data()?.resetVersion)||0,seen=Number(localStorage.getItem(RESET_KEY))||0;if(!version||version<=seen)return;const hadToken=Boolean(localStorage.getItem(TOKEN_KEY));localStorage.setItem(RESET_KEY,String(version));localStorage.removeItem(TOKEN_KEY);await deleteToken(messaging).catch(()=>{});refresh(button,hadToken?"Bildirim kaydı sıfırlandı. Yeniden açın.":"")});
 
   onAuthStateChanged(auth,async user=>{
     if(!user)return;
@@ -39,7 +40,7 @@ function setup(){
         const registration=await navigator.serviceWorker.ready;
         const token=await getToken(messaging,{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:registration});
         if(!token)throw Error("token");
-        const id=await tokenId(token);
+        const id=`merchant-${await tokenId(token)}`;
         await setDoc(doc(db,"pushSubscriptions",id),{
           token,audience:"merchant",merchantId:user.uid,enabled:true,
           platform:navigator.userAgentData?.platform||navigator.platform||"",

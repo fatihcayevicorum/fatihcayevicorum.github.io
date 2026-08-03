@@ -48,6 +48,7 @@
     <button class="action-button" data-open-dialog="adminSendDialog"><i class="fa-solid fa-user-shield"></i><span><strong>Yönetici Bildirimi</strong><small>Yönetici cihazlarına gönder</small></span><i class="fa-solid fa-chevron-right"></i></button>
     <button class="action-button" data-open-dialog="merchantSendDialog"><i class="fa-solid fa-store"></i><span><strong>Esnaf Bildirimi</strong><small>Esnaflara duyuru gönder</small></span><i class="fa-solid fa-chevron-right"></i></button>
     <button class="action-button" data-open-dialog="historyDialog"><i class="fa-solid fa-clock-rotate-left"></i><span><strong>Bildirim Geçmişi</strong><small>Son gönderimleri görüntüle</small></span><i class="fa-solid fa-chevron-right"></i></button>
+    <button class="action-button reset-push-action" data-open-dialog="resetPushDialog"><i class="fa-solid fa-rotate"></i><span><strong>Push Sistemini Sıfırla</strong><small>Müşteri, yönetici ve esnaf cihazlarını temizle</small></span><i class="fa-solid fa-chevron-right"></i></button>
   </section>
 </main>
 
@@ -107,9 +108,10 @@
   </div></dialog>
 
 <dialog class="confirm-dialog" id="deleteScheduleDialog"><div class="confirm-card"><div class="confirm-icon"><i class="fa-solid fa-trash"></i></div><h2>Zamanlı bildirim silinsin mi?</h2><p>Bu bildirim programdan kaldırılacak. Bu işlem geri alınamaz.</p><div class="confirm-actions"><button class="secondary" type="button" data-close-dialog>Vazgeç</button><button class="danger" id="confirmScheduleDelete" type="button">Bildirimi Sil</button></div></div></dialog>
+<dialog class="confirm-dialog" id="resetPushDialog"><div class="confirm-card"><div class="confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h2>Push sistemi sıfırlansın mı?</h2><p>Müşteri, yönetici ve esnaf cihaz kayıtlarıyla eski bildirim geçmişi temizlenecek. Zamanlı bildirimler ve bildirim ayarları korunacak. Sonrasında cihazları tek tek yeniden kaydedeceğiz.</p><div class="confirm-actions"><button class="secondary" type="button" data-close-dialog>Vazgeç</button><button class="danger" id="confirmPushReset" type="button">Sistemi Sıfırla</button></div><p class="reset-status" id="pushResetStatus" aria-live="polite"></p></div></dialog>
 <div class="toast" id="toast"></div>
-<script type="module" src="script.js?v=4"></script>
-<script type="module" src="../assets/js/merchant-order-alert.js?v=14"></script>
+<script type="module" src="script.js?v=5"></script>
+<script type="module" src="../assets/js/merchant-order-alert.js?v=15"></script>
 <script type="module" src="../assets/js/system-ui.js?v=19"></script>
 </body>
 </html>

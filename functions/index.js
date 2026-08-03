@@ -73,6 +73,17 @@ exports.clearLoginDevices=onCall({region:"europe-west1",cors:true},async request
   return{cleared:devices.size,verified:true}
 });
 
+exports.resetPushSystem=onCall({region:"europe-west1",cors:true,timeoutSeconds:120},async request=>{
+  requireOwner(request);
+  const collections=["pushSubscriptions","adminPushTokens","notificationHistory","notificationOutbox","notificationTeaEvents"],counts={},writer=db.bulkWriter();
+  for(const name of collections){const snap=await db.collection(name).get();counts[name]=snap.size;snap.docs.forEach(item=>writer.delete(item.ref))}
+  await writer.close();
+  const resetVersion=Date.now();
+  await db.doc("publicPush/config").set({resetVersion,resetAtMs:resetVersion,resetAt:FieldValue.serverTimestamp(),resetBy:request.auth.uid});
+  await auditUserAction("push-system-reset",OWNER_UID,request.auth.uid,{counts,resetVersion});
+  return{reset:true,resetVersion,counts};
+});
+
 exports.readSystemBackup=onCall({region:"europe-west1",cors:true,memory:"256MiB"},async request=>{
   requireOwner(request);const name=String(request.data?.name||"");
   if(!/^fatih-cay-evi-veri-yedegi-[\w.-]+\.json$/.test(name))throw new HttpsError("invalid-argument","Yedek adı geçersiz.");

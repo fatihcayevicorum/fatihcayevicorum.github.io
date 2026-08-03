@@ -69,6 +69,10 @@ service cloud.firestore {
       allow create, update: if request.resource.data.lastSeenMs is int;
       allow delete: if false;
     }
+    match /publicPush/config {
+      allow read: if true;
+      allow write: if false;
+    }
 
     match /adminStockItems/{document} {
       allow read: if hasAnyPanel(['stock', 'pos', 'reports']);
