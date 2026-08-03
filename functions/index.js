@@ -7,6 +7,7 @@ const{initializeApp}=require("firebase-admin/app");
 const{getAuth}=require("firebase-admin/auth");
 const{FieldValue,getFirestore}=require("firebase-admin/firestore");
 const{getMessaging}=require("firebase-admin/messaging");
+const{getStorage}=require("firebase-admin/storage");
 const{logger}=require("firebase-functions");
 initializeApp();
 const db=getFirestore();
@@ -61,6 +62,14 @@ exports.registerLoginDevice=onCall({region:"europe-west1",cors:true},async reque
   const accountRef=db.doc(`accountDevices/${uid}`),deviceRef=accountRef.collection("devices").doc(deviceId),now=Date.now();await db.runTransaction(async tx=>{const account=await tx.get(accountRef),current=Array.isArray(account.data()?.deviceIds)?account.data().deviceIds:[];if(!current.includes(deviceId)&&current.length>=limit)throw new HttpsError("resource-exhausted",`Bu hesap en fazla ${limit} cihazda kullanılabilir.`);const ids=current.includes(deviceId)?current:[...current,deviceId];tx.set(accountRef,{uid,role,deviceLimit:limit,deviceIds:ids,updatedAtMs:now,updatedAt:FieldValue.serverTimestamp()},{merge:true});tx.set(deviceRef,{deviceId,deviceName:String(request.data?.deviceName||"Cihaz").slice(0,40),deviceType:String(request.data?.deviceType||"bilinmiyor").slice(0,20),platform:String(request.data?.platform||"").slice(0,50),userAgent:String(request.data?.userAgent||"").slice(0,240),firstSeenAtMs:now,lastSeenAtMs:now,lastSeenAt:FieldValue.serverTimestamp()},{merge:true})});return{allowed:true,role,deviceLimit:limit}
 });
 exports.clearLoginDevices=onCall({region:"europe-west1",cors:true},async request=>{const targetUid=String(request.data?.uid||"");if(!targetUid)throw new HttpsError("invalid-argument","Hesap geçersiz.");if(request.auth?.uid!==OWNER_UID){await requirePanel(request,"merchant");const merchant=await db.doc(`merchantProfiles/${targetUid}`).get();if(!merchant.exists)throw new HttpsError("permission-denied","Bu hesap için yetkiniz yok.")}const accountRef=db.doc(`accountDevices/${targetUid}`),devices=await accountRef.collection("devices").get(),batch=db.batch();devices.docs.forEach(d=>batch.delete(d.ref));batch.set(accountRef,{deviceIds:[],updatedAtMs:Date.now(),updatedAt:FieldValue.serverTimestamp()},{merge:true});await batch.commit();await getAuth().revokeRefreshTokens(targetUid).catch(()=>{});return{cleared:devices.size}
+});
+
+exports.readSystemBackup=onCall({region:"europe-west1",cors:true,memory:"256MiB"},async request=>{
+  requireOwner(request);const name=String(request.data?.name||"");
+  if(!/^fatih-cay-evi-veri-yedegi-[\w.-]+\.json$/.test(name))throw new HttpsError("invalid-argument","Yedek adı geçersiz.");
+  const file=getStorage().bucket().file(`system-backups/${name}`),[exists]=await file.exists();if(!exists)throw new HttpsError("not-found","Yedek bulunamadı.");
+  const[meta]=await file.getMetadata(),size=Number(meta.size)||0;if(size>8*1024*1024)throw new HttpsError("resource-exhausted","Yedek doğrudan açmak için çok büyük.");
+  const[bytes]=await file.download();return{name,text:bytes.toString("utf8"),size};
 });
 exports.deleteMerchantUser=onCall({region:"europe-west1",cors:true},async request=>{
   await requirePanel(request,"merchant");const uid=String(request.data?.uid||"");if(!uid)throw new HttpsError("invalid-argument","Esnaf hesabı geçersiz.");
