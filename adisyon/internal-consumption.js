@@ -36,6 +36,7 @@ async function saveConsumption(){
           const sr=doc(stockCol,stock.id),snap=await tx.get(sr);
           if(!snap.exists())throw new Error("stock-missing");
           const fresh=snap.data(),amount=line.quantity*(Number(stock.deductionAmount)||1),before=Number(fresh.quantity)||0,unitCost=Number(fresh.unitCost)||Number(stock.unitCost)||0;
+          if(before<amount)throw new Error(`insufficient:${stock.name||line.name}:${before}:${amount}`);
           deductions.push({line,stock,sr,amount,before,after:before-amount,unitCost,totalCost:amount*unitCost});
         }
       }
@@ -49,7 +50,7 @@ async function saveConsumption(){
       tx.set(ref,{businessDate:date,items:savedItems,totalQuantity:cart.reduce((s,x)=>s+x.quantity,0),totalCost,note:note.value.trim(),createdAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
     });
     notify("Dahili tüketim stoktan düşüldü.");dialog.close();cart=[];render();
-  }catch(error){console.error(error);notify(error.message==="stock-link"?"Seçilen ürünün stok bağlantısı bulunamadı.":"Dahili tüketim kaydedilemedi.")}
+  }catch(error){console.error(error);const parts=String(error.message||"").split(":");notify(error.message==="stock-link"?"Seçilen ürünün stok bağlantısı bulunamadı.":parts[0]==="insufficient"?`${parts[1]} stoku yetersiz. Mevcut: ${parts[2]}, gereken: ${parts[3]}.`:"Dahili tüketim kaydedilemedi.")}
   finally{busy=false;renderCart()}
 }
 function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}

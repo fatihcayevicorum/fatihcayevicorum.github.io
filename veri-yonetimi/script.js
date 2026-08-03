@@ -5,7 +5,7 @@ import{deleteObject,getBytes,getMetadata,getStorage,listAll,ref as storageRef,up
 import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),$=id=>document.getElementById(id);
-const COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminCreditCustomers","adminCreditMovements","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders"];
+const COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminCreditCustomers","adminCreditMovements","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","notificationSchedules","notificationSettings","notificationOutbox","notificationHistory"];
 const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminCashSettings","config"]];
 const BACKUP_PREFIX="system-backups/";
 let busy=false,pendingRestore=null,pendingAction=null,toastTimer;
@@ -87,8 +87,8 @@ async function runCleanup(selected){
     setBusy(true,"Seçilen veriler temizleniyor…");
     if(selected.includes("sales")){await deleteCollection("adminSales");await deleteCollection("adminOrders")}
     if(selected.includes("closings"))await deleteCollection("adminDailyClosings");
-    if(selected.includes("purchases"))await deleteFiltered("adminStockMovements",d=>["in","initial"].includes(d.type));
-    if(selected.includes("stockMovements"))await deleteCollection("adminStockMovements");
+    if(selected.includes("purchases")){const ids=await matchingIds("adminStockMovements",d=>["in","initial"].includes(d.type));await deleteLinkedStockExpenses(ids);await deleteDocuments("adminStockMovements",ids)}
+    if(selected.includes("stockMovements")){const ids=await matchingIds("adminStockMovements",()=>true);await deleteLinkedStockExpenses(ids);await deleteDocuments("adminStockMovements",ids)}
     if(selected.includes("internalConsumptions")){await deleteCollection("adminInternalConsumptions");await deleteFiltered("adminStockMovements",d=>d.source==="internal-consumption")}
     if(selected.includes("stockQuantities"))await updateCollection("adminStockItems",()=>({quantity:0,updatedAtMs:Date.now()}));
     if(selected.includes("stockItems"))await deleteCollection("adminStockItems");
@@ -127,6 +127,9 @@ async function restoreBackup(mode){
 
 async function deleteCollection(name){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.map(x=>({type:"delete",ref:x.ref})))}
 async function deleteFiltered(name,test){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.filter(x=>test(x.data())).map(x=>({type:"delete",ref:x.ref})))}
+async function matchingIds(name,test){const snap=await getDocs(collection(db,name));return snap.docs.filter(x=>test(x.data())).map(x=>x.id)}
+async function deleteDocuments(name,ids){await runBatches(ids.map(id=>({type:"delete",ref:doc(db,name,id)})))}
+async function deleteLinkedStockExpenses(ids){if(!ids.length)return;const wanted=new Set(ids),snap=await getDocs(collection(db,"adminCashMovements"));await runBatches(snap.docs.filter(x=>{const d=x.data();return d.source==="stock-purchase"&&wanted.has(d.sourceId)}).map(x=>({type:"delete",ref:x.ref})))}
 async function updateCollection(name,makeData){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.map(x=>({type:"set",ref:x.ref,data:makeData(x.data()),merge:true})))}
 async function clearCreditActivity(){
   await deleteCollection("adminCreditMovements");
@@ -153,7 +156,7 @@ function setBusy(value,message="İşlem sürüyor…"){busy=value;$("backupButto
 function setProgress(message){$("backupProgress").querySelector("span").textContent=message}
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1200)}
 function countBackup(data){return Object.values(data.collections||{}).reduce((n,x)=>n+x.length,0)+Object.values(data.documents||{}).filter(Boolean).length}
-function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminInternalConsumptions:"Dahili tüketimler",adminCreditCustomers:"Açık hesaplar",adminCreditMovements:"Açık hesap hareketleri",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri",adminCashMovements:"Kasa ve hesap hareketleri",adminCashCounts:"Kasa sayımları",adminPaymentReminders:"Ödeme hatırlatmaları"})[name]||name}
+function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminInternalConsumptions:"Dahili tüketimler",adminCreditCustomers:"Açık hesaplar",adminCreditMovements:"Açık hesap hareketleri",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri",adminCashMovements:"Kasa ve hesap hareketleri",adminCashCounts:"Kasa sayımları",adminPaymentReminders:"Ödeme hatırlatmaları",staffUsers:"Kullanıcı yetkileri",notificationSchedules:"Bildirim zamanlamaları",notificationSettings:"Bildirim ayarları",notificationOutbox:"Bildirim gönderim kuyruğu",notificationHistory:"Bildirim geçmişi"})[name]||name}
 function storageMessage(error){return String(error?.code||"").includes("unauthorized")?"Yedek saklanamadı. Storage kurallarını yayınlayın.":"Yedek alınamadı. Bağlantıyı kontrol edin."}
 function backupReadMessage(error,fallback){const code=String(error?.code||error?.message||"");if(code.includes("object-not-found"))return"Bu yedek bulutta bulunamadı.";if(code.includes("unauthorized"))return"Yedeğe erişim izni reddedildi.";if(code.includes("invalid-backup")||code.includes("JSON"))return"Yedek dosyasının biçimi okunamadı.";return fallback}
 function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}
