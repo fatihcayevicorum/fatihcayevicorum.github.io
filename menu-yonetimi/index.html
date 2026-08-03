@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
     <link rel="stylesheet" href="../assets/css/management-forms.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
@@ -42,10 +42,6 @@
                 <article><span>Kategori</span><strong id="categoryCount">0</strong></article>
                 <article><span>Ürün</span><strong id="productCount">0</strong></article>
                 <article><span>Satışta</span><strong id="availableCount">0</strong></article>
-            </div>
-            <div class="bulk-tools">
-                <div><strong>Toplu Menü Aktarımı</strong><span>JSON dosyası mevcut menünün tamamının yerine geçer.</span></div>
-                <label class="import-button"><i class="fa-solid fa-file-import" aria-hidden="true"></i><span>Menü Dosyası Seç</span><input id="importMenuFile" type="file" accept="application/json,.json"></label>
             </div>
         </section>
 
@@ -111,6 +107,13 @@
             </form>
             <p class="empty-copy" id="bundleEmpty">Henüz bağlı ürün kuralı oluşturulmadı.</p>
             <div class="bundle-list" id="bundleList"></div>
+        </section>
+
+        <section class="panel import-panel">
+            <div class="bulk-tools">
+                <div><strong>Toplu Menü Aktarımı</strong><span>JSON dosyası mevcut menünün tamamının yerine geçer.</span></div>
+                <label class="import-button"><i class="fa-solid fa-file-import" aria-hidden="true"></i><span>Menü Dosyası Seç</span><input id="importMenuFile" type="file" accept="application/json,.json"></label>
+            </div>
         </section>
     </main>
 
