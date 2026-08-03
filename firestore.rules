@@ -104,12 +104,24 @@ service cloud.firestore {
       allow write: if hasAnyPanel(['reports', 'pos']);
     }
     match /adminInternalConsumptions/{document} {
-      allow read, write: if hasPanel('pos');
+      allow read: if hasAnyPanel(['pos', 'reports']);
+      allow write: if hasPanel('pos');
     }
     match /adminCashMovements/{document} {
-      allow read, write: if hasPanel('cash');
+      allow read, update, delete: if hasPanel('cash');
+      allow create: if hasPanel('cash') || (hasPanel('stock')
+        && request.resource.data.source == 'stock-purchase'
+        && request.resource.data.type == 'expense'
+        && request.resource.data.amount is number
+        && request.resource.data.amount >= 0);
     }
     match /adminCashSettings/{document} {
+      allow read, write: if hasPanel('cash');
+    }
+    match /adminCashCounts/{document} {
+      allow read, write: if hasPanel('cash');
+    }
+    match /adminPaymentReminders/{document} {
       allow read, write: if hasPanel('cash');
     }
 

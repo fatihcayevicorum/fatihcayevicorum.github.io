@@ -22,7 +22,36 @@ function availableProducts(){return catalog.items.filter(p=>p.available!==false&
 function render(){renderProducts();renderCart()}
 function renderProducts(){const all=availableProducts(),q=search.value.trim().toLocaleLowerCase("tr-TR"),cats=catalog.categories.filter(c=>all.some(p=>p.categoryId===c.id));tabs.innerHTML=`<button class="${category==="all"?"active":""}" data-internal-category="all">Tümü</button>`+cats.map(c=>`<button class="${category===c.id?"active":""}" data-internal-category="${esc(c.id)}">${esc(c.name)}</button>`).join("");const filtered=all.filter(p=>(category==="all"||p.categoryId===category)&&(!q||String(p.name).toLocaleLowerCase("tr-TR").includes(q)));empty.hidden=filtered.length>0;grid.innerHTML=filtered.map(p=>`<button type="button" class="product internal-product-button" data-internal-product="${esc(p.id)}"><strong>${esc(p.name)}</strong></button>`).join("")}
 function renderCart(){const qty=cart.reduce((s,x)=>s+x.quantity,0);cartEmpty.hidden=cart.length>0;items.innerHTML=cart.map(x=>`<article class="order-item"><div><strong>${esc(x.name)}</strong><small>Dahili tüketim</small></div><div class="qty"><button type="button" data-internal-id="${esc(x.id)}" data-internal-qty="-1">−</button><b>${x.quantity}</b><button type="button" data-internal-id="${esc(x.id)}" data-internal-qty="1">+</button></div></article>`).join("");total.textContent=qty;save.disabled=!qty||busy}
-async function saveConsumption(){if(busy||!cart.length)return;busy=true;renderCart();try{const ref=doc(consumptionCol),date=today(),createdAtMs=Date.now();await runTransaction(db,async tx=>{const deductions=[];for(const line of cart){const links=stocks.filter(s=>s.active!==false&&s.automaticDeduction&&s.linkedMenuItemId===line.id);if(!links.length)throw new Error("stock-link");for(const stock of links){const sr=doc(stockCol,stock.id),snap=await tx.get(sr);if(!snap.exists())throw new Error("stock-missing");const amount=line.quantity*(Number(stock.deductionAmount)||1),before=Number(snap.data().quantity)||0;deductions.push({line,stock,sr,amount,before,after:before-amount})}}for(const d of deductions){tx.update(d.sr,{quantity:d.after,updatedAt:serverTimestamp()});tx.set(doc(stockMovesCol),{stockItemId:d.stock.id,stockName:d.stock.name||d.line.name,type:"out",amount:d.amount,previousQuantity:d.before,resultingQuantity:d.after,unit:d.stock.unit||"adet",operationDate:date,note:`Dahili Tüketim: ${d.line.name}`,source:"internal-consumption",consumptionId:ref.id,createdAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})}tx.set(ref,{businessDate:date,items:cart.map(x=>({...x})),totalQuantity:cart.reduce((s,x)=>s+x.quantity,0),note:note.value.trim(),createdAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid})});notify("Dahili tüketim stoktan düşüldü.");dialog.close();cart=[];render()}catch(error){console.error(error);notify(error.message==="stock-link"?"Seçilen ürünün stok bağlantısı bulunamadı.":"Dahili tüketim kaydedilemedi.")}finally{busy=false;renderCart()}}
+async function saveConsumption(){
+  if(busy||!cart.length)return;
+  busy=true;renderCart();
+  try{
+    const ref=doc(consumptionCol),date=today(),createdAtMs=Date.now();
+    await runTransaction(db,async tx=>{
+      const deductions=[];
+      for(const line of cart){
+        const links=stocks.filter(s=>s.active!==false&&s.automaticDeduction&&s.linkedMenuItemId===line.id);
+        if(!links.length)throw new Error("stock-link");
+        for(const stock of links){
+          const sr=doc(stockCol,stock.id),snap=await tx.get(sr);
+          if(!snap.exists())throw new Error("stock-missing");
+          const fresh=snap.data(),amount=line.quantity*(Number(stock.deductionAmount)||1),before=Number(fresh.quantity)||0,unitCost=Number(fresh.unitCost)||Number(stock.unitCost)||0;
+          deductions.push({line,stock,sr,amount,before,after:before-amount,unitCost,totalCost:amount*unitCost});
+        }
+      }
+      const costByItem=new Map();
+      for(const d of deductions){
+        tx.update(d.sr,{quantity:d.after,updatedAt:serverTimestamp()});
+        tx.set(doc(stockMovesCol),{stockItemId:d.stock.id,stockName:d.stock.name||d.line.name,type:"out",amount:d.amount,previousQuantity:d.before,resultingQuantity:d.after,unit:d.stock.unit||"adet",unitCost:d.unitCost,totalCost:d.totalCost,operationDate:date,note:`Dahili Tüketim: ${d.line.name}`,source:"internal-consumption",consumptionId:ref.id,createdAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
+        costByItem.set(d.line.id,(costByItem.get(d.line.id)||0)+d.totalCost);
+      }
+      const savedItems=cart.map(x=>({...x,totalCost:costByItem.get(x.id)||0,unitCost:x.quantity>0?(costByItem.get(x.id)||0)/x.quantity:0})),totalCost=savedItems.reduce((sum,x)=>sum+Number(x.totalCost||0),0);
+      tx.set(ref,{businessDate:date,items:savedItems,totalQuantity:cart.reduce((s,x)=>s+x.quantity,0),totalCost,note:note.value.trim(),createdAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
+    });
+    notify("Dahili tüketim stoktan düşüldü.");dialog.close();cart=[];render();
+  }catch(error){console.error(error);notify(error.message==="stock-link"?"Seçilen ürünün stok bağlantısı bulunamadı.":"Dahili tüketim kaydedilemedi.")}
+  finally{busy=false;renderCart()}
+}
 function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}
 function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}
 function notify(message){if(!toast)return;toast.textContent=message;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),3000)}

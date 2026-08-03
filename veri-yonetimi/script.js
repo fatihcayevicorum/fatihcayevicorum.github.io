@@ -5,7 +5,7 @@ import{deleteObject,getBytes,getMetadata,getStorage,listAll,ref as storageRef,up
 import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),$=id=>document.getElementById(id);
-const COLLECTIONS=["adminStockItems","adminStockMovements","adminCreditCustomers","adminCreditMovements","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements"];
+const COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminCreditCustomers","adminCreditMovements","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders"];
 const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminCashSettings","config"]];
 const BACKUP_PREFIX="system-backups/";
 let busy=false,pendingRestore=null,pendingAction=null,toastTimer;
@@ -42,7 +42,7 @@ async function collectAllData(){
   const collections={},documents={};let totalRecords=0;
   for(const name of COLLECTIONS){setProgress(`${displayName(name)} yedekleniyor…`);const snap=await getDocs(collection(db,name));collections[name]=snap.docs.map(d=>({id:d.id,data:encode(d.data())}));totalRecords+=snap.size}
   for(const [col,id] of SINGLE_DOCS){const snap=await getDoc(doc(db,col,id));documents[`${col}/${id}`]=snap.exists()?{id,data:encode(snap.data())}:null;if(snap.exists())totalRecords++}
-  return{app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:1,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections,documents};
+  return{app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:2,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections,documents};
 }
 
 async function renderBackups(){
@@ -89,6 +89,7 @@ async function runCleanup(selected){
     if(selected.includes("closings"))await deleteCollection("adminDailyClosings");
     if(selected.includes("purchases"))await deleteFiltered("adminStockMovements",d=>["in","initial"].includes(d.type));
     if(selected.includes("stockMovements"))await deleteCollection("adminStockMovements");
+    if(selected.includes("internalConsumptions")){await deleteCollection("adminInternalConsumptions");await deleteFiltered("adminStockMovements",d=>d.source==="internal-consumption")}
     if(selected.includes("stockQuantities"))await updateCollection("adminStockItems",()=>({quantity:0,updatedAtMs:Date.now()}));
     if(selected.includes("stockItems"))await deleteCollection("adminStockItems");
     if(selected.includes("menu"))await setDoc(doc(db,"publicMenu","catalog"),{categories:[],items:[],updatedAtMs:Date.now()});
@@ -96,7 +97,7 @@ async function runCleanup(selected){
     if(selected.includes("creditCustomers")){await deleteCollection("adminCreditMovements");await deleteCollection("adminCreditCustomers")}
     if(selected.includes("merchantActivity")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await updateCollection("merchantProfiles",()=>({balance:0,updatedAtMs:Date.now()}))}
     if(selected.includes("merchantProfiles")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await deleteCollection("merchantProfiles")}
-    if(selected.includes("cashAccounts")){await deleteCollection("adminCashMovements");await deleteDoc(doc(db,"adminCashSettings","config")).catch(()=>{})}
+    if(selected.includes("cashAccounts")){await deleteCollection("adminCashMovements");await deleteCollection("adminCashCounts");await deleteCollection("adminPaymentReminders");await deleteDoc(doc(db,"adminCashSettings","config")).catch(()=>{})}
     if(selected.includes("tea")){await setDoc(doc(db,"adminTea","state"),{activeBrews:[],history:[],updatedAtMs:Date.now()},{merge:true});await setDoc(doc(db,"publicTea","status"),{activeBrews:[],updatedAtMs:Date.now()},{merge:true})}
     if(selected.includes("businessDate")){const date=today(),now=Date.now(),previous=previousDate(date);await setDoc(doc(db,"adminAppSettings","pos"),{currentBusinessDate:date,currentBusinessDayStartedAtMs:now,lastClosedDate:previous,updatedAtMs:now},{merge:true})}
     document.querySelectorAll("#cleanupOptions input").forEach(x=>x.checked=false);updateSelection();toast("Seçilen veriler güvenle temizlendi.");
@@ -152,7 +153,7 @@ function setBusy(value,message="İşlem sürüyor…"){busy=value;$("backupButto
 function setProgress(message){$("backupProgress").querySelector("span").textContent=message}
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1200)}
 function countBackup(data){return Object.values(data.collections||{}).reduce((n,x)=>n+x.length,0)+Object.values(data.documents||{}).filter(Boolean).length}
-function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminCreditCustomers:"Açık hesaplar",adminCreditMovements:"Açık hesap hareketleri",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri",adminCashMovements:"Kasa ve hesap hareketleri"})[name]||name}
+function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminInternalConsumptions:"Dahili tüketimler",adminCreditCustomers:"Açık hesaplar",adminCreditMovements:"Açık hesap hareketleri",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri",adminCashMovements:"Kasa ve hesap hareketleri",adminCashCounts:"Kasa sayımları",adminPaymentReminders:"Ödeme hatırlatmaları"})[name]||name}
 function storageMessage(error){return String(error?.code||"").includes("unauthorized")?"Yedek saklanamadı. Storage kurallarını yayınlayın.":"Yedek alınamadı. Bağlantıyı kontrol edin."}
 function backupReadMessage(error,fallback){const code=String(error?.code||error?.message||"");if(code.includes("object-not-found"))return"Bu yedek bulutta bulunamadı.";if(code.includes("unauthorized"))return"Yedeğe erişim izni reddedildi.";if(code.includes("invalid-backup")||code.includes("JSON"))return"Yedek dosyasının biçimi okunamadı.";return fallback}
 function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}

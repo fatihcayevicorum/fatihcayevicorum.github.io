@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=3">
-  <link rel="stylesheet" href="simple-stock.css?v=1">
+  <link rel="stylesheet" href="simple-stock.css?v=2">
   <link rel="stylesheet" href="../management-forms.css?v=1">
   <link rel="stylesheet" href="../panel-header.css?v=6">
   <link rel="stylesheet" href="../panel-scroll.css?v=2">
@@ -86,6 +86,8 @@
         <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
       </div>
       <label class="dialog-field"><span>Toplam ödenen tutar (TL)</span><input id="purchaseTotal" type="number" min="0" max="99999999" step=".01" required placeholder="Örn. 300"></label>
+      <label class="cash-expense-toggle"><input id="addCashExpense" type="checkbox"><span><b>Kasaya gider olarak da ekle</b><small>Stok alımıyla birlikte Kasa ve Hesaplara otomatik işlenir.</small></span></label>
+      <label id="cashExpenseAccountLabel" class="dialog-field" hidden><span>Ödeme şekli</span><select id="cashExpenseAccount"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label>
       <label class="dialog-field"><span>Alış tarihi</span><input id="entryDate" type="date" required></label>
       <label class="dialog-field"><span>Not <small>(isteğe bağlı)</small></span><textarea id="entryNote" maxlength="180" rows="2"></textarea></label>
       <div class="cost-preview" id="costPreview"><span>Toplam Adet: —</span><strong>Birim maliyet: —</strong></div>
@@ -112,7 +114,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=4"></script>
+  <script type="module" src="script.js?v=5"></script>
   <script type="module" src="../merchant-order-alert.js?v=11"></script>
   <script type="module" src="../system-ui.js?v=15"></script>
   <script src="../panel-scroll.js?v=2"></script>
