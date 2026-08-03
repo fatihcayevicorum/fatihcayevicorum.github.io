@@ -6,7 +6,7 @@ backgroundMessaging.onBackgroundMessage(payload=>{
   const data=payload.data||{},title=data.title||"Fatih Çay Evi";
   return self.registration.showNotification(title,{body:data.body||"Yeni bir bildiriminiz var.",icon:"./assets/icons/notification-icon.png",badge:"./assets/icons/notification-badge.png",tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
 });
-const VERSION="fatih-cay-evi-r132",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r133",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/customer-notifications.js","./assets/css/customer-notifications.css",
@@ -19,7 +19,7 @@ const CORE=[
   "./acik-hesap/index.html","./acik-hesap/style.css","./acik-hesap/script.js",
   "./kasa-hesap-yonetimi/","./kasa-hesap-yonetimi/index.html","./kasa-hesap-yonetimi/style.css","./kasa-hesap-yonetimi/script.js",
   "./esnaf-paneli/index.html","./esnaf-paneli/style.css","./esnaf-paneli/order-types.css","./esnaf-paneli/script.js",
-  "./esnaf-yonetimi/index.html","./esnaf-yonetimi/style.css","./esnaf-yonetimi/enhancements.css","./esnaf-yonetimi/script.js",
+  "./esnaf-yonetimi/index.html","./esnaf-yonetimi/style.css","./esnaf-yonetimi/enhancements.css","./esnaf-yonetimi/device-reset.css","./esnaf-yonetimi/script.js",
   "./raporlar/index.html","./raporlar/style.css","./raporlar/script.js",
   "./veri-yonetimi/index.html","./veri-yonetimi/style.css","./veri-yonetimi/script.js",
   "./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
