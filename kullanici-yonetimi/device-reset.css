@@ -1,0 +1,81 @@
+.device-reset-dialog {
+  width: min(500px, calc(100% - 26px));
+}
+
+.device-reset-dialog form {
+  padding: 30px;
+}
+
+.device-reset-dialog .kicker,
+.device-reset-dialog h2,
+.device-reset-dialog p {
+  text-align: center;
+}
+
+.device-reset-dialog .kicker {
+  margin-bottom: -7px !important;
+}
+
+.device-reset-dialog p {
+  margin: 0;
+  color: var(--muted);
+  font-size: .72rem;
+  line-height: 1.6;
+}
+
+.device-reset-dialog strong {
+  color: var(--wine);
+}
+
+.device-reset-dialog .actions {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.device-reset-dialog .actions button {
+  min-width: 150px;
+}
+
+.device-reset-confirm {
+  background: linear-gradient(135deg, var(--wine), var(--dark));
+  color: #fff;
+}
+
+#toast.toast {
+  position: fixed !important;
+  right: auto !important;
+  bottom: max(22px, env(safe-area-inset-bottom)) !important;
+  left: 50vw !important;
+  width: max-content;
+  max-width: calc(100vw - 28px);
+  transform: translate(-50%, 18px) !important;
+  padding: 11px 17px;
+  box-shadow: 0 12px 32px #0005;
+  text-align: center;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  z-index: 2147483647 !important;
+}
+
+#toast.toast.show {
+  transform: translate(-50%, 0) !important;
+}
+
+@media (max-width: 560px) {
+  .device-reset-dialog form {
+    padding: 24px 18px;
+  }
+
+  .device-reset-dialog .actions {
+    display: grid;
+  }
+
+  .device-reset-dialog .actions button {
+    width: 100%;
+  }
+
+  #toast.toast {
+    width: auto;
+    min-width: min(290px, calc(100vw - 28px));
+  }
+}
