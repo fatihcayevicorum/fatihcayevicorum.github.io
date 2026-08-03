@@ -19,7 +19,7 @@ if(supportsManagementNotifications){
     const profile=await getManagementProfile(user,db).catch(()=>null);
     if(profile){
       renderWelcome(profile);
-      import("./in-app-notifications.js?v=3").then(({installInAppNotifications})=>installInAppNotifications({app,user,canManage:isOwner(user)||profile.permissions?.includes("notifications")})).catch(error=>console.error("Uygulama içi bildirimler başlatılamadı:",error));
+      import("./in-app-notifications.js?v=4").then(({installInAppNotifications})=>installInAppNotifications({app,user,canManage:isOwner(user)||profile.permissions?.includes("notifications")})).catch(error=>console.error("Uygulama içi bildirimler başlatılamadı:",error));
     }
   });
 }
