@@ -11,13 +11,15 @@ installKeyboardScrollSupport();
 installTopLayerToasts();
 installSensitiveLinkGate();
 const panelMenu=document.querySelector(".panel-menu-list");
-if(panelMenu){
-  installManagementCenterLink();
+const supportsManagementNotifications=!!panelMenu||location.pathname.includes("/yonetim-merkezi/");
+if(panelMenu)installManagementCenterLink();
+if(supportsManagementNotifications){
   onAuthStateChanged(auth,async user=>{
     if(!user)return;
     const profile=await getManagementProfile(user,db).catch(()=>null);
     if(profile){
       renderWelcome(profile);
+      import("./in-app-notifications.js").then(({installInAppNotifications})=>installInAppNotifications({app,user,canManage:isOwner(user)||profile.permissions?.includes("notifications")})).catch(error=>console.error("Uygulama içi bildirimler başlatılamadı:",error));
     }
   });
 }
