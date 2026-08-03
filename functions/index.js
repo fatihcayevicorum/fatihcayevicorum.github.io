@@ -84,6 +84,23 @@ exports.resetPushSystem=onCall({region:"europe-west1",cors:true,timeoutSeconds:1
   return{reset:true,resetVersion,counts};
 });
 
+exports.registerAdminPushDevice=onCall({region:"europe-west1",cors:true},async request=>{
+  await requirePanel(request,"merchant");
+  const token=String(request.data?.token||"");
+  if(token.length<20||token.length>4096)throw new HttpsError("invalid-argument","Bildirim anahtarı geçersiz.");
+  const id=crypto.createHash("sha256").update(token).digest("hex"),device={token,uid:request.auth.uid,enabled:true,platform:String(request.data?.platform||"").slice(0,80),userAgent:String(request.data?.userAgent||"").slice(0,500),updatedAt:FieldValue.serverTimestamp()};
+  const batch=db.batch();batch.set(db.doc(`adminPushTokens/${id}`),device,{merge:true});batch.set(db.doc(`pushSubscriptions/admin-${id}`),{...device,audience:"admin"},{merge:true});await batch.commit();
+  return{registered:true,id};
+});
+
+exports.unregisterAdminPushDevice=onCall({region:"europe-west1",cors:true},async request=>{
+  await requirePanel(request,"merchant");
+  const id=String(request.data?.id||"");
+  if(!/^[a-f0-9]{64}$/.test(id))throw new HttpsError("invalid-argument","Cihaz kaydı geçersiz.");
+  const batch=db.batch();batch.delete(db.doc(`adminPushTokens/${id}`));batch.delete(db.doc(`pushSubscriptions/admin-${id}`));await batch.commit();
+  return{removed:true};
+});
+
 exports.readSystemBackup=onCall({region:"europe-west1",cors:true,memory:"256MiB"},async request=>{
   requireOwner(request);const name=String(request.data?.name||"");
   if(!/^fatih-cay-evi-veri-yedegi-[\w.-]+\.json$/.test(name))throw new HttpsError("invalid-argument","Yedek adı geçersiz.");
