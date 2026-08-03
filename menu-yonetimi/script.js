@@ -12,10 +12,11 @@ const catalogReference = doc(database, "publicMenu", "catalog");
 const elements = {
     categoryForm: document.getElementById("categoryForm"), categoryName: document.getElementById("categoryName"), categoryOrder: document.getElementById("categoryOrder"), categoryCustomerVisible: document.getElementById("categoryCustomerVisible"), categoryList: document.getElementById("categoryList"), categoryEmpty: document.getElementById("categoryEmpty"),
     productForm: document.getElementById("productForm"), productFormTitle: document.getElementById("productFormTitle"), editingProductId: document.getElementById("editingProductId"), productName: document.getElementById("productName"), productCategory: document.getElementById("productCategory"), productPrice: document.getElementById("productPrice"), productOrder: document.getElementById("productOrder"), productDescription: document.getElementById("productDescription"), productAvailable: document.getElementById("productAvailable"), cancelEditButton: document.getElementById("cancelEditButton"), saveProductButton: document.getElementById("saveProductButton"), productList: document.getElementById("productList"), productEmpty: document.getElementById("productEmpty"), productSearch: document.getElementById("productSearch"),
-    categoryCount: document.getElementById("categoryCount"), productCount: document.getElementById("productCount"), availableCount: document.getElementById("availableCount"), saveStatus: document.getElementById("saveStatus"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast"), currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime"), importMenuFile: document.getElementById("importMenuFile")
+    categoryCount: document.getElementById("categoryCount"), productCount: document.getElementById("productCount"), availableCount: document.getElementById("availableCount"), saveStatus: document.getElementById("saveStatus"), logoutButton: document.getElementById("logoutButton"), toast: document.getElementById("toast"), currentDate: document.getElementById("currentDate"), currentTime: document.getElementById("currentTime"), importMenuFile: document.getElementById("importMenuFile"),
+    bundleForm: document.getElementById("bundleForm"), editingBundleId: document.getElementById("editingBundleId"), bundleName: document.getElementById("bundleName"), bundleTriggerProduct: document.getElementById("bundleTriggerProduct"), bundleTriggerQuantity: document.getElementById("bundleTriggerQuantity"), bundleRewardProduct: document.getElementById("bundleRewardProduct"), bundleRewardQuantity: document.getElementById("bundleRewardQuantity"), bundlePriceMode: document.getElementById("bundlePriceMode"), bundleFixedPriceField: document.getElementById("bundleFixedPriceField"), bundleFixedPrice: document.getElementById("bundleFixedPrice"), bundleStartDate: document.getElementById("bundleStartDate"), bundleEndDate: document.getElementById("bundleEndDate"), bundleActive: document.getElementById("bundleActive"), cancelBundleEdit: document.getElementById("cancelBundleEdit"), saveBundleButton: document.getElementById("saveBundleButton"), setupCoffeeWater: document.getElementById("setupCoffeeWater"), bundleList: document.getElementById("bundleList"), bundleEmpty: document.getElementById("bundleEmpty")
 };
 
-let catalog = { categories: [], items: [] };
+let catalog = { categories: [], items: [], bundleRules: [] };
 let isBusy = false;
 let unsubscribeCatalog = null;
 let toastTimer = null;
@@ -27,6 +28,11 @@ elements.categoryList.addEventListener("click", handleCategoryAction);
 elements.productList.addEventListener("click", handleProductAction);
 elements.productSearch.addEventListener("input", renderProducts);
 elements.importMenuFile.addEventListener("change", importMenuFile);
+elements.bundleForm.addEventListener("submit", saveBundleRule);
+elements.bundlePriceMode.addEventListener("change", refreshBundlePriceField);
+elements.cancelBundleEdit.addEventListener("click", resetBundleForm);
+elements.setupCoffeeWater.addEventListener("click", setupCoffeeWaterRule);
+elements.bundleList.addEventListener("click", handleBundleAction);
 elements.logoutButton.addEventListener("click", async () => { await signOut(auth); window.location.replace("../yonetici-giris.html"); });
 
 updateClock();
@@ -102,6 +108,50 @@ async function saveProduct(event) {
     if (succeeded) resetProductForm();
 }
 
+async function saveBundleRule(event) {
+    event.preventDefault();
+    if (isBusy) return;
+    const triggerProductId = elements.bundleTriggerProduct.value, rewardProductId = elements.bundleRewardProduct.value;
+    if (!triggerProductId || !rewardProductId) { showToast("Ana ürün ve bağlı ürünü seçin."); return; }
+    if (triggerProductId === rewardProductId) { showToast("Ana ürün ile bağlı ürün aynı olamaz."); return; }
+    const startDate = elements.bundleStartDate.value, endDate = elements.bundleEndDate.value;
+    if (startDate && endDate && startDate > endDate) { showToast("Bitiş tarihi başlangıçtan önce olamaz."); return; }
+    const rule = {
+        id: elements.editingBundleId.value || createId("bundle"), name: elements.bundleName.value.trim(),
+        triggerProductId, triggerQuantity: clampQuantity(elements.bundleTriggerQuantity.value), rewardProductId,
+        rewardQuantity: clampQuantity(elements.bundleRewardQuantity.value), priceMode: elements.bundlePriceMode.value,
+        fixedPrice: Math.max(0, Number(elements.bundleFixedPrice.value) || 0), startDate, endDate, active: elements.bundleActive.checked
+    };
+    if (!rule.name) return;
+    const bundleRules = [...catalog.bundleRules], index = bundleRules.findIndex((entry) => entry.id === rule.id);
+    if (index >= 0) bundleRules[index] = rule; else bundleRules.push(rule);
+    const succeeded = await persistCatalog({ ...catalog, bundleRules }, index >= 0 ? "Kampanya kuralı güncellendi." : "Kampanya kuralı eklendi.");
+    if (succeeded) resetBundleForm();
+}
+
+function handleBundleAction(event) {
+    const edit = event.target.closest("[data-edit-bundle]"), toggle = event.target.closest("[data-toggle-bundle]"), remove = event.target.closest("[data-delete-bundle]");
+    if (edit) beginEditBundle(edit.dataset.editBundle);
+    if (toggle) persistCatalog({ ...catalog, bundleRules: catalog.bundleRules.map((rule) => rule.id === toggle.dataset.toggleBundle ? { ...rule, active: !rule.active } : rule) }, "Kural durumu güncellendi.");
+    if (remove && window.confirm("Bağlı ürün kuralı silinsin mi?")) persistCatalog({ ...catalog, bundleRules: catalog.bundleRules.filter((rule) => rule.id !== remove.dataset.deleteBundle) }, "Kural silindi.");
+}
+
+function beginEditBundle(id) {
+    const rule = catalog.bundleRules.find((entry) => entry.id === id); if (!rule) return;
+    elements.editingBundleId.value = rule.id; elements.bundleName.value = rule.name; elements.bundleTriggerProduct.value = rule.triggerProductId; elements.bundleTriggerQuantity.value = rule.triggerQuantity; elements.bundleRewardProduct.value = rule.rewardProductId; elements.bundleRewardQuantity.value = rule.rewardQuantity; elements.bundlePriceMode.value = rule.priceMode; elements.bundleFixedPrice.value = rule.fixedPrice; elements.bundleStartDate.value = rule.startDate; elements.bundleEndDate.value = rule.endDate; elements.bundleActive.checked = rule.active;
+    elements.cancelBundleEdit.hidden = false; elements.saveBundleButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet'; refreshBundlePriceField(); elements.bundleForm.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function setupCoffeeWaterRule() {
+    const normalize = (value) => String(value || "").toLocaleLowerCase("tr-TR").replace(/\s+/g, " ").trim();
+    const coffee = catalog.items.find((item) => normalize(item.name) === "türk kahvesi"), water = catalog.items.find((item) => normalize(item.name) === "su");
+    if (!coffee || !water) { showToast("Menüde adı tam olarak Türk Kahvesi ve Su olan ürünler bulunmalı."); return; }
+    const old = catalog.bundleRules.find((rule) => rule.triggerProductId === coffee.id && rule.rewardProductId === water.id);
+    if (old) { beginEditBundle(old.id); showToast("Türk Kahvesi + Su kuralı zaten var."); return; }
+    const bundleRules = [...catalog.bundleRules, { id: createId("bundle"), name: "Türk Kahvesi yanında Su", triggerProductId: coffee.id, triggerQuantity: 1, rewardProductId: water.id, rewardQuantity: 1, priceMode: "free", fixedPrice: 0, startDate: "", endDate: "", active: true }];
+    await persistCatalog({ ...catalog, bundleRules }, "Türk Kahvesi + 1 ücretsiz Su kuralı hazırlandı.");
+}
+
 function handleCategoryAction(event) {
     const moveButton = event.target.closest("[data-move-category]");
     const visibilityButton = event.target.closest("[data-toggle-category-visibility]");
@@ -157,6 +207,7 @@ function toggleProduct(productId) {
 }
 
 function deleteProduct(productId) {
+    if (catalog.bundleRules.some((rule) => rule.triggerProductId === productId || rule.rewardProductId === productId)) { showToast("Bu ürün bağlı ürün kuralında kullanılıyor. Önce kuralı silin."); return; }
     if (!window.confirm("Ürün menüden silinsin mi?")) return;
     persistCatalog({ ...catalog, items: catalog.items.filter((item) => item.id !== productId) }, "Ürün silindi.");
 }
@@ -164,7 +215,7 @@ function deleteProduct(productId) {
 async function persistCatalog(nextCatalog, successMessage) {
     if (isBusy) return false; setBusy(true);
     try {
-        await setDoc(catalogReference, { categories: nextCatalog.categories, items: nextCatalog.items, updatedAt: serverTimestamp() });
+        await setDoc(catalogReference, { categories: nextCatalog.categories, items: nextCatalog.items, bundleRules: nextCatalog.bundleRules || [], updatedAt: serverTimestamp() });
         showToast(successMessage); return true;
     } catch (error) { console.error(error); showToast("Değişiklik kaydedilemedi. İnternet bağlantısını kontrol edin."); return false; }
     finally { setBusy(false); }
@@ -177,8 +228,27 @@ function render() {
     const previousCategory = elements.productCategory.value;
     elements.productCategory.innerHTML = catalog.categories.length ? '<option value="">Kategori seçin</option>' + catalog.categories.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("") : '<option value="">Önce kategori ekleyin</option>';
     if (catalog.categories.some((category) => category.id === previousCategory)) elements.productCategory.value = previousCategory;
+    renderBundles();
     renderProducts();
 }
+
+function renderBundles() {
+    const productOptions = '<option value="">Ürün seçin</option>' + catalog.items.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("");
+    const triggerValue = elements.bundleTriggerProduct.value, rewardValue = elements.bundleRewardProduct.value;
+    elements.bundleTriggerProduct.innerHTML = productOptions; elements.bundleRewardProduct.innerHTML = productOptions;
+    if (catalog.items.some((item) => item.id === triggerValue)) elements.bundleTriggerProduct.value = triggerValue;
+    if (catalog.items.some((item) => item.id === rewardValue)) elements.bundleRewardProduct.value = rewardValue;
+    elements.bundleEmpty.hidden = catalog.bundleRules.length > 0;
+    elements.bundleList.innerHTML = catalog.bundleRules.map((rule) => {
+        const trigger = catalog.items.find((item) => item.id === rule.triggerProductId), reward = catalog.items.find((item) => item.id === rule.rewardProductId), status = bundleStatus(rule), price = rule.priceMode === "free" ? "Ücretsiz / İkram" : rule.priceMode === "regular" ? "Normal fiyat" : `${formatPrice(rule.fixedPrice)} kampanya fiyatı`;
+        return `<article class="bundle-item"><div class="bundle-copy"><strong>${escapeHtml(rule.name)}</strong><span>Her ${rule.triggerQuantity} ${escapeHtml(trigger?.name || "Silinmiş ürün")} → ${rule.rewardQuantity} ${escapeHtml(reward?.name || "Silinmiş ürün")} • ${price}</span><span>${rule.startDate || "Süresiz"}${rule.endDate ? ` – ${rule.endDate}` : ""} • Her iki ürün stoktan düşer</span><em class="${status.className}">${status.label}</em></div><div class="item-actions"><button class="icon-button" data-toggle-bundle="${escapeHtml(rule.id)}" title="Aktif/Pasif"><i class="fa-solid ${rule.active ? "fa-pause" : "fa-play"}"></i></button><button class="icon-button" data-edit-bundle="${escapeHtml(rule.id)}" title="Düzenle"><i class="fa-solid fa-pen"></i></button><button class="icon-button is-danger" data-delete-bundle="${escapeHtml(rule.id)}" title="Sil"><i class="fa-solid fa-trash"></i></button></div></article>`;
+    }).join("");
+}
+
+function bundleStatus(rule) { const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(new Date()); if (!rule.active) return { label: "Pasif", className: "off" }; if ((rule.startDate && day < rule.startDate) || (rule.endDate && day > rule.endDate)) return { label: "Tarih bekleniyor", className: "scheduled" }; return { label: "Aktif", className: "" }; }
+function refreshBundlePriceField() { elements.bundleFixedPriceField.hidden = elements.bundlePriceMode.value !== "fixed"; }
+function resetBundleForm() { elements.bundleForm.reset(); elements.editingBundleId.value = ""; elements.bundleTriggerQuantity.value = "1"; elements.bundleRewardQuantity.value = "1"; elements.bundlePriceMode.value = "free"; elements.bundleActive.checked = true; elements.cancelBundleEdit.hidden = true; elements.saveBundleButton.innerHTML = '<i class="fa-solid fa-link"></i> Kuralı Kaydet'; refreshBundlePriceField(); }
+function clampQuantity(value) { return Math.min(50, Math.max(1, Math.floor(Number(value) || 1))); }
 
 function renderProducts() {
     const query = elements.productSearch.value.trim().toLocaleLowerCase("tr-TR");
@@ -187,9 +257,9 @@ function renderProducts() {
 }
 
 function resetProductForm() { elements.productForm.reset(); elements.editingProductId.value = ""; elements.productOrder.value = "0"; elements.productAvailable.checked = true; elements.productFormTitle.textContent = "Yeni Ürün"; elements.cancelEditButton.hidden = true; elements.saveProductButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ürünü Kaydet'; }
-function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0, customerVisible:x.customerVisible!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")) }; }
+function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0, customerVisible:x.customerVisible!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), bundleRules: (Array.isArray(data.bundleRules) ? data.bundleRules : []).map((x)=>({ id:String(x.id), name:String(x.name||"Bağlı ürün kuralı"), triggerProductId:String(x.triggerProductId), triggerQuantity:clampQuantity(x.triggerQuantity), rewardProductId:String(x.rewardProductId), rewardQuantity:clampQuantity(x.rewardQuantity), priceMode:["free","regular","fixed"].includes(x.priceMode)?x.priceMode:"free", fixedPrice:Math.max(0,Number(x.fixedPrice)||0), startDate:String(x.startDate||""), endDate:String(x.endDate||""), active:x.active!==false })) }; }
 function validateImport(data) { if (!data || !Array.isArray(data.categories) || !Array.isArray(data.items) || !data.categories.length || !data.items.length) throw new Error("invalid-menu-file"); const normalized = normalizeCatalog(data); const categoryIds = new Set(normalized.categories.map((category) => category.id)); const uniqueCategoryIds = new Set(); const uniqueItemIds = new Set(); for (const category of normalized.categories) { if (!category.id || !category.name.trim() || uniqueCategoryIds.has(category.id)) throw new Error("invalid-category"); uniqueCategoryIds.add(category.id); } for (const item of normalized.items) { if (!item.id || !item.name.trim() || !categoryIds.has(item.categoryId) || uniqueItemIds.has(item.id) || !Number.isFinite(item.price)) throw new Error("invalid-item"); uniqueItemIds.add(item.id); } return normalized; }
-function setBusy(value) { isBusy = value; elements.saveProductButton.disabled = value; }
+function setBusy(value) { isBusy = value; elements.saveProductButton.disabled = value; elements.saveBundleButton.disabled = value; elements.setupCoffeeWater.disabled = value; }
 function setConnection(connected) { elements.saveStatus.classList.toggle("is-error", !connected); elements.saveStatus.innerHTML = connected ? '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Canlı bağlantı' : '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Bağlantı yok'; }
 function showToast(message) { clearTimeout(toastTimer); elements.toast.textContent = message; elements.toast.classList.add("show"); toastTimer = setTimeout(() => elements.toast.classList.remove("show"), 2800); }
 function formatPrice(value) { return new Intl.NumberFormat("tr-TR", { style:"currency", currency:"TRY", minimumFractionDigits:value%1?2:0 }).format(value); }

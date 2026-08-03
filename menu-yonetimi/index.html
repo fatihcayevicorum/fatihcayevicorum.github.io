@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
     <link rel="stylesheet" href="../assets/css/management-forms.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
@@ -88,12 +88,36 @@
             <p class="empty-copy" id="productEmpty">Henüz Ürün eklenmedi.</p>
             <div class="product-list" id="productList"></div>
         </section>
+
+        <section class="panel bundle-panel">
+            <div class="section-heading">
+                <div><p class="kicker">Otomatik eşleştirme</p><h2>Bağlı Ürün ve Kampanya Paketleri</h2></div>
+                <button class="quick-bundle-button" id="setupCoffeeWater" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> Türk Kahvesi + Su</button>
+            </div>
+            <p class="bundle-help">Ana ürün adisyona eklenince bağlı ürün otomatik eklenir. Ücretsiz, normal fiyatlı veya belirlediğiniz kampanya fiyatıyla çalışabilir; iki ürün de kendi stoklarından düşer.</p>
+            <form id="bundleForm" class="bundle-form">
+                <input id="editingBundleId" type="hidden">
+                <label><span>Kural adı</span><input id="bundleName" maxlength="70" required placeholder="Örn. Türk Kahvesi yanında Su"></label>
+                <label><span>Ana ürün</span><select id="bundleTriggerProduct" required></select></label>
+                <label><span>Her kaç ana üründe?</span><input id="bundleTriggerQuantity" type="number" min="1" max="50" value="1" required></label>
+                <label><span>Bağlı ürün</span><select id="bundleRewardProduct" required></select></label>
+                <label><span>Bağlı ürün adedi</span><input id="bundleRewardQuantity" type="number" min="1" max="50" value="1" required></label>
+                <label><span>Fiyatlandırma</span><select id="bundlePriceMode"><option value="free">Ücretsiz / İkram</option><option value="regular">Normal satış fiyatı</option><option value="fixed">Kampanyalı sabit fiyat</option></select></label>
+                <label id="bundleFixedPriceField" hidden><span>Bağlı ürün kampanya fiyatı</span><input id="bundleFixedPrice" type="number" min="0" max="99999" step="0.01" value="0"></label>
+                <label><span>Başlangıç <small>(isteğe bağlı)</small></span><input id="bundleStartDate" type="date"></label>
+                <label><span>Bitiş <small>(isteğe bağlı)</small></span><input id="bundleEndDate" type="date"></label>
+                <label class="switch-row bundle-active"><input id="bundleActive" type="checkbox" checked><span>Kural aktif</span></label>
+                <div class="form-actions bundle-actions"><button class="secondary-button" id="cancelBundleEdit" type="button" hidden>Vazgeç</button><button class="primary-button" id="saveBundleButton" type="submit"><i class="fa-solid fa-link"></i> Kuralı Kaydet</button></div>
+            </form>
+            <p class="empty-copy" id="bundleEmpty">Henüz bağlı ürün kuralı oluşturulmadı.</p>
+            <div class="bundle-list" id="bundleList"></div>
+        </section>
     </main>
 
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="../assets/js/management-forms.js?v=2"></script>
-    <script type="module" src="script.js?v=96"></script>
+    <script type="module" src="script.js?v=97"></script>
     <script type="module" src="../assets/js/merchant-order-alert.js?v=11"></script>
     <script type="module" src="../assets/js/system-ui.js?v=15"></script>
 </body>
