@@ -1,8 +1,8 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{getFirestore}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{firebaseConfig}from"../firebase-config.js";
-import{getManagementProfile,isOwner}from"../admin-access.js";
+import{firebaseConfig}from"../assets/js/firebase-config.js";
+import{getManagementProfile,isOwner}from"../assets/js/admin-access.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const daily=[

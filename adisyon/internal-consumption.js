@@ -1,8 +1,8 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, doc, getFirestore, onSnapshot, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { firebaseConfig } from "../firebase-config.js";
-import { hasPanelAccess } from "../admin-access.js";
+import { firebaseConfig } from "../assets/js/firebase-config.js";
+import { hasPanelAccess } from "../assets/js/admin-access.js";
 
 const app=getApps()[0]||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const menuRef=doc(db,"publicMenu","catalog"),stockCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),consumptionCol=collection(db,"adminInternalConsumptions");

@@ -3,7 +3,7 @@ import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasej
 import{Timestamp,collection,deleteDoc,doc,getDocs,getFirestore,getDoc,setDoc,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{deleteObject,getMetadata,getStorage,listAll,ref as storageRef,uploadBytes}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
-import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
+import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),functions=getFunctions(app,"europe-west1"),readSystemBackup=httpsCallable(functions,"readSystemBackup"),$=id=>document.getElementById(id);
 const COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminCreditCustomers","adminCreditMovements","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","notificationSchedules","notificationSettings","notificationOutbox","notificationHistory"];

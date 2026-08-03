@@ -9,11 +9,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=129">
-  <link rel="stylesheet" href="../panel-header.css?v=7">
+  <link rel="stylesheet" href="../assets/css/panel-header.css?v=7">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
-  <div class="brand"><img src="../logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Kasa ve Hesaplar</h1></div></div>
+  <div class="brand"><img src="../assets/images/logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Kasa ve Hesaplar</h1></div></div>
   <div class="header-actions"><div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div><a class="header-page-link" href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></a><details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a><a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a><a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a><a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a><a class="is-current" href="./"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a></nav></details><button id="logoutButton" class="logout-button" type="button"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button></div>
 </div></header>
 
@@ -55,5 +55,5 @@
 <dialog id="remindersDialog"><div class="dialog-card reminders-dialog"><div class="dialog-head"><div><p class="kicker">Basit takip</p><h2>Ödeme Hatırlatmaları</h2></div><button type="button" data-close-dialog="remindersDialog">×</button></div><form id="reminderForm" class="reminder-form"><input id="reminderName" maxlength="70" placeholder="Örn. Elektrik faturası" required><input id="reminderAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Tutar (isteğe bağlı)"><input id="reminderDueDate" type="date" required><button type="submit"><i class="fa-solid fa-plus"></i> Ekle</button></form><h3 class="reminder-heading">Bekleyen Ödemeler</h3><div id="reminderList" class="reminder-list"></div><p id="reminderEmpty" class="empty">Bekleyen ödeme hatırlatması yok.</p><h3 class="reminder-heading paid-heading">Ödenenler</h3><div id="paidReminderList" class="reminder-list paid-reminder-list"></div><p id="paidReminderEmpty" class="empty">Henüz tamamlanan ödeme yok.</p></div></dialog>
 
 <div id="toast" class="toast"></div>
-<script type="module" src="script.js?v=129"></script><script type="module" src="../system-ui.js?v=15"></script>
+<script type="module" src="script.js?v=129"></script><script type="module" src="../assets/js/system-ui.js?v=15"></script>
 </body></html>

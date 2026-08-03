@@ -4,13 +4,14 @@ firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDom
 const backgroundMessaging=firebase.messaging();
 backgroundMessaging.onBackgroundMessage(payload=>{
   const data=payload.data||{},title=data.title||"Fatih Çay Evi";
-  return self.registration.showNotification(title,{body:data.body||"Yeni bir bildiriminiz var.",icon:"./pwa-icons/icon-192.png",badge:"./pwa-icons/icon-192.png",tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
+  return self.registration.showNotification(title,{body:data.body||"Yeni bir bildiriminiz var.",icon:"./assets/icons/icon-192.png",badge:"./assets/icons/icon-192.png",tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
 });
-const VERSION="fatih-cay-evi-r130",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r131",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
-  "./","./index.html","./offline.html","./logo.png","./style.css","./home-dynamic.css",
-  "./menu.html","./menu.css","./yonetici-giris.html","./yonetici-giris.css","./esnaf-giris.html","./esnaf-giris.css",
-  "./firebase-config.js","./admin-access.js","./device-access.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
+  "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
+  "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/customer-notifications.js","./assets/css/customer-notifications.css",
+  "./menu.html","./assets/css/menu.css","./assets/js/menu.js","./yonetici-giris.html","./assets/css/yonetici-giris.css","./assets/js/yonetici-giris.js","./esnaf-giris.html","./assets/css/esnaf-giris.css","./assets/js/esnaf-giris.js",
+  "./assets/js/firebase-config.js","./assets/js/admin-access.js","./assets/js/device-access.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
   "./yonetim-merkezi/","./yonetim-merkezi/index.html","./yonetim-merkezi/style.css","./yonetim-merkezi/script.js",
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
   "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js",
@@ -22,15 +23,15 @@ const CORE=[
   "./raporlar/index.html","./raporlar/style.css","./raporlar/script.js",
   "./veri-yonetimi/index.html","./veri-yonetimi/style.css","./veri-yonetimi/script.js",
   "./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
-  "./panel-header.css","./panel-scroll.css","./management-forms.css","./management-forms.js","./system-ui.js","./pwa.js","./sensitive-access.js","./merchant-order-alert.js",
-  "./customer-notifications.js","./customer-notifications.css","./merchant-notifications.js","./merchant-notifications.css",
+  "./assets/css/panel-header.css","./assets/css/panel-scroll.css","./assets/css/management-forms.css","./assets/js/management-forms.js","./assets/js/system-ui.js","./assets/js/pwa.js","./assets/js/sensitive-access.js","./assets/js/merchant-order-alert.js",
+  "./assets/js/customer-notifications.js","./assets/css/customer-notifications.css","./assets/js/merchant-notifications.js","./assets/css/merchant-notifications.css",
   "./bildirim-yonetimi/","./bildirim-yonetimi/index.html","./bildirim-yonetimi/style.css","./bildirim-yonetimi/script.js",
   "./menu-yonetimi/","./menu-yonetimi/index.html","./menu-yonetimi/style.css","./menu-yonetimi/script.js",
   "./ana-sayfa-yonetimi/","./ana-sayfa-yonetimi/index.html","./ana-sayfa-yonetimi/style.css","./ana-sayfa-yonetimi/script.js",
   "./kullanici-yonetimi/","./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
   "./manifest.webmanifest","./admin-manifest.webmanifest",
-  "./esnaf-manifest.webmanifest","./pwa-icons/icon-192.png","./pwa-icons/icon-512.png",
-  "./pwa-icons/icon-maskable-192.png","./pwa-icons/icon-maskable-512.png"
+  "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png",
+  "./assets/icons/icon-maskable-192.png","./assets/icons/icon-maskable-512.png"
 ];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(STATIC_CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith("fatih-cay-evi-")&&!key.startsWith(VERSION)).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});

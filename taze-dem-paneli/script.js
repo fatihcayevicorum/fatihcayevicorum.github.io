@@ -11,8 +11,8 @@ import {
     runTransaction,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { firebaseConfig } from "../firebase-config.js";
-import { hasPanelAccess } from "../admin-access.js";
+import { firebaseConfig } from "../assets/js/firebase-config.js";
+import { hasPanelAccess } from "../assets/js/admin-access.js";
 
 const MAX_ACTIVE_BREWS = 3;
 const BREWING_DURATION_MS = 20 * 60 * 1000;

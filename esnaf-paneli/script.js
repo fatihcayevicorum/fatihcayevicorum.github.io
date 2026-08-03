@@ -1,7 +1,7 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{addDoc,collection,doc,getFirestore,limit,onSnapshot,orderBy,query,serverTimestamp,updateDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
+import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 const defaultApp=initializeApp(firebaseConfig),legacyAuth=getAuth(defaultApp);
 const app=initializeApp(firebaseConfig,"merchant-portal"),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let profile=null,orders=[],movements=[],uid="",toastTimer,pendingCancelOrder="",merchantOrderingOpen=true;

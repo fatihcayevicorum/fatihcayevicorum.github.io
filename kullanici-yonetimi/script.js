@@ -2,8 +2,8 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-ap
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,getFirestore,onSnapshot,orderBy,query}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
-import{ADMIN_UID,firebaseConfig}from"../firebase-config.js";
-import{PANEL_DEFINITIONS,normalizePhone}from"../admin-access.js";
+import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
+import{PANEL_DEFINITIONS,normalizePhone}from"../assets/js/admin-access.js";
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
 const api={create:httpsCallable(functions,"createStaffUser"),update:httpsCallable(functions,"updateStaffUser"),remove:httpsCallable(functions,"deleteStaffUser"),owner:httpsCallable(functions,"configureOwnerLogin"),setPin:httpsCallable(functions,"setSensitivePin"),clearDevices:httpsCallable(functions,"clearLoginDevices")};
 let users=[],pendingDelete="",toastTimer;

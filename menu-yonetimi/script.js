@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { doc, getFirestore, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { firebaseConfig } from "../firebase-config.js";
-import { hasPanelAccess } from "../admin-access.js";
+import { firebaseConfig } from "../assets/js/firebase-config.js";
+import { hasPanelAccess } from "../assets/js/admin-access.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
