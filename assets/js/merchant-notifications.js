@@ -1,8 +1,71 @@
 import{getApps}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{doc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
+import{deleteToken,getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
 import{FCM_VAPID_KEY}from"./firebase-config.js";
-const app=getApps().find(x=>x.name==="merchant-portal"),KEY="fatihMerchantAudiencePushToken";
-if(app){const button=document.createElement("button");button.id="merchantPushButton";button.className="merchant-push-button";button.innerHTML='<i class="fa-solid fa-bell"></i><span>Duyuru Bildirimlerini Aç</span>';document.querySelector(".welcome")?.after(button);const auth=getAuth(app),db=getFirestore(app);onAuthStateChanged(auth,user=>{if(!user)return;if(localStorage.getItem(KEY)&&Notification.permission==="granted"){button.classList.add("ready");button.innerHTML='<i class="fa-solid fa-circle-check"></i><span>Duyuru Bildirimleri Açık</span>';button.disabled=true}button.onclick=async()=>{button.disabled=true;try{if(!await isSupported())throw Error();if(await Notification.requestPermission()!=="granted")throw Error();const token=await getToken(getMessaging(app),{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:await navigator.serviceWorker.ready}),id=await tokenId(token);await setDoc(doc(db,"pushSubscriptions",id),{token,audience:"merchant",merchantId:user.uid,enabled:true,platform:navigator.platform||"",updatedAt:serverTimestamp()},{merge:true});localStorage.setItem(KEY,id);button.classList.add("ready");button.innerHTML='<i class="fa-solid fa-circle-check"></i><span>Duyuru Bildirimleri Açık</span>'}catch{button.disabled=false;button.innerHTML='<i class="fa-solid fa-bell-slash"></i><span>Bildirim Açılamadı</span>'}}})}
-async function tokenId(token){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(token));return[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+
+const app=getApps().find(item=>item.name==="merchant-portal");
+const TOKEN_KEY="fatihMerchantAudiencePushToken";
+let busy=false;
+
+if(app)setup();
+
+function setup(){
+  const button=document.createElement("button");
+  button.id="merchantPushButton";
+  button.type="button";
+  button.className="merchant-push-button";
+  document.querySelector(".welcome")?.after(button);
+  const auth=getAuth(app),db=getFirestore(app),messaging=getMessaging(app);
+
+  onAuthStateChanged(auth,async user=>{
+    if(!user)return;
+    refresh(button);
+    button.onclick=async()=>{
+      if(busy)return;
+      busy=true;button.disabled=true;
+      try{
+        const storedId=localStorage.getItem(TOKEN_KEY);
+        if(storedId){
+          await setDoc(doc(db,"pushSubscriptions",storedId),{enabled:false,updatedAt:serverTimestamp()},{merge:true});
+          if(await isSupported())await deleteToken(messaging).catch(()=>{});
+          localStorage.removeItem(TOKEN_KEY);
+          refresh(button,"Duyuru bildirimleri kapatıldı.");
+          return;
+        }
+        if(!await isSupported())throw Error("unsupported");
+        const permission=Notification.permission==="granted"?"granted":await Notification.requestPermission();
+        if(permission!=="granted")throw Error("denied");
+        const registration=await navigator.serviceWorker.ready;
+        const token=await getToken(messaging,{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:registration});
+        if(!token)throw Error("token");
+        const id=await tokenId(token);
+        await setDoc(doc(db,"pushSubscriptions",id),{
+          token,audience:"merchant",merchantId:user.uid,enabled:true,
+          platform:navigator.userAgentData?.platform||navigator.platform||"",
+          userAgent:navigator.userAgent||"",updatedAt:serverTimestamp()
+        },{merge:true});
+        localStorage.setItem(TOKEN_KEY,id);
+        refresh(button,"Uygulama kapalıyken de duyuru gelecek.");
+      }catch(error){
+        console.error("Esnaf bildirimi ayarlanamadı:",error);
+        button.classList.add("error");
+        button.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i><span>Bildirim Açılamadı<small>Telefon ayarlarından izni kontrol edin</small></span>';
+      }finally{busy=false;button.disabled=false}
+    };
+  });
+}
+
+function refresh(button,message=""){
+  const enabled=Boolean(localStorage.getItem(TOKEN_KEY))&&Notification.permission==="granted";
+  button.classList.toggle("ready",enabled);
+  button.classList.remove("error");
+  button.innerHTML=enabled
+    ?`<i class="fa-solid fa-bell"></i><span>Duyuru Bildirimleri Açık<small>${message||"Kapatmak için dokunun"}</small></span>`
+    :`<i class="fa-regular fa-bell"></i><span>Duyuru Bildirimlerini Aç<small>${message||"Uygulama kapalıyken de bildirim alın"}</small></span>`;
+}
+
+async function tokenId(token){
+  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(token));
+  return[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,"0")).join("");
+}

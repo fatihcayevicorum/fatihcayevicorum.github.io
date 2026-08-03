@@ -3,10 +3,10 @@ importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-com
 firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
 const backgroundMessaging=firebase.messaging();
 backgroundMessaging.onBackgroundMessage(payload=>{
-  const data=payload.data||{},title=data.title||"Fatih Çay Evi";
-  return self.registration.showNotification(title,{body:data.body||"Yeni bir bildiriminiz var.",icon:"./assets/icons/notification-icon.png",badge:"./assets/icons/notification-badge.png",tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
+  const data=payload.data||{},notification=payload.notification||{},title=data.title||notification.title||"Fatih Çay Evi";
+  return self.registration.showNotification(title,{body:data.body||notification.body||"Yeni bir bildiriminiz var.",icon:new URL("assets/icons/notification-icon.png",self.registration.scope).href,badge:new URL("assets/icons/notification-badge.png",self.registration.scope).href,tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
 });
-const VERSION="fatih-cay-evi-r134",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r135",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/customer-notifications.js","./assets/css/customer-notifications.css",

@@ -109,7 +109,7 @@ async function sendPush({audience,category="",title,body,url,tag,historyId,sourc
   await db.collection("notificationHistory").doc(historyId||db.collection("_").doc().id).set({audience,category,title,body,url:url||defaultUrl(audience),source,successCount,failureCount,recipientCount:recipients.length,createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()},{merge:true});
   return{successCount,failureCount,recipientCount:recipients.length};
 }
-const PUBLIC_BASE_URL="https://fatihcayevicorum.github.io/";
+const PUBLIC_BASE_URL="https://fatihcayevi.com.tr/";
 function publicUrl(path=""){return new URL(path,PUBLIC_BASE_URL).href}
 function defaultUrl(audience){if(audience==="admin")return publicUrl("bildirim-yonetimi/");if(audience==="merchant")return publicUrl("esnaf-paneli/");return PUBLIC_BASE_URL}
 
