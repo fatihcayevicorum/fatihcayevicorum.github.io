@@ -37,8 +37,8 @@ function setup(){
         if(!await isSupported())throw Error("unsupported");
         const permission=Notification.permission==="granted"?"granted":await Notification.requestPermission();
         if(permission!=="granted")throw Error("denied");
-        const registration=await navigator.serviceWorker.ready;
-        const token=await getToken(messaging,{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:registration});
+        const registration=await ensureServiceWorker();
+        const token=await withTimeout(getToken(messaging,{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:registration}),20000,"token-timeout");
         if(!token)throw Error("token");
         const id=`merchant-${await tokenId(token)}`;
         await setDoc(doc(db,"pushSubscriptions",id),{
@@ -70,3 +70,5 @@ async function tokenId(token){
   const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(token));
   return[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,"0")).join("");
 }
+async function ensureServiceWorker(){const root=new URL("../../",import.meta.url),registration=await navigator.serviceWorker.register(new URL("service-worker.js?v=148",root),{scope:root.pathname,updateViaCache:"none"});if(registration.active)return registration;return withTimeout(navigator.serviceWorker.ready,18000,"service-worker-timeout")}
+function withTimeout(promise,ms,message){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error(message)),ms))])}

@@ -6,7 +6,7 @@ backgroundMessaging.onBackgroundMessage(payload=>{
   const data=payload.data||{},notification=payload.notification||{},title=data.title||notification.title||"Fatih Çay Evi";
   return self.registration.showNotification(title,{body:data.body||notification.body||"Yeni bir bildiriminiz var.",icon:new URL("assets/icons/notification-icon.png",self.registration.scope).href,badge:new URL("assets/icons/notification-badge.png",self.registration.scope).href,tag:data.tag||"fatih-cay-evi-bildirim",renotify:true,requireInteraction:data.audience==="admin",silent:false,vibrate:[220,90,320,90,220],data:{url:data.url||new URL("./",self.registration.scope).href,orderId:data.orderId||"",audience:data.audience||""}});
 });
-const VERSION="fatih-cay-evi-r147",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r148",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/customer-notifications.js","./assets/css/customer-notifications.css",
@@ -33,7 +33,7 @@ const CORE=[
   "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png","./assets/icons/notification-icon.png","./assets/icons/notification-badge.png",
   "./assets/icons/icon-maskable-192.png","./assets/icons/icon-maskable-512.png"
 ];
-self.addEventListener("install",event=>{event.waitUntil(caches.open(STATIC_CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
+self.addEventListener("install",event=>{event.waitUntil(caches.open(STATIC_CACHE).then(cache=>Promise.allSettled(CORE.map(url=>cache.add(url)))).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith("fatih-cay-evi-")&&!key.startsWith(VERSION)).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener("message",event=>{if(event.data?.type==="SKIP_WAITING")self.skipWaiting()});
 self.addEventListener("notificationclick",event=>{event.notification.close();const target=event.notification.data?.url||new URL("./",self.registration.scope).href;event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{const existing=list.find(client=>client.url===target||client.url.startsWith(target+"?"));if(existing)return existing.focus();return clients.openWindow(target)}))});
