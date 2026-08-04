@@ -1,0 +1,19 @@
+.quick-cash-button{
+  color:#fff;
+  background:linear-gradient(145deg,#8f2028,#65151c);
+  box-shadow:0 7px 16px rgba(101,21,28,.2);
+}
+.quick-cash-button:active{transform:scale(.96)}
+.quick-cash-dialog .dialog-card{width:min(92vw,430px)}
+.quick-cash-kicker{margin:0 0 3px;color:var(--red);font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.quick-cash-type,.quick-cash-account{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.quick-cash-type label,.quick-cash-account label{margin:0}
+.quick-cash-type input,.quick-cash-account input{position:absolute;opacity:0;pointer-events:none}
+.quick-cash-type span,.quick-cash-account span{display:flex;min-height:46px;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:#fff;transition:.16s transform,.16s border-color,.16s background}
+.quick-cash-type input:checked+span,.quick-cash-account input:checked+span{border-color:var(--red);color:#fff;background:linear-gradient(135deg,var(--red),var(--red2));box-shadow:0 7px 15px rgba(101,21,28,.15)}
+.quick-cash-type span:active,.quick-cash-account span:active{transform:scale(.98)}
+#quickCashAmount{height:52px;color:var(--red2);font-size:1.25rem;font-weight:800;text-align:center}
+.quick-cash-dialog label small{color:var(--muted);font-weight:500}
+.quick-cash-date{margin:10px 0 0;padding:9px 11px;border-radius:10px;color:var(--muted);background:#f5eee6;font-size:.68rem;text-align:center}
+.quick-cash-dialog .dialog-actions button{min-width:105px}
+@media(max-width:480px){.quick-cash-dialog .dialog-card{padding:16px}.quick-cash-dialog .dialog-actions{display:grid;grid-template-columns:1fr 1fr}.quick-cash-dialog .dialog-actions button{width:100%}}

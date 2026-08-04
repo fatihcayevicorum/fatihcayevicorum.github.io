@@ -1,4 +1,4 @@
-const VERSION="fatih-cay-evi-r155",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r156",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js",
@@ -6,7 +6,7 @@ const CORE=[
   "./assets/js/firebase-config.js","./assets/js/admin-access.js","./assets/js/device-access.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
   "./yonetim-merkezi/","./yonetim-merkezi/index.html","./yonetim-merkezi/style.css","./yonetim-merkezi/script.js",
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
-  "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js",
+  "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js","./adisyon/quick-cash.css","./adisyon/quick-cash.js",
   "./stok-yonetimi/index.html","./stok-yonetimi/style.css","./stok-yonetimi/script.js",
   "./acik-hesap/index.html","./acik-hesap/style.css","./acik-hesap/script.js",
   "./kasa-hesap-yonetimi/","./kasa-hesap-yonetimi/index.html","./kasa-hesap-yonetimi/style.css","./kasa-hesap-yonetimi/script.js",
