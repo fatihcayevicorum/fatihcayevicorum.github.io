@@ -124,10 +124,10 @@ async function sendPush({audience,category="",title,body,url,tag,historyId,sourc
   let successCount=0,failureCount=0;
   for(let offset=0;offset<recipients.length;offset+=500){
     const part=recipients.slice(offset,offset+500);
-    const response=await getMessaging().sendEachForMulticast({
+    const targetUrl=String(url||defaultUrl(audience)),messageTitle=String(title||"Fatih Çay Evi"),messageBody=String(body||""),messageTag=String(tag||`fatih-${audience}-${Date.now()}`),response=await getMessaging().sendEachForMulticast({
       tokens:part.map(d=>d.data().token),
-      data:{title:String(title||"Fatih Çay Evi"),body:String(body||""),audience,url:String(url||defaultUrl(audience)),tag:String(tag||`fatih-${audience}-${Date.now()}`)},
-      webpush:{headers:{Urgency:audience==="admin"?"high":"normal",TTL:audience==="admin"?"3600":"43200"}}
+      data:{title:messageTitle,body:messageBody,audience,url:targetUrl,tag:messageTag},
+      webpush:{headers:{Urgency:audience==="admin"?"high":"normal",TTL:audience==="admin"?"3600":"43200"},notification:{title:messageTitle,body:messageBody,icon:publicUrl("assets/icons/notification-icon.png"),badge:publicUrl("assets/icons/notification-badge.png"),tag:messageTag,requireInteraction:audience==="admin"},fcmOptions:{link:targetUrl}}
     });
     successCount+=response.successCount;failureCount+=response.failureCount;
     const invalid=[];
@@ -145,7 +145,7 @@ exports.notifyMerchantOrder=onDocumentCreated({document:"merchantOrders/{orderId
   const order=event.data?.data();if(!order||order.status!=="pending")return;
   const business=order.businessName||order.merchantName||"Esnaf",quantity=Math.max(0,Number(order.quantity)||0),note=String(order.note||"").trim(),teaLabel=order.teaType==="double"?"Duble Çay":"Çay",title=`${business} Çay söyledi`,body=`${quantity} ${teaLabel}${note?` • ${note}`:""}`;
   const snap=await db.collection("adminPushTokens").where("enabled","==",true).get(),recipients=snap.docs.filter(d=>d.data().token);
-  for(let offset=0;offset<recipients.length;offset+=500){const part=recipients.slice(offset,offset+500),response=await getMessaging().sendEachForMulticast({tokens:part.map(d=>d.data().token),data:{title,body,orderId:event.params.orderId,audience:"admin",tag:`fatih-esnaf-${event.params.orderId}`,url:publicUrl("esnaf-yonetimi/")},webpush:{headers:{Urgency:"high",TTL:"300"}}}),invalid=[];response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i].ref)});if(invalid.length){const cleanup=db.batch();invalid.forEach(ref=>cleanup.delete(ref));await cleanup.commit()}}
+  for(let offset=0;offset<recipients.length;offset+=500){const part=recipients.slice(offset,offset+500),targetUrl=publicUrl("esnaf-yonetimi/"),tag=`fatih-esnaf-${event.params.orderId}`,response=await getMessaging().sendEachForMulticast({tokens:part.map(d=>d.data().token),data:{title,body,orderId:event.params.orderId,audience:"admin",tag,url:targetUrl},webpush:{headers:{Urgency:"high",TTL:"300"},notification:{title,body,icon:publicUrl("assets/icons/notification-icon.png"),badge:publicUrl("assets/icons/notification-badge.png"),tag,requireInteraction:true},fcmOptions:{link:targetUrl}}}),invalid=[];response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i].ref)});if(invalid.length){const cleanup=db.batch();invalid.forEach(ref=>cleanup.delete(ref));await cleanup.commit()}}
 });
 
 exports.sendNotificationOutbox=onDocumentCreated({document:"notificationOutbox/{messageId}",region:"europe-west1",retry:false},async event=>{
