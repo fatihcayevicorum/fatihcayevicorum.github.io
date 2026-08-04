@@ -1,7 +1,7 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,deleteDoc,doc,getFirestore,onSnapshot,query,serverTimestamp,setDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{deleteToken,getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
+import{deleteToken,getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
 import{hasPanelAccess}from"./admin-access.js";
@@ -21,6 +21,7 @@ document.addEventListener("pointerdown",unlockSound,{once:true});
 buildAlertUi();
 loadCustomBell();
 watchPushReset();
+listenForegroundPush();
 
 onAuthStateChanged(auth,async user=>{
   if(!await hasPanelAccess(user,db,"merchant")){setAlertStatus("Esnaf paneli yetkisi bekleniyor.");return}
@@ -84,3 +85,4 @@ function keepAlertAboveDialogs(){const ids=["merchantNotifyTest","merchantNotify
 function setAlertStatus(message){const status=document.getElementById("merchantAlertStatus");if(status)status.textContent=message}
 function withTimeout(promise,ms,message){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error(message)),ms))])}
 async function ensureServiceWorker(retry=true){if(!("serviceWorker"in navigator))throw Error("Tarayıcı bildirim servisini desteklemiyor.");const root=new URL("../../",import.meta.url),registration=await navigator.serviceWorker.register(new URL("service-worker.js",root),{scope:root.pathname,updateViaCache:"none"});if(registration.active)return registration;const worker=registration.installing||registration.waiting;if(!worker){if(retry){await registration.unregister();return ensureServiceWorker(false)}throw Error("Bildirim servisi kurulamadı.")}try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error("Bildirim servisi etkinleşmedi.")),15000),finish=()=>{if(worker.state==="activated"){clearTimeout(timer);resolve()}else if(worker.state==="redundant"){clearTimeout(timer);reject(Error("Bildirim servisi kurulumu iptal oldu."))}};worker.addEventListener("statechange",finish);finish()});return registration}catch(error){if(retry){await registration.unregister();return ensureServiceWorker(false)}throw error}}
+async function listenForegroundPush(){try{if(!await isSupported())return;onMessage(getMessaging(app),payload=>{const data=payload.data||{},notification=payload.notification||{},title=data.title||notification.title||"Fatih Çay Evi Yönetim",body=data.body||notification.body||"Yeni bir bildiriminiz var.";showAlertPopup(title,body);playBell();vibrate();showSystemNotification(title,body)})}catch(error){console.error("Ön plan push dinleyicisi başlatılamadı:",error)}}
