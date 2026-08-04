@@ -1,0 +1,20 @@
+import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import{doc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{deleteToken,getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
+import{FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
+
+const app=getApps().length?getApp():initializeApp(firebaseConfig),db=getFirestore(app);
+const PREF_KEY="fatihPushPreferences",DEVICE_KEY="fatihPushDeviceId";
+let foregroundStarted=false;
+
+async function hash(value){const data=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));return[...new Uint8Array(data)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function registration(){if(!("serviceWorker"in navigator))throw new Error("unsupported");await navigator.serviceWorker.register(new URL("../../service-worker.js",import.meta.url),{scope:"/",updateViaCache:"none"});return navigator.serviceWorker.ready}
+export function getSavedPreferences(){try{return JSON.parse(localStorage.getItem(PREF_KEY))||{announcements:false,teaReady:false}}catch{return{announcements:false,teaReady:false}}}
+export async function messagingSupported(){return location.protocol==="https:"&&(await isSupported())}
+export async function requestPushToken(){if(!await messagingSupported())throw new Error("unsupported");const permission=await Notification.requestPermission();if(permission!=="granted")throw new Error("permission-denied");return getToken(getMessaging(app),{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:await registration()})}
+export async function saveCustomerPreferences(preferences){const value={announcements:Boolean(preferences.announcements),teaReady:Boolean(preferences.teaReady)};if(!value.announcements&&!value.teaReady)return disableCustomerPush();const token=await requestPushToken(),deviceId=await hash(token);await setDoc(doc(db,"publicPushDevices",deviceId),{token,...value,active:true,platform:navigator.platform||"",userAgent:navigator.userAgent.slice(0,500),createdAtMs:Date.now(),updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});localStorage.setItem(PREF_KEY,JSON.stringify(value));localStorage.setItem(DEVICE_KEY,deviceId);startForegroundPush();return value}
+export async function disableCustomerPush(){const deviceId=localStorage.getItem(DEVICE_KEY);if(deviceId)await setDoc(doc(db,"publicPushDevices",deviceId),{announcements:false,teaReady:false,active:false,updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});const value={announcements:false,teaReady:false};localStorage.setItem(PREF_KEY,JSON.stringify(value));return value}
+export async function registerAdminPushDevice(uid){const token=await requestPushToken(),deviceId=await hash(token);await setDoc(doc(db,"adminPushDevices",deviceId),{token,uid,active:true,platform:navigator.platform||"",userAgent:navigator.userAgent.slice(0,500),createdAtMs:Date.now(),updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});localStorage.setItem("fatihAdminPushDeviceId",deviceId);startForegroundPush();return deviceId}
+export async function disableAdminPushDevice(uid){const deviceId=localStorage.getItem("fatihAdminPushDeviceId");if(deviceId)await setDoc(doc(db,"adminPushDevices",deviceId),{uid,active:false,updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});try{if(await isSupported())await deleteToken(getMessaging(app))}catch{}return true}
+export function startForegroundPush(){if(foregroundStarted||Notification.permission!=="granted")return;foregroundStarted=true;onMessage(getMessaging(app),async payload=>{const reg=await registration(),title=payload.notification?.title||"Fatih Çay Evi",options={body:payload.notification?.body||"",icon:"/assets/images/logo.png",badge:"/assets/icons/icon-192.png",tag:payload.data?.tag||payload.data?.type||"fatih-bildirim",data:{link:payload.data?.link||"/"}};await reg.showNotification(title,options)})}
+

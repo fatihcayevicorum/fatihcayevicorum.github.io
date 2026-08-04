@@ -160,6 +160,51 @@ service cloud.firestore {
       allow delete: if hasPanel('merchant');
     }
 
+    match /publicPushDevices/{deviceId} {
+      allow read, delete: if false;
+      allow create: if request.resource.data.keys().hasOnly([
+          'token', 'announcements', 'teaReady', 'active', 'platform',
+          'userAgent', 'createdAtMs', 'updatedAtMs', 'updatedAt'
+        ])
+        && request.resource.data.token is string
+        && request.resource.data.token.size() >= 20
+        && request.resource.data.token.size() <= 4096
+        && request.resource.data.announcements is bool
+        && request.resource.data.teaReady is bool
+        && request.resource.data.active is bool;
+      allow update: if request.resource.data.token == resource.data.token
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'announcements', 'teaReady', 'active', 'platform', 'userAgent',
+          'updatedAtMs', 'updatedAt'
+        ])
+        && request.resource.data.announcements is bool
+        && request.resource.data.teaReady is bool
+        && request.resource.data.active is bool;
+    }
+    match /adminPushDevices/{deviceId} {
+      allow read: if isManager();
+      allow create: if isManager()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.token is string
+        && request.resource.data.active is bool;
+      allow update: if isManager()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.token == resource.data.token;
+      allow delete: if isOwner() || (isManager() && resource.data.uid == request.auth.uid);
+    }
+    match /notificationSettings/{document} {
+      allow read: if isManager();
+      allow write: if false;
+    }
+    match /notificationLogs/{document} {
+      allow read: if isManager();
+      allow write: if false;
+    }
+    match /notificationEvents/{document} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if isOwner();
     }

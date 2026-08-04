@@ -1,0 +1,8 @@
+import{disableCustomerPush,getSavedPreferences,messagingSupported,saveCustomerPreferences,startForegroundPush}from"./push-client.js";
+const $=id=>document.getElementById(id),dialog=$("notificationDialog"),form=$("notificationForm"),status=$("notificationStatus"),save=$("notificationSave");
+function load(){const p=getSavedPreferences();$("announcementPreference").checked=p.announcements;$("teaPreference").checked=p.teaReady;if(Notification.permission==="granted")startForegroundPush()}
+$("notificationButton").onclick=async()=>{load();status.textContent=await messagingSupported()?"":"Bu cihaz veya tarayıcı bildirimleri desteklemiyor.";dialog.showModal()};
+$("notificationClose").onclick=()=>dialog.close();
+form.addEventListener("submit",async event=>{event.preventDefault();save.disabled=true;status.textContent="Bildirim izni hazırlanıyor…";try{await saveCustomerPreferences({announcements:$("announcementPreference").checked,teaReady:$("teaPreference").checked});status.textContent="Tercihleriniz kaydedildi.";setTimeout(()=>dialog.close(),650)}catch(error){status.textContent=error.message==="permission-denied"?"Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz.":error.message==="unsupported"?"Bu cihaz veya tarayıcı bildirimleri desteklemiyor.":"Ayarlar kaydedilemedi. İnternet bağlantısını kontrol edin."}finally{save.disabled=false}});
+$("notificationOff").onclick=async()=>{save.disabled=true;try{await disableCustomerPush();load();status.textContent="Bu cihazdaki bildirimler kapatıldı."}catch{status.textContent="Bildirimler kapatılamadı."}finally{save.disabled=false}};
+load();

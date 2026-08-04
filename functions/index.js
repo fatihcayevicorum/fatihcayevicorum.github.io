@@ -1,10 +1,13 @@
 "use strict";
 const crypto=require("crypto");
 const{onCall,HttpsError}=require("firebase-functions/v2/https");
+const{onDocumentCreated,onDocumentUpdated}=require("firebase-functions/v2/firestore");
+const{onSchedule}=require("firebase-functions/v2/scheduler");
 const{initializeApp}=require("firebase-admin/app");
 const{getAuth}=require("firebase-admin/auth");
 const{FieldValue,getFirestore}=require("firebase-admin/firestore");
 const{getStorage}=require("firebase-admin/storage");
+const{getMessaging}=require("firebase-admin/messaging");
 const{logger}=require("firebase-functions");
 initializeApp();
 const db=getFirestore();
@@ -85,3 +88,47 @@ exports.deleteMerchantUser=onCall({region:"europe-west1",cors:true},async reques
   try{await getAuth().deleteUser(uid)}catch(error){if(error.code!=="auth/user-not-found")throw error}
   await auditUserAction("delete-merchant",uid,request.auth.uid,{displayName:profile.name||"",businessName:profile.businessName||"",username:profile.username||""});return{uid}
 });
+
+const SITE_URL="https://fatihcayevi.com.tr",LOGO_URL=`${SITE_URL}/assets/images/logo.png`,BADGE_URL=`${SITE_URL}/assets/icons/icon-192.png`;
+function cleanNotificationText(value,max,label){const text=String(value||"").replace(/\s+/g," ").trim().slice(0,max);if(text.length<2)throw new HttpsError("invalid-argument",`${label} çok kısa.`);return text}
+function absoluteLink(link){try{return new URL(link,SITE_URL).toString()}catch{return SITE_URL}}
+async function activePushDocuments(collectionName,preference){let query=db.collection(collectionName);if(preference)query=query.where(preference,"==",true);const snap=await query.get();return snap.docs.filter(item=>item.data().active===true&&typeof item.data().token==="string"&&item.data().token.length>20)}
+async function sendPushDocuments(documents,message){const unique=new Map();documents.forEach(item=>unique.set(item.data().token,item));const entries=[...unique.entries()],result={successCount:0,failureCount:0};for(let offset=0;offset<entries.length;offset+=500){const part=entries.slice(offset,offset+500),tokens=part.map(([token])=>token),link=absoluteLink(message.link||"/");const response=await getMessaging().sendEachForMulticast({tokens,notification:{title:message.title,body:message.body},data:{type:message.type||"general",link,tag:message.tag||message.type||"fatih-bildirim"},webpush:{notification:{icon:LOGO_URL,badge:BADGE_URL,tag:message.tag||message.type||"fatih-bildirim",renotify:true},fcmOptions:{link}}});result.successCount+=response.successCount;result.failureCount+=response.failureCount;const deletes=[];response.responses.forEach((item,index)=>{const code=item.error?.code||"";if(!item.success&&(code.includes("registration-token-not-registered")||code.includes("invalid-registration-token")||code.includes("invalid-argument")))deletes.push(part[index][1].ref.delete())});await Promise.allSettled(deletes)}return result}
+async function notificationLog(data){await db.collection("notificationLogs").add({...data,createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()})}
+async function claimNotificationEvent(id,data={}){const ref=db.doc(`notificationEvents/${id}`);try{await ref.create({...data,status:"processing",createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()});return ref}catch(error){if(error.code===6||String(error.code).includes("already-exists"))return null;throw error}}
+
+exports.getNotificationDashboard=onCall({region:"europe-west1",cors:true},async request=>{requireOwner(request);const[all,announcements,tea,settings,logs,adminDevices]=await Promise.all([activePushDocuments("publicPushDevices"),activePushDocuments("publicPushDevices","announcements"),activePushDocuments("publicPushDevices","teaReady"),db.doc("notificationSettings/tea").get(),db.collection("notificationLogs").orderBy("createdAtMs","desc").limit(12).get(),activePushDocuments("adminPushDevices")]);return{counts:{total:all.length,announcements:announcements.length,teaReady:tea.length},settings:settings.data()||{customerTeaReadyEnabled:true,adminTeaAlertsEnabled:true},logs:logs.docs.map(item=>({id:item.id,...item.data()})),adminDevices:adminDevices.filter(item=>item.data().uid===request.auth.uid).map(item=>item.id)}});
+exports.sendAnnouncement=onCall({region:"europe-west1",cors:true,timeoutSeconds:120},async request=>{requireOwner(request);const title=cleanNotificationText(request.data?.title,60,"Başlık"),body=cleanNotificationText(request.data?.body,220,"Mesaj"),documents=await activePushDocuments("publicPushDevices","announcements"),result=await sendPushDocuments(documents,{title,body,type:"announcement",tag:`announcement-${Date.now()}`,link:"/"});await notificationLog({type:"announcement",title,body,...result,sentBy:request.auth.uid});return result});
+exports.setTeaNotificationSettings=onCall({region:"europe-west1",cors:true},async request=>{requireOwner(request);const customerTeaReadyEnabled=request.data?.customerTeaReadyEnabled===true,adminTeaAlertsEnabled=request.data?.adminTeaAlertsEnabled===true;await db.doc("notificationSettings/tea").set({customerTeaReadyEnabled,adminTeaAlertsEnabled,updatedBy:request.auth.uid,updatedAtMs:Date.now(),updatedAt:FieldValue.serverTimestamp()},{merge:true});return{customerTeaReadyEnabled,adminTeaAlertsEnabled}});
+
+exports.notifyNewMerchantOrder=onDocumentCreated({document:"merchantOrders/{orderId}",region:"europe-west1"},async event=>{const order=event.data?.data();if(!order||order.status!=="pending")return;const claimed=await claimNotificationEvent(`merchant-order-${event.params.orderId}`,{type:"merchant-order"});if(!claimed)return;try{const quantity=Math.max(1,Number(order.quantity)||1),teaType=order.teaType==="double"?"duble":"normal",title="Yeni çay siparişi 🔔",body=`${order.businessName||order.merchantName||"Esnaf"}: ${quantity} ${teaType} çay istedi.`,result=await sendPushDocuments(await activePushDocuments("adminPushDevices"),{title,body,type:"merchant-order",tag:`order-${event.params.orderId}`,link:"/esnaf-yonetimi/"});await notificationLog({type:"merchant-order",title,body,...result,sourceId:event.params.orderId});await claimed.set({status:"sent",...result,sentAtMs:Date.now()},{merge:true})}catch(error){await claimed.set({status:"error",error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});throw error}});
+
+exports.notifyTeaReady=onDocumentUpdated({document:"adminTea/state",region:"europe-west1"},async event=>{const before=event.data?.before.data()||{},after=event.data?.after.data()||{},oldReady=new Set((Array.isArray(before.activeBrews)?before.activeBrews:[]).filter(item=>Number.isFinite(Number(item.readyAtMs))).map(item=>item.id)),newBrews=(Array.isArray(after.activeBrews)?after.activeBrews:[]).filter(item=>Number.isFinite(Number(item.readyAtMs))&&!oldReady.has(item.id)),settings=(await db.doc("notificationSettings/tea").get()).data()||{};for(const brew of newBrews){const claimed=await claimNotificationEvent(`tea-ready-${brew.id}`,{type:"tea-ready",brewId:brew.id});if(!claimed)continue;const position=(after.activeBrews||[]).findIndex(item=>item.id===brew.id)+1,customerMessage={title:"Taze çay hazır ☕",body:"Yeni demlenen çayımız servise hazır.",type:"tea-ready",tag:`tea-ready-${brew.id}`,link:"/#taze-dem"},adminMessage={title:"Çay hazır ☕",body:`Demlik ${Math.max(1,position)} demlendi ve servise hazır.`,type:"admin-tea-ready",tag:`admin-tea-ready-${brew.id}`,link:"/taze-dem-paneli/"};try{const customer=settings.customerTeaReadyEnabled===false?{successCount:0,failureCount:0}:await sendPushDocuments(await activePushDocuments("publicPushDevices","teaReady"),customerMessage),admin=settings.adminTeaAlertsEnabled===false?{successCount:0,failureCount:0}:await sendPushDocuments(await activePushDocuments("adminPushDevices"),adminMessage);await db.doc("notificationSettings/tea").set({lastTeaSentAtMs:Date.now(),lastTeaSentAt:FieldValue.serverTimestamp()},{merge:true});await notificationLog({type:"tea-ready",title:customerMessage.title,body:customerMessage.body,successCount:customer.successCount+admin.successCount,failureCount:customer.failureCount+admin.failureCount,brewId:brew.id});await claimed.set({status:"sent",customer,admin,sentAtMs:Date.now()},{merge:true})}catch(error){await claimed.set({status:"error",error:String(error.message||error)},{merge:true});throw error}}});
+
+exports.notifyTeaFreshnessExpired=onSchedule(
+  {schedule:"every 1 minutes",region:"europe-west1",timeZone:"Europe/Istanbul"},
+  async()=>{
+    const[stateSnap,settingsSnap]=await Promise.all([
+      db.doc("adminTea/state").get(),
+      db.doc("notificationSettings/tea").get()
+    ]);
+    const settings=settingsSnap.data()||{};
+    if(settings.adminTeaAlertsEnabled===false)return;
+    const brews=Array.isArray(stateSnap.data()?.activeBrews)?stateSnap.data().activeBrews:[];
+    const now=Date.now();
+    for(let index=0;index<brews.length;index++){
+      const brew=brews[index],readyAt=Number(brew.readyAtMs);
+      if(!Number.isFinite(readyAt)||now<readyAt+60*60*1000)continue;
+      const claimed=await claimNotificationEvent(`tea-expired-${brew.id}`,{type:"tea-expired",brewId:brew.id});
+      if(!claimed)continue;
+      const title="Çayın tazelik süresi doldu ⏱️";
+      const body=`Demlik ${index+1} için 60 dakikalık tazelik süresi tamamlandı.`;
+      const result=await sendPushDocuments(
+        await activePushDocuments("adminPushDevices"),
+        {title,body,type:"tea-expired",tag:`tea-expired-${brew.id}`,link:"/taze-dem-paneli/"}
+      );
+      await notificationLog({type:"tea-expired",title,body,...result,brewId:brew.id});
+      await claimed.set({status:"sent",...result,sentAtMs:Date.now()},{merge:true});
+    }
+  }
+);
