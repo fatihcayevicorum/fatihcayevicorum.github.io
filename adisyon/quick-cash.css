@@ -1,4 +1,19 @@
-.quick-cash-dialog .dialog-card{width:min(92vw,430px)}
+.quick-cash-dialog{
+  position:fixed;
+  inset:50% auto auto 50%;
+  width:min(calc(100vw - 24px),430px);
+  max-width:none;
+  max-height:calc(100dvh - 24px);
+  margin:0;
+  overflow:visible;
+  transform:translate(-50%,-50%);
+}
+.quick-cash-dialog .dialog-card{
+  width:100%;
+  max-height:calc(100dvh - 24px);
+  overflow-x:hidden;
+  overflow-y:auto;
+}
 .quick-cash-kicker{margin:0 0 3px;color:var(--red);font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .quick-cash-type,.quick-cash-account{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
 .quick-cash-type label,.quick-cash-account label{margin:0}
@@ -10,4 +25,4 @@
 .quick-cash-dialog label small{color:var(--muted);font-weight:500}
 .quick-cash-date{margin:10px 0 0;padding:9px 11px;border-radius:10px;color:var(--muted);background:#f5eee6;font-size:.68rem;text-align:center}
 .quick-cash-dialog .dialog-actions button{min-width:105px}
-@media(max-width:480px){.quick-cash-dialog .dialog-card{padding:16px}.quick-cash-dialog .dialog-actions{display:grid;grid-template-columns:1fr 1fr}.quick-cash-dialog .dialog-actions button{width:100%}}
+@media(max-width:480px){.quick-cash-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.quick-cash-dialog .dialog-card{max-height:calc(100dvh - 16px);padding:16px}.quick-cash-dialog .dialog-actions{display:grid;grid-template-columns:1fr 1fr}.quick-cash-dialog .dialog-actions button{width:100%}}
