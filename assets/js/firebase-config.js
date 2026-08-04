@@ -3,7 +3,6 @@ export const firebaseConfig = {
     authDomain: "fatihcayevi.firebaseapp.com",
     projectId: "fatihcayevi",
     storageBucket: "fatihcayevi.firebasestorage.app",
-    messagingSenderId: "511481308540",
     appId: "1:511481308540:web:7229a1eb147bc7dfc4f0f9"
 };
 

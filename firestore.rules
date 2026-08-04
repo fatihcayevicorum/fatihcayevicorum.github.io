@@ -69,11 +69,6 @@ service cloud.firestore {
       allow create, update: if request.resource.data.lastSeenMs is int;
       allow delete: if false;
     }
-    match /publicPush/config {
-      allow read: if true;
-      allow write: if false;
-    }
-
     match /adminStockItems/{document} {
       allow read: if hasAnyPanel(['stock', 'pos', 'reports']);
       allow write: if hasAnyPanel(['stock', 'pos'])
@@ -127,41 +122,6 @@ service cloud.firestore {
     }
     match /adminPaymentReminders/{document} {
       allow read, write: if hasPanel('cash');
-    }
-
-    match /adminPushTokens/{tokenId} {
-      allow read, create, update, delete: if isManager();
-    }
-    match /pushSubscriptions/{tokenId} {
-      allow read, delete: if hasPanel('notifications');
-      allow create: if isManager() || (request.resource.data.token is string
-        && request.resource.data.token.size() > 20
-        && request.resource.data.audience in ['customer', 'merchant']
-        && (request.resource.data.audience == 'customer'
-          || (isActiveMerchant() && request.resource.data.merchantId == request.auth.uid)));
-      allow update: if isManager() || (request.resource.data.token == resource.data.token
-        && request.resource.data.audience == resource.data.audience
-        && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['token', 'audience', 'merchantId', 'enabled', 'teaUpdates', 'campaigns', 'platform', 'userAgent', 'updatedAt'])
-        && (resource.data.audience == 'customer'
-          || (isActiveMerchant() && resource.data.merchantId == request.auth.uid)));
-    }
-    match /notificationSchedules/{document} {
-      allow read, write: if hasPanel('notifications');
-    }
-    match /notificationSettings/{document} {
-      allow read, write: if hasPanel('notifications');
-    }
-    match /notificationOutbox/{document} {
-      allow read, create, update, delete: if hasPanel('notifications');
-    }
-    match /notificationHistory/{document} {
-      allow read: if hasPanel('notifications');
-      allow write: if false;
-    }
-    match /inAppNotifications/{document} {
-      allow read, create, update: if isManager();
-      allow delete: if hasPanel('notifications');
     }
 
     match /merchantProfiles/{merchantId} {

@@ -10,7 +10,6 @@ export const PANEL_DEFINITIONS=[
   {id:"merchant",name:"Esnaf Yönetimi",path:"esnaf-yonetimi/",icon:"fa-store"},
   {id:"reports",name:"Raporlar",path:"raporlar/",icon:"fa-chart-column"},
   {id:"cash",name:"Kasa ve Hesaplar",path:"kasa-hesap-yonetimi/",icon:"fa-vault"},
-  {id:"notifications",name:"Bildirim Yönetimi",path:"bildirim-yonetimi/",icon:"fa-bell"},
   {id:"home",name:"Ana Sayfa Yönetimi",path:"ana-sayfa-yonetimi/",icon:"fa-house"}
 ];
 export const ALL_PANEL_IDS=PANEL_DEFINITIONS.map(x=>x.id);

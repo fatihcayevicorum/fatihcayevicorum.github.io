@@ -1,0 +1,19 @@
+R155 - BILDIRIM SISTEMINI TAMAMEN KALDIRMA
+
+GITHUB:
+1. R155-sadece-degisen-dosyalar paketini GitHub ana klasorune cikarin.
+2. GITHUB-DOSYALARINI-SIL.bat dosyasini GitHub ana klasorune koyup calistirin.
+3. GITHUB-DOSYALARINI-SIL.bat ve KURULUM.txt dosyalarini GitHub'a yuklemeyin.
+4. GitHub Desktop'ta degisen ve silinen dosyalari commit edip Push origin yapin.
+
+FIREBASE:
+1. R155-firebase-bildirim-kaldirma paketini ayri klasore cikarin.
+2. FIREBASE-BILDIRIM-SISTEMINI-KALDIR.bat dosyasina cift tiklayin.
+3. "Bildirim sistemi ve eski kayitlari Firebase'den tamamen kaldirildi" yazisini bekleyin.
+
+SONUC:
+- Yonetim Merkezi'nde tiklanmayan "Bildirim Merkezi - YAKINDA" karti kalir.
+- Musteri, esnaf ve yonetici bildirim arayuzleri kaldirilir.
+- Uygulama ici bildirimler, push, zil, cihaz kayitlari ve zamanlamalar kaldirilir.
+- Eski bildirim Functions, Firestore kurallari ve bildirim verileri silinir.
+- Adisyon, stok, kasa, Taze Dem, esnaf ve diger isletme verilerine dokunulmaz.

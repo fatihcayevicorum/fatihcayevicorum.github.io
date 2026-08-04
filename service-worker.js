@@ -1,12 +1,7 @@
-self.addEventListener("notificationclick",event=>{event.notification.close();const message=event.notification.data?.FCM_MSG||{},target=event.notification.data?.url||message.fcmOptions?.link||message.data?.url||new URL("./",self.registration.scope).href;event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{const existing=list.find(client=>client.url===target||client.url.startsWith(`${target}?`));if(existing)return existing.focus();return clients.openWindow(target)}))});
-importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
-firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
-const backgroundMessaging=firebase.messaging();
-const VERSION="fatih-cay-evi-r154",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r155",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
-  "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/customer-notifications.js","./assets/css/customer-notifications.css",
+  "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js",
   "./menu.html","./assets/css/menu.css","./assets/js/menu.js","./yonetici-giris.html","./assets/css/yonetici-giris.css","./assets/js/yonetici-giris.js","./esnaf-giris.html","./assets/css/esnaf-giris.css","./assets/js/esnaf-giris.js",
   "./assets/js/firebase-config.js","./assets/js/admin-access.js","./assets/js/device-access.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
   "./yonetim-merkezi/","./yonetim-merkezi/index.html","./yonetim-merkezi/style.css","./yonetim-merkezi/script.js",
@@ -20,14 +15,12 @@ const CORE=[
   "./raporlar/index.html","./raporlar/style.css","./raporlar/script.js",
   "./veri-yonetimi/index.html","./veri-yonetimi/style.css","./veri-yonetimi/script.js",
   "./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/device-reset.css","./kullanici-yonetimi/script.js",
-  "./assets/css/panel-header.css","./assets/css/panel-scroll.css","./assets/css/management-forms.css","./assets/js/management-forms.js","./assets/js/system-ui.js","./assets/js/pwa.js","./assets/js/sensitive-access.js","./assets/js/merchant-order-alert.js",
-  "./assets/js/customer-notifications.js","./assets/css/customer-notifications.css","./assets/js/merchant-notifications.js","./assets/css/merchant-notifications.css",
-  "./bildirim-yonetimi/","./bildirim-yonetimi/index.html","./bildirim-yonetimi/style.css","./bildirim-yonetimi/script.js",
+  "./assets/css/panel-header.css","./assets/css/panel-scroll.css","./assets/css/management-forms.css","./assets/js/management-forms.js","./assets/js/system-ui.js","./assets/js/pwa.js","./assets/js/sensitive-access.js",
   "./menu-yonetimi/","./menu-yonetimi/index.html","./menu-yonetimi/style.css","./menu-yonetimi/script.js",
   "./ana-sayfa-yonetimi/","./ana-sayfa-yonetimi/index.html","./ana-sayfa-yonetimi/style.css","./ana-sayfa-yonetimi/script.js",
   "./kullanici-yonetimi/","./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
   "./manifest.webmanifest","./admin-manifest.webmanifest",
-  "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png","./assets/icons/notification-icon.png","./assets/icons/notification-badge.png",
+  "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png",
   "./assets/icons/icon-maskable-192.png","./assets/icons/icon-maskable-512.png"
 ];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(STATIC_CACHE).then(cache=>Promise.allSettled(CORE.map(url=>cache.add(url)))).then(()=>self.skipWaiting()))});

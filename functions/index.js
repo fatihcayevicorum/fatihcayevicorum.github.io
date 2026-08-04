@@ -1,19 +1,15 @@
 "use strict";
 const crypto=require("crypto");
-const{onDocumentCreated}=require("firebase-functions/v2/firestore");
-const{onSchedule}=require("firebase-functions/v2/scheduler");
 const{onCall,HttpsError}=require("firebase-functions/v2/https");
 const{initializeApp}=require("firebase-admin/app");
 const{getAuth}=require("firebase-admin/auth");
 const{FieldValue,getFirestore}=require("firebase-admin/firestore");
-const{getMessaging}=require("firebase-admin/messaging");
 const{getStorage}=require("firebase-admin/storage");
 const{logger}=require("firebase-functions");
 initializeApp();
 const db=getFirestore();
-const INVALID_CODES=["messaging/registration-token-not-registered","messaging/invalid-registration-token"];
 const OWNER_UID="obuZLQXuPAWsHE20bZxcAxCNsO02";
-const PANEL_IDS=["tea","pos","menu","stock","credit","merchant","reports","cash","notifications","home"];
+const PANEL_IDS=["tea","pos","menu","stock","credit","merchant","reports","cash","home"];
 
 function requireOwner(request){if(request.auth?.uid!==OWNER_UID)throw new HttpsError("permission-denied","Bu işlem yalnızca ana yönetici tarafından yapılabilir.")}
 async function requirePanel(request,panel){if(request.auth?.uid===OWNER_UID)return;if(!request.auth?.uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const snap=await db.doc(`staffUsers/${request.auth.uid}`).get(),data=snap.data()||{};if(!snap.exists||data.active!==true||!Array.isArray(data.permissions)||!data.permissions.includes(panel))throw new HttpsError("permission-denied","Bu işlem için panel yetkiniz bulunmuyor.")}
@@ -73,34 +69,6 @@ exports.clearLoginDevices=onCall({region:"europe-west1",cors:true},async request
   return{cleared:devices.size,verified:true}
 });
 
-exports.resetPushSystem=onCall({region:"europe-west1",cors:true,timeoutSeconds:120},async request=>{
-  requireOwner(request);
-  const collections=["pushSubscriptions","adminPushTokens","notificationHistory","notificationOutbox","notificationTeaEvents"],counts={},writer=db.bulkWriter();
-  for(const name of collections){const snap=await db.collection(name).get();counts[name]=snap.size;snap.docs.forEach(item=>writer.delete(item.ref))}
-  await writer.close();
-  const resetVersion=Date.now();
-  await db.doc("publicPush/config").set({resetVersion,resetAtMs:resetVersion,resetAt:FieldValue.serverTimestamp(),resetBy:request.auth.uid});
-  await auditUserAction("push-system-reset",OWNER_UID,request.auth.uid,{counts,resetVersion});
-  return{reset:true,resetVersion,counts};
-});
-
-exports.registerAdminPushDevice=onCall({region:"europe-west1",cors:true},async request=>{
-  await requirePanel(request,"merchant");
-  const token=String(request.data?.token||"");
-  if(token.length<20||token.length>4096)throw new HttpsError("invalid-argument","Bildirim anahtarı geçersiz.");
-  const id=crypto.createHash("sha256").update(token).digest("hex"),device={token,uid:request.auth.uid,enabled:true,platform:String(request.data?.platform||"").slice(0,80),userAgent:String(request.data?.userAgent||"").slice(0,500),updatedAt:FieldValue.serverTimestamp()};
-  const batch=db.batch();batch.set(db.doc(`adminPushTokens/${id}`),device,{merge:true});batch.set(db.doc(`pushSubscriptions/admin-${id}`),{...device,audience:"admin"},{merge:true});await batch.commit();
-  return{registered:true,id};
-});
-
-exports.unregisterAdminPushDevice=onCall({region:"europe-west1",cors:true},async request=>{
-  await requirePanel(request,"merchant");
-  const id=String(request.data?.id||"");
-  if(!/^[a-f0-9]{64}$/.test(id))throw new HttpsError("invalid-argument","Cihaz kaydı geçersiz.");
-  const batch=db.batch();batch.delete(db.doc(`adminPushTokens/${id}`));batch.delete(db.doc(`pushSubscriptions/admin-${id}`));await batch.commit();
-  return{removed:true};
-});
-
 exports.readSystemBackup=onCall({region:"europe-west1",cors:true,memory:"256MiB"},async request=>{
   requireOwner(request);const name=String(request.data?.name||"");
   if(!/^fatih-cay-evi-veri-yedegi-[\w.-]+\.json$/.test(name))throw new HttpsError("invalid-argument","Yedek adı geçersiz.");
@@ -113,54 +81,7 @@ exports.deleteMerchantUser=onCall({region:"europe-west1",cors:true},async reques
   const profileRef=db.doc(`merchantProfiles/${uid}`),profileSnap=await profileRef.get();if(!profileSnap.exists)throw new HttpsError("not-found","Esnaf hesabı bulunamadı.");
   const profile=profileSnap.data(),balance=Number(profile.balance)||0;if(balance!==0)throw new HttpsError("failed-precondition","Bakiyesi bulunan esnaf silinemez.");
   const activeOrders=await db.collection("merchantOrders").where("merchantId","==",uid).where("status","in",["pending","preparing","on_the_way"]).limit(1).get();if(!activeOrders.empty)throw new HttpsError("failed-precondition","Açık siparişi bulunan esnaf silinemez.");
-  const writer=db.bulkWriter();for(const collectionName of["merchantOrders","merchantBalanceMovements","pushSubscriptions"]){const field=collectionName==="pushSubscriptions"?"merchantId":"merchantId",snap=await db.collection(collectionName).where(field,"==",uid).get();snap.docs.forEach(item=>writer.delete(item.ref))}writer.delete(profileRef);await writer.close();
+  const writer=db.bulkWriter();for(const collectionName of["merchantOrders","merchantBalanceMovements"]){const snap=await db.collection(collectionName).where("merchantId","==",uid).get();snap.docs.forEach(item=>writer.delete(item.ref))}writer.delete(profileRef);await writer.close();
   try{await getAuth().deleteUser(uid)}catch(error){if(error.code!=="auth/user-not-found")throw error}
   await auditUserAction("delete-merchant",uid,request.auth.uid,{displayName:profile.name||"",businessName:profile.businessName||"",username:profile.username||""});return{uid}
 });
-
-async function sendPush({audience,category="",title,body,url,tag,historyId,source="manual"}){
-  const snap=await db.collection("pushSubscriptions").where("audience","==",audience).where("enabled","==",true).get();
-  const recipients=snap.docs.filter(d=>{const data=d.data();if(!data.token)return false;if(audience!=="customer")return true;if(category==="tea")return data.teaUpdates===true;if(category==="campaign")return data.campaigns===true;return false});
-  let successCount=0,failureCount=0;
-  for(let offset=0;offset<recipients.length;offset+=500){
-    const part=recipients.slice(offset,offset+500);
-    const targetUrl=String(url||defaultUrl(audience)),messageTitle=String(title||"Fatih Çay Evi"),messageBody=String(body||""),messageTag=String(tag||`fatih-${audience}-${Date.now()}`),response=await getMessaging().sendEachForMulticast({
-      tokens:part.map(d=>d.data().token),
-      data:{title:messageTitle,body:messageBody,audience,url:targetUrl,tag:messageTag},
-      webpush:{headers:{Urgency:audience==="admin"?"high":"normal",TTL:audience==="admin"?"3600":"43200"},notification:{title:messageTitle,body:messageBody,icon:publicUrl("assets/icons/notification-icon.png"),badge:publicUrl("assets/icons/notification-badge.png"),tag:messageTag,requireInteraction:audience==="admin"},fcmOptions:{link:targetUrl}}
-    });
-    successCount+=response.successCount;failureCount+=response.failureCount;
-    const invalid=[];
-    response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i])});
-    if(invalid.length)await removeInvalidSubscriptions(invalid);
-  }
-  await db.collection("notificationHistory").doc(historyId||db.collection("_").doc().id).set({audience,category,title,body,url:url||defaultUrl(audience),source,successCount,failureCount,recipientCount:recipients.length,createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()},{merge:true});
-  return{successCount,failureCount,recipientCount:recipients.length};
-}
-async function removeInvalidSubscriptions(documents){const cleanup=db.batch();for(const item of documents){cleanup.delete(item.ref);if(item.data().audience==="admin"){const id=item.id.replace(/^admin-/,"");if(/^[a-f0-9]{64}$/.test(id))cleanup.delete(db.doc(`adminPushTokens/${id}`))}}await cleanup.commit()}
-const PUBLIC_BASE_URL="https://fatihcayevi.com.tr/";
-function publicUrl(path=""){return new URL(path,PUBLIC_BASE_URL).href}
-function defaultUrl(audience){if(audience==="admin")return publicUrl("bildirim-yonetimi/");if(audience==="merchant")return publicUrl("esnaf-paneli/");return PUBLIC_BASE_URL}
-
-exports.notifyMerchantOrder=onDocumentCreated({document:"merchantOrders/{orderId}",region:"europe-west1",retry:false},async event=>{
-  const order=event.data?.data();if(!order||order.status!=="pending")return;
-  const business=order.businessName||order.merchantName||"Esnaf",quantity=Math.max(0,Number(order.quantity)||0),note=String(order.note||"").trim(),teaLabel=order.teaType==="double"?"Duble Çay":"Çay",title=`${business} Çay söyledi`,body=`${quantity} ${teaLabel}${note?` • ${note}`:""}`;
-  const snap=await db.collection("adminPushTokens").where("enabled","==",true).get(),recipients=snap.docs.filter(d=>d.data().token);
-  for(let offset=0;offset<recipients.length;offset+=500){const part=recipients.slice(offset,offset+500),targetUrl=publicUrl("esnaf-yonetimi/"),tag=`fatih-esnaf-${event.params.orderId}`,response=await getMessaging().sendEachForMulticast({tokens:part.map(d=>d.data().token),data:{title,body,orderId:event.params.orderId,audience:"admin",tag,url:targetUrl},webpush:{headers:{Urgency:"high",TTL:"300"},notification:{title,body,icon:publicUrl("assets/icons/notification-icon.png"),badge:publicUrl("assets/icons/notification-badge.png"),tag,requireInteraction:true},fcmOptions:{link:targetUrl}}}),invalid=[];response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i])});if(invalid.length){const cleanup=db.batch();for(const item of invalid){cleanup.delete(item.ref);cleanup.delete(db.doc(`pushSubscriptions/admin-${item.id}`))}await cleanup.commit()}}
-});
-
-exports.sendNotificationOutbox=onDocumentCreated({document:"notificationOutbox/{messageId}",region:"europe-west1",retry:false},async event=>{
-  const ref=event.data.ref,data=event.data.data();if(!["customer","admin","merchant"].includes(data.audience)||!data.title||!data.body){await ref.set({status:"failed",error:"invalid-message",processedAt:FieldValue.serverTimestamp()},{merge:true});return}
-  try{const result=await sendPush({...data,historyId:event.params.messageId,source:"manual"});await ref.set({status:"sent",...result,processedAt:FieldValue.serverTimestamp()},{merge:true})}catch(error){logger.error("Bildirim gönderilemedi",error);await ref.set({status:"failed",error:String(error.message||error),processedAt:FieldValue.serverTimestamp()},{merge:true})}
-});
-
-exports.sendScheduledNotifications=onSchedule({schedule:"every 5 minutes",timeZone:"Europe/Istanbul",region:"europe-west1",retryCount:0},async()=>{
-  const now=istanbulParts(),dateKey=`${now.year}-${pad(now.month)}-${pad(now.day)}`,snap=await db.collection("notificationSchedules").where("active","==",true).get();
-  for(const item of snap.docs){const data=item.data(),[h,m]=String(data.time||"").split(":").map(Number);if(!Number.isFinite(h)||!Number.isFinite(m)||data.lastSentDate===dateKey)continue;const due=h*60+m,current=now.hour*60+now.minute;if(current<due||current-due>4)continue;const claimed=await db.runTransaction(async tx=>{const fresh=await tx.get(item.ref);if(fresh.data()?.lastSentDate===dateKey)return false;tx.update(item.ref,{lastSentDate:dateKey,lastSentAt:FieldValue.serverTimestamp()});return true});if(claimed)await sendPush({...data,category:data.category||"tea",historyId:`schedule-${item.id}-${dateKey}`,source:"schedule",tag:`fatih-schedule-${item.id}-${dateKey}`})}
-});
-
-exports.checkTeaNotifications=onSchedule({schedule:"every 1 minutes",timeZone:"Europe/Istanbul",region:"europe-west1",retryCount:0},async()=>{
-  const[stateSnap,settingsSnap]=await Promise.all([db.doc("adminTea/state").get(),db.doc("notificationSettings/tea").get()]),brews=stateSnap.data()?.activeBrews||[],settings=settingsSnap.data()||{},now=Date.now();
-  for(let index=0;index<brews.length;index++){const brew=brews[index],started=Number(brew.startedAtMs)||0,ready=Number(brew.readyAtMs)||started+20*60000,events=[];if(settings.readyEnabled!==false&&now>=ready)events.push({kind:"ready",at:ready,body:settings.readyBody||"Demlik {no} hazır, çay demlendi."});if(settings.expiredEnabled!==false&&now>=ready+60*60000)events.push({kind:"expired",at:ready+60*60000,body:settings.expiredBody||"Demlik {no} tazelik süresi doldu."});for(const e of events){const eventRef=db.doc(`notificationTeaEvents/${brew.id}-${e.kind}`),claimed=await db.runTransaction(async tx=>{const old=await tx.get(eventRef);if(old.exists)return false;tx.create(eventRef,{brewId:brew.id,kind:e.kind,eventAtMs:e.at,createdAt:FieldValue.serverTimestamp()});return true});if(claimed)await sendPush({audience:"admin",title:"Fatih Çay Evi • Taze Dem",body:e.body.replaceAll("{no}",String(index+1)),url:publicUrl("taze-dem-paneli/"),tag:`fatih-tea-${brew.id}-${e.kind}`,historyId:`tea-${brew.id}-${e.kind}`,source:"tea"})}}
-});
-function istanbulParts(){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul",year:"numeric",month:"numeric",day:"numeric",hour:"numeric",minute:"numeric",hourCycle:"h23"}).formatToParts(new Date),out={};parts.forEach(p=>{if(p.type!=="literal")out[p.type]=Number(p.value)});return out}function pad(n){return String(n).padStart(2,"0")}
