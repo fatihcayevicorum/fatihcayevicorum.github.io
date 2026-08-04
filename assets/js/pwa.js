@@ -7,7 +7,7 @@ showLoginLaunchScreen();
 let installPrompt=null;
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;showInstallButton()});
 window.addEventListener("appinstalled",()=>{installPrompt=null;document.getElementById("pwaInstallButton")?.remove();notify("Fatih Çay Evi uygulaması kuruldu.")});
-if("serviceWorker"in navigator){const startServiceWorker=async()=>{try{const registration=await navigator.serviceWorker.register(new URL("./service-worker.js",base),{scope:base.pathname});registration.addEventListener("updatefound",()=>{const worker=registration.installing;worker?.addEventListener("statechange",()=>{if(worker.state==="installed"&&navigator.serviceWorker.controller)showUpdateButton(worker)})})}catch(error){console.error("PWA kaydı yapılamadı:",error)}};document.readyState==="complete"?startServiceWorker():window.addEventListener("load",startServiceWorker,{once:true})}
+if("serviceWorker"in navigator){const startServiceWorker=async()=>{try{const registration=await navigator.serviceWorker.register(new URL("./service-worker.js",base),{scope:base.pathname,updateViaCache:"none"});registration.addEventListener("updatefound",()=>{const worker=registration.installing;worker?.addEventListener("statechange",()=>{if(worker.state==="installed"&&navigator.serviceWorker.controller)showUpdateButton(worker)})})}catch(error){console.error("PWA kaydı yapılamadı:",error)}};document.readyState==="complete"?startServiceWorker():window.addEventListener("load",startServiceWorker,{once:true})}
 
 function installHead(file){
   if(!document.querySelector('link[rel="manifest"]')){const link=document.createElement("link");link.rel="manifest";link.href=new URL(file,base).href;document.head.append(link)}

@@ -3,7 +3,7 @@ import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"./firebase-config.js";
 import{getManagementProfile,isOwner}from"./admin-access.js";
-import("./pwa.js?v=2").catch(error=>console.error("PWA başlatılamadı:",error));
+import("./pwa.js?v=3").catch(error=>console.error("PWA başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 ensureFooter();
 installGlobalInteractionStyle();

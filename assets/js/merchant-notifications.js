@@ -70,5 +70,5 @@ async function tokenId(token){
   const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(token));
   return[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,"0")).join("");
 }
-async function ensureServiceWorker(){const root=new URL("../../",import.meta.url),registration=await navigator.serviceWorker.register(new URL("service-worker.js?v=148",root),{scope:root.pathname,updateViaCache:"none"});if(registration.active)return registration;return withTimeout(navigator.serviceWorker.ready,18000,"service-worker-timeout")}
+async function ensureServiceWorker(){const root=new URL("../../",import.meta.url),registration=await navigator.serviceWorker.register(new URL("service-worker.js",root),{scope:root.pathname,updateViaCache:"none"});if(registration.active)return registration;return withTimeout(navigator.serviceWorker.ready,18000,"service-worker-timeout")}
 function withTimeout(promise,ms,message){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error(message)),ms))])}
