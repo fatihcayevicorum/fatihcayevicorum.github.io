@@ -1,6 +1,6 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,deleteDoc,doc,getFirestore,onSnapshot,query,serverTimestamp,setDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,deleteDoc,doc,getFirestore,limit,onSnapshot,orderBy,query,serverTimestamp,setDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{deleteToken,getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
@@ -10,6 +10,7 @@ const app=getApps().find(item=>item.name==="[DEFAULT]")||(getApps().length?getAp
 const auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1");
 let audioContext=null,popupTimer;
 let customBellUrl="",customBellAudio=null;
+let lastPresentedPush="",lastPresentedAt=0;
 const NOTIFY_ENABLED_KEY="fatihMerchantNotificationsEnabled";
 const ALERTED_ORDERS_KEY="fatihMerchantAlertedOrders";
 const PUSH_TOKEN_DOC_KEY="fatihMerchantPushTokenDoc";
@@ -22,6 +23,7 @@ buildAlertUi();
 loadCustomBell();
 watchPushReset();
 listenForegroundPush();
+listenAdminDeliveryFallback();
 
 onAuthStateChanged(auth,async user=>{
   if(!await hasPanelAccess(user,db,"merchant")){setAlertStatus("Esnaf paneli yetkisi bekleniyor.");return}
@@ -85,4 +87,6 @@ function keepAlertAboveDialogs(){const ids=["merchantNotifyTest","merchantNotify
 function setAlertStatus(message){const status=document.getElementById("merchantAlertStatus");if(status)status.textContent=message}
 function withTimeout(promise,ms,message){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error(message)),ms))])}
 async function ensureServiceWorker(retry=true){if(!("serviceWorker"in navigator))throw Error("Tarayıcı bildirim servisini desteklemiyor.");const root=new URL("../../",import.meta.url),registration=await navigator.serviceWorker.register(new URL("service-worker.js",root),{scope:root.pathname,updateViaCache:"none"});if(registration.active)return registration;const worker=registration.installing||registration.waiting;if(!worker){if(retry){await registration.unregister();return ensureServiceWorker(false)}throw Error("Bildirim servisi kurulamadı.")}try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error("Bildirim servisi etkinleşmedi.")),15000),finish=()=>{if(worker.state==="activated"){clearTimeout(timer);resolve()}else if(worker.state==="redundant"){clearTimeout(timer);reject(Error("Bildirim servisi kurulumu iptal oldu."))}};worker.addEventListener("statechange",finish);finish()});return registration}catch(error){if(retry){await registration.unregister();return ensureServiceWorker(false)}throw error}}
-async function listenForegroundPush(){try{if(!await isSupported())return;onMessage(getMessaging(app),payload=>{const data=payload.data||{},notification=payload.notification||{},title=data.title||notification.title||"Fatih Çay Evi Yönetim",body=data.body||notification.body||"Yeni bir bildiriminiz var.";showAlertPopup(title,body);playBell();vibrate();showSystemNotification(title,body)})}catch(error){console.error("Ön plan push dinleyicisi başlatılamadı:",error)}}
+async function listenForegroundPush(){try{if(!await isSupported())return;onMessage(getMessaging(app),payload=>{const data=payload.data||{},notification=payload.notification||{};presentPush(data.title||notification.title||"Fatih Çay Evi Yönetim",data.body||notification.body||"Yeni bir bildiriminiz var.")})}catch(error){console.error("Ön plan push dinleyicisi başlatılamadı:",error)}}
+function listenAdminDeliveryFallback(){const startedAt=Date.now();onSnapshot(query(collection(db,"notificationHistory"),orderBy("createdAtMs","desc"),limit(1)),snap=>{const item=snap.docs[0]?.data();if(!item||item.audience!=="admin"||Number(item.successCount)<1||Number(item.createdAtMs)<startedAt-3000)return;presentPush(item.title||"Fatih Çay Evi Yönetim",item.body||"Yeni bir bildiriminiz var.")},error=>console.error("Bildirim teslim takibi başlatılamadı:",error))}
+function presentPush(title,body){const signature=`${title}|${body}`,now=Date.now();if(signature===lastPresentedPush&&now-lastPresentedAt<10000)return;lastPresentedPush=signature;lastPresentedAt=now;showAlertPopup(title,body);playBell();vibrate();showSystemNotification(title,body)}
