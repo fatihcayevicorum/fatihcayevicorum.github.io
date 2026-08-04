@@ -1,9 +1,3 @@
-.quick-cash-button{
-  color:#fff;
-  background:linear-gradient(145deg,#8f2028,#65151c);
-  box-shadow:0 7px 16px rgba(101,21,28,.2);
-}
-.quick-cash-button:active{transform:scale(.96)}
 .quick-cash-dialog .dialog-card{width:min(92vw,430px)}
 .quick-cash-kicker{margin:0 0 3px;color:var(--red);font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .quick-cash-type,.quick-cash-account{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
