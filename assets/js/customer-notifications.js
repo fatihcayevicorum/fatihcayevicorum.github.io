@@ -1,6 +1,6 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{doc,getFirestore,onSnapshot,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{deleteToken,getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
+import{deleteToken,getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
 import{FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
 
 const app=getApps().length?getApp():initializeApp(firebaseConfig),db=getFirestore(app);
@@ -8,6 +8,7 @@ const TOKEN_KEY="fatihCustomerPushToken",PREF_KEY="fatihCustomerNotificationPref
 let busy=false;
 build();
 watchPushReset();
+listenForegroundPush();
 
 function build(){
   document.body.insertAdjacentHTML("beforeend",`
@@ -108,6 +109,7 @@ function readPreferences(){try{const value=JSON.parse(localStorage.getItem(PREF_
 function setBusy(value){busy=value;$("#customerNotifySave").disabled=value;$("#customerNotifyDisable").disabled=value}
 function setMessage(value){$("#customerNotifyMessage").textContent=value}
 function showToast(value){const toast=$("#customerNotifyToast");toast.textContent=value;toast.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove("show"),3000)}
+async function listenForegroundPush(){try{if(!await isSupported())return;onMessage(getMessaging(app),async payload=>{const data=payload.data||{},notification=payload.notification||{};if(data.audience&&data.audience!=="customer")return;const title=data.title||notification.title||"Fatih Çay Evi",body=data.body||notification.body||"Yeni bir bildiriminiz var.";showToast(`${title} • ${body}`);if(Notification.permission!=="granted")return;const registration=await ensureServiceWorker();await registration.showNotification(title,{body,icon:new URL("../icons/notification-icon.png",import.meta.url).href,badge:new URL("../icons/notification-badge.png",import.meta.url).href,tag:data.tag||"fatih-musteri-bildirimi",data:{url:data.url||new URL("../../",import.meta.url).href}})})}catch(error){console.error("Müşteri ön plan bildirimi başlatılamadı:",error)}}
 function $(selector){return document.querySelector(selector)}
 async function tokenId(token){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(token));return[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 function watchPushReset(){onSnapshot(doc(db,"publicPush","config"),async snap=>{const version=Number(snap.data()?.resetVersion)||0,seen=Number(localStorage.getItem(RESET_KEY))||0;if(!version||version<=seen)return;const hadToken=Boolean(localStorage.getItem(TOKEN_KEY));localStorage.setItem(RESET_KEY,String(version));localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(PREF_KEY);if(await isSupported())await deleteToken(getMessaging(app)).catch(()=>{});refreshBell();if(hadToken)showToast("Bildirim kaydı sıfırlandı. Yeniden açabilirsiniz.")})}

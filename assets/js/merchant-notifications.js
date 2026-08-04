@@ -1,7 +1,7 @@
 import{getApps}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{doc,getFirestore,onSnapshot,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{deleteToken,getMessaging,getToken,isSupported}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
+import{deleteToken,getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
 import{FCM_VAPID_KEY}from"./firebase-config.js";
 
 const app=getApps().find(item=>item.name==="merchant-portal");
@@ -17,6 +17,7 @@ function setup(){
   button.className="merchant-push-button";
   document.querySelector(".welcome")?.after(button);
   const auth=getAuth(app),db=getFirestore(app),messaging=getMessaging(app);
+  listenForegroundPush(messaging);
   onSnapshot(doc(db,"publicPush","config"),async snap=>{const version=Number(snap.data()?.resetVersion)||0,seen=Number(localStorage.getItem(RESET_KEY))||0;if(!version||version<=seen)return;const hadToken=Boolean(localStorage.getItem(TOKEN_KEY));localStorage.setItem(RESET_KEY,String(version));localStorage.removeItem(TOKEN_KEY);await deleteToken(messaging).catch(()=>{});refresh(button,hadToken?"Bildirim kaydı sıfırlandı. Yeniden açın.":"")});
 
   onAuthStateChanged(auth,async user=>{
@@ -56,6 +57,8 @@ function setup(){
     };
   });
 }
+
+async function listenForegroundPush(messaging){try{if(!await isSupported())return;onMessage(messaging,async payload=>{const data=payload.data||{},notification=payload.notification||{};if(data.audience&&data.audience!=="merchant")return;const title=data.title||notification.title||"Fatih Çay Evi Esnaf",body=data.body||notification.body||"Yeni bir duyurunuz var.",button=document.getElementById("merchantPushButton");if(button)refresh(button,`${title}: ${body}`);if(Notification.permission!=="granted")return;const registration=await ensureServiceWorker();await registration.showNotification(title,{body,icon:new URL("../icons/notification-icon.png",import.meta.url).href,badge:new URL("../icons/notification-badge.png",import.meta.url).href,tag:data.tag||"fatih-esnaf-duyurusu",data:{url:data.url||new URL("../../esnaf-paneli/",import.meta.url).href}})})}catch(error){console.error("Esnaf ön plan bildirimi başlatılamadı:",error)}}
 
 function refresh(button,message=""){
   const enabled=Boolean(localStorage.getItem(TOKEN_KEY))&&Notification.permission==="granted";

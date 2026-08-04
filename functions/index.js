@@ -131,12 +131,13 @@ async function sendPush({audience,category="",title,body,url,tag,historyId,sourc
     });
     successCount+=response.successCount;failureCount+=response.failureCount;
     const invalid=[];
-    response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i].ref)});
-    if(invalid.length){const cleanup=db.batch();invalid.forEach(ref=>cleanup.delete(ref));await cleanup.commit()}
+    response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i])});
+    if(invalid.length)await removeInvalidSubscriptions(invalid);
   }
   await db.collection("notificationHistory").doc(historyId||db.collection("_").doc().id).set({audience,category,title,body,url:url||defaultUrl(audience),source,successCount,failureCount,recipientCount:recipients.length,createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()},{merge:true});
   return{successCount,failureCount,recipientCount:recipients.length};
 }
+async function removeInvalidSubscriptions(documents){const cleanup=db.batch();for(const item of documents){cleanup.delete(item.ref);if(item.data().audience==="admin"){const id=item.id.replace(/^admin-/,"");if(/^[a-f0-9]{64}$/.test(id))cleanup.delete(db.doc(`adminPushTokens/${id}`))}}await cleanup.commit()}
 const PUBLIC_BASE_URL="https://fatihcayevi.com.tr/";
 function publicUrl(path=""){return new URL(path,PUBLIC_BASE_URL).href}
 function defaultUrl(audience){if(audience==="admin")return publicUrl("bildirim-yonetimi/");if(audience==="merchant")return publicUrl("esnaf-paneli/");return PUBLIC_BASE_URL}
@@ -145,7 +146,7 @@ exports.notifyMerchantOrder=onDocumentCreated({document:"merchantOrders/{orderId
   const order=event.data?.data();if(!order||order.status!=="pending")return;
   const business=order.businessName||order.merchantName||"Esnaf",quantity=Math.max(0,Number(order.quantity)||0),note=String(order.note||"").trim(),teaLabel=order.teaType==="double"?"Duble Çay":"Çay",title=`${business} Çay söyledi`,body=`${quantity} ${teaLabel}${note?` • ${note}`:""}`;
   const snap=await db.collection("adminPushTokens").where("enabled","==",true).get(),recipients=snap.docs.filter(d=>d.data().token);
-  for(let offset=0;offset<recipients.length;offset+=500){const part=recipients.slice(offset,offset+500),targetUrl=publicUrl("esnaf-yonetimi/"),tag=`fatih-esnaf-${event.params.orderId}`,response=await getMessaging().sendEachForMulticast({tokens:part.map(d=>d.data().token),data:{title,body,orderId:event.params.orderId,audience:"admin",tag,url:targetUrl},webpush:{headers:{Urgency:"high",TTL:"300"},notification:{title,body,icon:publicUrl("assets/icons/notification-icon.png"),badge:publicUrl("assets/icons/notification-badge.png"),tag,requireInteraction:true},fcmOptions:{link:targetUrl}}}),invalid=[];response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i].ref)});if(invalid.length){const cleanup=db.batch();invalid.forEach(ref=>cleanup.delete(ref));await cleanup.commit()}}
+  for(let offset=0;offset<recipients.length;offset+=500){const part=recipients.slice(offset,offset+500),targetUrl=publicUrl("esnaf-yonetimi/"),tag=`fatih-esnaf-${event.params.orderId}`,response=await getMessaging().sendEachForMulticast({tokens:part.map(d=>d.data().token),data:{title,body,orderId:event.params.orderId,audience:"admin",tag,url:targetUrl},webpush:{headers:{Urgency:"high",TTL:"300"},notification:{title,body,icon:publicUrl("assets/icons/notification-icon.png"),badge:publicUrl("assets/icons/notification-badge.png"),tag,requireInteraction:true},fcmOptions:{link:targetUrl}}}),invalid=[];response.responses.forEach((r,i)=>{if(!r.success&&INVALID_CODES.includes(r.error?.code)&&part[i])invalid.push(part[i])});if(invalid.length){const cleanup=db.batch();for(const item of invalid){cleanup.delete(item.ref);cleanup.delete(db.doc(`pushSubscriptions/admin-${item.id}`))}await cleanup.commit()}}
 });
 
 exports.sendNotificationOutbox=onDocumentCreated({document:"notificationOutbox/{messageId}",region:"europe-west1",retry:false},async event=>{
