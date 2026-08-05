@@ -3,7 +3,6 @@ import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasej
 import{connectFunctionsEmulator,getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 import{disableAdminPushDevice,registerAdminPushDevice,startForegroundPush}from"../assets/js/push-client.js";
-const responsiveStyle=document.createElement("link");responsiveStyle.rel="stylesheet";responsiveStyle.href="responsive-fix.css?v=1";document.head.append(responsiveStyle);
 const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),functions=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
 const dashboard=httpsCallable(functions,"getNotificationDashboard"),send=httpsCallable(functions,"sendAnnouncement"),saveSettings=httpsCallable(functions,"setTeaNotificationSettings");let user=null,busy=false;
 onAuthStateChanged(auth,async current=>{if(!current||current.uid!==ADMIN_UID){location.replace("../yonetici-giris.html?next=bildirim-merkezi/");return}user=current;if(Notification.permission==="granted")startForegroundPush();await load()});
