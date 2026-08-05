@@ -1,34 +1,17 @@
-/* R164 rev3 - Bildirim Merkezi ortak Yönetim Merkezi ölçülerine uyum
-   Ortak üst alan ve ana container genişlikleri panel-header.css tarafından yönetilir.
-   Bu dosya yalnızca Bildirim Merkezi'nin kendi içerik elemanlarını responsive tutar. */
-html{width:100%;max-width:100%;overflow-x:hidden;background:var(--cream);-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{width:100%;max-width:100%;min-width:0;min-height:100vh;overflow-x:hidden}
+/* R164 - Bildirim Merkezi responsive duzen
+   Ortak panel-header.css header/page-shell genisliklerini aynen kullanir.
+   Bu dosyada header-inner veya page-shell width/max-width override edilmez. */
 
-/* Yönetim Merkezi ile aynı ortak iskelet: header-inner ve page-shell genişliklerine dokunma. */
-.page-shell,.page-shell>*,.layout,.layout>*,.paper,.intro,.stats,.stats>*{min-width:0;max-width:100%}
+html{max-width:100%;overflow-x:hidden;background:var(--cream);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{max-width:100%;min-width:0;min-height:100vh;overflow-x:hidden}
+.page-shell,.page-shell>*,.layout,.layout>*,.paper,.intro,.stats,.stats>*{min-width:0}
+.header-button{order:2}
 .stats article span,.stats article strong{grid-column:2;min-width:0}
 .history-item{min-width:0}.history-item div{min-width:0}.history-item span{overflow-wrap:anywhere}
 input,textarea,button{max-width:100%}
 
-/* Tablet: ortak panel container ölçüsü korunur, yalnız iç kartlar sıkılaştırılır. */
-@media(min-width:700px) and (max-width:1049px){
-  .page-shell{gap:.85rem!important;padding-top:1.25rem!important;padding-bottom:1.8rem!important}
-  .intro{padding:.95rem 1rem!important;border-radius:18px!important}
-  .intro h2{font-size:1.28rem!important}
-  .intro>div>p:last-child{font-size:.63rem!important;line-height:1.45}
-  .stats{gap:.55rem!important}
-  .stats article{padding:.72rem!important;border-radius:15px!important}
-  .stats i{width:2.05rem!important;height:2.05rem!important}
-  .stats strong{font-size:1.08rem!important;line-height:1.1}
-  .layout{gap:.8rem!important}
-  .paper{padding:1rem!important;border-radius:17px!important}
-  .section-title{gap:.62rem!important;margin-bottom:.68rem!important}
-  .section-title .icon{width:2.4rem!important;height:2.4rem!important;border-radius:12px!important}
-  .section-title h3{font-size:.9rem!important}
-}
-
-@media(max-width:699px){
-  .page-shell{gap:.7rem!important;padding-top:.75rem!important;padding-bottom:1.5rem!important}
+@media(max-width:799px){
+  .page-shell{padding:.75rem 0 1.5rem!important;gap:.7rem!important}
   .intro{padding:.85rem .9rem!important;border-radius:16px!important}
   .intro h2{font-size:1.2rem!important}
   .intro>div>p:last-child{font-size:.62rem!important;line-height:1.45}
@@ -44,7 +27,9 @@ input,textarea,button{max-width:100%}
 }
 
 @media(max-width:560px){
-  .page-shell{gap:.5rem!important;padding-top:.45rem!important;padding-bottom:1.1rem!important}
+  .header-button{width:2.55rem;min-width:2.55rem;height:2.55rem;padding:0}
+  .header-button span{display:none}
+  .page-shell{padding:.45rem 0 1.1rem!important;gap:.5rem!important}
   .intro{padding:.7rem .75rem!important;gap:.4rem}
   .kicker{font-size:.52rem!important}
   .intro h2{font-size:1.05rem!important}
@@ -69,12 +54,21 @@ input,textarea,button{max-width:100%}
   input,textarea{padding:.65rem!important;border-radius:11px!important;font-size:.64rem!important}
   textarea{min-height:5rem!important}
   .switch-row{gap:.55rem!important;padding:.65rem 0!important}
-  .switch-row strong{font-size:.61rem!important}.switch-row small{font-size:.5rem!important}
-  .switch-row>i{flex-basis:2.4rem!important;height:1.35rem!important}.switch-row>i:after{width:.95rem!important;height:.95rem!important}
+  .switch-row strong{font-size:.61rem!important}
+  .switch-row small{font-size:.5rem!important}
+  .switch-row>i{flex-basis:2.4rem!important;height:1.35rem!important}
+  .switch-row>i:after{width:.95rem!important;height:.95rem!important}
   .switch-row input:checked+i:after{transform:translateX(1.05rem)!important}
   .preview{margin:.7rem 0!important;padding:.65rem!important}
   .history-item{grid-template-columns:1.75rem minmax(0,1fr) auto!important;gap:.42rem!important;padding:.55rem!important}
   .history-item i{width:1.75rem!important;height:1.75rem!important}
   .history-item time{font-size:.48rem!important;white-space:nowrap}
 }
-@media(max-width:360px){.live-pill{display:none}.brand-copy .eyebrow{display:none}.stats span{font-size:.43rem!important}.history-item{grid-template-columns:1.6rem minmax(0,1fr)!important}.history-item time{grid-column:2}}
+
+@media(max-width:360px){
+  .live-pill{display:none}
+  .brand-copy .eyebrow{display:none}
+  .stats span{font-size:.43rem!important}
+  .history-item{grid-template-columns:1.6rem minmax(0,1fr)!important}
+  .history-item time{grid-column:2}
+}
