@@ -89,7 +89,7 @@ exports.deleteMerchantUser=onCall({region:"europe-west1",cors:true},async reques
   await auditUserAction("delete-merchant",uid,request.auth.uid,{displayName:profile.name||"",businessName:profile.businessName||"",username:profile.username||""});return{uid}
 });
 
-const SITE_URL="https://fatihcayevi.com.tr",LOGO_URL=`${SITE_URL}/assets/images/logo.png`,BADGE_URL=`${SITE_URL}/assets/icons/icon-192.png`;
+const SITE_URL="https://fatihcayevi.com.tr",LOGO_URL=`${SITE_URL}/assets/icons/icon-192.png`,BADGE_URL=`${SITE_URL}/assets/icons/icon-192.png`;
 function cleanNotificationText(value,max,label){const text=String(value||"").replace(/\s+/g," ").trim().slice(0,max);if(text.length<2)throw new HttpsError("invalid-argument",`${label} çok kısa.`);return text}
 function absoluteLink(link){try{return new URL(link,SITE_URL).toString()}catch{return SITE_URL}}
 async function activePushDocuments(collectionName,preference){let query=db.collection(collectionName);if(preference)query=query.where(preference,"==",true);const snap=await query.get();return snap.docs.filter(item=>item.data().active===true&&typeof item.data().token==="string"&&item.data().token.length>20)}

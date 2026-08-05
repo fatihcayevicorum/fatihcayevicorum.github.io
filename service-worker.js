@@ -2,7 +2,7 @@ importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
 firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
 firebase.messaging();
-const VERSION="fatih-cay-evi-r159",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r160",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js",
@@ -10,7 +10,7 @@ const CORE=[
   "./menu.html","./assets/css/menu.css","./assets/js/menu.js","./yonetici-giris.html","./assets/css/yonetici-giris.css","./assets/js/yonetici-giris.js","./esnaf-giris.html","./assets/css/esnaf-giris.css","./assets/js/esnaf-giris.js",
   "./assets/js/firebase-config.js","./assets/js/admin-access.js","./assets/js/device-access.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
   "./yonetim-merkezi/","./yonetim-merkezi/index.html","./yonetim-merkezi/style.css","./yonetim-merkezi/script.js",
-  "./bildirim-merkezi/","./bildirim-merkezi/index.html","./bildirim-merkezi/style.css","./bildirim-merkezi/script.js",
+  "./bildirim-merkezi/","./bildirim-merkezi/index.html","./bildirim-merkezi/style.css","./bildirim-merkezi/responsive-fix.css","./bildirim-merkezi/script.js",
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
   "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js","./adisyon/quick-cash.css","./adisyon/quick-cash.js",
   "./stok-yonetimi/index.html","./stok-yonetimi/style.css","./stok-yonetimi/script.js",
