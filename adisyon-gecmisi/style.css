@@ -23,3 +23,10 @@ dialog:focus,dialog:focus-visible,dialog[open]:focus,dialog[open]:focus-visible{
 .reopen-confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .danger-confirm-action{min-height:42px;padding:0 13px;border:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(145deg,var(--red),var(--red2));color:#fff;font-size:.76rem;font-weight:900}
 @media(max-width:600px){.reopen-confirm-card{width:min(92vw,380px)!important;padding:20px 17px!important}.reopen-confirm-actions{grid-template-columns:1fr}.reopen-confirm-actions button{width:100%}}
+
+
+/* R167.2 — embed görünümünde dış pencereyle daha uyumlu sade alan */
+html.embed-mode .control-card,html.embed-mode .summary-grid article,html.embed-mode .history-card,html.embed-mode .dialog-card{border-color:rgba(234,223,210,.8)}
+html.embed-mode .control-card{background:rgba(255,253,249,.96)}
+html.embed-mode .summary-grid article,html.embed-mode .history-card,html.embed-mode .dialog-card{background:#fffdf9}
+html.embed-mode .history-card:hover{box-shadow:0 10px 20px rgba(71,37,31,.08)}
