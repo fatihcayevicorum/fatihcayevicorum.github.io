@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=165"><link rel="stylesheet" href="polish.css?v=12"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=3"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
+  <link rel="stylesheet" href="style.css?v=166"><link rel="stylesheet" href="polish.css?v=12"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=3"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -23,6 +23,7 @@
         <button id="dailyStatus" class="secondary icon-action" title="Günlük Durum" aria-label="Günlük Durum"><i class="fa-solid fa-chart-pie"></i></button>
         <button id="quickCashButton" class="secondary icon-action" title="Hızlı Gelir / Gider" aria-label="Hızlı Gelir veya Gider Ekle"><i class="fa-solid fa-money-bill-transfer"></i></button>
         <button id="recentPaymentsButton" class="secondary icon-action" title="Son Ödemeler" aria-label="Son ödeme İşlemleri"><i class="fa-solid fa-clock-rotate-left"></i></button>
+        <a class="secondary icon-action" href="../adisyon-gecmisi/" title="Kapatılan Adisyonlar" aria-label="Kapatılan Adisyonlar"><i class="fa-solid fa-file-invoice"></i></a>
         <button id="closeDayButton" class="secondary icon-action close-day-icon" title="Günü Kapat" aria-label="Günü Kapat"><i class="fa-solid fa-calendar-check"></i></button>
         <button id="newNamedOrder" class="secondary icon-action" title="İsimli Adisyon" aria-label="İsimli Adisyon"><i class="fa-solid fa-user-plus"></i></button>
         <button id="internalConsumptionButton" class="secondary icon-action internal-consumption-button" title="Dahili Tüketim" aria-label="Dahili Tüketim"><i class="fa-solid fa-box-open"></i></button>
@@ -82,9 +83,9 @@
 <dialog id="closeDayDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Günü Kapat</h2><button type="button" data-close="closeDayDialog">×</button></div><p id="closeDayPeriod" class="notice"></p><div id="closeDayReport" class="close-day-report"></div><div class="export-actions"><button type="button" id="exportPdf" class="secondary"><i class="fa-solid fa-file-pdf"></i> PDF</button><button type="button" id="exportExcel" class="secondary"><i class="fa-solid fa-file-excel"></i> Excel</button></div><div class="close-day-warning"><i class="fa-solid fa-triangle-exclamation"></i><div><strong>Bu İşlem geri alınamaz.</strong><p>Rapor sisteme kaydedilecek, Taze Dem sayacı yeni iş günü için sıfırdan başlayacak ve eski iş gününe tekrar kayıt eklenemeyecek.</p></div></div><label class="close-day-check"><input id="closeDayConfirmed" type="checkbox"><span>Raporu kontrol ettim, bu iş gününü kapatmak istiyorum.</span></label><div class="dialog-actions"><button type="button" class="secondary" data-close="closeDayDialog">Vazgeç</button><button type="button" id="confirmCloseDay" class="danger" disabled>Günü Kesin Olarak Kapat</button></div></div></dialog>
 <dialog id="moveDialog"><form id="moveForm" class="dialog-card"><div class="dialog-head"><h2>Taşı veya Birleştir</h2><button type="button" data-close="moveDialog">×</button></div><label>Hedef masa / Adisyon<select id="moveTarget" required></select></label><p class="notice">Hedef boşsa Adisyon taşınır; doluysa iki Adisyon birleştirilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="moveDialog">Vazgeç</button><button class="primary">Devam Et</button></div></form></dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=165"></script>
+<script type="module" src="script.js?v=166"></script>
 <script type="module" src="internal-consumption.js?v=3"></script>
-<script type="module" src="quick-cash.js?v=165"></script>
+<script type="module" src="quick-cash.js?v=166"></script>
 
 <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body></html>

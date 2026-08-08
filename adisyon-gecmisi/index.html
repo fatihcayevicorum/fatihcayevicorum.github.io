@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Kapatılan Adisyonlar | Fatih Çay Evi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
+  <link rel="stylesheet" href="style.css?v=166">
+</head>
+<body>
+<header class="app-header"><div class="header-inner">
+  <div class="brand"><img src="../assets/images/logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Kapatılan Adisyonlar</h1></div></div>
+  <div class="header-actions"><div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div><a class="header-page-link" href="../adisyon/" title="Adisyon" aria-label="Adisyon sayfasına dön"><i class="fa-solid fa-receipt"></i><span>Adisyon</span></a><details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a><a class="is-current" href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a><a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a><a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a><a href="../kasa-hesap-yonetimi/"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a></nav></details><button id="logoutButton" class="logout-button" aria-label="Çıkış"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button></div>
+</div></header>
+
+<main>
+  <section class="history-shell">
+    <div class="page-top">
+      <div>
+        <h2>Adisyon Geçmişi</h2>
+        <p id="statusText"><i class="fa-solid fa-circle-notch fa-spin"></i> Kayıtlar yükleniyor</p>
+      </div>
+      <a class="back-action" href="../adisyon/" aria-label="Adisyon ekranına dön"><i class="fa-solid fa-arrow-left"></i><span>Adisyona Dön</span></a>
+    </div>
+
+    <section class="control-card">
+      <div class="date-control">
+        <button id="previousDate" type="button" aria-label="Önceki gün"><i class="fa-solid fa-chevron-left"></i></button>
+        <label>İş günü<input id="selectedDate" type="date"></label>
+        <button id="nextDate" type="button" aria-label="Sonraki gün"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div class="search-control"><i class="fa-solid fa-magnifying-glass"></i><input id="searchInput" placeholder="Masa, adisyon adı, tutar veya ürün ara..."></div>
+      <div class="filter-row" role="group" aria-label="Ödeme filtresi">
+        <button class="active" type="button" data-filter="all">Tümü</button>
+        <button type="button" data-filter="cash">Nakit</button>
+        <button type="button" data-filter="transfer">Havale</button>
+        <button type="button" data-filter="credit">Açık Hesap</button>
+        <button type="button" data-filter="rounding">Yuvarlama</button>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article><span>Kapatılan Adisyon</span><b id="summaryCount">0</b></article>
+      <article><span>Adisyon Tutarı</span><b id="summaryBill">₺0</b></article>
+      <article><span>Nakit Alınan</span><b id="summaryCash">₺0</b></article>
+      <article><span>Banka Gelen</span><b id="summaryBank">₺0</b></article>
+    </section>
+
+    <p id="lockNotice" class="lock-notice" hidden><i class="fa-solid fa-lock"></i> Bu iş günü kapatılmıştır. Kayıtlar sadece görüntülenebilir.</p>
+
+    <section id="historyList" class="history-list"></section>
+    <p id="emptyState" class="empty" hidden>Bu iş gününde kapatılmış adisyon bulunamadı.</p>
+  </section>
+</main>
+
+<dialog id="detailDialog"><div class="dialog-card detail-card">
+  <div class="dialog-head"><div><p id="detailKicker">Adisyon Detayı</p><h2 id="detailTitle">—</h2></div><button type="button" data-close="detailDialog" aria-label="Kapat">×</button></div>
+  <div id="detailMeta" class="detail-meta"></div>
+  <section class="detail-section"><h3>Ürünler</h3><div id="detailItems" class="detail-items"></div></section>
+  <section class="detail-section"><h3>Ödeme / Hesap</h3><div id="detailPayments" class="detail-payments"></div></section>
+  <div class="dialog-actions"><button type="button" class="primary" data-close="detailDialog">Kapat</button></div>
+</div></dialog>
+
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="script.js?v=166"></script>
+<script type="module" src="../assets/js/system-ui.js?v=23"></script>
+</body>
+</html>
