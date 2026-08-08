@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
-  <link rel="stylesheet" href="style.css?v=1662">
+  <link rel="stylesheet" href="style.css?v=167">
   <script>if(new URLSearchParams(location.search).get("embed")==="1")document.documentElement.classList.add("embed-mode");</script>
 </head>
 <body>
@@ -61,11 +61,27 @@
   <div id="detailMeta" class="detail-meta"></div>
   <section class="detail-section"><h3>Ürünler</h3><div id="detailItems" class="detail-items"></div></section>
   <section class="detail-section"><h3>Ödeme / Hesap</h3><div id="detailPayments" class="detail-payments"></div></section>
+  <section id="detailActions" class="detail-actions-panel" hidden>
+    <p id="detailActionNote" class="action-note"></p>
+    <div class="action-buttons">
+      <button type="button" id="editPaymentButton" class="secondary-action"><i class="fa-solid fa-pen-to-square"></i> Ödeme Düzelt</button>
+      <button type="button" id="reopenSaleButton" class="danger-action"><i class="fa-solid fa-lock-open"></i> Adisyonu Geri Aç</button>
+    </div>
+  </section>
   <div class="dialog-actions"><button type="button" class="primary" data-close="detailDialog">Kapat</button></div>
 </div></dialog>
 
+<dialog id="paymentEditDialog"><form id="paymentEditForm" class="dialog-card payment-edit-card">
+  <div class="dialog-head"><div><p>Aktif İş Günü</p><h2>Ödeme Düzelt</h2></div><button type="button" data-close="paymentEditDialog" aria-label="Kapat">×</button></div>
+  <div class="payment-edit-summary"><span id="paymentEditTitle">—</span><b id="paymentEditBill">₺0</b></div>
+  <label>Ödeme türü<select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Banka Havalesi</option></select></label>
+  <label>Alınan / gelen tutar<input id="paymentEditAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label>
+  <p id="paymentEditPreview" class="action-note"></p>
+  <div class="dialog-actions"><button type="button" class="secondary-action" data-close="paymentEditDialog">Vazgeç</button><button class="primary">Düzeltmeyi Kaydet</button></div>
+</form></dialog>
+
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=1661"></script>
+<script type="module" src="script.js?v=167"></script>
 <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body>
 </html>
