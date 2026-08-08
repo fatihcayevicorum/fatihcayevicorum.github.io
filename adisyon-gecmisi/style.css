@@ -6,3 +6,20 @@ html.embed-mode body{background:#f7f0e5;overflow:hidden}html.embed-mode .app-hea
 /* R167 — aktif iş günü ödeme düzelt / geri aç aksiyonları */
 select{height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 12px;color:var(--ink);font:inherit;font-weight:700}.detail-actions-panel{margin-top:14px;padding:12px;border:1px dashed #dfcdbf;border-radius:14px;background:#fff8ef}.action-note{margin:0;color:#7a6259;font-size:.72rem;font-weight:700;line-height:1.45}.action-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.secondary-action,.danger-action{min-height:42px;padding:0 13px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.76rem;font-weight:900}.secondary-action{background:#eee2d6;color:#352826}.danger-action{background:#fde3df;color:#9c2522}.danger-action:not(:disabled){box-shadow:inset 0 0 0 1px #efb3aa}.payment-edit-card{width:min(92vw,460px)}.payment-edit-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:14px;background:#fff7ef;border:1px solid var(--line);margin-bottom:12px}.payment-edit-summary span{font-weight:900;color:var(--ink);font-size:.86rem}.payment-edit-summary b{font-size:1.15rem;color:var(--red)}.payment-edit-card label{margin-top:10px}.payment-edit-card .dialog-actions{gap:10px;flex-wrap:wrap}.payment-edit-card .dialog-actions .secondary-action{border:0}
 @media(max-width:600px){.action-buttons{display:grid;grid-template-columns:1fr}.secondary-action,.danger-action{width:100%}.payment-edit-card{width:min(94vw,420px)}}
+
+
+/* R167.1 — detay pencere kenarı ve sistem içi geri aç onayı */
+dialog{outline:0!important;box-shadow:none!important;overflow:visible}
+dialog:focus,dialog:focus-visible,dialog[open]:focus,dialog[open]:focus-visible{outline:0!important;box-shadow:none!important}
+.dialog-card{outline:0!important;overflow:auto}
+.detail-card{border:1px solid var(--line)!important;border-radius:20px!important;box-shadow:0 24px 65px rgba(37,9,12,.24)!important}
+.reopen-confirm-dialog{border:0!important;padding:0!important;background:transparent!important;outline:0!important}
+.reopen-confirm-dialog::backdrop{background:rgba(39,20,22,.72);backdrop-filter:blur(3px)}
+.reopen-confirm-card{width:min(88vw,410px)!important;max-height:none!important;overflow:visible!important;padding:24px!important;text-align:center;border:1px solid var(--line)!important;border-radius:20px!important;box-shadow:0 24px 65px rgba(37,9,12,.3)!important}
+.reopen-confirm-icon{width:52px;height:52px;margin:0 auto 12px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,var(--red),var(--red2));color:#fff;font-size:1.25rem}
+.reopen-confirm-kicker{margin:0 0 3px;color:#b68117;font-size:.62rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.reopen-confirm-card h2{margin:0;color:var(--red2);font-size:1.15rem}
+.reopen-confirm-text{margin:9px auto 17px;color:var(--muted);font-size:.72rem;line-height:1.55;max-width:330px}
+.reopen-confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.danger-confirm-action{min-height:42px;padding:0 13px;border:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(145deg,var(--red),var(--red2));color:#fff;font-size:.76rem;font-weight:900}
+@media(max-width:600px){.reopen-confirm-card{width:min(92vw,380px)!important;padding:20px 17px!important}.reopen-confirm-actions{grid-template-columns:1fr}.reopen-confirm-actions button{width:100%}}

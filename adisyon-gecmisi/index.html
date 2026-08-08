@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
-  <link rel="stylesheet" href="style.css?v=167">
+  <link rel="stylesheet" href="style.css?v=1671">
   <script>if(new URLSearchParams(location.search).get("embed")==="1")document.documentElement.classList.add("embed-mode");</script>
 </head>
 <body>
@@ -80,8 +80,16 @@
   <div class="dialog-actions"><button type="button" class="secondary-action" data-close="paymentEditDialog">Vazgeç</button><button class="primary">Düzeltmeyi Kaydet</button></div>
 </form></dialog>
 
+<dialog id="reopenConfirmDialog" class="reopen-confirm-dialog"><form method="dialog" class="dialog-card reopen-confirm-card">
+  <div class="reopen-confirm-icon"><i class="fa-solid fa-arrow-rotate-left"></i></div>
+  <p class="reopen-confirm-kicker">İşlemi Onayla</p>
+  <h2 id="reopenConfirmTitle">Adisyonu Geri Aç</h2>
+  <p id="reopenConfirmText" class="reopen-confirm-text"></p>
+  <div class="reopen-confirm-actions"><button type="submit" value="cancel" class="secondary-action">Vazgeç</button><button type="submit" value="confirm" class="danger-confirm-action"><i class="fa-solid fa-lock-open"></i> Geri Aç</button></div>
+</form></dialog>
+
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=167"></script>
+<script type="module" src="script.js?v=1671"></script>
 <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body>
 </html>
