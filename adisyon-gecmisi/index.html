@@ -80,6 +80,7 @@
               <label>Ödeme türü<select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Banka Havalesi</option></select></label>
               <label>Alınan / gelen tutar<input id="paymentEditAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label>
             </div>
+            <div id="paymentEditImpact" class="payment-edit-impact" aria-live="polite"></div>
             <p id="paymentEditPreview" class="action-note"></p>
             <div class="inline-edit-actions"><button type="button" id="cancelPaymentEdit" class="secondary-action">Vazgeç</button><button class="primary">Düzeltmeyi Kaydet</button></div>
           </form>

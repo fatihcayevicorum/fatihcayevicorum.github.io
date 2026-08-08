@@ -220,3 +220,27 @@ html.embed-mode .history-card:hover{box-shadow:0 10px 20px rgba(71,37,31,.08)}
   .inline-detail .detail-meta{grid-template-columns:1fr}
   .reopen-confirm-actions{grid-template-columns:1fr}
 }
+
+
+/* R168 — ödeme düzeltme etkisini açık göster */
+.payment-edit-impact{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin:10px 0 8px;
+}
+.payment-edit-impact>div{
+  padding:10px 11px;
+  border:1px solid rgba(234,223,210,.9);
+  border-radius:12px;
+  background:#fffdf9;
+  display:grid;
+  gap:2px;
+}
+.payment-edit-impact span{font-size:.62rem;color:var(--muted);font-weight:800}
+.payment-edit-impact b{font-size:.86rem;color:var(--ink)}
+.payment-edit-impact b.is-down{color:#a42b2b}
+.payment-edit-impact b.is-up{color:#238155}
+.payment-edit-impact b.is-neutral{color:var(--muted)}
+.history-card .correction-badge{display:inline-flex;align-items:center;gap:4px;margin-left:5px;padding:1px 6px;border-radius:999px;background:#fff0d6;color:#9a6811;font-size:.56rem;font-weight:900;vertical-align:1px}
+@media(max-width:600px){.payment-edit-impact{grid-template-columns:1fr 1fr}}
