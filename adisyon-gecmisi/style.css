@@ -114,3 +114,109 @@ html.embed-mode .history-card:hover{box-shadow:0 10px 20px rgba(71,37,31,.08)}
   .inline-edit-actions{display:grid;grid-template-columns:1fr}
   .inline-edit-actions button{width:100%}
 }
+
+/* R167.4 — tablet öncelikli: liste ve seçilen adisyon net biçimde ayrılır */
+.history-workspace{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:14px;
+  align-items:start;
+  min-width:0;
+}
+.history-list-pane{
+  min-width:0;
+  background:rgba(255,253,249,.72);
+  border:1px solid rgba(234,223,210,.9);
+  border-radius:18px;
+  padding:12px;
+}
+.pane-title{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  padding:0 3px 9px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:10px;
+}
+.pane-title span{font-size:.78rem;font-weight:900;color:var(--ink)}
+.pane-title small{font-size:.62rem;color:var(--muted);font-weight:600}
+.history-list-pane .history-list{max-height:390px;overflow:auto;padding:1px 2px 2px;scrollbar-width:none}
+.history-list-pane .history-list::-webkit-scrollbar{display:none}
+.history-workspace.detail-open{
+  grid-template-columns:minmax(330px,.82fr) minmax(440px,1.18fr);
+}
+.inline-detail{
+  position:relative;
+  padding:16px;
+  border:1px solid rgba(143,32,40,.18);
+  border-radius:18px;
+  background:#fffdf9;
+  box-shadow:0 12px 28px rgba(71,37,31,.10);
+  overflow:auto;
+  max-height:470px;
+}
+.inline-detail::before{
+  content:"";
+  position:absolute;
+  top:0;left:18px;right:18px;
+  height:3px;
+  border-radius:0 0 999px 999px;
+  background:linear-gradient(90deg,var(--red),#c58a2b);
+}
+.inline-detail-head{padding-top:3px;margin-bottom:12px}
+.inline-detail-columns{grid-template-columns:1fr;gap:12px}
+.inline-detail .detail-meta{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.inline-detail .detail-meta div,.inline-detail .detail-payments div{background:#f7efe7;border:1px solid rgba(234,223,210,.72)}
+.inline-detail .detail-items article{background:#fff;border-color:rgba(234,223,210,.95)}
+.detail-actions-panel{background:#fff9f2;border:1px solid #ead8ca;border-radius:14px}
+.history-card.is-selected{
+  border-color:rgba(143,32,40,.58);
+  background:#fff5ee;
+  box-shadow:inset 4px 0 0 var(--red),0 7px 18px rgba(71,37,31,.07);
+}
+
+/* R167.4 — sistemdeki standart onay kutusuna yakın sade görünüm */
+.reopen-confirm-dialog{border:0!important;padding:0!important;background:transparent!important;outline:0!important}
+.reopen-confirm-dialog::backdrop{background:rgba(47,25,23,.34)!important;backdrop-filter:blur(2px)!important}
+.reopen-confirm-card{
+  width:min(calc(100vw - 32px),350px)!important;
+  margin:0;
+  padding:17px!important;
+  border:1px solid rgba(234,223,210,.95)!important;
+  border-radius:18px!important;
+  background:#fffdf9!important;
+  box-shadow:0 20px 54px rgba(37,9,12,.22)!important;
+  text-align:center;
+}
+.reopen-confirm-icon{
+  width:48px;height:48px;margin:0 auto 9px;
+  border-radius:50%;
+  background:var(--red);
+  color:#fff;
+  display:grid;place-items:center;
+  font-size:1.15rem;
+}
+.reopen-confirm-card h2{margin:7px 0;color:var(--red);font-size:1.08rem}
+.reopen-confirm-text{margin:0 auto;color:var(--muted);font-size:.72rem;line-height:1.55;max-width:300px}
+.reopen-confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.reopen-confirm-actions .secondary-action,.reopen-confirm-actions .danger-confirm-action{min-height:42px;border-radius:11px}
+.danger-confirm-action{border:0;background:var(--red);color:#fff;font-size:.75rem;font-weight:900}
+
+@media(max-width:1050px){
+  .history-workspace.detail-open{grid-template-columns:minmax(300px,.78fr) minmax(390px,1.22fr)}
+  .history-list-pane .history-list{max-height:430px}
+  .inline-detail{max-height:500px}
+}
+@media(max-width:760px){
+  .history-workspace.detail-open{grid-template-columns:1fr}
+  .history-list-pane .history-list{max-height:300px}
+  .inline-detail{max-height:none}
+  .pane-title small{display:none}
+}
+@media(max-width:600px){
+  .history-list-pane{padding:9px;border-radius:14px}
+  .inline-detail{padding:13px;border-radius:15px}
+  .inline-detail .detail-meta{grid-template-columns:1fr}
+  .reopen-confirm-actions{grid-template-columns:1fr}
+}
