@@ -2,7 +2,7 @@ importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
 firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
 firebase.messaging();
-const VERSION="fatih-cay-evi-r166",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r166-2",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js",
@@ -12,7 +12,7 @@ const CORE=[
   "./yonetim-merkezi/","./yonetim-merkezi/index.html","./yonetim-merkezi/style.css","./yonetim-merkezi/script.js",
   "./bildirim-merkezi/","./bildirim-merkezi/index.html","./bildirim-merkezi/style.css","./bildirim-merkezi/responsive-fix.css","./bildirim-merkezi/script.js",
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
-  "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js","./adisyon/quick-cash.css","./adisyon/quick-cash.js","./adisyon-gecmisi/","./adisyon-gecmisi/index.html","./adisyon-gecmisi/style.css","./adisyon-gecmisi/script.js",
+  "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js","./adisyon/quick-cash.css","./adisyon/quick-cash.js","./adisyon/history-modal.css","./adisyon/history-modal.js","./adisyon-gecmisi/","./adisyon-gecmisi/index.html","./adisyon-gecmisi/style.css","./adisyon-gecmisi/script.js",
   "./stok-yonetimi/index.html","./stok-yonetimi/style.css","./stok-yonetimi/script.js",
   "./acik-hesap/index.html","./acik-hesap/style.css","./acik-hesap/script.js",
   "./kasa-hesap-yonetimi/","./kasa-hesap-yonetimi/index.html","./kasa-hesap-yonetimi/style.css","./kasa-hesap-yonetimi/script.js",
