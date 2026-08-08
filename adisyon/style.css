@@ -31,3 +31,13 @@
 @media(max-width:700px){#dailyDialog .report-card{width:min(96vw,760px);padding:14px}.daily-money-grid{gap:6px}.daily-money-card{padding:12px 8px}.daily-money-card b{font-size:1.02rem}.daily-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.daily-products-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:38px;max-height:174px;gap:5px}.daily-product-row{padding:0 7px}.daily-product-row span{font-size:.59rem}.daily-products-head small{display:none}}
 /* R166: ikon aksiyonlarında link desteği */
 .quick-actions a.icon-action{width:44px;height:44px;min-height:44px;padding:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}.quick-actions a.icon-action i{font-size:1rem}.quick-actions a.icon-action:active{transform:scale(.97)}
+
+
+/* R170.3 — son gün kapanışını güvenli geri alma */
+.undo-close-box{margin-top:12px;padding:12px 13px;border:1px solid #e7d5c4;border-radius:14px;background:#fff9f0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.undo-close-box strong{display:block;color:var(--red2);font-size:.82rem;margin-bottom:3px}
+.undo-close-box p{margin:0;color:var(--muted);font-size:.7rem;line-height:1.45}
+.undo-close-box button{flex:0 0 auto;white-space:nowrap}
+.undo-close-box.is-locked{background:#f7efea;border-color:#e3d3ca}
+.undo-close-box.is-locked strong{color:#6d5a54}
+@media(max-width:650px){.undo-close-box{display:grid}.undo-close-box button{width:100%}}
