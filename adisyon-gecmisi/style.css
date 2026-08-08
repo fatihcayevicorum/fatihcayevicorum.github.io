@@ -30,3 +30,87 @@ html.embed-mode .control-card,html.embed-mode .summary-grid article,html.embed-m
 html.embed-mode .control-card{background:rgba(255,253,249,.96)}
 html.embed-mode .summary-grid article,html.embed-mode .history-card,html.embed-mode .dialog-card{background:#fffdf9}
 html.embed-mode .history-card:hover{box-shadow:0 10px 20px rgba(71,37,31,.08)}
+
+/* R167.3 — adisyon detayı artık aynı geçmiş ekranında açılır */
+.inline-detail{
+  padding:14px 4px 16px;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  background:transparent;
+}
+.inline-detail[hidden]{display:none!important}
+.inline-detail-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.inline-detail-head p{
+  margin:0 0 2px;
+  color:var(--red);
+  font-size:.64rem;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.inline-detail-head h2{margin:0;font-size:1.08rem;color:var(--ink)}
+.inline-detail-close{
+  width:36px;
+  height:36px;
+  border-radius:11px;
+  background:#f1e6dc;
+  color:var(--muted);
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+}
+.inline-detail-close:hover{background:#ead8ca;color:var(--red)}
+.inline-detail-columns{
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);
+  gap:14px;
+  align-items:start;
+}
+.inline-detail .detail-section{margin-top:0}
+.inline-detail .detail-meta{margin-bottom:14px}
+.inline-detail .detail-items article,
+.inline-detail .detail-payments div{
+  box-shadow:none;
+}
+.history-card.is-selected{
+  border-color:rgba(143,32,40,.34);
+  background:#fff8f2;
+  box-shadow:0 7px 18px rgba(71,37,31,.08);
+}
+.inline-payment-edit{
+  margin-top:12px;
+  padding:13px;
+  border-top:1px solid var(--line);
+  background:#fffdf9;
+}
+.inline-payment-edit[hidden]{display:none!important}
+.inline-payment-edit-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.inline-payment-edit-head div{display:grid;gap:1px}
+.inline-payment-edit-head span{font-size:.62rem;color:var(--red);font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+.inline-payment-edit-head strong{font-size:.92rem;color:var(--ink)}
+.inline-payment-edit-head>b{font-size:1.05rem;color:var(--red)}
+.inline-payment-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.inline-edit-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:11px;flex-wrap:wrap}
+.inline-edit-actions .primary,.inline-edit-actions .secondary-action{min-height:42px}
+@media(max-width:900px){
+  .inline-detail-columns{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .inline-detail{padding:12px 1px 14px}
+  .inline-detail-head h2{font-size:1rem}
+  .inline-payment-edit-grid{grid-template-columns:1fr}
+  .inline-edit-actions{display:grid;grid-template-columns:1fr}
+  .inline-edit-actions button{width:100%}
+}

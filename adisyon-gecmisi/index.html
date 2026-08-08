@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
-  <link rel="stylesheet" href="style.css?v=1671">
+  <link rel="stylesheet" href="style.css?v=1673">
   <script>if(new URLSearchParams(location.search).get("embed")==="1")document.documentElement.classList.add("embed-mode");</script>
 </head>
 <body>
@@ -51,34 +51,38 @@
 
     <p id="lockNotice" class="lock-notice" hidden><i class="fa-solid fa-lock"></i> Bu iş günü kapatılmıştır. Kayıtlar sadece görüntülenebilir.</p>
 
+    <section id="detailPanel" class="inline-detail" hidden aria-live="polite">
+      <div class="inline-detail-head">
+        <div><p id="detailKicker">Adisyon Detayı</p><h2 id="detailTitle">—</h2></div>
+        <button type="button" id="closeDetailPanel" class="inline-detail-close" aria-label="Detayı kapat"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="detailMeta" class="detail-meta"></div>
+      <div class="inline-detail-columns">
+        <section class="detail-section"><h3>Ürünler</h3><div id="detailItems" class="detail-items"></div></section>
+        <section class="detail-section"><h3>Ödeme / Hesap</h3><div id="detailPayments" class="detail-payments"></div></section>
+      </div>
+      <section id="detailActions" class="detail-actions-panel" hidden>
+        <p id="detailActionNote" class="action-note"></p>
+        <div class="action-buttons">
+          <button type="button" id="editPaymentButton" class="secondary-action"><i class="fa-solid fa-pen-to-square"></i> Ödeme Düzelt</button>
+          <button type="button" id="reopenSaleButton" class="danger-action"><i class="fa-solid fa-lock-open"></i> Adisyonu Geri Aç</button>
+        </div>
+        <form id="paymentEditForm" class="inline-payment-edit" hidden>
+          <div class="inline-payment-edit-head"><div><span>Aktif İş Günü</span><strong>Ödeme Düzelt</strong></div><b id="paymentEditBill">₺0</b></div>
+          <div class="inline-payment-edit-grid">
+            <label>Ödeme türü<select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Banka Havalesi</option></select></label>
+            <label>Alınan / gelen tutar<input id="paymentEditAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label>
+          </div>
+          <p id="paymentEditPreview" class="action-note"></p>
+          <div class="inline-edit-actions"><button type="button" id="cancelPaymentEdit" class="secondary-action">Vazgeç</button><button class="primary">Düzeltmeyi Kaydet</button></div>
+        </form>
+      </section>
+    </section>
+
     <section id="historyList" class="history-list"></section>
     <p id="emptyState" class="empty" hidden>Bu iş gününde kapatılmış adisyon bulunamadı.</p>
   </section>
 </main>
-
-<dialog id="detailDialog"><div class="dialog-card detail-card">
-  <div class="dialog-head"><div><p id="detailKicker">Adisyon Detayı</p><h2 id="detailTitle">—</h2></div><button type="button" data-close="detailDialog" aria-label="Kapat">×</button></div>
-  <div id="detailMeta" class="detail-meta"></div>
-  <section class="detail-section"><h3>Ürünler</h3><div id="detailItems" class="detail-items"></div></section>
-  <section class="detail-section"><h3>Ödeme / Hesap</h3><div id="detailPayments" class="detail-payments"></div></section>
-  <section id="detailActions" class="detail-actions-panel" hidden>
-    <p id="detailActionNote" class="action-note"></p>
-    <div class="action-buttons">
-      <button type="button" id="editPaymentButton" class="secondary-action"><i class="fa-solid fa-pen-to-square"></i> Ödeme Düzelt</button>
-      <button type="button" id="reopenSaleButton" class="danger-action"><i class="fa-solid fa-lock-open"></i> Adisyonu Geri Aç</button>
-    </div>
-  </section>
-  <div class="dialog-actions"><button type="button" class="primary" data-close="detailDialog">Kapat</button></div>
-</div></dialog>
-
-<dialog id="paymentEditDialog"><form id="paymentEditForm" class="dialog-card payment-edit-card">
-  <div class="dialog-head"><div><p>Aktif İş Günü</p><h2>Ödeme Düzelt</h2></div><button type="button" data-close="paymentEditDialog" aria-label="Kapat">×</button></div>
-  <div class="payment-edit-summary"><span id="paymentEditTitle">—</span><b id="paymentEditBill">₺0</b></div>
-  <label>Ödeme türü<select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Banka Havalesi</option></select></label>
-  <label>Alınan / gelen tutar<input id="paymentEditAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label>
-  <p id="paymentEditPreview" class="action-note"></p>
-  <div class="dialog-actions"><button type="button" class="secondary-action" data-close="paymentEditDialog">Vazgeç</button><button class="primary">Düzeltmeyi Kaydet</button></div>
-</form></dialog>
 
 <dialog id="reopenConfirmDialog" class="reopen-confirm-dialog"><form method="dialog" class="dialog-card reopen-confirm-card">
   <div class="reopen-confirm-icon"><i class="fa-solid fa-arrow-rotate-left"></i></div>
@@ -89,7 +93,7 @@
 </form></dialog>
 
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=1671"></script>
+<script type="module" src="script.js?v=1673"></script>
 <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body>
 </html>
