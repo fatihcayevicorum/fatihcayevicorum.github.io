@@ -16,6 +16,9 @@ $("nextDate").onclick=()=>setSelectedDate(shiftDate(state.selectedDate,1));
 $("searchInput").addEventListener("input",e=>{state.search=e.target.value.trim();render()});
 document.addEventListener("click",e=>{const close=e.target.closest("[data-close]");if(close){$(close.dataset.close).close();return}const filter=e.target.closest("[data-filter]");if(filter){state.filter=filter.dataset.filter;document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b===filter));render();return}const card=e.target.closest("[data-sale]");if(card)openDetail(card.dataset.sale)});
 
+updateClock();
+setInterval(updateClock,1000);
+
 onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=adisyon-gecmisi/");return}
   if(!await hasPanelAccess(user,db,"pos")){location.replace("../yonetici-giris.html");return}
@@ -86,4 +89,5 @@ function startOfDayMs(date){return new Date(`${date}T00:00:00+03:00`).getTime()}
 function formatDate(date){return new Date(`${date}T12:00:00+03:00`).toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric",weekday:"long"})}
 function formatTime(ms){return ms?new Date(ms).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}):"--:--"}
 function baseSlotTitle(key=""){const m=String(key).match(/table-(\d+)/);return m?`Masa ${m[1]}`:"İsimli Adisyon"}
+function updateClock(){const now=new Date();$("currentTime").textContent=new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Europe/Istanbul"}).format(now);$("currentDate").textContent=new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit",timeZone:"Europe/Istanbul"}).format(now).replace(/\./g,"/")}
 function toast(message){const t=$("toast");t.textContent=message;t.classList.add("show");clearTimeout(toast._timer);toast._timer=setTimeout(()=>t.classList.remove("show"),2600)}
