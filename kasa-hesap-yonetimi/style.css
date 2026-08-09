@@ -76,3 +76,23 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 
 /* R127: ödeme geçmişi */
 .reminder-heading{margin:14px 0 7px;font-size:.76rem}.paid-heading{padding-top:10px;border-top:1px solid var(--line)}.paid-reminder-list{max-height:24vh}.reminder-row.is-paid{opacity:.78;background:#f5faf7}.reminder-row.is-paid>i{background:#e7f4ec;color:var(--green)}
+
+/* R178: sade Nakit / Banka kasa görünümü */
+.main-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+.financial-overview{margin-top:14px}
+.flow-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.flow-grid article{min-width:0;padding:13px;border:1px solid var(--line);border-radius:13px;background:#f8efe6}
+.flow-grid i{margin-bottom:9px;color:var(--red)}
+.flow-grid span,.current-accounts span{display:block;color:var(--muted);font-size:.68rem}
+.flow-grid b{display:block;margin-top:5px;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow-grid .previous{background:#f5ebe1}.flow-grid .previous.bank{background:#eef4fa}
+.flow-grid .income{border-color:#b9d9c7;background:#eef8f2}.flow-grid .income i,.flow-grid .income b{color:var(--green)}
+.flow-grid .income.bank{border-color:#b8cfe5;background:#eef6fd}.flow-grid .income.bank i,.flow-grid .income.bank b{color:var(--blue)}
+.flow-grid .expense{border-color:#e8c0c2;background:#fff2f2}.flow-grid .expense i,.flow-grid .expense b,.flow-grid .debt i,.flow-grid .debt b{color:var(--red)}
+.current-accounts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.current-accounts article{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:16px;border-radius:14px;color:#fff;background:linear-gradient(135deg,#216b49,#174e36);box-shadow:0 8px 18px rgba(33,107,73,.16)}
+.current-accounts article.bank{background:linear-gradient(135deg,#315f89,#254868);box-shadow:0 8px 18px rgba(49,95,137,.16)}
+.current-accounts article>div{display:flex;align-items:center;gap:10px;min-width:0}.current-accounts i{font-size:1.1rem}.current-accounts span{color:#fff;opacity:.84}.current-accounts b{flex:none;font-size:1.18rem;white-space:nowrap}
+.cash-tools{display:block}.cash-tools>button{width:100%}
+@media(max-width:760px){.main-actions{grid-template-columns:1fr 1fr}.main-actions button:last-child{grid-column:1/-1}.flow-grid{grid-template-columns:1fr 1fr}.current-accounts{grid-template-columns:1fr}.financial-overview .section-head{align-items:flex-start}.financial-overview .section-head>small{max-width:130px;text-align:right}}
+@media(max-width:430px){.flow-grid{gap:7px}.flow-grid article{padding:11px 9px}.flow-grid b{font-size:.88rem}.current-accounts article{padding:14px 12px}.current-accounts b{font-size:1rem}}

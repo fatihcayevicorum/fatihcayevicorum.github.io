@@ -9,16 +9,15 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const salesCol=collection(db,"adminSales"),ordersCol=collection(db,"adminOrders"),stockCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),closingsCol=collection(db,"adminDailyClosings"),creditCustomersCol=collection(db,"adminCreditCustomers"),creditMovesCol=collection(db,"adminCreditMovements"),cashMovesCol=collection(db,"adminCashMovements"),settingsRef=doc(db,"adminAppSettings","pos");
 const $=id=>document.getElementById(id);
 
-const CASH_MOVE_VERSION='r170-instant';
+const CASH_MOVE_VERSION='r178-unified-income';
 function cashMovementMeta(scope,account,date=state.currentBusinessDate,start=state.currentBusinessDayStartedAtMs){
-  const s=scope==='credit'?'acik-arti-hesap':'adisyon',acc=account==='bank'?'bank':'cash',started=Number(start)||startOfDayMs(date);
-  const descriptions={adisyon:{cash:'Adisyon Nakit Geliri',bank:'Adisyon Banka Geliri'},credit:{cash:'Açık/Artı Hesap Nakit',bank:'Açık/Artı Hesap Havale'}};
-  return{id:`pos-${s}-${acc}-${date}-${started}`,description:(descriptions[scope]||descriptions.adisyon)[acc],started};
+  const acc=account==='bank'?'bank':'cash',started=Number(start)||startOfDayMs(date);
+  return{id:`pos-gelir-${acc}-${date}-${started}`,description:acc==='bank'?'Banka Geliri':'Nakit Gelir',started};
 }
 function bumpCashMovement(tx,{scope='adisyon',account='cash',amount=0,date=state.currentBusinessDate,start=state.currentBusinessDayStartedAtMs}={}){
   const value=Number(amount)||0;if(Math.abs(value)<.001)return;
   const meta=cashMovementMeta(scope,account,date,start),ref=doc(cashMovesCol,meta.id),now=Date.now();
-  tx.set(ref,{type:'income',account:account==='bank'?'bank':'cash',amount:increment(value),category:'Otomatik POS',description:meta.description,businessDate:date,businessDayStartedAtMs:meta.started,automatic:true,source:'pos-instant',sourceGroup:scope,cashMovementVersion:CASH_MOVE_VERSION,createdAtMs:now,updatedAtMs:now,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),createdBy:auth.currentUser?.uid||''},{merge:true});
+  tx.set(ref,{type:'income',account:account==='bank'?'bank':'cash',amount:increment(value),category:'Günlük Gelir',description:meta.description,businessDate:date,businessDayStartedAtMs:meta.started,automatic:true,source:'pos-instant',sourceGroup:'income',cashMovementVersion:CASH_MOVE_VERSION,createdAtMs:now,updatedAtMs:now,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),createdBy:auth.currentUser?.uid||''},{merge:true});
 }
 function applyCashCorrectionForSale(tx,fresh,cashDelta,bankDelta,scope){if(fresh.cashMovementApplied!==true)return;const date=fresh.businessDate||state.currentBusinessDate,start=fresh.businessDayStartedAtMs||state.currentBusinessDayStartedAtMs,group=scope||fresh.cashMovementScope||'adisyon';if(cashDelta)bumpCashMovement(tx,{scope:group,account:'cash',amount:cashDelta,date,start});if(bankDelta)bumpCashMovement(tx,{scope:group,account:'bank',amount:bankDelta,date,start})}
 

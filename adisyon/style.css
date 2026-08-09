@@ -9,7 +9,7 @@
 #dailyDialog .daily-report{display:block;margin-top:12px}
 .daily-money-section{padding-bottom:14px}
 .daily-money-caption{margin:0 0 8px;color:var(--muted);font-size:.66rem;font-weight:700;letter-spacing:.02em}
-.daily-money-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.daily-money-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .daily-money-card{min-width:0;padding:15px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 5px 14px rgba(71,37,31,.05)}
 .daily-money-card span{display:block;font-size:.69rem;font-weight:700}
 .daily-money-card b{display:block;margin-top:5px;font-size:1.35rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -17,7 +17,7 @@
 .daily-money-card.is-bank{background:#eef6fd;border-color:#a8c7e8}.daily-money-card.is-bank span{color:#496e93}.daily-money-card.is-bank b{color:#286ba5}
 .daily-money-card.is-total{background:#fff2e2;border-color:#e4bf93}.daily-money-card.is-total span{color:#8d6137}.daily-money-card.is-total b{color:var(--red)}
 .daily-detail-section{border-top:1px solid var(--line);padding-top:14px}
-.daily-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.daily-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .daily-detail-item{min-width:0;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:#fffdf9}
 .daily-detail-item span{display:block;color:var(--muted);font-size:.61rem;line-height:1.25;min-height:2.45em}
 .daily-detail-item b{display:block;margin-top:4px;color:var(--ink);font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
