@@ -24,7 +24,18 @@
 
   <section class="main-actions"><button data-open="income"><i class="fa-solid fa-plus"></i><span><b>Gelir Ekle</b><small>Nakit veya banka</small></span></button><button data-open="expense"><i class="fa-solid fa-minus"></i><span><b>Gider Ekle</b><small>Nakit, banka veya kredi kartı</small></span></button><button data-open="transfer" class="soft-action"><i class="fa-solid fa-right-left"></i><span><b>Hesap Aktarımı</b><small>Kart ödemesi dahil</small></span></button></section>
 
-  <section class="balances financial-overview"><div class="section-head"><div><p class="kicker">Seçili tarih</p><h3>Günlük Gelir–Gider</h3></div><small>Para türüne göre sade görünüm</small></div><div class="flow-grid"><article class="previous"><i class="fa-solid fa-clock-rotate-left"></i><span>Önceki Gün Nakit</span><b id="previousCashBalance">₺0,00</b></article><article class="previous bank"><i class="fa-solid fa-clock-rotate-left"></i><span>Önceki Gün Banka</span><b id="previousBankBalance">₺0,00</b></article><article class="income"><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Gelir</span><b id="dayCashIncome">₺0,00</b></article><article class="income bank"><i class="fa-solid fa-building-columns"></i><span>Banka Geliri</span><b id="dayBankIncome">₺0,00</b></article><article class="expense"><i class="fa-solid fa-arrow-trend-down"></i><span>Giderler</span><b id="dayExpense">₺0,00</b></article><article class="debt"><i class="fa-solid fa-credit-card"></i><span>Kredi Kartı Genel Borç</span><b id="cardBalance">₺0,00</b></article></div><div class="current-accounts"><article class="cash"><div><i class="fa-solid fa-money-bill-wave"></i><span>Toplam Nakit Hesabı</span></div><b id="cashBalance">₺0,00</b></article><article class="bank"><div><i class="fa-solid fa-building-columns"></i><span>Mevcut Banka Hesabı</span></div><b id="bankBalance">₺0,00</b></article></div></section>
+  <section class="balances financial-overview">
+    <div class="section-head"><h3>Günlük Gelir–Gider</h3></div>
+    <div class="flow-grid">
+      <article class="income"><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Gelir</span><b id="dayCashIncome">₺0,00</b></article>
+      <article class="income bank"><i class="fa-solid fa-building-columns"></i><span>Bankaya Gelen</span><b id="dayBankIncome">₺0,00</b></article>
+      <article class="expense"><i class="fa-solid fa-arrow-trend-down"></i><span>Günlük Giderler</span><b id="dayExpense">₺0,00</b></article>
+      <article class="previous"><i class="fa-solid fa-clock-rotate-left"></i><span>Önceki Gün Nakit</span><b id="previousCashBalance">₺0,00</b></article>
+      <article class="previous bank"><i class="fa-solid fa-clock-rotate-left"></i><span>Önceki Gün Banka Hesabı</span><b id="previousBankBalance">₺0,00</b></article>
+      <article class="debt"><i class="fa-solid fa-credit-card"></i><span>Kredi Kartı Genel Borç</span><b id="cardBalance">₺0,00</b></article>
+    </div>
+    <div class="current-accounts"><article class="cash"><div><i class="fa-solid fa-money-bill-wave"></i><span>Toplam Nakit Hesabı</span></div><b id="cashBalance">₺0,00</b></article><article class="bank"><div><i class="fa-solid fa-building-columns"></i><span>Mevcut Banka Hesabı</span></div><b id="bankBalance">₺0,00</b></article></div>
+  </section>
 
   <section class="ledger-card"><div class="section-head"><div><p class="kicker">Kalem kalem</p><h3>Günlük Gelir–Gider Hareketleri</h3></div><select id="filter"><option value="all">Tüm Hareketler</option><option value="income">Gelirler</option><option value="expense">Giderler</option><option value="transfer">Aktarımlar</option></select></div><div id="movementList" class="movement-list"></div><p id="empty" class="empty">Bu tarihte kayıtlı hareket bulunmuyor.</p></section>
 
