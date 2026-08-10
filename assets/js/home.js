@@ -1,28 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     initPanelAnimations();
     initTopButton();
-    initDateTime();
+    updateTeaFreshness();
     loadWeather();
 });
-
-function initDateTime() {
-    const dateElement = document.getElementById("currentDate");
-    const timeElement = document.getElementById("currentTime");
-    if (!dateElement || !timeElement) return;
-
-    const update = () => {
-        const now = new Date();
-        dateElement.textContent = new Intl.DateTimeFormat("tr-TR", {
-            day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Istanbul"
-        }).format(now);
-        timeElement.textContent = new Intl.DateTimeFormat("tr-TR", {
-            hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Istanbul"
-        }).format(now);
-    };
-
-    update();
-    window.setInterval(update, 30000);
-}
 
 function initPanelAnimations() {
     const panels = document.querySelectorAll(".panel");
@@ -67,6 +48,38 @@ function initTopButton() {
     topButton.addEventListener("click", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     });
+}
+
+function updateTeaFreshness() {
+    const text = document.getElementById("freshText");
+    const progressBar = document.getElementById("freshBar");
+
+    if (!progressBar || !text) return;
+
+    const hour = new Date().getHours();
+    let percent = 95;
+
+    if (hour >= 8 && hour < 10) percent = 100;
+    else if (hour >= 10 && hour < 12) percent = 90;
+    else if (hour >= 12 && hour < 14) percent = 75;
+    else if (hour >= 14 && hour < 16) percent = 60;
+    else if (hour >= 16 && hour < 18) percent = 45;
+
+    let color = "#18a957";
+    let label = `🟢 %${percent} - Yeni Demlendi`;
+
+    if (percent < 60) {
+        color = "#d93b35";
+        label = `🔴 %${percent} - Yeni Dem Hazırlanıyor`;
+    } else if (percent < 85) {
+        color = "#d9a526";
+        label = `🟡 %${percent} - Taze`;
+    }
+
+    progressBar.value = percent;
+    progressBar.textContent = `%${percent}`;
+    progressBar.style.setProperty("--progress-color", color);
+    text.textContent = label;
 }
 
 async function loadWeather() {
