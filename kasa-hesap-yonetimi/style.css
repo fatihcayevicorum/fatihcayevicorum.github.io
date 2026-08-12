@@ -74,6 +74,18 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 @media(max-width:900px){.main-actions{grid-template-columns:1fr 1fr}.cash-tools{grid-template-columns:1fr}.reminder-form{grid-template-columns:1fr 1fr}.reminder-form input:first-child{grid-column:1/-1}.reminder-form button{min-height:42px}}
 @media(max-width:520px){.cash-count-status{align-items:flex-start;flex-direction:column}.cash-count-status #cashCountStatus{text-align:left}.reminder-form{grid-template-columns:1fr}.reminder-form input:first-child{grid-column:auto}.reminder-actions{flex-direction:column}}
 
+/* R182: üç hesap + tarih yerleşimi */
+.account-date-row{display:grid;grid-template-columns:minmax(190px,1fr) minmax(270px,1.25fr) minmax(300px,1.35fr);align-items:stretch;gap:10px;margin:16px 0}
+.account-date-row .date-switcher{width:100%;height:100%;margin:0}
+.top-account{display:flex;align-items:center;gap:12px;min-height:68px;padding:13px 15px;border:1px solid var(--line);border-radius:17px;background:var(--paper);box-shadow:var(--shadow)}
+.top-account>i{display:grid;width:38px;height:38px;flex:none;place-items:center;border-radius:11px;background:#f2e7dc;color:var(--red)}
+.top-account span,.top-account b{display:block}.top-account span{color:var(--muted);font-size:.66rem}.top-account b{margin-top:3px;font-size:1rem}.top-account.bank>i{color:var(--blue)}.top-account.pos>i{color:#7a4c9d}
+.right-accounts{display:grid;grid-template-columns:1fr 1fr;gap:10px}.flow-grid{grid-template-columns:repeat(3,1fr)}
+.pending-income-note{margin:12px 0 0;padding:10px 12px;border-radius:11px;background:#f5ebe1;color:var(--muted);font-size:.65rem}
+.opening-grid{grid-template-columns:repeat(2,1fr)}
+@media(max-width:900px){.account-date-row{grid-template-columns:1fr 1.4fr}.account-date-row>.top-account{grid-column:1}.account-date-row>.date-switcher{grid-column:2;grid-row:1}.right-accounts{grid-column:1/-1}.flow-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.account-date-row{grid-template-columns:1fr}.account-date-row>.top-account,.account-date-row>.date-switcher,.right-accounts{grid-column:1;grid-row:auto}.right-accounts{grid-template-columns:1fr 1fr}.flow-grid{grid-template-columns:1fr 1fr}.opening-grid{grid-template-columns:1fr}}
+
 /* R127: ödeme geçmişi */
 .reminder-heading{margin:14px 0 7px;font-size:.76rem}.paid-heading{padding-top:10px;border-top:1px solid var(--line)}.paid-reminder-list{max-height:24vh}.reminder-row.is-paid{opacity:.78;background:#f5faf7}.reminder-row.is-paid>i{background:#e7f4ec;color:var(--green)}
 

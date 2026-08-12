@@ -18,6 +18,7 @@
 }
 .quick-cash-kicker{margin:0 0 3px;color:var(--red);font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .quick-cash-type,.quick-cash-account{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.quick-cash-account{grid-template-columns:repeat(3,1fr)}
 .quick-cash-type label,.quick-cash-account label{margin:0}
 .quick-cash-type input,.quick-cash-account input{position:absolute;opacity:0;pointer-events:none}
 .quick-cash-type span,.quick-cash-account span{display:flex;min-height:46px;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:#fff;transition:.16s transform,.16s border-color,.16s background}
