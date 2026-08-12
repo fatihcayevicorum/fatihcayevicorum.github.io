@@ -51,7 +51,7 @@ function openCheckout(){const o=orderFor(selectedKey);if(!o||!o.items.length){sh
 function renderCashPreview(){const o=orderFor(selectedKey);if(!o)return;const type=currentPaymentType(),account=orderTotal(o),entered=Math.max(0,Number(String(el.paidAmount.value).replace(',','.'))||0),payment=Math.min(entered,account),tip=type==='cash'?Math.max(0,entered-account):0,remaining=Math.max(0,account-payment),label=type==='cash'?'nakit':'banka havalesi',products=compactCheckoutItems(o);el.paidAmountLabel.firstChild.textContent=type==='cash'?'Alınan Nakit':'Gelen havale';el.checkoutPaid.textContent=money(payment);el.checkoutRemaining.textContent=money(remaining);el.changeText.textContent=tip?`Bahşiş: ${money(tip)}`:payment?`${money(payment)} ${label} olarak kaydedilecek.`:'Ödeme tutarını girin.';el.paymentConfirmText.hidden=!payment;el.paymentConfirmText.innerHTML=`<div class="payment-confirm-info"><b>${esc(slotTitle(selectedKey))}</b><span>Mevcut borç ${money(account)}</span><span>Ödeme türü: ${type==='cash'?'Nakit':'Banka Havalesi'}</span><span>Ödenen ${money(payment)}</span>${tip?`<span>Bahşiş ${money(tip)}</span>`:''}<strong>Kalan ${money(remaining)}${remaining?' masa hesabında duracak.':' • Hesap kapanacak.'}</strong><em>Onaylıyor musunuz?</em></div><div class="payment-confirm-products"><small>Adisyon İçeriği</small>${products}</div>`}
 function compactCheckoutItems(order){const grouped=new Map();for(const item of order.items||[]){const qty=Number(item.quantity)||0;if(qty<=0)continue;const name=`${item.name||'Ürün'}${item.complimentary?' İkram':''}`,key=name.toLocaleLowerCase('tr-TR');grouped.set(key,{name,qty:(grouped.get(key)?.qty||0)+qty})}const list=[...grouped.values()],shown=list.slice(0,8).map(item=>`<span><b>${item.qty}</b> ${esc(item.name)}</span>`).join('');return shown+(list.length>8?`<i>+${list.length-8} ürün daha</i>`:'')}
 function openDailyStatus(){
-  const report=buildDayReport(businessDate),statusCash=report.cashIncomeTotal,statusBank=report.bankIncomeTotal;
+  const report=buildDayReport(businessDate),statusCash=report.cashIncomeTotal,statusBank=report.bankIncomeTotal,statusCard=0;
   el.dailyPeriod.textContent=`İş günü ${formatDate(businessDate)} • şu ana kadar`;
   const detailItems=[
     ['Kapatılan Adisyon',String(report.orderCount),'orders'],
@@ -64,7 +64,8 @@ function openDailyStatus(){
       <p class="daily-money-caption">Bugünkü gerçek para girişi</p>
       <div class="daily-money-grid">
         <article class="daily-money-card is-cash"><span>Nakit Gelir</span><b>${money(statusCash)}</b></article>
-        <article class="daily-money-card is-bank"><span>Banka Geliri</span><b>${money(statusBank)}</b></article>
+        <article class="daily-money-card is-bank"><span>Havale</span><b>${money(statusBank)}</b></article>
+        <article class="daily-money-card is-card"><span>Kart</span><b>${money(statusCard)}</b></article>
       </div>
     </section>
     <section class="daily-detail-section">
