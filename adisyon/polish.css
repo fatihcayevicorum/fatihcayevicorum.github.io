@@ -311,7 +311,7 @@
   margin-top: 12px;
 }
 
-.close-day-money{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.close-day-money{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .close-day-money article,.close-day-counts article{min-width:0;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff}
 .close-day-money span,.close-day-counts span{display:block;color:var(--muted);font-size:.64rem;font-weight:700}
 .close-day-money b,.close-day-counts b{display:block;margin-top:4px;font-size:.94rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -319,6 +319,7 @@
 .close-day-money .is-bank{background:#eef6fd;border-color:#a8c7e8}.close-day-money .is-bank b{color:#286ba5}
 .close-day-money .is-card{background:#f3effa;border-color:#c8b9df}.close-day-money .is-card b{color:#664596}
 .close-day-money .is-tip{background:#fff2e2;border-color:#e4bf93}.close-day-money .is-tip b{color:#9a5c20}
+.close-day-money .is-rounding{background:#fff0f0;border-color:#e4b3b3}.close-day-money .is-rounding b{color:#a42b2b}
 .close-day-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
 .close-day-counts b{color:var(--red)}
 .report-lines h3{margin:7px 0 0;font-size:.76rem}
