@@ -37,5 +37,3 @@ body>footer{padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom))!important
 @media(max-width:620px){.header-page-link,.management-center-link{width:2.55rem;min-width:2.55rem;padding:0}.header-page-link span,.management-center-link span,.panel-menu summary span,.logout-button span{display:none}.panel-menu summary{width:2.55rem;padding:0}.panel-menu-list{position:fixed;top:4.8rem;right:.65rem}.logout-button{width:2.55rem!important;padding:0!important}.brand-logo{width:3.8rem!important;height:3.8rem!important}.live-time strong{font-size:.92rem}.live-time span{font-size:.55rem}}
 @media(max-width:430px){.header-inner{gap:.35rem}.header-actions{gap:.28rem}.brand{gap:.35rem}.brand-copy .eyebrow{font-size:.62rem!important}.brand-copy h1{font-size:.76rem!important}.brand-logo{width:3.45rem!important;height:3.45rem!important}}
 @media(max-width:720px){.pos-workspace{grid-template-columns:1fr!important}.pos-workspace .tables,.pos-workspace .products,.pos-workspace .order{grid-column:1!important}}
-/* R182: Açık Hesap / Artı Hesap kullanıcı arayüzünden kaldırıldı. Veriler yedek alınana kadar silinmez. */
-a[href*="acik-hesap"]{display:none!important}

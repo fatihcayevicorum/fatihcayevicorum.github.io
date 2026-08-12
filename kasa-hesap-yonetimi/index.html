@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=182">
+  <link rel="stylesheet" href="style.css?v=183">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=7">
 </head>
 <body>
@@ -41,7 +41,7 @@
     <p class="pending-income-note"><i class="fa-solid fa-circle-info"></i> Gelirler gün içinde burada görünür; hesap bakiyelerine Günü Kapat işleminde bir kez aktarılır. Giderler ilgili hesaptan anında düşer.</p>
   </section>
 
-  <section class="ledger-card"><div class="section-head"><div><p class="kicker">Kalem kalem</p><h3>Günlük Gelir–Gider Hareketleri</h3></div><select id="filter"><option value="all">Tüm Hareketler</option><option value="income">Gelirler</option><option value="expense">Giderler</option><option value="transfer">Aktarımlar</option></select></div><div id="movementList" class="movement-list"></div><p id="empty" class="empty">Bu tarihte kayıtlı hareket bulunmuyor.</p></section>
+  <section class="ledger-card"><div class="section-head"><div><p class="kicker">Kalem kalem</p><h3>Günlük Gelir–Gider Hareketleri</h3></div><select id="filter"><option value="all">Tüm Hareketler</option><option value="income">Gelirler</option><option value="expense">Giderler</option><option value="transfer">Aktarımlar</option></select></div><div class="split-ledger"><section><h4>Gelirler</h4><div id="incomeMovementList" class="movement-list"></div><p id="incomeEmpty" class="empty">Bu tarihte gelir bulunmuyor.</p></section><section><h4>Giderler</h4><div id="expenseMovementList" class="movement-list"></div><p id="expenseEmpty" class="empty">Bu tarihte gider bulunmuyor.</p></section></div><div id="movementList" hidden></div><p id="empty" class="empty" hidden></p></section>
 
   <section class="cash-tools"><button id="remindersButton" type="button"><i class="fa-solid fa-calendar-check"></i><span><b>Ödeme Hatırlatmaları</b><small id="reminderBadge">Yaklaşan ödeme yok</small></span><i class="fa-solid fa-chevron-right"></i></button></section>
 </main>
@@ -63,5 +63,5 @@
 <dialog id="remindersDialog"><div class="dialog-card reminders-dialog"><div class="dialog-head"><div><p class="kicker">Basit takip</p><h2>Ödeme Hatırlatmaları</h2></div><button type="button" data-close-dialog="remindersDialog">×</button></div><form id="reminderForm" class="reminder-form"><input id="reminderName" maxlength="70" placeholder="Örn. Elektrik faturası" required><input id="reminderAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Tutar (isteğe bağlı)"><input id="reminderDueDate" type="date" required><button type="submit"><i class="fa-solid fa-plus"></i> Ekle</button></form><h3 class="reminder-heading">Bekleyen Ödemeler</h3><div id="reminderList" class="reminder-list"></div><p id="reminderEmpty" class="empty">Bekleyen ödeme hatırlatması yok.</p><h3 class="reminder-heading paid-heading">Ödenenler</h3><div id="paidReminderList" class="reminder-list paid-reminder-list"></div><p id="paidReminderEmpty" class="empty">Henüz tamamlanan ödeme yok.</p></div></dialog>
 
 <div id="toast" class="toast"></div>
-<script type="module" src="script.js?v=182"></script><script type="module" src="../assets/js/system-ui.js?v=23"></script>
+<script type="module" src="script.js?v=183"></script><script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body></html>

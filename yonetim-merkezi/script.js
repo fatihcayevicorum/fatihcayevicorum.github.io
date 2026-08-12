@@ -10,6 +10,7 @@ const daily=[
   {permission:"pos",name:"Adisyon",description:"Masaları, siparişleri ve ödemeleri yönet",path:"adisyon/",icon:"fa-receipt"}
 ];
 const management=[
+  {permission:"credit",name:"Açık Hesap Müşterileri",description:"PDF yedeğini alıp müşteri hesaplarını kontrol et",path:"acik-hesap/",icon:"fa-address-book"},
   {permission:"menu",name:"Menü Yönetimi",description:"Kategori, ürün ve fiyatları düzenle",path:"menu-yonetimi/",icon:"fa-utensils"},
   {permission:"stock",name:"Stok Takibi",description:"Stok miktarlarını ve hareketlerini izle",path:"stok-yonetimi/",icon:"fa-boxes-stacked"},
   {permission:"merchant",name:"Esnaf Yönetimi",description:"Esnaf müşterileri ve çay siparişlerini yönet",path:"esnaf-yonetimi/",icon:"fa-store"},
