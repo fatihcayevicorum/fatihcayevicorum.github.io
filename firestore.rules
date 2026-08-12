@@ -111,7 +111,7 @@ service cloud.firestore {
       allow create: if hasPanel('cash') || (hasPanel('pos')
         && request.resource.data.source == 'pos-quick-cash'
         && request.resource.data.type in ['income', 'expense']
-        && request.resource.data.account in ['cash', 'bank', 'pos', 'card']
+        && request.resource.data.account in ['cash', 'bank']
         && request.resource.data.amount is number
         && request.resource.data.amount > 0
         && request.resource.data.businessDate is string

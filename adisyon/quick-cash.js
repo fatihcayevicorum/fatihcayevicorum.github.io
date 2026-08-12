@@ -55,8 +55,8 @@ function renderCategories(){
 async function saveQuickMovement(event){
   event.preventDefault();
   if(busy)return;
-  const type=form.elements.quickCashType.value,selectedAccount=form.elements.quickCashAccount.value,account=selectedAccount==="card"&&type==="income"?"pos":selectedAccount,value=Number(amount.value),selectedCategory=category.value,note=description.value.trim();
-  if(!["income","expense"].includes(type)||!["cash","bank","pos","card"].includes(account))return toast("İşlem türü veya hesap seçimi geçersiz.");
+  const type=form.elements.quickCashType.value,account=form.elements.quickCashAccount.value,value=Number(amount.value),selectedCategory=category.value,note=description.value.trim();
+  if(!["income","expense"].includes(type)||!["cash","bank"].includes(account))return toast("İşlem türü veya hesap seçimi geçersiz.");
   if(!Number.isFinite(value)||value<=0)return toast("Geçerli bir tutar girin.");
   if(!selectedCategory)return toast("Bir kategori seçin.");
   busy=true;save.disabled=true;save.textContent="Kaydediliyor…";
@@ -64,7 +64,7 @@ async function saveQuickMovement(event){
   try{
     await setDoc(doc(collection(db,"adminCashMovements")),{type,amount:value,account,fromAccount:"",toAccount:"",category:selectedCategory,description:note||selectedCategory,businessDate:activeBusinessDate,automatic:false,source:"pos-quick-cash",createdAtMs,updatedAtMs:createdAtMs,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),createdBy:auth.currentUser.uid});
     dialog.close();
-    toast(type==="expense"?"Gider ilgili hesaptan düşüldü.":"Gelir gün sonu aktarımı için kaydedildi.");
+    toast(`${type==="expense"?"Gider":"Gelir"} kasa bölümüne kaydedildi.`);
   }catch(error){console.error(error);toast("Kasa hareketi kaydedilemedi. Yetki ve bağlantıyı kontrol edin.")}
   finally{busy=false;save.disabled=false;save.textContent="Kaydet"}
 }

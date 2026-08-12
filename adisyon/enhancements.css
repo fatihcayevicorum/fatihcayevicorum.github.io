@@ -6,8 +6,6 @@
 #checkoutDialog .payment-summary{gap:6px}
 #checkoutDialog .payment-summary div{padding:8px 10px}
 #checkoutDialog .payment-type-switch{margin:8px 0}
-#checkoutDialog .payment-type-switch{grid-template-columns:repeat(3,1fr)}
-.tip-choice{display:flex!important;align-items:center;gap:9px;margin:7px 0;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#fff8ed;font-size:.7rem}.tip-choice input{width:18px!important;height:18px!important;flex:none}.daily-money-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.daily-money-card.is-pos{border-color:#d9c5e8}.daily-money-card.is-expense b{color:var(--red)}
 #checkoutDialog .notice{margin:7px 0;padding:8px}
 #checkoutDialog .payment-confirm{margin-top:7px}
 #checkoutDialog .dialog-actions{margin-top:10px}

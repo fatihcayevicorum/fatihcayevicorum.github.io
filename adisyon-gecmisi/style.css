@@ -421,6 +421,3 @@ html.embed-mode .page-top{display:none!important}
   .inline-detail .detail-meta,.detail-payments{grid-template-columns:1fr}.inline-payment-edit-grid{grid-template-columns:1fr}
   .history-card{padding:10px 6px!important}.history-icon{display:none}.history-main small{font-size:.6rem}.history-side b{font-size:.82rem}
 }
-.summary-grid{grid-template-columns:repeat(5,1fr)}
-@media(max-width:900px){.summary-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:600px){.summary-grid{grid-template-columns:1fr 1fr}}

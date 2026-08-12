@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=184">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
     <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
@@ -79,7 +79,7 @@
         <section class="panel customer-panel">
             <div class="section-heading list-heading">
                 <div><p class="kicker">Müşteri listesi</p><h2>Açık Hesaplar</h2></div>
-                <div class="list-tools"><button class="primary-button bulk-pdf-button" id="bulkPdfButton" type="button"><i class="fa-solid fa-file-pdf"></i> Toplu Yedek PDF</button><select id="customerFilter" aria-label="Müşteri filtresi"><option value="enabled">Yetkili müşteriler</option><option value="debt">Borcu olanlar</option><option value="credit">Artı bakiyesi olanlar</option><option value="over-limit">Limiti aşanlar</option><option value="disabled">Yetkisi kapalı</option><option value="all">Tüm müşteriler</option></select><input id="customerSearch" type="search" placeholder="Müşteri ara"></div>
+                <div class="list-tools"><select id="customerFilter" aria-label="Müşteri filtresi"><option value="enabled">Yetkili müşteriler</option><option value="debt">Borcu olanlar</option><option value="credit">Artı bakiyesi olanlar</option><option value="over-limit">Limiti aşanlar</option><option value="disabled">Yetkisi kapalı</option><option value="all">Tüm müşteriler</option></select><input id="customerSearch" type="search" placeholder="Müşteri ara"></div>
             </div>
             <p class="empty-copy" id="customerEmpty">Henüz Açık Hesap müşterisi eklenmedi.</p>
             <div class="customer-list" id="customerList"></div>
@@ -183,7 +183,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="../assets/js/management-forms.js?v=1"></script>
     <script type="module" src="../assets/js/sensitive-access.js?v=1"></script>
-    <script type="module" src="script.js?v=184"></script>
+    <script type="module" src="script.js?v=178"></script>
     
     <script type="module" src="../assets/js/system-ui.js?v=23"></script>
     <script src="../assets/js/panel-scroll.js?v=2"></script>
