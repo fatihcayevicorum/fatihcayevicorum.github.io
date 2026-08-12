@@ -102,10 +102,13 @@ html.embed-mode .history-card:hover{box-shadow:0 10px 20px rgba(71,37,31,.08)}
 .inline-payment-edit-head strong{font-size:.92rem;color:var(--ink)}
 .inline-payment-edit-head>b{font-size:1.05rem;color:var(--red)}
 .inline-payment-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.inline-payment-edit-grid>*{min-width:0}
+.inline-payment-edit-grid select,.inline-payment-edit-grid input{width:100%;min-width:0}
 .inline-edit-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:11px;flex-wrap:wrap}
 .inline-edit-actions .primary,.inline-edit-actions .secondary-action{min-height:42px}
 @media(max-width:900px){
   .inline-detail-columns{grid-template-columns:1fr}
+  .inline-payment-edit-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 }
 @media(max-width:600px){
   .inline-detail{padding:12px 1px 14px}
