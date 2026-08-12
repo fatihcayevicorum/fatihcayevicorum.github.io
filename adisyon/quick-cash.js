@@ -25,6 +25,7 @@ async function openQuickCash(){
   form.elements.quickCashAccount.value="cash";
   await Promise.all([loadCategories(),loadBusinessDate()]);
   renderCategories();
+  renderAccountLabel();
   $("quickCashDate").textContent=`İş günü: ${formatDate(activeBusinessDate)} • Saat otomatik kaydedilir`;
   dialog.showModal();
   setTimeout(()=>amount.focus(),80);
@@ -50,6 +51,12 @@ function activeNames(items,defaults){
 function renderCategories(){
   const type=form.elements.quickCashType.value||"expense",items=categories[type]||[];
   category.innerHTML=items.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("");
+  renderAccountLabel();
+}
+
+function renderAccountLabel(){
+  const label=$("quickCashCardLabel");
+  if(label)label.textContent=form.elements.quickCashType.value==="income"?"Kart":"Kredi Kartı";
 }
 
 async function saveQuickMovement(event){
