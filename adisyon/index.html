@@ -69,7 +69,7 @@
 <dialog id="checkoutDialog"><form id="checkoutForm" class="dialog-card wide">
   <div class="dialog-head"><h2>Ödeme Al</h2><button type="button" data-close="checkoutDialog">×</button></div>
   <div class="payment-summary"><div><span>Mevcut borç</span><b id="checkoutBase">₺0</b></div><div><span>Bu ödeme</span><b id="checkoutPaid">₺0</b></div><div class="remaining"><span>Kalan</span><b id="checkoutRemaining">₺0</b></div></div>
-  <div class="payment-type-switch"><label><input type="radio" name="paymentType" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label><label><input type="radio" name="paymentType" value="transfer"><span><i class="fa-solid fa-building-columns"></i>Banka Havalesi</span></label></div>
+  <div class="payment-type-switch"><label><input type="radio" name="paymentType" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label><label><input type="radio" name="paymentType" value="transfer"><span><i class="fa-solid fa-building-columns"></i>Havale</span></label><label title="Kart kayıt bağlantısı sonraki aşamada etkinleştirilecek"><input type="radio" name="paymentType" value="card" disabled><span><i class="fa-solid fa-credit-card"></i>Kart</span></label></div>
   <label id="paidAmountLabel">Alınan Tutar<input id="paidAmount" type="number" inputmode="decimal" min="0.01" step="0.01" autocomplete="off" required></label>
   <div id="changeText" class="notice">Alınan Nakit tutarını girin.</div>
   <div id="paymentConfirmText" class="payment-confirm" hidden></div>

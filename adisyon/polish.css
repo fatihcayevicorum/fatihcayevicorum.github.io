@@ -515,7 +515,7 @@
 
 .payment-type-switch {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin: 12px 0;
 }
@@ -546,6 +546,11 @@
   border-color: var(--red);
   color: #fff;
   background: linear-gradient(135deg, var(--red), var(--red2));
+}
+
+.payment-type-switch input:disabled + span {
+  opacity: .55;
+  cursor: not-allowed;
 }
 
 #paidAmount {
