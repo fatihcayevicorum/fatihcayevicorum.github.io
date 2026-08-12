@@ -4,8 +4,9 @@ const closeButton=document.getElementById("closeClosedOrdersHistory");
 const frame=document.getElementById("closedOrdersHistoryFrame");
 
 function ensureFrame(){
-  if(frame && (frame.getAttribute("src")==="about:blank" || !frame.getAttribute("src"))){
-    frame.setAttribute("src",frame.dataset.src||"../adisyon-gecmisi/?embed=1");
+  if(frame){
+    const target=frame.dataset.src||"../adisyon-gecmisi/?embed=1&v=1861";
+    if(frame.getAttribute("src")!==target)frame.setAttribute("src",target);
   }
 }
 function openHistory(){
