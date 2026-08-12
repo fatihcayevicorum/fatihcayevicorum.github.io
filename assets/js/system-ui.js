@@ -175,13 +175,11 @@ function installSensitiveLinkGate(){
     if(!link||event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
     const target=new URL(link.href,location.href);
     if(target.origin!==location.origin)return;
-    const type=target.pathname.includes("/acik-hesap/")?"credit":target.pathname.includes("/kasa-hesap-yonetimi/")?"cash":"";
+    const type=target.pathname.includes("/kasa-hesap-yonetimi/")?"cash":"";
     if(!type||target.pathname===location.pathname)return;
     event.preventDefault();
     const {requireSensitiveAccess}=await import("./sensitive-access.js");
-    const options=type==="credit"
-      ?{title:"Açık Hesap",message:"Müşteri bakiyelerini görüntülemek ve değiştirmek için yönetici PIN'ini girin."}
-      :{title:"Kasa ve Hesaplar",message:"Kasa ve hesap bilgilerini görmek için yönetici PIN'ini girin."};
+    const options={title:"Kasa ve Hesaplar",message:"Kasa ve hesap bilgilerini görmek için yönetici PIN'ini girin."};
     if(await requireSensitiveAccess(options))location.href=target.href;
   });
 }

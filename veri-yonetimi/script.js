@@ -6,7 +6,7 @@ import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),functions=getFunctions(app,"europe-west1"),readSystemBackup=httpsCallable(functions,"readSystemBackup"),$=id=>document.getElementById(id);
-const COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminCreditCustomers","adminCreditMovements","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers"];
+const COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers"];
 const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminCashSettings","config"]];
 const BACKUP_PREFIX="system-backups/";
 let busy=false,pendingRestore=null,pendingAction=null,toastTimer;
@@ -65,24 +65,17 @@ async function enforceBackupLimit(){
   const result=await listAll(storageRef(storage,BACKUP_PREFIX)),rows=await Promise.all(result.items.map(async item=>({item,meta:await getMetadata(item)})));rows.sort((a,b)=>new Date(b.meta.timeCreated)-new Date(a.meta.timeCreated));for(const x of rows.slice(10))await deleteObject(x.item)
 }
 
-function handleCleanupChange(e){
-  const value=e.target?.value;
-  if(e.target?.checked&&value==="creditActivity")document.querySelector('#cleanupOptions input[value="creditCustomers"]').checked=false;
-  if(e.target?.checked&&value==="creditCustomers")document.querySelector('#cleanupOptions input[value="creditActivity"]').checked=false;
-  updateSelection();
-}
+function handleCleanupChange(){updateSelection()}
 function updateSelection(){const selected=selectedCleanup();$("selectionCount").textContent=selected.length?`${selected.length} veri bölümü seçildi`:"Henüz seçim yapılmadı";$("prepareCleanup").disabled=!selected.length||busy}
 function selectedCleanup(){return[...document.querySelectorAll('#cleanupOptions input:checked')].map(x=>x.value)}
 function prepareCleanup(){
   const selected=selectedCleanup();if(!selected.length)return;
   const labels=selected.map(v=>document.querySelector(`#cleanupOptions input[value="${v}"]+span b`)?.textContent).filter(Boolean);
-  const deletesCustomers=selected.includes("creditCustomers");
-  confirmAction({title:deletesCustomers?"Açık Hesap Müşterileri Silinsin mi?":"Seçilen Veriler Temizlensin mi?",text:`Önce otomatik tam yedek alınacak. Ardından şu bölümler temizlenecek: ${labels.join(", ")}.${deletesCustomers?" Müşteri kartları kalıcı olarak silinecek.":""}`,phrase:deletesCustomers?"MÜŞTERİLERİ SİL":"VERİLERİ SİL",action:()=>runCleanup(selected)});
+  confirmAction({title:"Seçilen Veriler Temizlensin mi?",text:`Önce otomatik tam yedek alınacak. Ardından şu bölümler temizlenecek: ${labels.join(", ")}.`,phrase:"VERİLERİ SİL",action:()=>runCleanup(selected)});
 }
 
 async function runCleanup(selected){
   if(busy)return;
-  if(selected.includes("creditActivity")&&selected.includes("creditCustomers"))return toast("Hareketler ile müşteri kartları aynı anda seçilemez.");
   try{
     await createBackup({download:true,reason:"before-cleanup"});
     setBusy(true,"Seçilen veriler temizleniyor…");
@@ -94,8 +87,6 @@ async function runCleanup(selected){
     if(selected.includes("stockQuantities"))await updateCollection("adminStockItems",()=>({quantity:0,updatedAtMs:Date.now()}));
     if(selected.includes("stockItems"))await deleteCollection("adminStockItems");
     if(selected.includes("menu"))await setDoc(doc(db,"publicMenu","catalog"),{categories:[],items:[],updatedAtMs:Date.now()});
-    if(selected.includes("creditActivity"))await clearCreditActivity();
-    if(selected.includes("creditCustomers")){await deleteCollection("adminCreditMovements");await deleteCollection("adminCreditCustomers")}
     if(selected.includes("merchantActivity")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await updateCollection("merchantProfiles",()=>({balance:0,updatedAtMs:Date.now()}))}
     if(selected.includes("merchantProfiles")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await deleteCollection("merchantProfiles")}
     if(selected.includes("cashAccounts")){await deleteCollection("adminCashMovements");await deleteCollection("adminCashCounts");await deleteCollection("adminPaymentReminders");await deleteDoc(doc(db,"adminCashSettings","config")).catch(()=>{})}
@@ -136,12 +127,6 @@ async function matchingIds(name,test){const snap=await getDocs(collection(db,nam
 async function deleteDocuments(name,ids){await runBatches(ids.map(id=>({type:"delete",ref:doc(db,name,id)})))}
 async function deleteLinkedStockExpenses(ids){if(!ids.length)return;const wanted=new Set(ids),snap=await getDocs(collection(db,"adminCashMovements"));await runBatches(snap.docs.filter(x=>{const d=x.data();return d.source==="stock-purchase"&&wanted.has(d.sourceId)}).map(x=>({type:"delete",ref:x.ref})))}
 async function updateCollection(name,makeData){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.map(x=>({type:"set",ref:x.ref,data:makeData(x.data()),merge:true})))}
-async function clearCreditActivity(){
-  await deleteCollection("adminCreditMovements");
-  const remaining=await getDocs(collection(db,"adminCreditMovements"));
-  if(!remaining.empty)throw Error("credit-movements-not-cleared");
-  await updateCollection("adminCreditCustomers",()=>({balance:0,creditBalance:0,openingBalance:0,lastResetAt:null,updatedAtMs:Date.now()}));
-}
 async function writeItems(name,items){await runBatches((items||[]).map(x=>({type:"set",ref:doc(db,name,x.id),data:decode(x.data),merge:false})))}
 async function runBatches(operations){for(let i=0;i<operations.length;i+=400){const batch=writeBatch(db);for(const op of operations.slice(i,i+400)){if(op.type==="delete")batch.delete(op.ref);else batch.set(op.ref,op.data,{merge:op.merge===true})}await batch.commit()}}
 
@@ -161,7 +146,7 @@ function setBusy(value,message="İşlem sürüyor…"){busy=value;$("backupButto
 function setProgress(message){$("backupProgress").querySelector("span").textContent=message}
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.style.display="none";document.body.append(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},4000)}
 function countBackup(data){return Object.values(data.collections||{}).reduce((n,x)=>n+x.length,0)+Object.values(data.documents||{}).filter(Boolean).length}
-function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminInternalConsumptions:"Dahili tüketimler",adminCreditCustomers:"Açık hesaplar",adminCreditMovements:"Açık hesap hareketleri",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri",adminCashMovements:"Kasa ve hesap hareketleri",adminCashCounts:"Kasa sayımları",adminPaymentReminders:"Ödeme hatırlatmaları",staffUsers:"Kullanıcı yetkileri"})[name]||name}
+function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminInternalConsumptions:"Dahili tüketimler",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri",adminCashMovements:"Kasa ve hesap hareketleri",adminCashCounts:"Kasa sayımları",adminPaymentReminders:"Ödeme hatırlatmaları",staffUsers:"Kullanıcı yetkileri"})[name]||name}
 function storageMessage(error){return String(error?.code||"").includes("unauthorized")?"Yedek saklanamadı. Storage kurallarını yayınlayın.":"Yedek alınamadı. Bağlantıyı kontrol edin."}
 function backupReadMessage(error,fallback){const code=String(error?.code||error?.message||"");if(code.includes("not-found")||code.includes("object-not-found"))return"Bu yedek bulutta bulunamadı.";if(code.includes("permission-denied")||code.includes("unauthorized"))return"Yedeğe erişim izni reddedildi.";if(code.includes("resource-exhausted"))return"Yedek doğrudan açmak için çok büyük.";if(code.includes("invalid-backup")||code.includes("JSON"))return"Yedek dosyasının biçimi okunamadı.";return fallback}
 function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}

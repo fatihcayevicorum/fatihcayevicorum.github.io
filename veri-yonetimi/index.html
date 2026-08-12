@@ -19,7 +19,7 @@
       <div class="brand"><img src="../assets/images/logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Veri ve Yedekleme</h1></div></div>
       <div class="header-actions">
         <div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
-        <details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../acik-hesap/"><i class="fa-solid fa-address-book"></i>Açık Hesap</a><a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a><a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a><a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a><a href="../kasa-hesap-yonetimi/"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a><a class="is-current" href="./"><i class="fa-solid fa-database"></i>Veri ve Yedekleme</a></nav></details>
+        <details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a><a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a><a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a><a href="../kasa-hesap-yonetimi/"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a><a class="is-current" href="./"><i class="fa-solid fa-database"></i>Veri ve Yedekleme</a></nav></details>
         <button class="logout-button" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button>
       </div>
     </div>
@@ -33,7 +33,7 @@
 
     <section class="panel backup-panel">
       <div class="section-heading"><div><p class="kicker">Tek dokunuşla</p><h2><i class="fa-solid fa-cloud-arrow-up"></i> Tam Yedek Al</h2></div><button id="backupButton" class="primary"><i class="fa-solid fa-shield-halved"></i> Şimdi Tam Yedek Al</button></div>
-      <p class="description">Menü, stok, satış, gün sonu, açık hesap, Esnaf ve sistem ayarlarının tamamı yedeklenir. Firebase kullanıcı şifreleri güvenlik nedeniyle yedeğe dahil değildir.</p>
+      <p class="description">Menü, stok, satış, gün sonu, Esnaf ve sistem ayarlarının tamamı yedeklenir. Firebase kullanıcı şifreleri güvenlik nedeniyle yedeğe dahil değildir.</p>
       <div id="backupProgress" class="progress" hidden><i></i><span>Yedek hazırlanıyor…</span></div>
     </section>
 
@@ -55,8 +55,6 @@
         <label><input type="checkbox" value="stockQuantities"><span><i class="fa-solid fa-boxes-stacked"></i><b>Stok Miktarları</b><small>Ürün kartları kalır, miktarlar sıfırlanır</small></span></label>
         <label><input type="checkbox" value="stockItems"><span><i class="fa-solid fa-box-open"></i><b>Stok Ürün Kartları</b><small>Tüm kayıtlı stok ürünlerini siler</small></span></label>
         <label><input type="checkbox" value="menu"><span><i class="fa-solid fa-utensils"></i><b>Menü ve Fiyatlar</b><small>Kategori, ürün ve fiyatları temizler</small></span></label>
-        <label><input type="checkbox" value="creditActivity"><span><i class="fa-solid fa-wallet"></i><b>Açık Hesap Hareketleri</b><small>Müşteriler kalır, bakiye ve hareketler sıfırlanır</small></span></label>
-        <label><input type="checkbox" value="creditCustomers"><span><i class="fa-solid fa-address-book"></i><b>Açık Hesap Müşterileri</b><small>Müşteri kartları dahil tamamen siler</small></span></label>
         <label><input type="checkbox" value="merchantActivity"><span><i class="fa-solid fa-mug-hot"></i><b>Esnaf Hareketleri</b><small>Sipariş, hareket ve bakiyeleri sıfırlar</small></span></label>
         <label><input type="checkbox" value="merchantProfiles"><span><i class="fa-solid fa-store-slash"></i><b>Esnaf Müşteri Kartları</b><small>Profilleri siler; giriş kullanıcıları Firebase'de kalır</small></span></label>
         <label><input type="checkbox" value="cashAccounts"><span><i class="fa-solid fa-vault"></i><b>Kasa ve Hesaplar</b><small>Gelir, gider, transfer ve hesap bakiyelerini sıfırlar; PIN korunur</small></span></label>

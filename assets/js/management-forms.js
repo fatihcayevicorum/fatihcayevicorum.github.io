@@ -1,7 +1,6 @@
 (()=>{
   const path=location.pathname;
   if(path.includes("/esnaf-yonetimi/"))setup({form:"merchantForm",title:"formTitle",triggerText:"Yeni Esnaf",triggerIcon:"fa-user-plus",toolbar:()=>document.querySelector("#merchantList")?.closest(".panel")?.querySelector(".heading"),editSelector:"[data-edit]",removeSection:true});
-  if(path.includes("/acik-hesap/"))setup({form:"customerForm",title:"customerFormTitle",triggerText:"Yeni Müşteri",triggerIcon:"fa-user-plus",toolbar:()=>document.querySelector("#customerList")?.closest(".panel")?.querySelector(".section-heading"),editSelector:"[data-edit]",removeSection:true});
   if(path.includes("/menu-yonetimi/")){
     setup({form:"categoryForm",triggerText:"Yeni Kategori",triggerIcon:"fa-layer-group",toolbar:()=>document.querySelector("#categoryList")?.closest(".panel")?.querySelector(".section-heading"),small:true});
     setup({form:"productForm",title:"productFormTitle",triggerText:"Yeni Ürün",triggerIcon:"fa-plus",toolbar:()=>document.querySelector("#categoryList")?.closest(".panel")?.querySelector(".section-heading"),editSelector:"[data-edit-product]",removeSection:true});
