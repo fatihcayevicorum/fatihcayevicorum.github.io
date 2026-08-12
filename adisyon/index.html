@@ -72,7 +72,6 @@
   <div class="payment-type-switch"><label><input type="radio" name="paymentType" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label><label><input type="radio" name="paymentType" value="transfer"><span><i class="fa-solid fa-building-columns"></i>Havale</span></label><label><input type="radio" name="paymentType" value="card"><span><i class="fa-solid fa-credit-card"></i>Kredi Kartı</span></label></div>
   <label id="paidAmountLabel">Alınan Tutar<input id="paidAmount" type="number" inputmode="decimal" min="0.01" step="0.01" autocomplete="off" required></label>
   <div id="changeText" class="notice">Alınan Nakit tutarını girin.</div>
-  <label id="tipChoice" class="tip-choice" hidden><input id="treatExtraAsTip" type="checkbox"><span>Fazla kalan tutarı bahşiş olarak kaydet</span></label>
   <div id="paymentConfirmText" class="payment-confirm" hidden></div>
   <div class="dialog-actions"><button type="button" class="secondary" data-close="checkoutDialog">Vazgeç</button><button id="confirmCheckout" class="primary">Ödemeyi Onayla</button></div>
 </form></dialog>
@@ -94,7 +93,7 @@
   </section>
 </dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=183"></script>
+<script type="module" src="script.js?v=185"></script>
 <script type="module" src="internal-consumption.js?v=4"></script>
 <script type="module" src="quick-cash.js?v=182"></script>
 <script type="module" src="history-modal.js?v=1710"></script>

@@ -10,6 +10,7 @@ ensureFooter();
 installGlobalInteractionStyle();
 installKeyboardScrollSupport();
 installTopLayerToasts();
+removeDeprecatedCreditLinks();
 installSensitiveLinkGate();
 const panelMenu=document.querySelector(".panel-menu-list");
 if(panelMenu)installManagementCenterLink();
@@ -184,4 +185,8 @@ function installSensitiveLinkGate(){
       :{title:"Kasa ve Hesaplar",message:"Kasa ve hesap bilgilerini görmek için yönetici PIN'ini girin."};
     if(await requireSensitiveAccess(options))location.href=target.href;
   });
+}
+
+function removeDeprecatedCreditLinks(){
+  document.querySelectorAll('a[href*="acik-hesap"]').forEach(link=>link.remove());
 }

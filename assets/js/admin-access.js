@@ -6,7 +6,6 @@ export const PANEL_DEFINITIONS=[
   {id:"pos",name:"Adisyon",path:"adisyon/",icon:"fa-receipt"},
   {id:"menu",name:"Menü Yönetimi",path:"menu-yonetimi/",icon:"fa-utensils"},
   {id:"stock",name:"Stok Yönetimi",path:"stok-yonetimi/",icon:"fa-boxes-stacked"},
-  {id:"credit",name:"Açık Hesap",path:"acik-hesap/",icon:"fa-address-book"},
   {id:"merchant",name:"Esnaf Yönetimi",path:"esnaf-yonetimi/",icon:"fa-store"},
   {id:"reports",name:"Raporlar",path:"raporlar/",icon:"fa-chart-column"},
   {id:"cash",name:"Kasa ve Hesaplar",path:"kasa-hesap-yonetimi/",icon:"fa-vault"},
