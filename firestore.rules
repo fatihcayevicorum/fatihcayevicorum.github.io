@@ -28,7 +28,7 @@ service cloud.firestore {
     }
     function financeDateOpen(date) {
       return date is string
-        && date >= '2026-08-12'
+        && date >= '2026-08-13'
         && (!exists(/databases/$(database)/documents/adminFinanceDays/$(date))
           || get(/databases/$(database)/documents/adminFinanceDays/$(date)).data.locked != true);
     }
@@ -146,7 +146,7 @@ service cloud.firestore {
     match /adminFinanceDays/{businessDate} {
       allow read: if hasAnyPanel(['cash', 'pos', 'reports']);
       allow create: if hasPanel('cash')
-        && businessDate >= '2026-08-12'
+        && businessDate >= '2026-08-13'
         && request.resource.data.businessDate == businessDate
         && request.resource.data.locked == true;
       allow update, delete: if false;
