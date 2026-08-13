@@ -55,15 +55,17 @@ function renderCategories(){
 }
 
 function renderAccountLabel(){
-  const label=$("quickCashCardLabel");
-  if(label)label.textContent=form.elements.quickCashType.value==="income"?"Kart":"Kredi Kartı";
+  const label=$("quickCashCardLabel"),input=$("quickCashCardAccount"),income=form.elements.quickCashType.value==="income";
+  if(label)label.textContent=income?"Kart":"Kredi Kartı";
+  if(input)input.value=income?"card":"creditCard";
 }
 
 async function saveQuickMovement(event){
   event.preventDefault();
   if(busy)return;
   const type=form.elements.quickCashType.value,account=form.elements.quickCashAccount.value,value=Number(amount.value),selectedCategory=category.value,note=description.value.trim();
-  if(!["income","expense"].includes(type)||!["cash","bank"].includes(account))return toast("İşlem türü veya hesap seçimi geçersiz.");
+  const validAccount=type==="income"?["cash","bank","card"].includes(account):["cash","bank","creditCard"].includes(account);
+  if(!["income","expense"].includes(type)||!validAccount)return toast("İşlem türü veya hesap seçimi geçersiz.");
   if(!Number.isFinite(value)||value<=0)return toast("Geçerli bir tutar girin.");
   if(!selectedCategory)return toast("Bir kategori seçin.");
   busy=true;save.disabled=true;save.textContent="Kaydediliyor…";
