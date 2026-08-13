@@ -45,11 +45,12 @@ function buildReport(){
   for(const sale of selected){
     if(["merchant-topup","merchant-topup-correction"].includes(sale.recordType))continue
     if(["merchant-delivery","merchant-manual-delivery"].includes(sale.recordType))continue
-    if(["payment","credit-payment","credit-topup"].includes(sale.recordType)){result.cashTotal+=num(sale.cashAmount??sale.amount);result.transferTotal+=num(sale.transferAmount);result.tipTotal+=num(sale.tipAmount);continue}
+    if(["payment","credit-payment","credit-topup"].includes(sale.recordType)){result.cashTotal+=num(sale.cashAmount??(sale.paymentType==="cash"?sale.amount:0));result.transferTotal+=num(sale.transferAmount);result.cardTotal+=num(sale.cardAmount??(sale.paymentType==="card"?sale.amount:0));result.tipTotal+=num(sale.tipAmount);continue}
     if(sale.recordType!=="sale"&&sale.items==null)continue;
     result.salesTotal+=num(sale.baseTotal)||sumBillableItems(sale.items);
-    result.cashTotal+=num(sale.cashAmount??sale.paymentAmount??sale.paidTotal);
+    result.cashTotal+=num(sale.cashAmount??(sale.paymentType==="cash"?(sale.paymentAmount??sale.paidTotal):0));
     result.transferTotal+=num(sale.transferAmount);
+    result.cardTotal+=num(sale.cardAmount??(sale.paymentType==="card"?(sale.paymentAmount??sale.paidTotal):0));
     result.tipTotal+=num(sale.tipAmount);
     result.roundingTotal+=num(sale.roundingDiscount)||Math.max(0,-num(sale.roundingAmount));
     result.orderCount++;
@@ -119,7 +120,7 @@ function exportPdf(){const rows=report.products.map((p,i)=>`<tr><td>${i+1}</td><
 function exportExcel(){const rows=report.products.map(p=>`<Row><Cell><Data ss:Type="String">${xml(p.name)}</Data></Cell><Cell><Data ss:Type="String">${xml(categoryName(p.categoryId))}</Data></Cell><Cell><Data ss:Type="Number">${p.quantity}</Data></Cell><Cell><Data ss:Type="Number">${p.total}</Data></Cell></Row>`).join(""),summary=[["Toplam Satış",report.salesTotal],["Nakit Gelir",report.cashTotal],["Banka Geliri",report.transferTotal],["Bahşiş",report.tipTotal],["Hesap Yuvarlama",report.roundingTotal],["İkram Adedi",report.giftCount],["Kapanan Adisyon",report.orderCount]].map(x=>`<Row><Cell><Data ss:Type="String">${x[0]}</Data></Cell><Cell/><Cell/><Cell><Data ss:Type="Number">${x[1]}</Data></Cell></Row>`).join(""),content=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Satış Raporu"><Table><Row><Cell><Data ss:Type="String">Ürün</Data></Cell><Cell><Data ss:Type="String">Kategori</Data></Cell><Cell><Data ss:Type="String">Adet</Data></Cell><Cell><Data ss:Type="String">Toplam</Data></Cell></Row>${rows}${summary}</Table></Worksheet></Workbook>`;download(content,`satis-raporu-${range.start}-${range.end}.xls`,"application/vnd.ms-excel")}
 
 function periodRange(type){const d=new Date(`${today()}T12:00:00`);if(type==="week"){const day=(d.getDay()+6)%7,start=new Date(d);start.setDate(d.getDate()-day);return{start:iso(start),end:iso(d)}}if(type==="month")return{start:`${today().slice(0,7)}-01`,end:today()};return{start:today(),end:today()}}
-function emptyReport(){return{salesTotal:0,cashTotal:0,transferTotal:0,itemCount:0,orderCount:0,giftCount:0,tipTotal:0,roundingTotal:0,merchantMarkaCount:0,merchantTopupTotal:0,products:[]}}
+function emptyReport(){return{salesTotal:0,cashTotal:0,transferTotal:0,cardTotal:0,itemCount:0,orderCount:0,giftCount:0,tipTotal:0,roundingTotal:0,merchantMarkaCount:0,merchantTopupTotal:0,products:[]}}
 function sumBillableItems(items){return(items||[]).filter(x=>!x.complimentary).reduce((sum,x)=>sum+num(x.unitPrice)*num(x.quantity),0)}
 function movementDate(x){return String(x.operationDate||dateFromTimestamp(x.createdAt)||"")}
 function movementPackages(x,stock){if(num(x.packageCount)>0)return num(x.packageCount);if(x.enteredUnit&&(x.enteredUnit===stock.packageUnit||x.enteredUnit==="koli"))return num(x.enteredAmount);return num(x.amount)/Math.max(1,num(x.unitsPerPackage)||num(stock.unitsPerPackage)||1)}

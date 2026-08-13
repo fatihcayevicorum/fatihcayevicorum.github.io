@@ -37,6 +37,7 @@
         <button class="active" type="button" data-filter="all">Tümü</button>
         <button type="button" data-filter="cash">Nakit</button>
         <button type="button" data-filter="transfer">Havale</button>
+        <button type="button" data-filter="card">Kart</button>
         <button type="button" data-filter="rounding">Yuvarlama</button>
       </div>
     </section>
@@ -76,7 +77,7 @@
           <form id="paymentEditForm" class="inline-payment-edit" hidden>
             <div class="inline-payment-edit-head"><div><span>Aktif İş Günü</span><strong>Ödeme Düzelt</strong></div><b id="paymentEditBill">₺0</b></div>
             <div class="inline-payment-edit-grid">
-              <label>Ödeme türü<select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Havale</option><option value="card" disabled>Kart — yakında aktif</option></select></label>
+              <label>Ödeme türü<select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Havale</option><option value="card" disabled>Kart — ödeme düzeltme sonraki aşama</option></select></label>
               <label>Alınan / gelen tutar<input id="paymentEditAmount" type="number" min="0" step="0.01" inputmode="decimal" required></label>
             </div>
             <div id="paymentEditImpact" class="payment-edit-impact" aria-live="polite"></div>
@@ -97,7 +98,7 @@
 </form></dialog>
 
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=178"></script>
+<script type="module" src="script.js?v=196"></script>
 <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body>
 </html>
