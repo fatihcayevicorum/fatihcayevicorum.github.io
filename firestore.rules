@@ -26,6 +26,24 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid))
         && get(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid)).data.active == true;
     }
+    function financeDateOpen(date) {
+      return date is string
+        && date >= '2026-08-12'
+        && (!exists(/databases/$(database)/documents/adminFinanceDays/$(date))
+          || get(/databases/$(database)/documents/adminFinanceDays/$(date)).data.locked != true);
+    }
+    function validFinanceMovement(data) {
+      return data.type in ['income', 'expense', 'transfer']
+        && data.amount is number
+        && data.amount > 0
+        && financeDateOpen(data.businessDate)
+        && ((data.type == 'income' && data.account in ['cash', 'bank', 'card'])
+          || (data.type == 'expense' && data.account in ['cash', 'bank', 'creditCard'])
+          || (data.type == 'transfer'
+            && data.fromAccount in ['cash', 'bank', 'card', 'creditCard']
+            && data.toAccount in ['cash', 'bank', 'card', 'creditCard']
+            && data.fromAccount != data.toAccount));
+    }
 
     match /staffUsers/{uid} {
       allow read: if isOwner() || (request.auth != null && request.auth.uid == uid);
@@ -107,20 +125,31 @@ service cloud.firestore {
       allow write: if hasPanel('pos');
     }
     match /adminCashMovements/{document} {
-      allow read, update, delete: if hasPanel('cash');
-      allow create: if hasPanel('cash') || (hasPanel('pos')
+      allow read: if hasPanel('cash');
+      allow create: if validFinanceMovement(request.resource.data) && (hasPanel('cash') || (hasPanel('pos')
         && request.resource.data.source == 'pos-quick-cash'
         && request.resource.data.type in ['income', 'expense']
-        && request.resource.data.account in ['cash', 'bank']
-        && request.resource.data.amount is number
-        && request.resource.data.amount > 0
-        && request.resource.data.businessDate is string
+        && request.resource.data.account in ['cash', 'bank', 'card', 'creditCard']
         && request.resource.data.automatic == false)
         || (hasPanel('stock')
         && request.resource.data.source == 'stock-purchase'
         && request.resource.data.type == 'expense'
         && request.resource.data.amount is number
-        && request.resource.data.amount >= 0);
+        && request.resource.data.amount > 0));
+      allow update: if hasPanel('cash')
+        && financeDateOpen(resource.data.businessDate)
+        && validFinanceMovement(request.resource.data)
+        && request.resource.data.businessDate == resource.data.businessDate;
+      allow delete: if hasPanel('cash')
+        && financeDateOpen(resource.data.businessDate);
+    }
+    match /adminFinanceDays/{businessDate} {
+      allow read: if hasAnyPanel(['cash', 'pos', 'reports']);
+      allow create: if hasPanel('cash')
+        && businessDate >= '2026-08-12'
+        && request.resource.data.businessDate == businessDate
+        && request.resource.data.locked == true;
+      allow update, delete: if false;
     }
     match /adminCashSettings/{document} {
       allow read, write: if hasPanel('cash');
