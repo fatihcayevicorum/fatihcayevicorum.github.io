@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=190">
 </head>
 <body>
   <header class="app-header">
@@ -57,15 +57,12 @@
       <div class="report-period"><i class="fa-regular fa-calendar"></i><strong id="periodLabel">Bugün</strong></div>
     </section>
 
-    <section class="summary-grid" aria-label="Rapor özeti">
-      <article><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="salesTotal">₺0</strong></article>
-      <article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Gelir</span><strong id="cashTotal">₺0</strong></article>
-      <article><i class="fa-solid fa-building-columns"></i><span>Banka Geliri</span><strong id="transferTotal">₺0</strong></article>
+    <section class="panel finance-report-panel" aria-label="Gelir ve gider raporu"><div class="finance-report-column income-report"><div class="finance-report-head"><p class="kicker">Para girişi</p><h2>Satış ve Gelirler</h2></div><div class="finance-report-grid"><article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Satış</span><strong id="cashTotal">₺0</strong></article><article><i class="fa-solid fa-building-columns"></i><span>Havale</span><strong id="transferTotal">₺0</strong></article><article><i class="fa-solid fa-credit-card"></i><span>Kart</span><strong id="cardTotal">₺0</strong></article><article><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></article><article><i class="fa-solid fa-scale-balanced"></i><span>Eksi Yuvarlama</span><strong id="roundingTotal">₺0</strong></article><article class="total-card"><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="salesTotal">₺0</strong></article></div></div><div class="finance-report-column expense-report"><div class="finance-report-head"><p class="kicker">Para çıkışı</p><h2>Giderler</h2></div><div class="finance-report-grid expense-grid"><article><i class="fa-solid fa-money-bill-transfer"></i><span>Nakit Giderler</span><strong id="cashExpenseTotal">₺0</strong></article><article><i class="fa-solid fa-building-columns"></i><span>Banka/Havale Ödemeleri</span><strong id="bankExpenseTotal">₺0</strong></article><article><i class="fa-solid fa-credit-card"></i><span>Kredi Kartı Harcamaları</span><strong id="creditCardExpenseTotal">₺0</strong></article><article class="total-card"><i class="fa-solid fa-arrow-trend-down"></i><span>Toplam Gider</span><strong id="expenseTotal">₺0</strong></article></div></div></section>
+
+    <section class="summary-grid operational-summary" aria-label="Satış özeti">
       <article><i class="fa-solid fa-mug-hot"></i><span>Satılan Ürün</span><strong id="itemCount">0</strong></article>
       <article><i class="fa-solid fa-receipt"></i><span>Kapanan Adisyon</span><strong id="orderCount">0</strong></article>
       <article><i class="fa-solid fa-gift"></i><span>İkram</span><strong id="giftCount">0</strong></article>
-      <article><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></article>
-      <article><i class="fa-solid fa-scale-balanced"></i><span>Hesap yuvarlama</span><strong id="roundingTotal">₺0</strong></article>
       <article><i class="fa-solid fa-ticket"></i><span>Esnaf Marka Satışı</span><strong id="merchantMarkaCount">0 Marka</strong></article>
       <article><i class="fa-solid fa-mug-hot"></i><span>Esnafa Teslim Çay</span><strong id="merchantDeliveredTea">0 Çay</strong></article>
     </section>
@@ -173,7 +170,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=178"></script>
+  <script type="module" src="script.js?v=190"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body>
