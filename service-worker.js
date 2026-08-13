@@ -1,9 +1,9 @@
-/* R198 */
+/* R199 */
 importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
 firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
 firebase.messaging();
-const VERSION="fatih-cay-evi-r198-finans-anlik-bakiye-bahsis-yuvarlama",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r199-kredi-karti-acilis-borcu",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js",
