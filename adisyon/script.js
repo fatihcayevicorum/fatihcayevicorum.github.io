@@ -102,11 +102,11 @@ function buildDayReport(date){
   const daySales=sales.filter(s=>s.businessDate===date&&saleTimeValue(s)>=businessDayStartedAtMs);
   const productMap=new Map(),quantityMap=new Map(),brews=new Map();
   for(const brew of [...teaState.activeBrews,...teaState.history]){if(getBrewBusinessDate(brew)===date&&(Number(brew.startedAtMs)||0)>=businessDayStartedAtMs)brews.set(brew.id||`${brew.startedAtMs}`,brew)}
-  let salesTotal=0,cashTotal=0,transferTotal=0,tipTotal=0,roundingTotal=0,orderCount=0,itemCount=0,giftCount=0,merchantMarkaCount=0,merchantTopupTotal=0,merchantDeliveredTea=0;
+  let salesTotal=0,cashTotal=0,transferTotal=0,tipTotal=0,roundingTotal=0,orderCount=0,itemCount=0,giftCount=0,merchantMarkaCount=0,merchantTopupTotal=0;
   for(const sale of daySales){
     if(sale.recordType==='correction')continue;
     if(['merchant-topup','merchant-topup-correction'].includes(sale.recordType))continue
-    if(['merchant-delivery','merchant-manual-delivery'].includes(sale.recordType)){merchantDeliveredTea+=Number(sale.deliveredTeaCount)||0;continue}
+    if(['merchant-delivery','merchant-manual-delivery'].includes(sale.recordType))continue
     if(sale.recordType==='payment'){cashTotal+=Number(sale.cashAmount??sale.amount)||0;transferTotal+=Number(sale.transferAmount)||0;tipTotal+=Number(sale.tipAmount)||0;continue}
     if(sale.recordType==='credit-payment'){cashTotal+=Number(sale.cashAmount??sale.amount)||0;transferTotal+=Number(sale.transferAmount)||0;continue}
     if(sale.recordType==='credit-topup'){cashTotal+=Number(sale.cashAmount)||0;transferTotal+=Number(sale.transferAmount)||0;continue}
@@ -121,7 +121,7 @@ function buildDayReport(date){
   }
   const activeManualIncome=cashMovements.filter(m=>m.businessDate===date&&m.type==='income'&&m.automatic!==true),manualIncomeCash=activeManualIncome.filter(m=>m.account==='cash').reduce((sum,m)=>sum+(Number(m.amount)||0),0),manualIncomeBank=activeManualIncome.filter(m=>m.account==='bank').reduce((sum,m)=>sum+(Number(m.amount)||0),0);
   const products=[...productMap.values()].sort((a,b)=>a.name.localeCompare(b.name,'tr')),productQuantities=[...quantityMap.values()].sort((a,b)=>b.quantity-a.quantity||a.name.localeCompare(b.name,'tr'));
-  return{businessDate:date,businessDayStartedAtMs,salesTotal,cashTotal,transferTotal,manualIncomeCash,manualIncomeBank,cashIncomeTotal:cashTotal+manualIncomeCash,bankIncomeTotal:transferTotal+manualIncomeBank,tipTotal,roundingTotal,orderCount,itemCount,giftCount,merchantMarkaCount,merchantTopupTotal,merchantDeliveredTea,brewedPotCount:brews.size,products,productQuantities}
+  return{businessDate:date,businessDayStartedAtMs,salesTotal,cashTotal,transferTotal,manualIncomeCash,manualIncomeBank,cashIncomeTotal:cashTotal+manualIncomeCash,bankIncomeTotal:transferTotal+manualIncomeBank,tipTotal,roundingTotal,orderCount,itemCount,giftCount,merchantMarkaCount,merchantTopupTotal,brewedPotCount:brews.size,products,productQuantities}
 }
 function hasActiveBrews(state=teaState){return Array.isArray(state?.activeBrews)&&state.activeBrews.length>0}
 function activeBrewWarning(state=teaState){const count=Array.isArray(state?.activeBrews)?state.activeBrews.length:0;return count===1?'Günü kapatmadan önce aktif demliği bitirin.':`Günü kapatmadan önce ${count} aktif demliği bitirin.`}
