@@ -32,7 +32,7 @@
   <main class="page-shell">
     <section class="panel intro-panel">
       <div><p class="kicker">Stok planlama</p><h2>Sipariş Hazırla</h2><p>Hedef stoğu yazın; alınacak adet mevcut stoktan otomatik hesaplanır.</p></div>
-      <span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span>
+      <div class="intro-actions"><label class="category-filter"><span>Sipariş kategorisi</span><select id="categoryFilter"><option value="all">Tüm Ürünler</option><option value="hot">Sıcak İçecekler</option><option value="cold">Soğuk İçecekler</option><option value="snack">Atıştırmalıklar</option><option value="other">Diğer Ürünler</option></select></label><span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span></div>
     </section>
 
     <section class="panel order-panel">
@@ -52,13 +52,13 @@
   <dialog id="orderSummaryDialog" class="wide-dialog"><div class="dialog-body">
     <div class="dialog-heading"><div><p class="kicker">Sipariş özeti</p><h2 id="summaryTitle">Sipariş Listesi</h2></div><button class="icon-button" type="button" data-close="orderSummaryDialog"><i class="fa-solid fa-xmark"></i></button></div>
     <div id="summaryMeta" class="summary-meta"></div><div id="summaryTable" class="summary-table"></div>
-    <div class="dialog-actions"><button id="summaryPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="saveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Siparişi Kaydet</button></div>
+    <div class="dialog-actions"><button id="summaryWhatsappButton" class="whatsapp-button" type="button"><i class="fa-brands fa-whatsapp"></i> WhatsApp'ta Gönder</button><button id="summaryPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="saveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Siparişi Kaydet</button></div>
   </div></dialog>
 
   <dialog id="historyDialog" class="wide-dialog"><div class="dialog-body">
     <div class="dialog-heading"><div><p class="kicker">Geçmiş sipariş</p><h2 id="historyTitle">Sipariş Detayı</h2></div><button class="icon-button" type="button" data-close="historyDialog"><i class="fa-solid fa-xmark"></i></button></div>
     <div id="historyMeta" class="summary-meta"></div><div id="historyDetail" class="summary-table"></div>
-    <div class="dialog-actions"><button id="historyPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="receiveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-box-open"></i> Siparişten Gelenler</button></div>
+    <div class="dialog-actions"><button id="historyWhatsappButton" class="whatsapp-button" type="button"><i class="fa-brands fa-whatsapp"></i> WhatsApp'ta Gönder</button><button id="historyPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="receiveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-box-open"></i> Siparişten Gelenler</button></div>
   </div></dialog>
 
   <dialog id="receiveDialog" class="wide-dialog"><div class="dialog-body">
@@ -73,7 +73,7 @@
 
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=213"></script>
+  <script type="module" src="script.js?v=214"></script>
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
 </body>
