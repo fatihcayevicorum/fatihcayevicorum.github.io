@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=3">
-  <link rel="stylesheet" href="simple-stock.css?v=4">
+  <link rel="stylesheet" href="simple-stock.css?v=5">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
@@ -36,7 +36,7 @@
     <section class="panel summary-panel">
       <div class="section-heading"><div><p class="kicker">Kontrol merkezi</p><h2>Stok Özeti</h2></div><span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span></div>
       <div class="stats">
-        <article><span>Takip edilen Ürün</span><strong id="itemCount">0</strong></article>
+        <article class="filter-stat is-selected" id="itemStat" role="button" tabindex="0"><span>Takip edilen Ürün</span><strong id="itemCount">0</strong><small>Tümünü göstermek için dokun</small></article>
         <article><span>Toplam stok</span><strong id="totalUnits">0</strong></article>
         <article class="critical-stat filter-stat" id="criticalStat" role="button" tabindex="0"><span>Kritik stok</span><strong id="criticalCount">0</strong><small>Göstermek için dokun</small></article>
         <article class="empty-stat filter-stat" id="emptyStat" role="button" tabindex="0"><span>Tükenen</span><strong id="emptyCount">0</strong><small>Göstermek için dokun</small></article>
@@ -116,10 +116,19 @@
     <div class="dialog-body">
       <div class="dialog-heading"><div><p class="kicker">Ürün hareketleri</p><h2 id="historyTitle">Stok Geçmişi</h2></div><button class="icon-button" type="button" data-close="historyDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="history-summary" id="historySummary"></div>
-      <div class="history-actions"><button id="historyEntryButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Stok Girişi</button><button id="historyAdjustButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Stok Düzelt</button></div>
+      <div class="history-actions"><button id="historyEntryButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Stok Girişi</button><button id="historyAdjustButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Stok Düzelt</button><button id="historyDeleteButton" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Stoktan Sil</button></div>
       <p class="empty-copy" id="historyEmpty">Bu ürüne ait stok hareketi bulunamadı.</p>
       <div class="history-list" id="historyList"></div>
     </div>
+  </dialog>
+
+  <dialog id="deleteStockDialog" class="confirm-dialog">
+    <form method="dialog">
+      <div class="confirm-icon"><i class="fa-solid fa-trash"></i></div>
+      <h2>Stok ürünü silinsin mi?</h2>
+      <p id="deleteStockText">Bu ürün stok takibinden kaldırılacak.</p>
+      <div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="danger-button" value="confirm">Stoktan Sil</button></div>
+    </form>
   </dialog>
 
   <dialog id="barcodeDialog" class="barcode-dialog">
@@ -138,7 +147,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=7"></script>
+  <script type="module" src="script.js?v=8"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
