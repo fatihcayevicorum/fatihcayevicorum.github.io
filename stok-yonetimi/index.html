@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=3">
-  <link rel="stylesheet" href="simple-stock.css?v=5">
+  <link rel="stylesheet" href="simple-stock.css?v=6">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
@@ -48,8 +48,8 @@
         <div><p class="kicker">Canlı stok</p><h2>Stok Kartları</h2></div>
         <div class="stock-toolbar">
           <input id="stockSearch" type="search" placeholder="Ürün ara">
-          <button id="barcodeButton" class="secondary-button barcode-button" type="button"><i class="fa-solid fa-barcode"></i> Barkodla Stok Ekle</button>
-          <button id="barcodeSearchButton" class="secondary-button barcode-button" type="button"><i class="fa-solid fa-magnifying-glass"></i> Barkodlu Ürün Ara</button>
+          <button id="barcodeButton" class="secondary-button barcode-button" type="button"><i class="fa-solid fa-barcode"></i> Stok Girişi</button>
+          <button id="barcodeSearchButton" class="secondary-button barcode-button" type="button"><i class="fa-solid fa-barcode"></i> Ürün Arama</button>
           <button id="manageProductsButton" class="primary-button" type="button"><i class="fa-solid fa-box-open"></i> Stok Ürünleri</button>
         </div>
       </div>
@@ -67,12 +67,21 @@
   <dialog id="productsDialog">
     <form id="productForm">
       <div class="dialog-heading"><div><p class="kicker">Ürün tanımları</p><h2>Stok Ürünleri</h2></div><button class="icon-button" type="button" data-close="productsDialog"><i class="fa-solid fa-xmark"></i></button></div>
-      <label class="dialog-field"><span>Menüden Ürün seç</span><select id="menuProduct" required><option value="">Ürün seçin</option></select></label>
+      <div class="stock-type-select" id="stockTypeSelect"><button class="is-selected" type="button" data-stock-type="menu"><i class="fa-solid fa-utensils"></i><span>Menüye Bağlı<small>Satışta otomatik düşer</small></span></button><button type="button" data-stock-type="independent"><i class="fa-solid fa-box"></i><span>Bağımsız Ürün<small>Elle takip edilir</small></span></button></div>
+      <input id="stockProductType" type="hidden" value="menu">
+      <label class="dialog-field" id="menuProductLabel"><span>Menüden Ürün seç</span><select id="menuProduct"><option value="">Ürün seçin</option></select></label>
+      <div id="independentFields" hidden>
+        <button id="scanNewProductButton" class="scan-product-button" type="button"><i class="fa-solid fa-barcode"></i><span>Barkodla Ürün Ekle<small>Ürün bilgilerini otomatik bul</small></span></button>
+        <div class="product-lookup-preview" id="productLookupPreview" hidden><img id="lookupProductImage" alt=""><div><strong id="lookupProductTitle"></strong><span id="lookupProductInfo"></span></div></div>
+        <label class="dialog-field"><span>Ürün adı</span><input id="independentName" maxlength="90" placeholder="Ürün adını yazın"></label>
+        <div class="compact-grid"><label class="dialog-field"><span>Marka <small>(isteğe bağlı)</small></span><input id="independentBrand" maxlength="70"></label><label class="dialog-field"><span>Barkod <small>(isteğe bağlı)</small></span><input id="independentBarcode" inputmode="numeric" maxlength="32"></label></div>
+        <input id="independentImageUrl" type="hidden">
+      </div>
       <div class="compact-grid">
         <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
         <label class="dialog-field"><span>Kritik stok uyarısı</span><input id="warningThreshold" type="number" min="0" max="999999" step="1" value="10" required></label>
       </div>
-      <p class="notice">Bu Ürün Adisyonda satıldığında stoktan otomatik 1 Adet düşer.</p>
+      <p class="notice" id="productTypeNotice">Bu ürün adisyonda satıldığında stoktan otomatik 1 adet düşer.</p>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-plus"></i> Ürünü Stok Takibine Ekle</button>
       <div class="defined-products" id="definedProducts"></div>
     </form>
@@ -116,10 +125,19 @@
     <div class="dialog-body">
       <div class="dialog-heading"><div><p class="kicker">Ürün hareketleri</p><h2 id="historyTitle">Stok Geçmişi</h2></div><button class="icon-button" type="button" data-close="historyDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="history-summary" id="historySummary"></div>
-      <div class="history-actions"><button id="historyEntryButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Stok Girişi</button><button id="historyAdjustButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Stok Düzelt</button><button id="historyDeleteButton" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Stoktan Sil</button></div>
+      <div class="history-actions"><button id="historyEntryButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Stok Girişi</button><button id="historyAdjustButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Stok Düzelt</button><button id="historyLinkButton" class="secondary-button" type="button"><i class="fa-solid fa-link"></i> Menüye Bağla</button><button id="historyDeleteButton" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Stoktan Sil</button></div>
       <p class="empty-copy" id="historyEmpty">Bu ürüne ait stok hareketi bulunamadı.</p>
       <div class="history-list" id="historyList"></div>
     </div>
+  </dialog>
+
+  <dialog id="linkMenuDialog">
+    <form id="linkMenuForm">
+      <div class="dialog-heading"><div><p class="kicker">Otomatik stok düşümü</p><h2>Menü Ürününe Bağla</h2></div><button class="icon-button" type="button" data-close="linkMenuDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="notice" id="linkMenuText"></p>
+      <label class="dialog-field"><span>Menü ürünü</span><select id="linkMenuProduct" required></select></label>
+      <button class="primary-button full-button" type="submit"><i class="fa-solid fa-link"></i> Menüye Bağla</button>
+    </form>
   </dialog>
 
   <dialog id="deleteStockDialog" class="confirm-dialog">
@@ -147,7 +165,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=8"></script>
+  <script type="module" src="script.js?v=9"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
