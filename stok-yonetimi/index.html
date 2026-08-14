@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=3">
-  <link rel="stylesheet" href="simple-stock.css?v=6">
+  <link rel="stylesheet" href="simple-stock.css?v=7">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
@@ -55,6 +55,12 @@
       </div>
       <p class="empty-copy" id="stockEmpty">Henüz stok Ürünü tanımlanmadı.</p>
       <div class="stock-list" id="stockList"></div>
+    </section>
+
+    <section class="panel link-status-panel">
+      <div class="section-heading"><div><p class="kicker">Otomatik stok bağlantıları</p><h2>Menü ve Stok Bağlantıları</h2></div><span class="link-count" id="linkedProductCount">0 bağlı</span></div>
+      <p class="empty-copy" id="linkStatusEmpty">Henüz bağlantı bilgisi yok.</p>
+      <div class="link-status-list" id="linkStatusList"></div>
     </section>
 
     <section class="panel movement-panel">
@@ -125,10 +131,22 @@
     <div class="dialog-body">
       <div class="dialog-heading"><div><p class="kicker">Ürün hareketleri</p><h2 id="historyTitle">Stok Geçmişi</h2></div><button class="icon-button" type="button" data-close="historyDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="history-summary" id="historySummary"></div>
-      <div class="history-actions"><button id="historyEntryButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Stok Girişi</button><button id="historyAdjustButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Stok Düzelt</button><button id="historyLinkButton" class="secondary-button" type="button"><i class="fa-solid fa-link"></i> Menüye Bağla</button><button id="historyDeleteButton" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Stoktan Sil</button></div>
+      <div class="history-actions"><button id="historyEntryButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Stok Girişi</button><button id="historyAdjustButton" class="secondary-button" type="button"><i class="fa-solid fa-sliders"></i> Stok Düzelt</button><button id="historyEditButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Ürünü Düzenle</button><button id="historyLinkButton" class="secondary-button" type="button"><i class="fa-solid fa-link"></i> Menüye Bağla</button><button id="historyDeleteButton" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Stoktan Sil</button></div>
       <p class="empty-copy" id="historyEmpty">Bu ürüne ait stok hareketi bulunamadı.</p>
       <div class="history-list" id="historyList"></div>
     </div>
+  </dialog>
+
+  <dialog id="editProductDialog">
+    <form id="editProductForm">
+      <div class="dialog-heading"><div><p class="kicker">Ürün ve barkod bilgileri</p><h2 id="editProductTitle">Ürünü Düzenle</h2></div><button class="icon-button" type="button" data-close="editProductDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <input id="editProductId" type="hidden">
+      <label class="dialog-field"><span>Ürün adı</span><input id="editProductName" maxlength="90" required></label>
+      <div class="compact-grid"><label class="dialog-field"><span>Marka <small>(isteğe bağlı)</small></span><input id="editProductBrand" maxlength="70"></label><label class="dialog-field"><span>Barkod <small>(isteğe bağlı)</small></span><input id="editProductBarcode" inputmode="numeric" maxlength="32"></label></div>
+      <div class="compact-grid"><label class="dialog-field"><span>Bir kolideki adet</span><input id="editUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label><label class="dialog-field"><span>Kritik stok uyarısı</span><input id="editWarningThreshold" type="number" min="0" max="999999" step="1" required></label></div>
+      <p class="notice" id="editProductLinkInfo"></p>
+      <button class="primary-button full-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet</button>
+    </form>
   </dialog>
 
   <dialog id="linkMenuDialog">
@@ -165,7 +183,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=9"></script>
+  <script type="module" src="script.js?v=10"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
