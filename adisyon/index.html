@@ -43,7 +43,7 @@
     </div>
     <div class="pos-layout">
       <section class="products card">
-        <div class="product-search"><i class="fa-solid fa-magnifying-glass"></i><input id="productSearch" placeholder="Ürün ara..."></div>
+        <div class="pos-search-row"><div class="product-search"><i class="fa-solid fa-magnifying-glass"></i><input id="productSearch" placeholder="Ürün ara..."></div><button id="posBarcodeButton" class="pos-barcode-button" type="button" title="Barkodla ürün ekle" aria-label="Barkodla ürün ekle"><i class="fa-solid fa-barcode"></i></button></div>
         <div id="categoryTabs" class="category-tabs"></div><div id="productGrid" class="product-grid"></div>
         <p id="productEmpty" class="empty">Satışta Ürün bulunamadı.</p>
       </section>
@@ -81,6 +81,7 @@
 <dialog id="recentPaymentsDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Son Ödeme İşlemleri</h2><button type="button" data-close="recentPaymentsDialog">×</button></div><p class="notice">Yanlış girilen son açık Adisyon ödemesini geri alıp doğru tutarla yeniden girebilirsiniz.</p><div id="recentPaymentsList" class="recent-payments-list"></div><p id="recentPaymentsEmpty" class="empty">Bu iş gününde düzeltilebilecek açık Adisyon ödemesi yok.</p><div class="dialog-actions"><button type="button" class="primary" data-close="recentPaymentsDialog">Kapat</button></div></div></dialog>
 <dialog id="closeDayDialog"><div class="dialog-card report-card"><div class="dialog-head"><h2>Günü Kapat</h2><button type="button" data-close="closeDayDialog">×</button></div><p id="closeDayPeriod" class="notice"></p><div id="closeDayReport" class="close-day-report"></div><div class="export-actions"><button type="button" id="exportPdf" class="secondary"><i class="fa-solid fa-file-pdf"></i> PDF</button><button type="button" id="exportExcel" class="secondary"><i class="fa-solid fa-file-excel"></i> Excel</button></div><div class="close-day-warning"><i class="fa-solid fa-triangle-exclamation"></i><div><strong>İş günü kapatılacak.</strong><p>Rapor sisteme kaydedilecek ve bir sonraki iş gününe geçilecek.</p></div></div><label class="close-day-check"><input id="closeDayConfirmed" type="checkbox"><span>Raporu kontrol ettim, bu iş gününü kapatmak istiyorum.</span></label><div class="dialog-actions"><button type="button" class="secondary" data-close="closeDayDialog">Vazgeç</button><button type="button" id="confirmCloseDay" class="danger" disabled>Günü Kesin Olarak Kapat</button></div></div></dialog>
 <dialog id="moveDialog"><form id="moveForm" class="dialog-card"><div class="dialog-head"><h2>Taşı veya Birleştir</h2><button type="button" data-close="moveDialog">×</button></div><label>Hedef masa / Adisyon<select id="moveTarget" required></select></label><p class="notice">Hedef boşsa Adisyon taşınır; doluysa iki Adisyon birleştirilir.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="moveDialog">Vazgeç</button><button class="primary">Devam Et</button></div></form></dialog>
+<dialog id="posBarcodeDialog" class="pos-barcode-dialog"><section class="dialog-card barcode-card"><div class="dialog-head"><div><p class="barcode-kicker">Hızlı ürün ekleme</p><h2>Barkod Okut</h2></div><button type="button" id="closePosBarcode" aria-label="Kapat">×</button></div><div class="pos-camera-frame"><video id="posBarcodeVideo" playsinline muted></video><span class="pos-scan-line"></span><button id="switchPosCamera" class="pos-switch-camera" type="button"><i class="fa-solid fa-camera-rotate"></i> Kamerayı Çevir</button><small id="posCameraStatus">Kamera hazırlanıyor…</small></div><p id="posBarcodeResult" class="pos-barcode-result" role="status">Barkodu kameraya gösterin.</p><div class="pos-manual-barcode"><input id="posBarcodeInput" inputmode="numeric" autocomplete="off" placeholder="Barkodu elle yazın"><button id="usePosBarcode" type="button">Ekle</button></div><div class="dialog-actions"><button type="button" id="finishPosBarcode" class="primary">Tamam</button></div></section></dialog>
 <dialog id="closedOrdersHistoryDialog" class="history-modal-dialog">
   <section class="history-modal-card" aria-label="Kapatılan Adisyonlar">
     <div class="history-modal-head">
@@ -93,7 +94,7 @@
   </section>
 </dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=196"></script>
+<script type="module" src="script.js?v=208"></script>
 <script type="module" src="internal-consumption.js?v=4"></script>
 <script type="module" src="quick-cash.js?v=197"></script>
 <script type="module" src="history-modal.js?v=1861"></script>
