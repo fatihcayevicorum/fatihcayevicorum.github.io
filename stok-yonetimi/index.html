@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=3">
-  <link rel="stylesheet" href="simple-stock.css?v=8">
+  <link rel="stylesheet" href="simple-stock.css?v=9">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
@@ -186,6 +186,7 @@
     <div class="dialog-body">
       <div class="dialog-heading"><div><p class="kicker" id="barcodeKicker">Hızlı stok girişi</p><h2 id="barcodeTitle">Barkodla Stok Ekle</h2></div><button class="icon-button" type="button" data-close="barcodeDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="camera-frame" id="cameraFrame"><video id="barcodeVideo" playsinline muted></video><button id="switchCameraButton" class="camera-switch" type="button" title="Kamerayı değiştir"><i class="fa-solid fa-camera-rotate"></i><span>Kamerayı Çevir</span></button><div class="scan-line"></div><span id="cameraStatus">Kamera hazırlanıyor…</span></div>
+      <label class="camera-device-row" id="cameraDeviceRow" hidden><span><i class="fa-solid fa-camera"></i> Kamera seç</span><select id="cameraDeviceSelect"></select></label>
       <label class="dialog-field manual-barcode"><span>Barkodu elle de girebilirsiniz</span><div><input id="barcodeInput" inputmode="numeric" autocomplete="off" placeholder="Barkod numarası"><button id="useBarcodeButton" class="secondary-button" type="button">Bul</button></div></label>
       <div id="barcodeMatch" class="barcode-match" hidden>
         <p id="barcodeMessage"></p>
@@ -198,7 +199,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=11"></script>
+  <script type="module" src="script.js?v=12"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
