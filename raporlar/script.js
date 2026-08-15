@@ -5,10 +5,10 @@ import{firebaseConfig}from"../assets/js/firebase-config.js";
 import{hasPanelAccess}from"../assets/js/admin-access.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-const salesCol=collection(db,"adminSales"),closingsCol=collection(db,"adminDailyClosings"),cashMovementsCol=collection(db,"adminCashMovements"),stocksCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),internalConsumptionsCol=collection(db,"adminInternalConsumptions"),menuRef=doc(db,"publicMenu","catalog"),settingsRef=doc(db,"adminAppSettings","pos");
+const salesCol=collection(db,"adminSales"),closingsCol=collection(db,"adminDailyClosings"),stocksCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),internalConsumptionsCol=collection(db,"adminInternalConsumptions"),menuRef=doc(db,"publicMenu","catalog"),settingsRef=doc(db,"adminAppSettings","pos");
 const el={periodButtons:$("periodButtons"),dateRange:$("dateRange"),startDate:$("startDate"),endDate:$("endDate"),applyRange:$("applyRange"),periodLabel:$("periodLabel"),connection:$("connection"),salesTotal:$("salesTotal"),cashTotal:$("cashTotal"),transferTotal:$("transferTotal"),cardTotal:$("cardTotal"),cashExpenseTotal:$("cashExpenseTotal"),bankExpenseTotal:$("bankExpenseTotal"),creditCardExpenseTotal:$("creditCardExpenseTotal"),expenseTotal:$("expenseTotal"),itemCount:$("itemCount"),orderCount:$("orderCount"),giftCount:$("giftCount"),tipTotal:$("tipTotal"),roundingTotal:$("roundingTotal"),categoryTabs:$("categoryTabs"),productSearch:$("productSearch"),productReport:$("productReport"),productEmpty:$("productEmpty"),rankingList:$("rankingList"),rankingEmpty:$("rankingEmpty"),categoryReport:$("categoryReport"),purchaseProductCount:$("purchaseProductCount"),purchasePackageCount:$("purchasePackageCount"),purchaseUnitCount:$("purchaseUnitCount"),allPurchaseTotal:$("allPurchaseTotal"),purchaseList:$("purchaseList"),purchaseEmpty:$("purchaseEmpty"),internalRecordCount:$("internalRecordCount"),internalProductCount:$("internalProductCount"),internalQuantity:$("internalQuantity"),internalConsumptionList:$("internalConsumptionList"),internalConsumptionEmpty:$("internalConsumptionEmpty"),stockProductSelect:$("stockProductSelect"),stockReportHint:$("stockReportHint"),stockReportContent:$("stockReportContent"),stockPackages:$("stockPackages"),stockReceived:$("stockReceived"),stockPurchaseTotal:$("stockPurchaseTotal"),stockAverageCost:$("stockAverageCost"),stockSold:$("stockSold"),stockRevenue:$("stockRevenue"),stockProfit:$("stockProfit"),stockRemaining:$("stockRemaining"),stockEntryCount:$("stockEntryCount"),stockEntryList:$("stockEntryList"),stockEntryEmpty:$("stockEntryEmpty"),closingList:$("closingList"),closingEmpty:$("closingEmpty"),closingDetailDialog:$("closingDetailDialog"),closingDetailTitle:$("closingDetailTitle"),closingDetailPeriod:$("closingDetailPeriod"),closingDetailSummary:$("closingDetailSummary"),closingDetailProducts:$("closingDetailProducts"),closingDetailEmpty:$("closingDetailEmpty"),closingProductCount:$("closingProductCount"),closingDetailPdf:$("closingDetailPdf"),closingDetailExcel:$("closingDetailExcel"),closeClosingDetail:$("closeClosingDetail"),closeClosingDetailBottom:$("closeClosingDetailBottom"),exportPdf:$("exportPdf"),exportExcel:$("exportExcel"),logoutButton:$("logoutButton"),toast:$("toast")};
 el.internalCost=$("internalCost");
-let sales=[],closings=[],cashMovements=[],stocks=[],stockMovements=[],internalConsumptions=[],catalog={categories:[],items:[]},period="today",category="all",range={start:today(),end:today()},currentBusinessDate=today(),currentBusinessDayStartedAtMs=0,report=emptyReport(),selectedClosing=null,loaded=0,toastTimer;
+let sales=[],closings=[],stocks=[],stockMovements=[],internalConsumptions=[],catalog={categories:[],items:[]},period="today",category="all",range={start:today(),end:today()},currentBusinessDate=today(),currentBusinessDayStartedAtMs=0,report=emptyReport(),selectedClosing=null,loaded=0,toastTimer;
 
 el.periodButtons.onclick=e=>{const button=e.target.closest("[data-period]");if(!button)return;period=button.dataset.period;[...el.periodButtons.children].forEach(x=>x.classList.toggle("active",x===button));el.dateRange.hidden=period!=="custom";if(period!=="custom"){range=periodRange(period);render()}};
 el.applyRange.onclick=()=>{if(!el.startDate.value||!el.endDate.value)return show("Başlangıç ve bitiş tarihini seçin.");if(el.startDate.value>el.endDate.value)return show("Başlangıç tarihi bitişten sonra olamaz.");range={start:el.startDate.value,end:el.endDate.value};render()};
@@ -30,7 +30,6 @@ onAuthStateChanged(auth,async user=>{if(!user){location.replace("../yonetici-gir
 function subscribe(){
   onSnapshot(salesCol,s=>{sales=s.docs.map(d=>({id:d.id,...d.data()}));ready()},fail);
   onSnapshot(closingsCol,s=>{closings=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(b.businessDate||b.id).localeCompare(String(a.businessDate||a.id)));ready()},fail);
-  onSnapshot(cashMovementsCol,s=>{cashMovements=s.docs.map(d=>({id:d.id,...d.data(),automatic:d.data().automatic===true}));ready()},fail);
   onSnapshot(menuRef,s=>{const d=s.data()||{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[]};ready()},fail);
   onSnapshot(stocksCol,s=>{stocks=s.docs.map(d=>({id:d.id,...d.data()}));ready()},fail);
   onSnapshot(stockMovesCol,s=>{stockMovements=s.docs.map(d=>({id:d.id,...d.data()}));ready()},fail);
@@ -64,44 +63,8 @@ function buildReport(){
       current.quantity+=qty;current.total+=qty*price;products.set(id,current);
     }
   }
-  const finance=financeTotalsForRange();
-  result.cashTotal=finance.cashIncome;
-  result.transferTotal=finance.bankIncome;
-  result.cardTotal=finance.cardIncome;
-  result.cashExpenseTotal=finance.cashExpense;
-  result.bankExpenseTotal=finance.bankExpense;
-  result.creditCardExpenseTotal=finance.creditCardExpense;
-  result.expenseTotal=finance.expenseTotal;
   result.products=[...products.values()].sort((a,b)=>b.quantity-a.quantity||b.total-a.total);
   return result;
-}
-function financeTotalsForRange(){
-  const rows=[...cashMovements,...automaticCashMovements()].filter(m=>m.businessDate>=range.start&&m.businessDate<=range.end);
-  return rows.reduce((total,movement)=>{
-    const amount=num(movement.amount);
-    if(movement.type==="income"){
-      if(movement.account==="cash")total.cashIncome+=amount;
-      if(movement.account==="bank")total.bankIncome+=amount;
-      if(movement.account==="card")total.cardIncome+=amount;
-    }
-    if(movement.type==="expense"){
-      total.expenseTotal+=amount;
-      if(movement.account==="cash")total.cashExpense+=amount;
-      if(movement.account==="bank")total.bankExpense+=amount;
-      if(movement.account==="creditCard"||movement.account==="card")total.creditCardExpense+=amount;
-    }
-    return total;
-  },{cashIncome:0,bankIncome:0,cardIncome:0,cashExpense:0,bankExpense:0,creditCardExpense:0,expenseTotal:0});
-}
-function automaticCashMovements(){
-  const rows=[];
-  for(const closing of closings){
-    const businessDate=closing.businessDate;
-    if(!businessDate||businessDate<"2026-08-01"||closing.accountingMode==="report-only"||closing.cashTransferDisabled===true)continue;
-    const values=[["cash",closing.cashTotal],["bank",closing.transferTotal],["card",closing.cardTotal]];
-    for(const [account,value] of values)if(num(value))rows.push({id:`closing-${account}-${closing.id}`,type:"income",account,amount:num(value),businessDate,automatic:true});
-  }
-  return rows;
 }
 function render(){
   report=buildReport();
@@ -154,11 +117,11 @@ function closeClosingDetail(){el.closingDetailDialog.close();selectedClosing=nul
 function exportClosingDetailPdf(){if(!selectedClosing)return;const c=selectedClosing,rows=(c.products||[]).map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${formatNumber(p.quantity)}</td><td>${money(p.unitPrice)}</td><td>${money(p.total)}</td></tr>`).join(""),body=`<table><thead><tr><th>No</th><th>Ürün</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead><tbody>${rows}</tbody></table>`;openCorporatePdf(`${formatDate(c.businessDate||c.id)} Gün Sonu Raporu`,body,[["Demlenen Çay",`${formatNumber(c.brewedPotCount)} Demlik`],["Nakit Satış",money(closingCashSales(c))],["Banka Satış",money(closingBank(c))],["Bahşiş",money(c.tipTotal)],["Yuvarlama",money(c.roundingTotal)],["Toplam Satış",money(closingNetSales(c))]])}
 function exportClosingDetailExcel(){if(!selectedClosing)return;const c=selectedClosing,rows=(c.products||[]).map(p=>`<Row><Cell><Data ss:Type="String">${xml(p.name)}</Data></Cell><Cell><Data ss:Type="Number">${num(p.quantity)}</Data></Cell><Cell><Data ss:Type="Number">${num(p.unitPrice)}</Data></Cell><Cell><Data ss:Type="Number">${num(p.total)}</Data></Cell></Row>`).join(""),summary=[["Demlenen Çay",num(c.brewedPotCount)],["Toplam Satış",closingNetSales(c)],["Nakit Satış",closingCashSales(c)],["Banka Satış",closingBank(c)],["Bahşiş",num(c.tipTotal)],["Hesap Yuvarlama",num(c.roundingTotal)],["Kapanan Adisyon",num(c.orderCount)]].map(x=>`<Row><Cell><Data ss:Type="String">${x[0]}</Data></Cell><Cell/><Cell/><Cell><Data ss:Type="Number">${x[1]}</Data></Cell></Row>`).join(""),content=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Gün Sonu"><Table><Row><Cell><Data ss:Type="String">Ürün</Data></Cell><Cell><Data ss:Type="String">Adet</Data></Cell><Cell><Data ss:Type="String">Birim Fiyat</Data></Cell><Cell><Data ss:Type="String">Toplam</Data></Cell></Row>${rows}${summary}</Table></Worksheet></Workbook>`;download(content,`gun-sonu-${c.businessDate||c.id}.xls`,"application/vnd.ms-excel")}
 
-function exportPdf(){const rows=report.products.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${esc(categoryName(p.categoryId))}</td><td>${formatNumber(p.quantity)}</td><td>${money(p.total)}</td></tr>`).join(""),body=`<table><thead><tr><th>No</th><th>Ürün</th><th>Kategori</th><th>Adet</th><th>Toplam</th></tr></thead><tbody>${rows}</tbody></table>`;openCorporatePdf(`Satış Raporu — ${formatDate(range.start)}${range.start===range.end?"":` / ${formatDate(range.end)}`}`,body,[["Nakit Gelir",money(report.cashTotal)],["Banka Geliri",money(report.transferTotal)],["Kart / POS Geliri",money(report.cardTotal)],["Bahşiş",money(report.tipTotal)],["Eksi Yuvarlama",money(report.roundingTotal)],["Nakit Gider",money(report.cashExpenseTotal)],["Banka Gideri",money(report.bankExpenseTotal)],["Kredi Kartı Gideri",money(report.creditCardExpenseTotal)],["Toplam Gider",money(report.expenseTotal)],["Toplam Satış",money(report.salesTotal)]])}
-function exportExcel(){const rows=report.products.map(p=>`<Row><Cell><Data ss:Type="String">${xml(p.name)}</Data></Cell><Cell><Data ss:Type="String">${xml(categoryName(p.categoryId))}</Data></Cell><Cell><Data ss:Type="Number">${p.quantity}</Data></Cell><Cell><Data ss:Type="Number">${p.total}</Data></Cell></Row>`).join(""),summary=[["Toplam Satış",report.salesTotal],["Nakit Gelir",report.cashTotal],["Banka Geliri",report.transferTotal],["Kart / POS Geliri",report.cardTotal],["Bahşiş",report.tipTotal],["Eksi Yuvarlama",report.roundingTotal],["Nakit Gider",report.cashExpenseTotal],["Banka Gideri",report.bankExpenseTotal],["Kredi Kartı Gideri",report.creditCardExpenseTotal],["Toplam Gider",report.expenseTotal],["İkram Adedi",report.giftCount],["Kapanan Adisyon",report.orderCount]].map(x=>`<Row><Cell><Data ss:Type="String">${x[0]}</Data></Cell><Cell/><Cell/><Cell><Data ss:Type="Number">${x[1]}</Data></Cell></Row>`).join(""),content=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Satış Raporu"><Table><Row><Cell><Data ss:Type="String">Ürün</Data></Cell><Cell><Data ss:Type="String">Kategori</Data></Cell><Cell><Data ss:Type="String">Adet</Data></Cell><Cell><Data ss:Type="String">Toplam</Data></Cell></Row>${rows}${summary}</Table></Worksheet></Workbook>`;download(content,`satis-raporu-${range.start}-${range.end}.xls`,"application/vnd.ms-excel")}
+function exportPdf(){const rows=report.products.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${esc(categoryName(p.categoryId))}</td><td>${formatNumber(p.quantity)}</td><td>${money(p.total)}</td></tr>`).join(""),body=`<table><thead><tr><th>No</th><th>Ürün</th><th>Kategori</th><th>Adet</th><th>Toplam</th></tr></thead><tbody>${rows}</tbody></table>`;openCorporatePdf(`Satış Raporu — ${formatDate(range.start)}${range.start===range.end?"":` / ${formatDate(range.end)}`}`,body,[["Nakit Gelir",money(report.cashTotal)],["Banka Geliri",money(report.transferTotal)],["Bahşiş",money(report.tipTotal)],["Yuvarlama",money(report.roundingTotal)],["İkram",`${formatNumber(report.giftCount)} Adet`],["Toplam Satış",money(report.salesTotal)]])}
+function exportExcel(){const rows=report.products.map(p=>`<Row><Cell><Data ss:Type="String">${xml(p.name)}</Data></Cell><Cell><Data ss:Type="String">${xml(categoryName(p.categoryId))}</Data></Cell><Cell><Data ss:Type="Number">${p.quantity}</Data></Cell><Cell><Data ss:Type="Number">${p.total}</Data></Cell></Row>`).join(""),summary=[["Toplam Satış",report.salesTotal],["Nakit Gelir",report.cashTotal],["Banka Geliri",report.transferTotal],["Bahşiş",report.tipTotal],["Hesap Yuvarlama",report.roundingTotal],["İkram Adedi",report.giftCount],["Kapanan Adisyon",report.orderCount]].map(x=>`<Row><Cell><Data ss:Type="String">${x[0]}</Data></Cell><Cell/><Cell/><Cell><Data ss:Type="Number">${x[1]}</Data></Cell></Row>`).join(""),content=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Satış Raporu"><Table><Row><Cell><Data ss:Type="String">Ürün</Data></Cell><Cell><Data ss:Type="String">Kategori</Data></Cell><Cell><Data ss:Type="String">Adet</Data></Cell><Cell><Data ss:Type="String">Toplam</Data></Cell></Row>${rows}${summary}</Table></Worksheet></Workbook>`;download(content,`satis-raporu-${range.start}-${range.end}.xls`,"application/vnd.ms-excel")}
 
 function periodRange(type){const d=new Date(`${today()}T12:00:00`);if(type==="week"){const day=(d.getDay()+6)%7,start=new Date(d);start.setDate(d.getDate()-day);return{start:iso(start),end:iso(d)}}if(type==="month")return{start:`${today().slice(0,7)}-01`,end:today()};return{start:today(),end:today()}}
-function emptyReport(){return{salesTotal:0,cashTotal:0,transferTotal:0,cardTotal:0,cashExpenseTotal:0,bankExpenseTotal:0,creditCardExpenseTotal:0,expenseTotal:0,itemCount:0,orderCount:0,giftCount:0,tipTotal:0,roundingTotal:0,merchantMarkaCount:0,merchantTopupTotal:0,products:[]}}
+function emptyReport(){return{salesTotal:0,cashTotal:0,transferTotal:0,cardTotal:0,itemCount:0,orderCount:0,giftCount:0,tipTotal:0,roundingTotal:0,merchantMarkaCount:0,merchantTopupTotal:0,products:[]}}
 function sumBillableItems(items){return(items||[]).filter(x=>!x.complimentary).reduce((sum,x)=>sum+num(x.unitPrice)*num(x.quantity),0)}
 function movementDate(x){return String(x.operationDate||dateFromTimestamp(x.createdAt)||"")}
 function movementPackages(x,stock){if(num(x.packageCount)>0)return num(x.packageCount);if(x.enteredUnit&&(x.enteredUnit===stock.packageUnit||x.enteredUnit==="koli"))return num(x.enteredAmount);return num(x.amount)/Math.max(1,num(x.unitsPerPackage)||num(stock.unitsPerPackage)||1)}
