@@ -79,10 +79,10 @@
   <dialog id="productsDialog">
     <form id="productForm">
       <div class="dialog-heading"><div><p class="kicker">Ürün tanımları</p><h2>Stok Ürünleri</h2></div><button class="icon-button" type="button" data-close="productsDialog"><i class="fa-solid fa-xmark"></i></button></div>
-      <div class="stock-type-select" id="stockTypeSelect"><button class="is-selected" type="button" data-stock-type="menu"><i class="fa-solid fa-utensils"></i><span>Menüye Bağlı<small>Satışta otomatik düşer</small></span></button><button type="button" data-stock-type="independent"><i class="fa-solid fa-box"></i><span>Bağımsız Ürün<small>Elle takip edilir</small></span></button></div>
-      <input id="stockProductType" type="hidden" value="menu">
-      <label class="dialog-field" id="menuProductLabel"><span>Menüden Ürün seç</span><select id="menuProduct"><option value="">Ürün seçin</option></select></label>
-      <div id="independentFields" hidden>
+      <div class="stock-type-select" id="stockTypeSelect"><button type="button" data-stock-type="menu"><i class="fa-solid fa-utensils"></i><span>Menüye Bağlı<small>Satışta otomatik düşer</small></span></button><button class="is-selected" type="button" data-stock-type="independent"><i class="fa-solid fa-box"></i><span>Bağımsız Ürün<small>Elle takip edilir</small></span></button></div>
+      <input id="stockProductType" type="hidden" value="independent">
+      <label class="dialog-field" id="menuProductLabel" hidden><span>Menüden Ürün seç</span><select id="menuProduct"><option value="">Ürün seçin</option></select></label>
+      <div id="independentFields">
         <button id="scanNewProductButton" class="scan-product-button" type="button"><i class="fa-solid fa-barcode"></i><span>Barkodla Ürün Ekle<small>Ürün bilgilerini otomatik bul</small></span></button>
         <div class="product-lookup-preview" id="productLookupPreview" hidden><img id="lookupProductImage" alt=""><div><strong id="lookupProductTitle"></strong><span id="lookupProductInfo"></span></div></div>
         <label class="dialog-field"><span>Ürün adı</span><input id="independentName" maxlength="90" placeholder="Ürün adını yazın"></label>
@@ -93,7 +93,7 @@
         <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
         <label class="dialog-field"><span>Kritik stok uyarısı</span><input id="warningThreshold" type="number" min="0" max="999999" step="1" value="10" required></label>
       </div>
-      <p class="notice" id="productTypeNotice">Bu ürün adisyonda satıldığında stoktan otomatik 1 adet düşer.</p>
+      <p class="notice" id="productTypeNotice">Bu bağımsız ürün yalnız stokta takip edilir; adisyonda otomatik düşmez.</p>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-plus"></i> Ürünü Stok Takibine Ekle</button>
       <div class="defined-products" id="definedProducts"></div>
     </form>
@@ -137,7 +137,7 @@
     <div class="dialog-body">
       <div class="dialog-heading"><div><p class="kicker">Ürün hareketleri</p><h2 id="historyTitle">Stok Geçmişi</h2></div><button class="icon-button" type="button" data-close="historyDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="history-summary" id="historySummary"></div>
-      <div class="history-actions"><button id="historyEntryButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Stok Girişi</button><button id="historyAdjustButton" class="secondary-button" type="button"><i class="fa-solid fa-sliders"></i> Stok Düzelt</button><button id="historyEditButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Ürünü Düzenle</button><button id="historyLinkButton" class="secondary-button" type="button"><i class="fa-solid fa-link"></i> Menüye Bağla</button><button id="historyDeleteButton" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Stoktan Sil</button></div>
+      <div class="history-actions"><button id="historyEntryButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Stok Girişi</button><button id="historyAdjustButton" class="secondary-button" type="button"><i class="fa-solid fa-sliders"></i> Stok Düzelt</button><button id="historyEditButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Ürünü Düzenle</button><button id="historyLinkButton" class="secondary-button" type="button"><i class="fa-solid fa-link"></i> Menü Bağlantısı</button><button id="historyDeleteButton" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Stoktan Sil</button></div>
       <p class="empty-copy" id="historyEmpty">Bu ürüne ait stok hareketi bulunamadı.</p>
       <div class="history-list" id="historyList"></div>
     </div>
@@ -166,10 +166,10 @@
 
   <dialog id="linkMenuDialog">
     <form id="linkMenuForm">
-      <div class="dialog-heading"><div><p class="kicker">Otomatik stok düşümü</p><h2>Menü Ürününe Bağla</h2></div><button class="icon-button" type="button" data-close="linkMenuDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="dialog-heading"><div><p class="kicker">Otomatik stok düşümü</p><h2>Menü Bağlantısı</h2></div><button class="icon-button" type="button" data-close="linkMenuDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <p class="notice" id="linkMenuText"></p>
-      <label class="dialog-field"><span>Menü ürünü</span><select id="linkMenuProduct" required></select></label>
-      <button class="primary-button full-button" type="submit"><i class="fa-solid fa-link"></i> Menüye Bağla</button>
+      <label class="dialog-field"><span>Menü ürünü</span><select id="linkMenuProduct"></select></label>
+      <button class="primary-button full-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Bağlantıyı Kaydet</button>
     </form>
   </dialog>
 
@@ -198,7 +198,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=13"></script>
+  <script type="module" src="script.js?v=14"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
