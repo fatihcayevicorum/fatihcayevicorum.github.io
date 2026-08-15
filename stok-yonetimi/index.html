@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=3">
-  <link rel="stylesheet" href="simple-stock.css?v=7">
+  <link rel="stylesheet" href="simple-stock.css?v=8">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
@@ -41,6 +41,12 @@
         <article class="critical-stat filter-stat" id="criticalStat" role="button" tabindex="0"><span>Kritik stok</span><strong id="criticalCount">0</strong><small>Göstermek için dokun</small></article>
         <article class="empty-stat filter-stat" id="emptyStat" role="button" tabindex="0"><span>Tükenen</span><strong id="emptyCount">0</strong><small>Göstermek için dokun</small></article>
       </div>
+      <div class="stock-value-cards">
+        <article class="stock-value-card capital-card"><span><i class="fa-solid fa-coins"></i> Sermaye</span><strong id="stockCapital">₺0</strong><small>Eldeki stokların alış değeri</small></article>
+        <article class="stock-value-card sales-card"><span><i class="fa-solid fa-tags"></i> Tahmini Satış Değeri</span><strong id="estimatedSalesValue">₺0</strong><small>Menü fiyatlarına göre</small></article>
+        <article class="stock-value-card profit-card"><span><i class="fa-solid fa-chart-line"></i> Tahmini Brüt Kâr</span><strong id="estimatedGrossProfit">₺0</strong><small>Satış değeri − sermaye</small></article>
+      </div>
+      <button id="missingCostButton" class="missing-cost-button" type="button" hidden><i class="fa-solid fa-triangle-exclamation"></i><span><b id="missingCostText">Alış fiyatı eksik: 0 ürün</b><small>Eksik fiyatlara göre hesaplandı • Tamamlamak için dokun</small></span><i class="fa-solid fa-chevron-right"></i></button>
     </section>
 
     <section class="panel list-panel">
@@ -149,6 +155,15 @@
     </form>
   </dialog>
 
+  <dialog id="missingCostDialog" class="missing-cost-dialog">
+    <div class="dialog-body">
+      <div class="dialog-heading"><div><p class="kicker">Sermaye hesabı</p><h2>Alış Fiyatı Eksik Ürünler</h2></div><button class="icon-button" type="button" data-close="missingCostDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="notice">Birim alış fiyatını adet başına TL olarak girin. Bu işlem stok miktarını, kasayı veya stok hareketlerini değiştirmez.</p>
+      <div class="missing-cost-list" id="missingCostList"></div>
+      <button id="saveMissingCostsButton" class="primary-button full-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Alış Fiyatlarını Kaydet</button>
+    </div>
+  </dialog>
+
   <dialog id="linkMenuDialog">
     <form id="linkMenuForm">
       <div class="dialog-heading"><div><p class="kicker">Otomatik stok düşümü</p><h2>Menü Ürününe Bağla</h2></div><button class="icon-button" type="button" data-close="linkMenuDialog"><i class="fa-solid fa-xmark"></i></button></div>
@@ -183,7 +198,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=10"></script>
+  <script type="module" src="script.js?v=11"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
