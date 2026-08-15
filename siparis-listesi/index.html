@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=212">
+  <link rel="stylesheet" href="style.css?v=220">
 </head>
 <body>
   <header class="app-header"><div class="header-inner">
@@ -31,15 +31,15 @@
 
   <main class="page-shell">
     <section class="panel intro-panel">
-      <div><p class="kicker">Stok planlama</p><h2>Sipariş Hazırla</h2><p>Hedef stoğu yazın; alınacak adet mevcut stoktan otomatik hesaplanır.</p></div>
+      <div><p class="kicker">Stok planlama</p><h2>Sipariş Hazırla</h2><p>Sipariş miktarını yazın; Koli veya Adet seçin.</p></div>
       <span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span>
     </section>
 
     <section class="panel order-panel">
-      <div class="order-head order-grid"><strong>Ürün İsmi</strong><strong>Mevcut</strong><strong>Hedef Stok</strong><strong>Alınacak</strong></div>
+      <div class="order-head order-grid"><strong>Ürün</strong><strong>Stok Adedi</strong><strong>Sipariş</strong><strong>Birim</strong></div>
       <p class="empty-copy" id="stockEmpty">Stok ürünleri yükleniyor…</p>
       <div id="categoryLists"></div>
-      <div class="create-bar"><div><span>Listeye girecek ürün</span><strong id="selectedCount">0</strong></div><div><span>Toplam alınacak</span><strong id="selectedUnits">0 Adet</strong></div><button id="createOrderButton" class="primary-button" type="button" disabled><i class="fa-solid fa-file-circle-plus"></i> Sipariş Listesi Oluştur</button></div>
+      <div class="create-bar"><div><span>Listeye girecek ürün</span><strong id="selectedCount">0</strong></div><div><span>Sipariş kalemi</span><strong id="selectedUnits">0 Kalem</strong></div><button id="createOrderButton" class="primary-button" type="button" disabled><i class="fa-solid fa-file-circle-plus"></i> Sipariş Listesi Oluştur</button></div>
     </section>
 
     <section class="panel history-panel">
@@ -52,28 +52,36 @@
   <dialog id="orderSummaryDialog" class="wide-dialog"><div class="dialog-body">
     <div class="dialog-heading"><div><p class="kicker">Sipariş özeti</p><h2 id="summaryTitle">Sipariş Listesi</h2></div><button class="icon-button" type="button" data-close="orderSummaryDialog"><i class="fa-solid fa-xmark"></i></button></div>
     <div id="summaryMeta" class="summary-meta"></div><div id="summaryTable" class="summary-table"></div>
-    <div class="dialog-actions"><button id="summaryPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="saveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Siparişi Kaydet</button></div>
+    <div class="dialog-actions"><button id="summaryWhatsappButton" class="secondary-button" type="button"><i class="fa-brands fa-whatsapp"></i> WhatsApp'ta Gönder</button><button id="summaryPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="saveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Siparişi Kaydet</button></div>
   </div></dialog>
 
   <dialog id="historyDialog" class="wide-dialog"><div class="dialog-body">
     <div class="dialog-heading"><div><p class="kicker">Geçmiş sipariş</p><h2 id="historyTitle">Sipariş Detayı</h2></div><button class="icon-button" type="button" data-close="historyDialog"><i class="fa-solid fa-xmark"></i></button></div>
     <div id="historyMeta" class="summary-meta"></div><div id="historyDetail" class="summary-table"></div>
-    <div class="dialog-actions"><button id="historyPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="receiveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-box-open"></i> Siparişten Gelenler</button></div>
+    <div class="dialog-actions"><button id="historyWhatsappButton" class="secondary-button" type="button"><i class="fa-brands fa-whatsapp"></i> WhatsApp'ta Gönder</button><button id="historyPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="historyEditOrderButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Siparişi Düzenle</button><button id="historyDeleteOrderButton" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Siparişi Sil</button><button id="receiveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-box-open"></i> Siparişten Gelenler</button></div>
+  </div></dialog>
+
+  <dialog id="editOrderDialog" class="wide-dialog"><div class="dialog-body">
+    <div class="dialog-heading"><div><p class="kicker">Sipariş düzenleme</p><h2>Sipariş Miktarlarını Düzenle</h2></div><button class="icon-button" type="button" data-close="editOrderDialog"><i class="fa-solid fa-xmark"></i></button></div>
+    <p class="notice">Sipariş miktarını ve birimini değiştirin. Henüz gelmeyen bir ürünü 0 yaparak listeden çıkarabilirsiniz.</p>
+    <div class="edit-order-table" id="editOrderTable"></div>
+    <div class="dialog-actions"><button class="secondary-button" type="button" data-close="editOrderDialog">Vazgeç</button><button id="saveEditOrderButton" class="primary-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet</button></div>
   </div></dialog>
 
   <dialog id="receiveDialog" class="wide-dialog"><div class="dialog-body">
     <div class="dialog-heading"><div><p class="kicker">Teslimat kaydı</p><h2>Siparişten Gelenler</h2></div><button class="icon-button" type="button" data-close="receiveDialog"><i class="fa-solid fa-xmark"></i></button></div>
-    <p class="notice">Bu teslimatta gelen adetleri yazın. Kaydedilen miktarlar stoklara otomatik eklenecek.</p>
+    <p class="notice">Bu teslimatta gelen Koli veya Adet miktarını yazın. Bu işlem yalnızca sipariş takibini günceller; stok miktarlarını değiştirmez.</p>
     <div class="receive-table" id="receiveTable"></div>
-    <div class="dialog-actions"><button class="secondary-button" type="button" data-close="receiveDialog">Vazgeç</button><button id="saveReceiptButton" class="primary-button" type="button"><i class="fa-solid fa-check"></i> Gelenleri Stoka Ekle</button></div>
+    <div class="dialog-actions"><button class="secondary-button" type="button" data-close="receiveDialog">Vazgeç</button><button id="saveReceiptButton" class="primary-button" type="button"><i class="fa-solid fa-check"></i> Gelenleri Kaydet</button></div>
   </div></dialog>
 
   <dialog id="confirmOrderDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-clipboard-check"></i></div><h2>Sipariş kaydedilsin mi?</h2><p>Bu liste geçmiş siparişlere eklenecek.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="primary-button" value="confirm">Kaydet</button></div></form></dialog>
-  <dialog id="confirmReceiptDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-box-open"></i></div><h2>Gelen ürünler stoka eklensin mi?</h2><p id="confirmReceiptText">Girilen adetler stoklara eklenecek.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="primary-button" value="confirm">Stoka Ekle</button></div></form></dialog>
+  <dialog id="confirmReceiptDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-box-open"></i></div><h2>Gelen ürünler kaydedilsin mi?</h2><p id="confirmReceiptText">Girilen adetler yalnızca sipariş takibine kaydedilecek.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="primary-button" value="confirm">Kaydet</button></div></form></dialog>
+  <dialog id="confirmDeleteOrderDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon is-danger"><i class="fa-solid fa-trash"></i></div><h2>Sipariş silinsin mi?</h2><p>Bu sipariş geçmiş listelerden kalıcı olarak kaldırılacak. Stoklar etkilenmeyecek.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="danger-button" value="confirm">Siparişi Sil</button></div></form></dialog>
 
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=212"></script>
+  <script type="module" src="script.js?v=220"></script>
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
 </body>
