@@ -25,7 +25,7 @@ const CORE=[
   "./menu-yonetimi/","./menu-yonetimi/index.html","./menu-yonetimi/style.css","./menu-yonetimi/script.js",
   "./ana-sayfa-yonetimi/","./ana-sayfa-yonetimi/index.html","./ana-sayfa-yonetimi/style.css","./ana-sayfa-yonetimi/script.js",
   "./kullanici-yonetimi/","./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
-  "./oyunlar/","./oyunlar/index.html","./oyunlar/style.css","./oyunlar/realistic.css","./oyunlar/script.js","./oyunlar/teapot-real.png","./oyunlar/tea-set-real.png",
+  "./oyunlar/","./oyunlar/index.html","./oyunlar/style.css","./oyunlar/script.js",
   "./manifest.webmanifest","./admin-manifest.webmanifest",
   "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png",
   "./assets/icons/icon-maskable-192.png","./assets/icons/icon-maskable-512.png"
