@@ -90,8 +90,7 @@
         <input id="independentImageUrl" type="hidden">
       </div>
       <div class="compact-grid">
-        <label class="dialog-field"><span>Alım ve kullanım şekli</span><select id="defaultPackageType"><option value="case">Koli / Adet</option><option value="serving">Paket / Porsiyon</option></select></label>
-        <label class="dialog-field"><span id="defaultUnitsPerPackageLabel">Bir Kolideki Adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
+        <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
         <label class="dialog-field"><span>Kritik stok uyarısı</span><input id="warningThreshold" type="number" min="0" max="999999" step="1" value="10" required></label>
       </div>
       <p class="notice" id="productTypeNotice">Bu ürün adisyonda satıldığında stoktan otomatik 1 adet düşer.</p>
@@ -105,8 +104,8 @@
       <div class="dialog-heading"><div><p class="kicker">Yeni Ürün alımı</p><h2 id="entryTitle">Stok Girişi</h2></div><button class="icon-button" type="button" data-close="entryDialog"><i class="fa-solid fa-xmark"></i></button></div>
       <input id="entryStockId" type="hidden">
       <div class="compact-grid">
-        <label class="dialog-field"><span id="packageCountLabel">Koli sayısı</span><input id="packageCount" type="number" min=".001" max="999999" step=".001" required placeholder="Örn. 2"></label>
-        <label class="dialog-field"><span id="entryUnitsPerPackageLabel">Bir Kolideki Adet</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
+        <label class="dialog-field"><span>Koli sayısı</span><input id="packageCount" type="number" min=".001" max="999999" step=".001" required placeholder="Örn. 2"></label>
+        <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
       </div>
       <label class="dialog-field"><span>Toplam ödenen tutar (TL)</span><input id="purchaseTotal" type="number" min="0" max="99999999" step=".01" required placeholder="Örn. 300"></label>
       <label class="cash-expense-toggle"><input id="addCashExpense" type="checkbox"><span><b>Kasaya gider olarak da ekle</b><small>Stok alımıyla birlikte Kasa ve Hesaplara otomatik işlenir.</small></span></label>
@@ -150,7 +149,7 @@
       <input id="editProductId" type="hidden">
       <label class="dialog-field"><span>Ürün adı</span><input id="editProductName" maxlength="90" required></label>
       <div class="compact-grid"><label class="dialog-field"><span>Marka <small>(isteğe bağlı)</small></span><input id="editProductBrand" maxlength="70"></label><label class="dialog-field"><span>Barkod <small>(isteğe bağlı)</small></span><input id="editProductBarcode" inputmode="numeric" maxlength="32"></label></div>
-      <div class="compact-grid"><label class="dialog-field"><span>Alım ve kullanım şekli</span><select id="editPackageType"><option value="case">Koli / Adet</option><option value="serving">Paket / Porsiyon</option></select></label><label class="dialog-field"><span id="editUnitsPerPackageLabel">Bir kolideki adet</span><input id="editUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label><label class="dialog-field"><span>Kritik stok uyarısı</span><input id="editWarningThreshold" type="number" min="0" max="999999" step="1" required></label></div>
+      <div class="compact-grid"><label class="dialog-field"><span>Bir kolideki adet</span><input id="editUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label><label class="dialog-field"><span>Kritik stok uyarısı</span><input id="editWarningThreshold" type="number" min="0" max="999999" step="1" required></label></div>
       <p class="notice" id="editProductLinkInfo"></p>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet</button>
     </form>
@@ -199,7 +198,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=14"></script>
+  <script type="module" src="script.js?v=13"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
