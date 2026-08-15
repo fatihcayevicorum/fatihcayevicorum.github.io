@@ -1,0 +1,28 @@
+FATİH ÇAY EVİ R217 — ÇAYI TAM ZAMANINDA DURDUR
+
+Ana kaynak: Kullanıcı tarafından yüklenen R216 onaylı tam sistem yedeği.
+
+Eklenenler:
+- Müşteri ana sayfasında Menü bölümünün altında Oyunlar kartı.
+- Fatih Çay Evi logolu “Çayı Tam Zamanında Durdur” oyunu.
+- Cihazda hatırlanan takma ad ve uygunsuz kelime kontrolü.
+- Hareketli çay akışı, bardak dolumu, buhar, kabarcık ve taşma.
+- Değişken dolum hızı, Durdur butonu ve 100 üzerinden puanlama.
+- Sonuca göre mesaj ve Çay Çırağı / Çay Uzmanı / Dem Ustası unvanları.
+- Bugün ve Tüm Zamanlar skor tabloları.
+- Ses açma/kapatma ve kodla üretilen oyun sesleri.
+- Telefon, tablet ve bilgisayar uyumlu ekran yapısı.
+
+Değiştirilen mevcut dosyalar:
+- index.html
+- firestore.rules
+- service-worker.js
+
+Yeni dosyalar:
+- assets/css/game-entry.css
+- oyunlar/index.html
+- oyunlar/style.css
+- oyunlar/script.js
+
+Not: Skorların çevrimiçi kaydedilmesi için firestore.rules dosyasının da dağıtılması gerekir.
+Bu sürüm kullanıcı tarafından test edilip onaylanmadan ana referans kabul edilmemelidir.
