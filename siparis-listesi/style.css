@@ -6,3 +6,11 @@
 @media(max-width:680px){.intro-actions{align-items:flex-end;flex-direction:column}.category-filter select{min-width:8.5rem}.dialog-actions{grid-template-columns:1fr 1fr}.dialog-actions .whatsapp-button{grid-column:1/-1}}
 #categoryLists{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}.category-block{position:relative}.category-block:nth-child(even)::before{position:absolute;top:0;bottom:0;left:-.55rem;width:1px;content:"";background:var(--line)}.dialog-actions .primary-button,.dialog-actions .secondary-button{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;border-radius:11px;font-family:Poppins,sans-serif}.dialog-actions .secondary-button{border:1px solid var(--line);color:var(--burgundy-800);background:#fff}.dialog-actions .primary-button{color:#fff;background:linear-gradient(135deg,var(--burgundy-900),var(--burgundy-700))}
 @media(max-width:680px){#categoryLists{grid-template-columns:1fr;gap:0}.category-block:nth-child(even)::before{display:none}.dialog-actions{grid-template-columns:1fr 1fr}.dialog-actions>button:first-child:last-child{grid-column:1/-1}}
+
+/* R217 - Sipariş miktarı Adet/Koli seçimi */
+.order-grid{grid-template-columns:minmax(10rem,1fr) 6.5rem 10rem}
+.quantity-control{display:grid;grid-template-columns:minmax(0,1fr) 4.5rem;gap:.35rem}
+.target-input,.unit-select{width:100%;min-width:0;min-height:2.15rem;padding:.35rem;border:1px solid rgba(90,16,24,.18);border-radius:9px;color:var(--ink);outline:0;text-align:center;background:#fff;font:600 .6rem Poppins}
+.target-input:focus,.unit-select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,170,59,.14)}
+.unit-select{padding-left:.45rem;text-align:left;cursor:pointer}
+@media(max-width:680px){.order-grid{grid-template-columns:minmax(6.5rem,1fr) 4.8rem 7.5rem}.quantity-control{grid-template-columns:minmax(0,1fr) 3.7rem;gap:.25rem}.target-input,.unit-select{min-height:2rem;padding:.25rem;font-size:.52rem}.unit-select{padding-left:.3rem}.receive-row{grid-template-columns:minmax(7rem,1fr) 4.5rem 4.6rem}}
