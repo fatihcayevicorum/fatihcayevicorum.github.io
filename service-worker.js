@@ -3,7 +3,7 @@ importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
 firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
 firebase.messaging();
-const VERSION="fatih-cay-evi-r217-sonuc-sesleri-v6",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r217-cizgi-oyun-v7",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css","./assets/css/game-entry.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js",
@@ -25,7 +25,7 @@ const CORE=[
   "./menu-yonetimi/","./menu-yonetimi/index.html","./menu-yonetimi/style.css","./menu-yonetimi/script.js",
   "./ana-sayfa-yonetimi/","./ana-sayfa-yonetimi/index.html","./ana-sayfa-yonetimi/style.css","./ana-sayfa-yonetimi/script.js",
   "./kullanici-yonetimi/","./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
-  "./oyunlar/","./oyunlar/index.html","./oyunlar/style.css","./oyunlar/realistic.css","./oyunlar/glass-v2.css","./oyunlar/script.js","./oyunlar/teapot-real.png","./oyunlar/tea-glass-empty-v2.png",
+  "./oyunlar/","./oyunlar/index.html","./oyunlar/style.css","./oyunlar/line-art.css","./oyunlar/script.js",
   "./manifest.webmanifest","./admin-manifest.webmanifest",
   "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png",
   "./assets/icons/icon-maskable-192.png","./assets/icons/icon-maskable-512.png"
