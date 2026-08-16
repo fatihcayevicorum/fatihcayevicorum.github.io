@@ -1,0 +1,12 @@
+.stage{background:radial-gradient(circle at 50% 82%,rgba(228,183,70,.18),transparent 15rem),linear-gradient(180deg,#fffdf8 0%,#f7eee9 68%,#ead9cc 100%)}
+.stage:after{position:absolute;z-index:0;right:0;bottom:18%;left:0;height:2px;content:"";background:linear-gradient(90deg,transparent,rgba(99,57,48,.18),transparent)}
+.kettle{top:1%;left:7%;width:44%}
+.kettle img,.glass-wrap img{display:block;width:100%;mix-blend-mode:normal}
+.glass-wrap{bottom:0;width:min(82%,500px)}
+.glass-wrap>img{position:relative;z-index:3}
+.tea-mask{z-index:2;left:32.7%;bottom:20.5%;width:34.6%;height:72.5%;clip-path:polygon(4% 0,96% 0,85% 30%,76% 48%,82% 65%,96% 100%,4% 100%,18% 65%,24% 48%,15% 30%)}
+.pour-stream{top:25%;left:47.8%;width:9px}
+.pour-stream.on{height:24%}
+.steam{bottom:58%;width:24%;height:24%}
+@media(max-width:420px){.kettle{top:2%;left:5%;width:47%}.glass-wrap{width:96%}.steam{bottom:57%}.pour-stream{top:24%;left:48%}.pour-stream.on{height:24%}}
+@media(min-width:700px){.kettle{top:1%;left:9%;width:42%}.glass-wrap{width:500px}.pour-stream{left:47.5%;top:25%}}

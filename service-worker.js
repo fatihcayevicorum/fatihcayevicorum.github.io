@@ -7,7 +7,7 @@ const VERSION="fatih-cay-evi-r217-oyunlar-cay-ustasi",STATIC_CACHE=`${VERSION}-s
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js",
-  "./oyunlar/","./oyunlar/index.html","./oyunlar/style.css","./oyunlar/cay-ustasi/","./oyunlar/cay-ustasi/index.html","./oyunlar/cay-ustasi/style.css","./oyunlar/cay-ustasi/game.js","./oyunlar/cay-ustasi/assets/cay-bardagi.jpg","./oyunlar/cay-ustasi/assets/demlik.jpg",
+  "./oyunlar/","./oyunlar/index.html","./oyunlar/style.css","./oyunlar/cay-ustasi/","./oyunlar/cay-ustasi/index.html","./oyunlar/cay-ustasi/style.css","./oyunlar/cay-ustasi/layout-fix.css","./oyunlar/cay-ustasi/game.js","./oyunlar/cay-ustasi/assets/cay-bardagi.png","./oyunlar/cay-ustasi/assets/demlik.png",
   "./assets/js/push-client.js","./assets/js/customer-notifications.js","./assets/css/notifications.css",
   "./menu.html","./assets/css/menu.css","./assets/js/menu.js","./yonetici-giris.html","./assets/css/yonetici-giris.css","./assets/js/yonetici-giris.js","./esnaf-giris.html","./assets/css/esnaf-giris.css","./assets/js/esnaf-giris.js",
   "./assets/js/firebase-config.js","./assets/js/admin-access.js","./assets/js/device-access.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
