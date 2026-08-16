@@ -668,27 +668,6 @@ a {
 
 /* -------------------- Menü butonu -------------------- */
 
-.home-feature-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
-  margin-bottom: 0.9rem;
-}
-
-.home-feature-row .panel { margin-bottom: 0; }
-
-.compact-feature-panel {
-  display: flex;
-  min-height: 10.5rem;
-  flex-direction: column;
-  padding: 1rem;
-}
-
-.compact-feature-panel h2 {
-  margin-bottom: 0.65rem;
-  font-size: clamp(1rem, 3.6vw, 1.28rem);
-}
-
 .menu-panel {
   border-color: rgba(134, 29, 40, 0.14);
   background:
@@ -703,7 +682,7 @@ a {
   align-items: center;
   justify-content: flex-start;
   gap: 0.75rem;
-  margin-top: auto;
+  margin-top: 0.25rem;
   padding: 0.7rem 0.85rem;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
@@ -731,44 +710,6 @@ a {
 .menu-button-arrow {
   color: var(--gold-400);
 }
-
-.games-entry-panel {
-  isolation: isolate;
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.16);
-  background: radial-gradient(circle at 90% 12%, rgba(242, 202, 99, 0.35), transparent 6rem), linear-gradient(145deg, #3b1015, #861d28 66%, #b13d34);
-}
-
-.games-entry-panel::before { background: linear-gradient(90deg, var(--gold-400), #fff3ae); }
-.games-entry-panel h2 { color: #fff; }
-.games-entry-panel h2 i { color: var(--gold-400); }
-
-.gamesButton {
-  display: flex;
-  width: 100%;
-  min-height: 4.35rem;
-  align-items: center;
-  gap: 0.7rem;
-  margin-top: auto;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px;
-  color: #3b1015;
-  text-decoration: none;
-  background: linear-gradient(135deg, #fff7d2, var(--gold-400));
-  box-shadow: 0 12px 24px rgba(24, 4, 7, 0.28);
-  transition: transform 0.2s ease, filter 0.2s ease;
-}
-
-.games-button-icon { display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 auto; place-items: center; border-radius: 13px; color: #fff; background: linear-gradient(145deg, var(--burgundy-700), #b13d34); }
-.games-button-copy { display: grid; min-width: 0; gap: 0.05rem; line-height: 1.3; }
-.games-button-copy strong { font-size: 0.94rem; }
-.games-button-copy small { color: #6f3b20; font-size: 0.66rem; font-weight: 600; }
-.games-button-arrow { margin-left: auto; color: var(--burgundy-700); transition: transform 0.2s ease; }
-.games-spark { position: absolute; z-index: -1; color: rgba(255, 235, 151, 0.75); animation: game-spark 2s ease-in-out infinite; }
-.games-spark-one { top: 0.65rem; right: 1rem; font-size: 1.05rem; }
-.games-spark-two { right: 2.7rem; bottom: 0.7rem; font-size: 0.7rem; animation-delay: -0.8s; }
-@keyframes game-spark { 50% { opacity: 0.35; transform: scale(0.7) rotate(25deg); } }
 
 .menu-button-copy {
   display: grid;
@@ -939,7 +880,6 @@ footer {
 /* -------------------- Ekran kırılma noktaları -------------------- */
 
 @media (max-width: 359px) {
-  .home-feature-row { grid-template-columns: 1fr; }
   body {
     font-size: 0.9rem;
   }
@@ -956,16 +896,6 @@ footer {
     min-height: 7.6rem;
     padding-inline: 0.3rem;
   }
-}
-
-@media (max-width: 560px) {
-  .home-feature-row { gap: 0.65rem; }
-  .compact-feature-panel { min-height: 9.5rem; padding: 0.82rem; }
-  .compact-feature-panel h2 { font-size: 0.94rem; line-height: 1.25; }
-  .menuButton, .gamesButton { min-height: 3.9rem; padding: 0.6rem; gap: 0.5rem; }
-  .menu-button-icon, .games-button-icon { width: 2.35rem; height: 2.35rem; border-radius: 11px; }
-  .menu-button-copy strong, .games-button-copy strong { font-size: 0.78rem; }
-  .menu-button-copy small, .games-button-copy small { font-size: 0.56rem; }
 }
 
 @media (min-width: 640px) {
@@ -1029,17 +959,13 @@ footer {
   }
 
   .menuButton:hover,
-  .menuButton:focus-visible,
-  .gamesButton:hover,
-  .gamesButton:focus-visible {
+  .menuButton:focus-visible {
     filter: brightness(1.08);
     transform: translateY(-2px);
   }
 
   .menuButton:hover .menu-button-arrow,
-  .menuButton:focus-visible .menu-button-arrow,
-  .gamesButton:hover .games-button-arrow,
-  .gamesButton:focus-visible .games-button-arrow {
+  .menuButton:focus-visible .menu-button-arrow {
     transform: translateX(3px);
   }
 
