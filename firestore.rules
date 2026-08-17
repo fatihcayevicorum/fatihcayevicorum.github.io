@@ -128,7 +128,7 @@ service cloud.firestore {
       allow write: if hasPanel('pos');
     }
     match /adminCashMovements/{document} {
-      allow read: if hasPanel('cash');
+      allow read: if hasAnyPanel(['cash', 'reports']);
       allow create: if validFinanceMovement(request.resource.data) && (hasPanel('cash') || (hasPanel('pos')
         && request.resource.data.source == 'pos-quick-cash'
         && request.resource.data.type in ['income', 'expense']
