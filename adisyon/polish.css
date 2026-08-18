@@ -735,9 +735,8 @@ button:focus:not(:focus-visible) {
 .view-top .connection-status{display:inline-flex;align-items:center;gap:5px;margin:0 2px 0 auto;color:var(--green);font-size:.66rem;font-weight:600}.view-top .connection-status i{font-size:.62rem}
 @media(max-width:700px){.view-top .connection-status{font-size:.6rem}}
 
-/* R227 - Kartın üzerinde soldan sağa ilerleyen eğimli ışık dalgası */
-.pos-tea-card:not(.is-empty)::after,.table-card::after{position:absolute;z-index:1;top:-24%;bottom:-24%;left:-58%;width:42%;content:"";pointer-events:none;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.08) 24%,rgba(255,255,255,.38) 50%,rgba(255,255,255,.1) 76%,transparent 100%);transform:translateX(-160%) skewX(-13deg);animation:cardLightSweep 4.6s ease-in-out infinite;will-change:transform}
-.pos-tea-card:not(.is-empty)>*,.table-card>*{position:relative;z-index:2}
-.table-card:nth-child(3n+2)::after{animation-delay:.35s}.table-card:nth-child(3n)::after{animation-delay:.7s}
-@keyframes cardLightSweep{0%,18%{transform:translateX(-160%) skewX(-13deg);opacity:0}24%{opacity:1}70%{opacity:1}78%,100%{transform:translateX(430%) skewX(-13deg);opacity:0}}
-@media(prefers-reduced-motion:reduce){.pos-tea-card:not(.is-empty)::after,.table-card::after{animation:none!important;display:none!important}}
+/* R228 - Demlik ve masa gruplarını tek yüzey gibi tarayan ortak ışık dalgası */
+.pos-tea-card::after,.table-card::after{position:absolute;z-index:1;top:-28%;bottom:-28%;left:calc(var(--sweep-group-left,0px) - 190px);width:190px;content:"";pointer-events:none;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.08) 20%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.12) 80%,transparent 100%);transform:translateX(0) skewX(-13deg);animation:unifiedCardLightSweep 5.2s ease-in-out infinite;will-change:transform}
+.pos-tea-card>*,.table-card>*{position:relative;z-index:2}
+@keyframes unifiedCardLightSweep{0%,14%{transform:translateX(0) skewX(-13deg);opacity:0}20%{opacity:1}74%{opacity:1}82%,100%{transform:translateX(calc(var(--sweep-group-width,900px) + 380px)) skewX(-13deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){.pos-tea-card::after,.table-card::after{animation:none!important;display:none!important}}
