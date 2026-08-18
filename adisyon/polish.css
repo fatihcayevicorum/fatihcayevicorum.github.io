@@ -741,3 +741,7 @@ button:focus:not(:focus-visible) {
 .open-total-card::before,.pos-tea-card.pos-tea-card::before,.pos-tea-start::before{position:absolute;z-index:3;inset:0;width:auto;padding:2px;border-radius:inherit;content:"";pointer-events:none;background:conic-gradient(from var(--tea-border-angle),transparent 0deg 255deg,var(--orbit-color) 300deg,color-mix(in srgb,var(--orbit-color) 76%,#fff) 330deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;animation:teaBorderOrbit 3.4s linear infinite}
 @keyframes teaBorderOrbit{to{--tea-border-angle:360deg}}
 @media(prefers-reduced-motion:reduce){.open-total-card::before,.pos-tea-card::before,.pos-tea-start::before{animation:none!important;display:none!important}}
+
+/* R232 - Dolu demliklerde durum rengini koruyan daha görünür çevre çizgisi */
+.pos-tea-card:not(.is-empty){--orbit-color:color-mix(in srgb,var(--tea-state,#159553) 38%,#fff)}
+.pos-tea-card:not(.is-empty).pos-tea-card::before{padding:3px;filter:drop-shadow(0 0 3px var(--tea-state,#159553));background:conic-gradient(from var(--tea-border-angle),transparent 0deg 235deg,color-mix(in srgb,var(--tea-state,#159553) 55%,#fff) 278deg,var(--orbit-color) 318deg,#fff 338deg,transparent 360deg)}
