@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=214"><link rel="stylesheet" href="polish.css?v=188"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=1851"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
+  <link rel="stylesheet" href="style.css?v=214"><link rel="stylesheet" href="polish.css?v=222"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=1851"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -18,7 +18,7 @@
   <section id="tablesView" class="view">
     <div class="view-top"><div><h2>Masalar</h2><p id="connectionText"><i class="fa-solid fa-circle-check"></i> Canlı bağlantı</p></div></div>
     <div class="overview-row">
-      <section class="summary"><article><span>Açık Adisyon</span><b id="openCount">0</b></article><article><span>Açık toplam</span><b id="openTotal">₺0</b></article><article><span>Dolu masa</span><b id="occupiedCount">0</b></article></section>
+      <section class="pos-live-overview" aria-label="Açık toplam ve Taze Dem durumu"><article class="open-total-card"><span><i class="fa-solid fa-receipt"></i> Açık Toplam</span><b id="openTotal">₺0</b></article><div id="posTeaCards" class="pos-tea-cards" aria-live="polite"></div><button id="startPosTeaBrew" class="pos-tea-start" type="button"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></button></section>
       <div class="quick-actions">
         <button id="dailyStatus" class="secondary icon-action" title="Günlük Durum" aria-label="Günlük Durum"><i class="fa-solid fa-chart-pie"></i></button>
         <button id="quickCashButton" class="secondary icon-action" title="Hızlı Gelir / Gider" aria-label="Hızlı Gelir veya Gider Ekle"><i class="fa-solid fa-money-bill-transfer"></i></button>
@@ -30,7 +30,6 @@
         <button id="tableSettings" class="secondary icon-action" title="Masa Ayarı" aria-label="Masa Ayarı"><i class="fa-solid fa-table-cells-large"></i></button>
       </div>
     </div>
-    <div class="legend"><span><i class="occupied-dot"></i>Dolu</span><span><i class="empty-dot"></i>Boş</span><b id="tableCountLabel">0 masa</b></div>
     <div id="tableGrid" class="table-grid"></div>
     <section id="namedSection" class="named-section"><h3>İsimli Adisyonlar</h3><div id="namedGrid" class="table-grid named"></div><p id="namedEmpty" class="empty">Açık isimli Adisyon yok.</p></section>
   </section>
@@ -60,6 +59,9 @@
 </main>
 <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
 
+
+<dialog id="posTeaActionDialog" class="pos-tea-dialog"><section class="dialog-card pos-tea-dialog-card"><div class="dialog-head"><div><p class="pos-tea-kicker">Taze Dem</p><h2 id="posTeaActionTitle">Demlik</h2></div><button type="button" data-close="posTeaActionDialog" aria-label="Kapat">×</button></div><div id="posTeaActionStatus" class="pos-tea-action-status"></div><div class="dialog-actions"><button id="markPosTeaReady" type="button" class="secondary"><i class="fa-solid fa-mug-hot"></i> Hazır</button><button id="requestFinishPosTea" type="button" class="danger"><i class="fa-solid fa-check"></i> Demliği Bitir</button></div></section></dialog>
+<dialog id="confirmFinishPosTeaDialog" class="pos-tea-dialog"><section class="dialog-card confirm-card"><div class="confirm-icon"><i class="fa-solid fa-mug-hot"></i></div><h2>Demlik bitirilsin mi?</h2><p id="confirmFinishPosTeaText">Demlik bitirilecek ve arkadaki demlikler öne geçecek.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="confirmFinishPosTeaDialog">Vazgeç</button><button type="button" id="confirmFinishPosTea" class="danger">Demliği Bitir</button></div></section></dialog>
 
 <dialog id="internalConsumptionDialog" class="internal-pos-dialog"><section class="internal-pos-card"><div class="dialog-head"><div><h2>Dahili Tüketim</h2><p>Ürünleri adisyon gibi ekleyin; tamamını tek işlemde stoktan düşürün.</p></div><button type="button" id="closeInternalConsumption" aria-label="Kapat">×</button></div><div class="internal-pos-layout"><section class="internal-products"><div class="product-search"><i class="fa-solid fa-magnifying-glass"></i><input id="internalSearch" placeholder="Ürün ara..."></div><div id="internalCategoryTabs" class="category-tabs"></div><div id="internalProductGrid" class="product-grid"></div><p id="internalProductEmpty" class="empty">Stok bağlantılı ürün bulunamadı.</p></section><section class="internal-cart"><div class="order-title"><h3>Seçilen Ürünler</h3><span>Satış ve kasaya eklenmez</span></div><div id="internalCartItems" class="order-items"></div><p id="internalCartEmpty" class="empty">Ürün kartlarına dokunarak ekleyin.</p><label class="internal-note">Not (isteğe bağlı)<input id="internalNote" maxlength="80" placeholder="Örn. İşletme kullanımı"></label><div class="internal-cart-footer"><div><span>Toplam adet</span><b id="internalTotalQuantity">0</b></div><div class="dialog-actions"><button type="button" class="secondary" id="clearInternalCart">Temizle</button><button type="button" class="primary" id="saveInternalConsumption" disabled>Stoktan Düş</button></div></div></section></div></section></dialog>
 <dialog id="quickCashDialog" class="quick-cash-dialog"><form id="quickCashForm" class="dialog-card"><div class="dialog-head"><div><p class="quick-cash-kicker">Hızlı kasa işlemi</p><h2>Gelir / Gider Ekle</h2></div><button type="button" id="closeQuickCash" aria-label="Kapat">×</button></div><div class="quick-cash-type" role="radiogroup" aria-label="İşlem türü"><label><input type="radio" name="quickCashType" value="expense" checked><span><i class="fa-solid fa-arrow-trend-down"></i>Gider</span></label><label><input type="radio" name="quickCashType" value="income"><span><i class="fa-solid fa-arrow-trend-up"></i>Gelir</span></label></div><label>Tutar<input id="quickCashAmount" type="number" min="0.01" step="0.01" inputmode="decimal" autocomplete="off" required placeholder="0,00"></label><div class="quick-cash-account" role="radiogroup" aria-label="Hesap"><label><input type="radio" name="quickCashAccount" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label><label><input type="radio" name="quickCashAccount" value="bank"><span><i class="fa-solid fa-building-columns"></i>Banka</span></label><label><input id="quickCashCardAccount" type="radio" name="quickCashAccount" value="creditCard"><span><i class="fa-solid fa-credit-card"></i><b id="quickCashCardLabel">Kredi Kartı</b></span></label></div><label>Kategori<select id="quickCashCategory" required></select></label><label>Açıklama <small>(isteğe bağlı)</small><input id="quickCashDescription" maxlength="120" placeholder="Kısa bir not yazabilirsiniz"></label><p id="quickCashDate" class="quick-cash-date"></p><div class="dialog-actions"><button type="button" class="secondary" id="cancelQuickCash">Vazgeç</button><button type="submit" class="primary" id="saveQuickCash">Kaydet</button></div></form></dialog>
@@ -95,7 +97,7 @@
   </section>
 </dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=216"></script>
+<script type="module" src="script.js?v=222"></script>
 <script type="module" src="internal-consumption.js?v=221"></script>
 <script type="module" src="quick-cash.js?v=197"></script>
 <script type="module" src="history-modal.js?v=1861"></script>
