@@ -17,7 +17,7 @@ const management=[
   {permission:"reports",name:"Raporlar",description:"Satış ve işletme raporlarını incele",path:"raporlar/?v=200",icon:"fa-chart-column"},
   {permission:"cash",name:"Kasa ve Hesaplar",description:"Kasa ile banka hareketlerini takip et",path:"kasa-hesap-yonetimi/?v=202",icon:"fa-vault"},
   {permission:"home",name:"Ana Sayfa Yönetimi",description:"Duyuru ve kampanya alanlarını düzenle",path:"ana-sayfa-yonetimi/",icon:"fa-house"},
-  {ownerOnly:true,name:"Bildirim Merkezi",description:"Duyuruları ve canlı cihaz bildirimlerini yönet",path:"bildirim-merkezi/",icon:"fa-bell"},
+  {ownerOnly:true,name:"Bildirim Merkezi",description:"Yeni yapı için ayrılan yönetim alanı",path:"bildirim-merkezi/",icon:"fa-bell"},
   {ownerOnly:true,name:"Veri ve Yedekleme",description:"Verileri dışa aktar ve yedekleri yönet",path:"veri-yonetimi/",icon:"fa-database"},
   {ownerOnly:true,name:"Kullanıcı Yönetimi",description:"Kullanıcı oluştur ve panel yetkilerini belirle",path:"kullanici-yonetimi/",icon:"fa-users-gear"},
   {soon:true,name:"Üye Yönetimi",description:"Müşteri üyeliği ve sadakat sistemi",icon:"fa-id-card"}

@@ -20,7 +20,7 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/home.css?v=13"><link rel="stylesheet" href="assets/css/home-dynamic.css?v=1"><link rel="stylesheet" href="assets/css/campaign-enhancements.css?v=1"><link rel="stylesheet" href="assets/css/news-campaign-layout.css?v=1"><link rel="stylesheet" href="assets/css/notifications.css?v=4">
+    <link rel="stylesheet" href="assets/css/home.css?v=13"><link rel="stylesheet" href="assets/css/home-dynamic.css?v=1"><link rel="stylesheet" href="assets/css/campaign-enhancements.css?v=1"><link rel="stylesheet" href="assets/css/news-campaign-layout.css?v=1">
 </head>
 
 <body>
@@ -201,24 +201,9 @@
         <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
     </button>
 
-    <button class="notification-fab is-off" id="notificationButton" type="button" aria-label="Bildirim ayarlarını aç"><i class="fa-solid fa-bell"></i><span id="notificationButtonText">Bildirim Kapalı</span></button>
-    <dialog class="notification-dialog" id="notificationDialog">
-      <form method="dialog" class="notification-sheet" id="notificationForm">
-        <button class="notification-close" id="notificationClose" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
-        <p class="notification-kicker">FATİH ÇAY EVİ</p><h2>Bildirim Ayarları</h2>
-        <p class="notification-intro">İstediğiniz bildirimleri seçin. Tercihlerinizi daha sonra değiştirebilirsiniz.</p>
-        <label class="notification-choice"><input id="announcementPreference" type="checkbox"><span><b class="choice-tick"><i class="fa-solid fa-check"></i></b><strong><i class="fa-solid fa-bullhorn"></i> Duyurular</strong><small>Duyurulardan ve önemli gelişmelerden haberdar olmak istiyorum.</small></span></label>
-        <label class="notification-choice"><input id="teaPreference" type="checkbox"><span><b class="choice-tick"><i class="fa-solid fa-check"></i></b><strong><i class="fa-solid fa-mug-hot"></i> Taze Dem</strong><small>Her çay hazır olduğunda bildirim almak istiyorum.</small></span></label>
-        <p class="notification-status" id="notificationStatus" role="status"></p>
-        <div class="notification-actions"><button class="notification-off" id="notificationOff" type="button">Bildirimleri Kapat</button><button class="notification-save" id="notificationSave" type="submit">Kaydet</button></div>
-      </form>
-    </dialog>
-
     <script src="assets/js/home.js"></script>
     <script type="module" src="assets/js/tea-live.js?v=6"></script>
     <script type="module" src="assets/js/site-dynamic.js?v=1"></script>
-    <script type="module" src="assets/js/customer-notifications.js?v=3"></script>
-    
     <script type="module" src="assets/js/system-ui.js?v=23"></script>
 </body>
 

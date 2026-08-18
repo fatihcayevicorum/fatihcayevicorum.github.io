@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <header class="app-header">
@@ -37,116 +37,8 @@
       </div>
     </div>
   </header>
-
-  <main class="page-shell">
-    <section class="center-section overview-section">
-      <div class="section-heading">
-        <div>
-          <p class="kicker">Canlı bildirim yönetimi</p>
-          <h2>Bildirimler</h2>
-          <p class="section-description">Müşteri duyurularını ve Taze Dem bildirimlerini tek ekrandan yönetin.</p>
-        </div>
-        <span class="live-pill"><i></i> Canlı sistem</span>
-      </div>
-
-      <div class="stats-grid" aria-label="Bildirim cihaz istatistikleri">
-        <article class="stat-card">
-          <span class="stat-icon"><i class="fa-solid fa-mobile-screen-button"></i></span>
-          <span class="stat-copy"><small>Kayıtlı cihaz</small><strong id="totalDevices">—</strong></span>
-        </article>
-        <article class="stat-card">
-          <span class="stat-icon"><i class="fa-solid fa-bullhorn"></i></span>
-          <span class="stat-copy"><small>Duyuru alan</small><strong id="announcementDevices">—</strong></span>
-        </article>
-        <article class="stat-card">
-          <span class="stat-icon"><i class="fa-solid fa-mug-hot"></i></span>
-          <span class="stat-copy"><small>Taze Dem alan</small><strong id="teaDevices">—</strong></span>
-        </article>
-      </div>
-    </section>
-
-    <section class="content-grid">
-      <article class="panel-card manager-device">
-        <div class="card-heading">
-          <span class="card-icon"><i class="fa-solid fa-shield-halved"></i></span>
-          <div><p>BU CİHAZ</p><h3>Yönetici Bildirimleri</h3></div>
-        </div>
-        <p class="card-text">Sipariş, demlik hazır ve tazelik süresi doldu uyarıları bu cihazda açık veya kapalı tutulabilir.</p>
-        <div class="device-actions">
-          <button id="enableAdminPush" class="primary" type="button"><i class="fa-solid fa-bell"></i> Bu Cihazda Aç</button>
-          <button id="disableAdminPush" class="secondary" type="button"><i class="fa-solid fa-bell-slash"></i> Kapat</button>
-        </div>
-        <small id="adminPushStatus" class="status-line" role="status"></small>
-      </article>
-
-      <article class="panel-card announcement">
-        <div class="card-heading">
-          <span class="card-icon"><i class="fa-solid fa-bullhorn"></i></span>
-          <div><p>MÜŞTERİLERE</p><h3>Duyuru Gönder</h3></div>
-        </div>
-        <form id="announcementForm" class="announcement-form">
-          <label>Başlık
-            <input id="announcementTitle" maxlength="60" required autocomplete="off" placeholder="Örn. Bugün çayımız hazır">
-          </label>
-          <label>Mesaj
-            <textarea id="announcementBody" maxlength="220" required placeholder="Göndermek istediğiniz kısa mesaj"></textarea>
-          </label>
-          <button class="primary full-button" id="sendAnnouncement" type="submit"><i class="fa-solid fa-paper-plane"></i> Bildirimi Gönder</button>
-        </form>
-      </article>
-
-      <article class="panel-card tea-settings">
-        <div class="card-heading">
-          <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
-          <div><p>OTOMATİK</p><h3>Taze Dem Bildirimleri</h3></div>
-        </div>
-
-        <label class="switch-row">
-          <span><strong>Müşteri Taze Dem bildirimi</strong><small>Demlik hazır olduğunda abonelere gider.</small></span>
-          <input id="customerTeaToggle" type="checkbox">
-          <i aria-hidden="true"></i>
-        </label>
-        <label class="switch-row">
-          <span><strong>Yönetici demlik uyarıları</strong><small>Hazır ve tazelik süresi doldu bildirimleri.</small></span>
-          <input id="adminTeaToggle" type="checkbox">
-          <i aria-hidden="true"></i>
-        </label>
-
-        <div class="preview-card">
-          <small>MESAJ ÖNİZLEMESİ</small>
-          <strong>Taze çay hazır ☕</strong>
-          <span>Yeni demlenen çayımız servise hazır.</span>
-        </div>
-        <button id="saveTeaSettings" class="primary full-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Ayarları Kaydet</button>
-        <p class="last-send">Son Taze Dem gönderimi: <strong id="lastTeaSend">Henüz yok</strong></p>
-      </article>
-
-      <article class="panel-card history">
-        <div class="card-heading history-heading">
-          <span class="card-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
-          <div><p>SON İŞLEMLER</p><h3>Bildirim Geçmişi</h3></div>
-        </div>
-        <div id="historyList" class="history-list">
-          <p class="empty">Henüz bildirim gönderilmedi.</p>
-        </div>
-      </article>
-    </section>
-  </main>
-
-  <dialog id="confirmDialog">
-    <form method="dialog" class="confirm-card">
-      <span class="confirm-icon"><i class="fa-solid fa-paper-plane"></i></span>
-      <h3>Duyuru gönderilsin mi?</h3>
-      <p id="confirmText"></p>
-      <div class="dialog-actions">
-        <button value="cancel" class="secondary">Vazgeç</button>
-        <button value="confirm" class="primary">Gönder</button>
-      </div>
-    </form>
-  </dialog>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=3"></script>
+  <main class="page-shell" aria-label="Bildirim Merkezi"></main>
+  <script type="module" src="script.js?v=4"></script>
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body>
 </html>
