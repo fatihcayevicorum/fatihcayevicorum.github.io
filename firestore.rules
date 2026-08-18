@@ -62,10 +62,10 @@ service cloud.firestore {
 
     match /publicTea/status {
       allow read: if true;
-      allow write: if hasPanel('tea');
+      allow write: if hasAnyPanel(['tea', 'pos']);
     }
     match /adminTea/{document} {
-      allow read, write: if hasPanel('tea');
+      allow read, write: if hasAnyPanel(['tea', 'pos']);
     }
     match /publicMenu/catalog {
       allow read: if true;
