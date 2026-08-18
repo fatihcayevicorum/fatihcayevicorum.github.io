@@ -4,6 +4,7 @@ import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16
 import{firebaseConfig}from"./firebase-config.js";
 import{getManagementProfile}from"./admin-access.js";
 import("./pwa.js?v=4").catch(error=>console.error("PWA başlatılamadı:",error));
+if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js").then(module=>module.startForegroundAdminPush()).catch(error=>console.error("Yönetici bildirimi başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 ensureFooter();
 installGlobalInteractionStyle();

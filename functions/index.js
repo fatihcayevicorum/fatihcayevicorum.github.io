@@ -1,10 +1,13 @@
 "use strict";
 const crypto=require("crypto");
 const{onCall,HttpsError}=require("firebase-functions/v2/https");
+const{onDocumentUpdated}=require("firebase-functions/v2/firestore");
+const{onSchedule}=require("firebase-functions/v2/scheduler");
 const{initializeApp}=require("firebase-admin/app");
 const{getAuth}=require("firebase-admin/auth");
 const{FieldValue,getFirestore}=require("firebase-admin/firestore");
 const{getStorage}=require("firebase-admin/storage");
+const{getMessaging}=require("firebase-admin/messaging");
 const{logger}=require("firebase-functions");
 initializeApp();
 const db=getFirestore();
@@ -84,4 +87,103 @@ exports.deleteMerchantUser=onCall({region:"europe-west1",cors:true},async reques
   const writer=db.bulkWriter();for(const collectionName of["merchantOrders","merchantBalanceMovements"]){const snap=await db.collection(collectionName).where("merchantId","==",uid).get();snap.docs.forEach(item=>writer.delete(item.ref))}writer.delete(profileRef);await writer.close();
   try{await getAuth().deleteUser(uid)}catch(error){if(error.code!=="auth/user-not-found")throw error}
   await auditUserAction("delete-merchant",uid,request.auth.uid,{displayName:profile.name||"",businessName:profile.businessName||"",username:profile.username||""});return{uid}
+});
+
+const ADMIN_TEA_DEVICE_COLLECTION="adminTeaPushDevices";
+const ADMIN_TEA_EVENT_COLLECTION="adminTeaNotificationEvents";
+const SITE_URL="https://fatihcayevi.com.tr";
+const TEA_BREWING_MS=20*60*1000;
+const TEA_FRESHNESS_MS=60*60*1000;
+
+async function activeAdminTeaDevices(){
+  const snap=await db.collection(ADMIN_TEA_DEVICE_COLLECTION).where("active","==",true).get();
+  return snap.docs.filter(item=>typeof item.data().token==="string"&&item.data().token.length>20)
+}
+
+async function claimAdminTeaEvent(id,type,brewId){
+  const ref=db.collection(ADMIN_TEA_EVENT_COLLECTION).doc(id);
+  try{
+    await ref.create({type,brewId,status:"processing",createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()});
+    return ref
+  }catch(error){
+    if(error.code===6||String(error.code).includes("already-exists"))return null;
+    throw error
+  }
+}
+
+async function sendAdminTeaPush(message){
+  const documents=await activeAdminTeaDevices(),unique=new Map();
+  documents.forEach(item=>unique.set(item.data().token,item));
+  const entries=[...unique.entries()],result={successCount:0,failureCount:0};
+  for(let offset=0;offset<entries.length;offset+=500){
+    const part=entries.slice(offset,offset+500),tokens=part.map(([token])=>token);
+    const response=await getMessaging().sendEachForMulticast({
+      tokens,
+      notification:{title:"Fatih Çay Evi",body:message.body},
+      data:{type:message.type,tag:message.tag,link:`${SITE_URL}/taze-dem-paneli/`},
+      webpush:{
+        notification:{icon:`${SITE_URL}/assets/icons/icon-192.png`,badge:`${SITE_URL}/assets/icons/icon-192.png`,tag:message.tag,renotify:true},
+        fcmOptions:{link:`${SITE_URL}/taze-dem-paneli/`}
+      }
+    });
+    result.successCount+=response.successCount;
+    result.failureCount+=response.failureCount;
+    const invalid=[];
+    response.responses.forEach((item,index)=>{
+      const code=item.error?.code||"";
+      if(!item.success&&(code.includes("registration-token-not-registered")||code.includes("invalid-registration-token")))invalid.push(part[index][1].ref.delete())
+    });
+    await Promise.allSettled(invalid)
+  }
+  return result
+}
+
+function teaReadyAt(brew){
+  const startedAt=Number(brew?.startedAtMs),manualReady=Number(brew?.readyAtMs);
+  if(Number.isFinite(manualReady))return manualReady;
+  return Number.isFinite(startedAt)?startedAt+TEA_BREWING_MS:NaN
+}
+
+async function notifyAdminTeaReady(brew,position,now=Date.now()){
+  const readyAt=teaReadyAt(brew);
+  if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt)return;
+  const eventRef=await claimAdminTeaEvent(`ready-${brew.id}`,"tea-ready",brew.id);
+  if(!eventRef)return;
+  try{
+    const result=await sendAdminTeaPush({type:"admin-tea-ready",tag:`admin-tea-ready-${brew.id}`,body:`Demlik ${Math.max(1,position)} hazır.`});
+    await eventRef.set({status:"sent",...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
+  }catch(error){
+    await eventRef.set({status:"error",error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});
+    throw error
+  }
+}
+
+async function notifyAdminTeaExpired(brew,position,now=Date.now()){
+  const readyAt=teaReadyAt(brew);
+  if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt+TEA_FRESHNESS_MS)return;
+  const eventRef=await claimAdminTeaEvent(`expired-${brew.id}`,"tea-expired",brew.id);
+  if(!eventRef)return;
+  try{
+    const result=await sendAdminTeaPush({type:"admin-tea-expired",tag:`admin-tea-expired-${brew.id}`,body:`Demlik ${Math.max(1,position)} için dem süresi bitti. Yeni çay demleyin.`});
+    await eventRef.set({status:"sent",...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
+  }catch(error){
+    await eventRef.set({status:"error",error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});
+    throw error
+  }
+}
+
+exports.notifyAdminTeaOnStateChange=onDocumentUpdated({document:"adminTea/state",region:"europe-west1"},async event=>{
+  const active=Array.isArray(event.data?.after.data()?.activeBrews)?event.data.after.data().activeBrews:[],now=Date.now();
+  for(let index=0;index<active.length;index++){
+    await notifyAdminTeaReady(active[index],index+1,now);
+    await notifyAdminTeaExpired(active[index],index+1,now)
+  }
+});
+
+exports.checkAdminTeaNotifications=onSchedule({schedule:"every 1 minutes",region:"europe-west1",timeZone:"Europe/Istanbul"},async()=>{
+  const state=(await db.doc("adminTea/state").get()).data()||{},active=Array.isArray(state.activeBrews)?state.activeBrews:[],now=Date.now();
+  for(let index=0;index<active.length;index++){
+    await notifyAdminTeaReady(active[index],index+1,now);
+    await notifyAdminTeaExpired(active[index],index+1,now)
+  }
 });
