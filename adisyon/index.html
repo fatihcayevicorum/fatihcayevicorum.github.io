@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=214"><link rel="stylesheet" href="polish.css?v=223"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=1851"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
+  <link rel="stylesheet" href="style.css?v=214"><link rel="stylesheet" href="polish.css?v=224"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=1851"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -17,7 +17,7 @@
 <main>
   <section id="tablesView" class="view">
     <div class="view-top"><div><h2>Masalar</h2><p id="connectionText"><i class="fa-solid fa-circle-check"></i> Canlı bağlantı</p></div></div>
-    <div class="overview-row">
+    <div class="overview-row" id="posControlPanel">
       <section class="pos-live-overview" aria-label="Açık toplam ve Taze Dem durumu"><article class="open-total-card"><span><i class="fa-solid fa-receipt"></i> Açık Toplam</span><b id="openTotal">₺0</b></article><div id="posTeaCards" class="pos-tea-cards" aria-live="polite"></div><button id="startPosTeaBrew" class="pos-tea-start" type="button"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></button></section>
       <div class="quick-actions">
         <button id="dailyStatus" class="secondary icon-action" title="Günlük Durum" aria-label="Günlük Durum"><i class="fa-solid fa-chart-pie"></i></button>
@@ -30,6 +30,7 @@
         <button id="tableSettings" class="secondary icon-action" title="Masa Ayarı" aria-label="Masa Ayarı"><i class="fa-solid fa-table-cells-large"></i></button>
       </div>
     </div>
+    <div class="control-panel-divider"><button id="togglePosControlPanel" type="button" aria-label="Kontrol panelini kapat" aria-expanded="true"><i class="fa-solid fa-chevron-up"></i></button></div>
     <div id="tableGrid" class="table-grid"></div>
     <section id="namedSection" class="named-section"><h3>İsimli Adisyonlar</h3><div id="namedGrid" class="table-grid named"></div><p id="namedEmpty" class="empty">Açık isimli Adisyon yok.</p></section>
   </section>
@@ -97,7 +98,7 @@
   </section>
 </dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=222"></script>
+<script type="module" src="script.js?v=224"></script>
 <script type="module" src="internal-consumption.js?v=221"></script>
 <script type="module" src="quick-cash.js?v=197"></script>
 <script type="module" src="history-modal.js?v=1861"></script>
