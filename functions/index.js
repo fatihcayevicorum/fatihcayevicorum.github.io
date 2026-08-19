@@ -122,7 +122,7 @@ async function sendAdminTeaPush(message){
       notification:{title:"Fatih Çay Evi",body:message.body},
       data:{type:message.type,tag:message.tag,link:`${SITE_URL}/taze-dem-paneli/`},
       webpush:{
-        notification:{icon:`${SITE_URL}/assets/icons/icon-192.png`,badge:`${SITE_URL}/assets/icons/icon-192.png`,tag:message.tag,renotify:true},
+        notification:{icon:`${SITE_URL}/assets/icons/icon-192.png`,badge:`${SITE_URL}/assets/icons/notification-badge-96.png`,tag:message.tag,renotify:true},
         fcmOptions:{link:`${SITE_URL}/taze-dem-paneli/`}
       }
     });

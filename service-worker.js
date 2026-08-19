@@ -1,4 +1,4 @@
-/* R234 */
+/* R235 */
 self.addEventListener("notificationclick",event=>{
   const raw=event.notification?.data||{},link=raw.link||raw.FCM_MSG?.data?.link||raw.FCM_MSG?.fcmOptions?.link||"/taze-dem-paneli/";
   event.notification.close();
@@ -11,7 +11,7 @@ importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
 firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
 firebase.messaging();
-const VERSION="fatih-cay-evi-r234-admin-tea-push",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r235-notification-badge",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/admin-push.js",
@@ -33,7 +33,7 @@ const CORE=[
   "./ana-sayfa-yonetimi/","./ana-sayfa-yonetimi/index.html","./ana-sayfa-yonetimi/style.css","./ana-sayfa-yonetimi/script.js",
   "./kullanici-yonetimi/","./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
   "./manifest.webmanifest","./admin-manifest.webmanifest",
-  "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png",
+  "./esnaf-manifest.webmanifest","./assets/icons/icon-192.png","./assets/icons/icon-512.png","./assets/icons/notification-badge-96.png",
   "./assets/icons/icon-maskable-192.png","./assets/icons/icon-maskable-512.png"
 ];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(STATIC_CACHE).then(cache=>Promise.allSettled(CORE.map(url=>cache.add(url)))).then(()=>self.skipWaiting()))});

@@ -64,7 +64,7 @@ export async function startForegroundAdminPush(){
   onMessage(getMessaging(app),async payload=>{
     const worker=await registration(),title=payload.notification?.title||"Fatih Çay Evi";
     await worker.showNotification(title,{
-      body:payload.notification?.body||"",icon:"/assets/icons/icon-192.png",badge:"/assets/icons/icon-192.png",
+      body:payload.notification?.body||"",icon:"/assets/icons/icon-192.png",badge:"/assets/icons/notification-badge-96.png",
       tag:payload.data?.tag||payload.data?.type||"fatih-admin-tea",renotify:true,
       data:{link:payload.data?.link||"/taze-dem-paneli/"}
     })
