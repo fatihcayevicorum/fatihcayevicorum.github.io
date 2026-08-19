@@ -46,7 +46,7 @@
         <article class="stock-value-card sales-card"><span><i class="fa-solid fa-tags"></i> Tahmini Satış Değeri</span><strong id="estimatedSalesValue">₺0</strong><small>Menü fiyatlarına göre</small></article>
         <article class="stock-value-card profit-card"><span><i class="fa-solid fa-chart-line"></i> Tahmini Brüt Kâr</span><strong id="estimatedGrossProfit">₺0</strong><small>Satış değeri − sermaye</small></article>
       </div>
-      <button id="missingCostButton" class="missing-cost-button" type="button" hidden><i class="fa-solid fa-triangle-exclamation"></i><span><b id="missingCostText">Alış fiyatı eksik: 0 ürün</b><small>Eksik fiyatlara göre hesaplandı • Tamamlamak için dokun</small></span><i class="fa-solid fa-chevron-right"></i></button>
+      <button id="missingCostButton" class="missing-cost-button" type="button" hidden><i class="fa-solid fa-triangle-exclamation"></i><span><b id="missingCostText">Alış fiyatı eksik: 0 ürün</b><small>Mevcut ürünlerin fiyatlarını tamamlamak için dokun</small></span><i class="fa-solid fa-chevron-right"></i></button>
     </section>
 
     <section class="panel list-panel">
@@ -93,6 +93,7 @@
         <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
         <label class="dialog-field"><span>Kritik stok uyarısı</span><input id="warningThreshold" type="number" min="0" max="999999" step="1" value="10" required></label>
       </div>
+      <label class="dialog-field"><span>Bir koli alış fiyatı (TL)</span><input id="newPackageCost" type="number" min=".01" max="99999999" step=".01" inputmode="decimal" required placeholder="Örn. 240"></label>
       <p class="notice" id="productTypeNotice">Bu bağımsız ürün yalnız stokta takip edilir; adisyonda otomatik düşmez.</p>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-plus"></i> Ürünü Stok Takibine Ekle</button>
       <div class="defined-products" id="definedProducts"></div>
@@ -107,7 +108,7 @@
         <label class="dialog-field"><span>Koli sayısı</span><input id="packageCount" type="number" min=".001" max="999999" step=".001" required placeholder="Örn. 2"></label>
         <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
       </div>
-      <label class="dialog-field"><span>Toplam ödenen tutar (TL)</span><input id="purchaseTotal" type="number" min="0" max="99999999" step=".01" required placeholder="Örn. 300"></label>
+      <label class="dialog-field"><span>Toplam ödenen tutar (TL)</span><input id="purchaseTotal" type="number" min=".01" max="99999999" step=".01" required placeholder="Örn. 300"></label>
       <label class="cash-expense-toggle"><input id="addCashExpense" type="checkbox"><span><b>Kasaya gider olarak da ekle</b><small>Stok alımıyla birlikte Kasa ve Hesaplara otomatik işlenir.</small></span></label>
       <label id="cashExpenseAccountLabel" class="dialog-field" hidden><span>Ödeme şekli</span><select id="cashExpenseAccount"><option value="cash">Nakit Kasa</option><option value="bank">Banka</option><option value="card">Kredi Kartı</option></select></label>
       <label class="dialog-field"><span>Alış tarihi</span><input id="entryDate" type="date" required></label>
@@ -158,7 +159,7 @@
   <dialog id="missingCostDialog" class="missing-cost-dialog">
     <div class="dialog-body">
       <div class="dialog-heading"><div><p class="kicker">Sermaye hesabı</p><h2>Alış Fiyatı Eksik Ürünler</h2></div><button class="icon-button" type="button" data-close="missingCostDialog"><i class="fa-solid fa-xmark"></i></button></div>
-      <p class="notice">Birim alış fiyatını adet başına TL olarak girin. Bu işlem stok miktarını, kasayı veya stok hareketlerini değiştirmez.</p>
+      <p class="notice">Bir kolinin toplam alış fiyatını girin. Sistem kolideki adet üzerinden birim maliyeti hesaplar ve mevcut stok miktarına uygular. Bu işlem stok miktarını, kasayı veya stok hareketlerini değiştirmez.</p>
       <div class="missing-cost-list" id="missingCostList"></div>
       <button id="saveMissingCostsButton" class="primary-button full-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Alış Fiyatlarını Kaydet</button>
     </div>
@@ -198,7 +199,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=14"></script>
+  <script type="module" src="script.js?v=15"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
