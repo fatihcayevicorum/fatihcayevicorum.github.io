@@ -7,7 +7,6 @@ import("./pwa.js?v=4").catch(error=>console.error("PWA başlatılamadı:",error)
 if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js").then(module=>module.startForegroundAdminPush()).catch(error=>console.error("Yönetici bildirimi başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 ensureFooter();
-installLogoFitStyle();
 installGlobalInteractionStyle();
 installKeyboardScrollSupport();
 installTopLayerToasts();
@@ -16,7 +15,7 @@ const panelMenu=document.querySelector(".panel-menu-list");
 if(panelMenu)installManagementCenterLink();
 if(panelMenu||location.pathname.includes("/yonetim-merkezi/"))onAuthStateChanged(auth,async user=>{if(!user)return;const profile=await getManagementProfile(user,db).catch(()=>null);if(profile)renderWelcome(profile)});
 const panelBrand=document.querySelector(".app-header .brand");if(panelBrand){panelBrand.classList.add("brand-home-link");panelBrand.tabIndex=0;panelBrand.setAttribute("role","link");panelBrand.setAttribute("title","Taze Dem paneline git");const goTea=()=>location.href=new URL("../../taze-dem-paneli/",import.meta.url).href;panelBrand.addEventListener("click",goTea);panelBrand.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();goTea()}});const brandStyle=document.createElement("style");brandStyle.textContent=".brand-home-link{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}.brand-home-link,.brand-home-link:active,.brand-home-link:focus{outline:none!important;filter:none!important;box-shadow:none!important}.brand-home-link .brand-logo,.brand-home-link:active .brand-logo{transform:none!important;filter:none!important;box-shadow:none!important}";document.head.append(brandStyle)}
-onSnapshot(doc(db,"publicSite","config"),snapshot=>{const data=snapshot.data()||{};if(data.logoUrl)document.querySelectorAll("img.logo,img.brand-logo,.login-card img,.brand img,.menu-hero>img").forEach(img=>{img.src=data.logoUrl});});
+onSnapshot(doc(db,"publicSite","config"),snapshot=>{const data=snapshot.data()||{};if(data.logoUrl)document.querySelectorAll("img.logo,img.brand-logo,.login-card img,.brand img").forEach(img=>{img.src=data.logoUrl});});
 function installManagementCenterLink(){
   const details=panelMenu.closest(".panel-menu");
   if(!details)return;
@@ -36,14 +35,6 @@ function renderWelcome(profile){
   const style=document.createElement("style");style.textContent=".brand-copy .user-welcome{margin:.08rem 0 0;color:#fff;font-size:.64rem;font-weight:600;line-height:1.25;white-space:nowrap;max-width:15rem;overflow:hidden;text-overflow:ellipsis}@media(min-width:700px){.brand-copy .user-welcome{margin-top:.12rem;max-width:18rem;font-size:.76rem}}@media(max-width:430px){.brand-copy .user-welcome{max-width:8.5rem;font-size:.55rem}}";document.head.append(style)
 }
 function ensureFooter(){let footer=document.querySelector("footer");if(!footer){footer=document.createElement("footer");document.body.append(footer)}footer.classList.add("system-footer");footer.innerHTML="<p>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</p>";const style=document.createElement("style");style.textContent=".system-footer{width:100%;margin:28px 0 0!important;padding:20px 12px!important;text-align:center!important;background:transparent!important;color:#776b67!important;font:500 .72rem Poppins,Arial,sans-serif!important;border:0!important}.system-footer p{margin:0!important}";document.head.append(style)}
-
-function installLogoFitStyle(){
-  if(document.getElementById("systemLogoFitStyle"))return;
-  const style=document.createElement("style");
-  style.id="systemLogoFitStyle";
-  style.textContent=".brand-logo,.brand img{object-fit:contain!important;object-position:center center!important;scale:.88!important}.menu-hero>img,.login-card>img{object-fit:contain!important;object-position:center center!important;scale:.92!important}";
-  document.head.append(style);
-}
 
 function installGlobalInteractionStyle(){
   if(document.getElementById("systemInteractionStyle"))return;
