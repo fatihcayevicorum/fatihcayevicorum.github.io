@@ -91,12 +91,13 @@ function renderTabs() {
 function productCard(item) {
     return `
         <article class="product-card ${item.available ? "" : "is-unavailable"}">
+            <span class="product-mark" aria-hidden="true"><i class="fa-solid fa-mug-hot"></i></span>
             <div class="product-copy">
                 <strong>${escapeHtml(item.name)}</strong>
                 ${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}
                 ${item.available ? "" : '<span class="availability">Şu an mevcut değil</span>'}
             </div>
-            <span class="product-price">${formatPrice(item.price)}</span>
+            <span class="product-price-wrap"><small class="product-price-label">Fiyat</small><strong class="product-price">${formatPrice(item.price)}</strong></span>
         </article>`;
 }
 
