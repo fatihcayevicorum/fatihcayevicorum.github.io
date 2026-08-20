@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 import { doc, getFirestore, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
+import { systemConfirm } from "../assets/js/system-confirm.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -79,7 +80,7 @@ async function importMenuFile(event) {
     if (!file || isBusy) return;
     try {
         const importedCatalog = validateImport(JSON.parse(await file.text()));
-        const shouldReplace = window.confirm(`${importedCatalog.categories.length} kategori ve ${importedCatalog.items.length} Ürün içe aktarılacak. Mevcut menünün tamamı silinip değiştirilsin mi?`);
+        const shouldReplace = await systemConfirm({title:"Menünün Tamamı Değiştirilsin mi?",message:`${importedCatalog.categories.length} kategori ve ${importedCatalog.items.length} ürün içe aktarılacak. Mevcut menünün tamamı silinip değiştirilecek.`,confirmText:"Menüyü Değiştir",danger:true});
         if (!shouldReplace) return;
         const succeeded = await persistCatalog(importedCatalog, "Menü listesi başarıyla içe aktarıldı.");
         if (succeeded) resetProductForm();
@@ -129,11 +130,11 @@ async function saveBundleRule(event) {
     if (succeeded) resetBundleForm();
 }
 
-function handleBundleAction(event) {
+async function handleBundleAction(event) {
     const edit = event.target.closest("[data-edit-bundle]"), toggle = event.target.closest("[data-toggle-bundle]"), remove = event.target.closest("[data-delete-bundle]");
     if (edit) beginEditBundle(edit.dataset.editBundle);
     if (toggle) persistCatalog({ ...catalog, bundleRules: catalog.bundleRules.map((rule) => rule.id === toggle.dataset.toggleBundle ? { ...rule, active: !rule.active } : rule) }, "Kural durumu güncellendi.");
-    if (remove && window.confirm("Bağlı ürün kuralı silinsin mi?")) persistCatalog({ ...catalog, bundleRules: catalog.bundleRules.filter((rule) => rule.id !== remove.dataset.deleteBundle) }, "Kural silindi.");
+    if (remove && await systemConfirm({title:"Bağlı Ürün Kuralı Silinsin mi?",message:"Bu kampanya ve otomatik eşleştirme kuralı menüden kaldırılacak.",confirmText:"Kuralı Sil",danger:true})) persistCatalog({ ...catalog, bundleRules: catalog.bundleRules.filter((rule) => rule.id !== remove.dataset.deleteBundle) }, "Kural silindi.");
 }
 
 function beginEditBundle(id) {
@@ -152,7 +153,7 @@ async function setupCoffeeWaterRule() {
     await persistCatalog({ ...catalog, bundleRules }, "Türk Kahvesi + 1 ücretsiz Su kuralı hazırlandı.");
 }
 
-function handleCategoryAction(event) {
+async function handleCategoryAction(event) {
     const moveButton = event.target.closest("[data-move-category]");
     const visibilityButton = event.target.closest("[data-toggle-category-visibility]");
     const deleteButton = event.target.closest("[data-delete-category]");
@@ -169,7 +170,7 @@ function handleCategoryAction(event) {
     if (!deleteButton || isBusy) return;
     const categoryId = deleteButton.dataset.deleteCategory;
     if (catalog.items.some((item) => item.categoryId === categoryId)) { showToast("Bu kategoride Ürün var. Önce Ürünleri silin veya taşıyın."); return; }
-    if (!window.confirm("Kategori silinsin mi?")) return;
+    if (!await systemConfirm({title:"Kategori Silinsin mi?",message:"Boş kategori menüden kalıcı olarak kaldırılacak.",confirmText:"Kategoriyi Sil",danger:true})) return;
     persistCatalog({ ...catalog, categories: catalog.categories.filter((category) => category.id !== categoryId) }, "Kategori silindi.");
 }
 
@@ -206,9 +207,9 @@ function toggleProduct(productId) {
     persistCatalog({ ...catalog, items }, "Ürün durumu güncellendi.");
 }
 
-function deleteProduct(productId) {
+async function deleteProduct(productId) {
     if (catalog.bundleRules.some((rule) => rule.triggerProductId === productId || rule.rewardProductId === productId)) { showToast("Bu ürün bağlı ürün kuralında kullanılıyor. Önce kuralı silin."); return; }
-    if (!window.confirm("Ürün menüden silinsin mi?")) return;
+    if (!await systemConfirm({title:"Ürün Menüden Silinsin mi?",message:"Ürün müşteri menüsünden ve adisyon ürün listesinden kaldırılacak.",confirmText:"Ürünü Sil",danger:true})) return;
     persistCatalog({ ...catalog, items: catalog.items.filter((item) => item.id !== productId) }, "Ürün silindi.");
 }
 

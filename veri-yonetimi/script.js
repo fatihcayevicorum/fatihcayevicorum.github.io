@@ -6,7 +6,9 @@ import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),functions=getFunctions(app,"europe-west1"),readSystemBackup=httpsCallable(functions,"readSystemBackup"),$=id=>document.getElementById(id);
-const COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","adminPersonnel","adminPersonnelAttendance","adminPersonnelPayments"];
+const MUTABLE_COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","adminPurchaseOrders","adminCreditCustomers","adminCreditMovements","merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","adminPersonnel","adminPersonnelAttendance","adminPersonnelPayments"];
+const CREATE_ONLY_COLLECTIONS=["adminFinanceDays"];
+const COLLECTIONS=[...MUTABLE_COLLECTIONS,...CREATE_ONLY_COLLECTIONS];
 const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminCashSettings","config"]];
 const BACKUP_PREFIX="system-backups/";
 let busy=false,pendingRestore=null,pendingAction=null,toastTimer;
@@ -43,7 +45,7 @@ async function collectAllData(){
   const collections={},documents={};let totalRecords=0;
   for(const name of COLLECTIONS){setProgress(`${displayName(name)} yedekleniyor…`);const snap=await getDocs(collection(db,name));collections[name]=snap.docs.map(d=>({id:d.id,data:encode(d.data())}));totalRecords+=snap.size}
   for(const [col,id] of SINGLE_DOCS){const snap=await getDoc(doc(db,col,id));documents[`${col}/${id}`]=snap.exists()?{id,data:encode(snap.data())}:null;if(snap.exists())totalRecords++}
-  return{app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:2,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections,documents};
+  return{app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:3,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections,documents};
 }
 
 async function renderBackups(){
@@ -114,8 +116,8 @@ async function restoreBackup(mode){
     const data=pendingRestore;
     await createBackup({download:true,reason:"before-restore"});
     setBusy(true,"Yedek geri yükleniyor…");
-    if(mode==="replace"){for(const name of COLLECTIONS)await deleteCollection(name);for(const [col,id] of SINGLE_DOCS)await deleteDoc(doc(db,col,id)).catch(()=>{})}
-    for(const [name,items] of Object.entries(data.collections||{}))if(COLLECTIONS.includes(name))await writeItems(name,items);
+    if(mode==="replace"){for(const name of MUTABLE_COLLECTIONS)await deleteCollection(name);for(const [col,id] of SINGLE_DOCS)await deleteDoc(doc(db,col,id)).catch(()=>{})}
+    for(const [name,items] of Object.entries(data.collections||{})){if(MUTABLE_COLLECTIONS.includes(name))await writeItems(name,items);else if(CREATE_ONLY_COLLECTIONS.includes(name))await writeMissingItems(name,items)}
     for(const [path,item] of Object.entries(data.documents||{})){if(!item)continue;const [col,id]=path.split("/");if(SINGLE_DOCS.some(x=>x[0]===col&&x[1]===id))await setDoc(doc(db,col,id),decode(item.data))}
     toast("Yedek başarıyla geri yüklendi.");
   }catch(error){console.error(error);toast("Yedek geri yüklenemedi. İşlem öncesi yedek korundu.")}finally{setBusy(false)}
@@ -128,6 +130,7 @@ async function deleteDocuments(name,ids){await runBatches(ids.map(id=>({type:"de
 async function deleteLinkedStockExpenses(ids){if(!ids.length)return;const wanted=new Set(ids),snap=await getDocs(collection(db,"adminCashMovements"));await runBatches(snap.docs.filter(x=>{const d=x.data();return d.source==="stock-purchase"&&wanted.has(d.sourceId)}).map(x=>({type:"delete",ref:x.ref})))}
 async function updateCollection(name,makeData){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.map(x=>({type:"set",ref:x.ref,data:makeData(x.data()),merge:true})))}
 async function writeItems(name,items){await runBatches((items||[]).map(x=>({type:"set",ref:doc(db,name,x.id),data:decode(x.data),merge:false})))}
+async function writeMissingItems(name,items){const current=await getDocs(collection(db,name)),existing=new Set(current.docs.map(x=>x.id)),missing=(items||[]).filter(x=>!existing.has(x.id));await runBatches(missing.map(x=>({type:"set",ref:doc(db,name,x.id),data:decode(x.data),merge:false})))}
 async function runBatches(operations){for(let i=0;i<operations.length;i+=400){const batch=writeBatch(db);for(const op of operations.slice(i,i+400)){if(op.type==="delete")batch.delete(op.ref);else batch.set(op.ref,op.data,{merge:op.merge===true})}await batch.commit()}}
 
 function validateBackup(data){
@@ -146,7 +149,7 @@ function setBusy(value,message="İşlem sürüyor…"){busy=value;$("backupButto
 function setProgress(message){$("backupProgress").querySelector("span").textContent=message}
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.style.display="none";document.body.append(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},4000)}
 function countBackup(data){return Object.values(data.collections||{}).reduce((n,x)=>n+x.length,0)+Object.values(data.documents||{}).filter(Boolean).length}
-function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminInternalConsumptions:"Dahili tüketimler",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri",adminCashMovements:"Kasa ve hesap hareketleri",adminCashCounts:"Kasa sayımları",adminPaymentReminders:"Ödeme hatırlatmaları",staffUsers:"Kullanıcı yetkileri",adminPersonnel:"Personel kartları",adminPersonnelAttendance:"Personel çalışma günleri",adminPersonnelPayments:"Personel ödemeleri"})[name]||name}
+function displayName(name){return({adminStockItems:"Stoklar",adminStockMovements:"Stok hareketleri",adminInternalConsumptions:"Dahili tüketimler",adminOrders:"Adisyonlar",adminSales:"Satışlar",adminDailyClosings:"Gün sonları",adminPurchaseOrders:"Sipariş listeleri",adminFinanceDays:"Finans günü kilitleri",adminCreditCustomers:"Eski açık hesap müşterileri",adminCreditMovements:"Eski açık hesap hareketleri",merchantProfiles:"Esnaf hesapları",merchantBalanceMovements:"Esnaf hareketleri",merchantOrders:"Esnaf siparişleri",adminCashMovements:"Kasa ve hesap hareketleri",adminCashCounts:"Kasa sayımları",adminPaymentReminders:"Ödeme hatırlatmaları",staffUsers:"Kullanıcı yetkileri",adminPersonnel:"Personel kartları",adminPersonnelAttendance:"Personel çalışma günleri",adminPersonnelPayments:"Personel ödemeleri"})[name]||name}
 function storageMessage(error){return String(error?.code||"").includes("unauthorized")?"Yedek saklanamadı. Storage kurallarını yayınlayın.":"Yedek alınamadı. Bağlantıyı kontrol edin."}
 function backupReadMessage(error,fallback){const code=String(error?.code||error?.message||"");if(code.includes("not-found")||code.includes("object-not-found"))return"Bu yedek bulutta bulunamadı.";if(code.includes("permission-denied")||code.includes("unauthorized"))return"Yedeğe erişim izni reddedildi.";if(code.includes("resource-exhausted"))return"Yedek doğrudan açmak için çok büyük.";if(code.includes("invalid-backup")||code.includes("JSON"))return"Yedek dosyasının biçimi okunamadı.";return fallback}
 function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}

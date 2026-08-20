@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
-  <link rel="stylesheet" href="style.css?v=186">
+  <link rel="stylesheet" href="style.css?v=250">
   <script>if(new URLSearchParams(location.search).get("embed")==="1")document.documentElement.classList.add("embed-mode");</script>
 </head>
 <body>
@@ -47,6 +47,7 @@
       <article><span>Adisyon Tutarı</span><b id="summaryBill">₺0</b></article>
       <article><span>Nakit Alınan</span><b id="summaryCash">₺0</b></article>
       <article><span>Banka Gelen</span><b id="summaryBank">₺0</b></article>
+      <article><span>Kart / POS</span><b id="summaryCard">₺0</b></article>
     </section>
 
     <p id="lockNotice" class="lock-notice" hidden><i class="fa-solid fa-lock"></i> Bu iş günü kapatılmıştır. Kayıtlar sadece görüntülenebilir.</p>
@@ -77,7 +78,7 @@
           <form id="paymentEditForm" class="inline-payment-edit" hidden>
             <div class="inline-payment-edit-head"><div><span>Aktif İş Günü</span><strong>Ödeme Düzelt</strong></div><b id="paymentEditBill">₺0</b></div>
             <div class="inline-payment-edit-grid">
-              <label>Ödeme türü<select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Havale</option><option value="card" disabled>Kart — ödeme düzeltme sonraki aşama</option></select></label>
+              <label>Ödeme türü<select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Havale</option><option value="card">Kart</option></select></label>
               <label>Alınan / gelen tutar<input id="paymentEditAmount" type="number" min="0" step="0.01" inputmode="decimal" required></label>
             </div>
             <div id="paymentEditImpact" class="payment-edit-impact" aria-live="polite"></div>
@@ -98,7 +99,7 @@
 </form></dialog>
 
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=1961"></script>
+<script type="module" src="script.js?v=250"></script>
 <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body>
 </html>

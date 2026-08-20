@@ -201,9 +201,7 @@ function handleBrewListClick(event) {
         return;
     }
 
-    if (window.confirm(`Demlik ${brewIndex + 1} bitirilsin mi?`)) {
-        finishBrew(brewId);
-    }
+    showToast("Onay penceresi açılamadı. Sayfayı yenileyip tekrar deneyin.");
 }
 
 async function markBrewReady(brewId) {

@@ -102,19 +102,33 @@ async function activeAdminTeaDevices(){
 
 async function claimAdminTeaEvent(id,type,brewId){
   const ref=db.collection(ADMIN_TEA_EVENT_COLLECTION).doc(id);
-  try{
-    await ref.create({type,brewId,status:"processing",createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()});
+  const now=Date.now(),leaseUntilMs=now+2*60*1000;
+  return db.runTransaction(async transaction=>{
+    const snapshot=await transaction.get(ref);
+    if(snapshot.exists){
+      const data=snapshot.data()||{};
+      const delivered=Number(data.successCount)>0;
+      const processing=data.status==="processing"&&Number(data.leaseUntilMs)>now;
+      if((data.status==="sent"&&delivered)||processing)return null;
+      transaction.set(ref,{
+        type,brewId,status:"processing",leaseUntilMs,
+        attemptCount:(Number(data.attemptCount)||0)+1,
+        updatedAtMs:now,updatedAt:FieldValue.serverTimestamp()
+      },{merge:true});
+      return ref
+    }
+    transaction.create(ref,{
+      type,brewId,status:"processing",leaseUntilMs,attemptCount:1,
+      createdAtMs:now,createdAt:FieldValue.serverTimestamp()
+    });
     return ref
-  }catch(error){
-    if(error.code===6||String(error.code).includes("already-exists"))return null;
-    throw error
-  }
+  })
 }
 
 async function sendAdminTeaPush(message){
   const documents=await activeAdminTeaDevices(),unique=new Map();
   documents.forEach(item=>unique.set(item.data().token,item));
-  const entries=[...unique.entries()],result={successCount:0,failureCount:0};
+  const entries=[...unique.entries()],result={deviceCount:entries.length,successCount:0,failureCount:0};
   for(let offset=0;offset<entries.length;offset+=500){
     const part=entries.slice(offset,offset+500),tokens=part.map(([token])=>token);
     const response=await getMessaging().sendEachForMulticast({
@@ -135,6 +149,11 @@ async function sendAdminTeaPush(message){
     });
     await Promise.allSettled(invalid)
   }
+  if(result.successCount<1){
+    const error=new Error(result.deviceCount?"Bildirim hiçbir yönetici cihazına teslim edilemedi.":"Aktif yönetici bildirim cihazı bulunamadı.");
+    error.deliveryResult=result;
+    throw error
+  }
   return result
 }
 
@@ -151,9 +170,9 @@ async function notifyAdminTeaReady(brew,position,now=Date.now()){
   if(!eventRef)return;
   try{
     const result=await sendAdminTeaPush({type:"admin-tea-ready",tag:`admin-tea-ready-${brew.id}`,body:`Demlik ${Math.max(1,position)} hazır.`});
-    await eventRef.set({status:"sent",...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
+    await eventRef.set({status:"sent",leaseUntilMs:0,...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
   }catch(error){
-    await eventRef.set({status:"error",error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});
+    await eventRef.set({status:"error",leaseUntilMs:0,...(error.deliveryResult||{}),error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});
     throw error
   }
 }
@@ -165,25 +184,26 @@ async function notifyAdminTeaExpired(brew,position,now=Date.now()){
   if(!eventRef)return;
   try{
     const result=await sendAdminTeaPush({type:"admin-tea-expired",tag:`admin-tea-expired-${brew.id}`,body:`Demlik ${Math.max(1,position)} için dem süresi bitti. Yeni çay demleyin.`});
-    await eventRef.set({status:"sent",...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
+    await eventRef.set({status:"sent",leaseUntilMs:0,...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
   }catch(error){
-    await eventRef.set({status:"error",error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});
+    await eventRef.set({status:"error",leaseUntilMs:0,...(error.deliveryResult||{}),error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});
     throw error
   }
 }
 
+async function checkAdminTeaBrew(brew,position,now){
+  await notifyAdminTeaReady(brew,position,now);
+  await notifyAdminTeaExpired(brew,position,now)
+}
+
 exports.notifyAdminTeaOnStateChange=onDocumentUpdated({document:"adminTea/state",region:"europe-west1"},async event=>{
   const active=Array.isArray(event.data?.after.data()?.activeBrews)?event.data.after.data().activeBrews:[],now=Date.now();
-  for(let index=0;index<active.length;index++){
-    await notifyAdminTeaReady(active[index],index+1,now);
-    await notifyAdminTeaExpired(active[index],index+1,now)
-  }
+  const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now)));
+  results.forEach((result,index)=>{if(result.status==="rejected")logger.error("Yönetici çay bildirimi gönderilemedi.",{brewId:active[index]?.id||"",position:index+1,error:String(result.reason?.message||result.reason)})})
 });
 
 exports.checkAdminTeaNotifications=onSchedule({schedule:"every 1 minutes",region:"europe-west1",timeZone:"Europe/Istanbul"},async()=>{
   const state=(await db.doc("adminTea/state").get()).data()||{},active=Array.isArray(state.activeBrews)?state.activeBrews:[],now=Date.now();
-  for(let index=0;index<active.length;index++){
-    await notifyAdminTeaReady(active[index],index+1,now);
-    await notifyAdminTeaExpired(active[index],index+1,now)
-  }
+  const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now)));
+  results.forEach((result,index)=>{if(result.status==="rejected")logger.error("Zamanlanmış yönetici çay bildirimi gönderilemedi.",{brewId:active[index]?.id||"",position:index+1,error:String(result.reason?.message||result.reason)})})
 });
