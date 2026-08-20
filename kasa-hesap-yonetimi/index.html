@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=204">
+  <link rel="stylesheet" href="style.css?v=206">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=7">
 </head>
 <body>
@@ -20,7 +20,7 @@
 <main id="app">
   <section class="topbar"><div><p class="kicker">Dijital kasa defteri</p><h2>Günlük Hesaplar</h2></div><div class="top-actions icon-actions"><button id="reportButton" class="soft" type="button" aria-label="Kasa Raporları" title="Kasa Raporları"><i class="fa-solid fa-chart-pie"></i></button><button id="settingsButton" class="soft" type="button" aria-label="Kasa Ayarları" title="Kasa Ayarları"><i class="fa-solid fa-gear"></i></button><button id="lockButton" class="soft" type="button" aria-label="Kilitle" title="Kilitle"><i class="fa-solid fa-lock"></i></button></div></section>
 
-  <section class="account-date-row"><article class="top-account cash"><i class="fa-solid fa-money-bill-wave"></i><div><span>Nakit Kasa</span><b id="cashBalance">₺0,00</b></div></article><section class="date-switcher"><button id="previousDay" aria-label="Önceki gün"><i class="fa-solid fa-chevron-left"></i></button><div><strong id="selectedDateLabel">--.--.----</strong><small id="selectedDayName">—</small></div><button id="nextDay" aria-label="Sonraki gün"><i class="fa-solid fa-chevron-right"></i></button></section><div class="right-accounts"><button id="bankSummaryButton" class="top-account bank account-summary-button" type="button" aria-label="Banka hesap özetini aç"><i class="fa-solid fa-building-columns"></i><div><span>Banka Hesabı</span><b id="bankBalance">₺0,00</b></div><i class="fa-solid fa-chevron-right account-summary-chevron"></i></button><article class="top-account card"><i class="fa-solid fa-credit-card"></i><div><span>Kart Hesabı</span><b id="cardAccountBalance">₺0,00</b></div></article></div></section>
+  <section class="account-date-row"><article class="top-account cash"><i class="fa-solid fa-money-bill-wave"></i><div><span>Nakit Kasa</span><b id="cashBalance">₺0,00</b></div></article><section class="date-switcher"><button id="previousDay" aria-label="Önceki gün"><i class="fa-solid fa-chevron-left"></i></button><div><strong id="selectedDateLabel">--.--.----</strong><small id="selectedDayName">—</small></div><button id="nextDay" aria-label="Sonraki gün"><i class="fa-solid fa-chevron-right"></i></button></section><div class="right-accounts"><button id="bankSummaryButton" class="top-account bank account-summary-button" type="button" aria-label="Banka hesap özetini aç"><i class="fa-solid fa-building-columns"></i><div><span>Banka Bakiyesi</span><b id="bankBalance">₺0,00</b></div><i class="fa-solid fa-chevron-right account-summary-chevron"></i></button><article class="top-account card"><i class="fa-solid fa-credit-card"></i><div><span>Kart Hesabı</span><b id="cardAccountBalance">₺0,00</b></div></article></div></section>
 
   <section class="main-actions"><button data-open="income"><i class="fa-solid fa-plus"></i><span><b>Gelir Ekle</b><small>Nakit veya banka</small></span></button><button data-open="expense"><i class="fa-solid fa-minus"></i><span><b>Gider Ekle</b><small>Nakit, banka veya kredi kartı</small></span></button><button data-open="transfer" class="soft-action"><i class="fa-solid fa-right-left"></i><span><b>Hesap Aktarımı</b><small>Kart ödemesi dahil</small></span></button></section>
 
@@ -52,5 +52,5 @@
 <dialog id="remindersDialog"><div class="dialog-card reminders-dialog"><div class="dialog-head"><div><p class="kicker">Basit takip</p><h2>Ödeme Hatırlatmaları</h2></div><button type="button" data-close-dialog="remindersDialog">×</button></div><form id="reminderForm" class="reminder-form"><input id="reminderName" maxlength="70" placeholder="Örn. Elektrik faturası" required><input id="reminderAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Tutar (isteğe bağlı)"><input id="reminderDueDate" type="date" required><button type="submit"><i class="fa-solid fa-plus"></i> Ekle</button></form><h3 class="reminder-heading">Bekleyen Ödemeler</h3><div id="reminderList" class="reminder-list"></div><p id="reminderEmpty" class="empty">Bekleyen ödeme hatırlatması yok.</p><h3 class="reminder-heading paid-heading">Ödenenler</h3><div id="paidReminderList" class="reminder-list paid-reminder-list"></div><p id="paidReminderEmpty" class="empty">Henüz tamamlanan ödeme yok.</p></div></dialog>
 
 <div id="toast" class="toast"></div>
-  <script type="module" src="script.js?v=205"></script><script type="module" src="../assets/js/system-ui.js?v=23"></script>
+  <script type="module" src="script.js?v=206"></script><script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body></html>
