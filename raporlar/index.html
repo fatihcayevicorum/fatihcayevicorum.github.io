@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=190">
+  <link rel="stylesheet" href="style.css?v=192">
 </head>
 <body>
   <header class="app-header">
@@ -57,7 +57,11 @@
       <div class="report-period"><i class="fa-regular fa-calendar"></i><strong id="periodLabel">Bugün</strong></div>
     </section>
 
-    <section class="panel finance-report-panel" aria-label="Gelir ve gider raporu"><div class="finance-report-column income-report"><div class="finance-report-head"><p class="kicker">Para girişi</p><h2>Satış ve Gelirler</h2></div><div class="finance-report-grid"><article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Satış</span><strong id="cashTotal">₺0</strong></article><article><i class="fa-solid fa-building-columns"></i><span>Havale</span><strong id="transferTotal">₺0</strong></article><article><i class="fa-solid fa-credit-card"></i><span>Kart</span><strong id="cardTotal">₺0</strong></article><article><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></article><article><i class="fa-solid fa-scale-balanced"></i><span>Eksi Yuvarlama</span><strong id="roundingTotal">₺0</strong></article><article class="total-card"><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="salesTotal">₺0</strong></article></div></div><div class="finance-report-column expense-report"><div class="finance-report-head"><p class="kicker">Para çıkışı</p><h2>Giderler</h2></div><div class="finance-report-grid expense-grid"><article><i class="fa-solid fa-money-bill-transfer"></i><span>Nakit Giderler</span><strong id="cashExpenseTotal">₺0</strong></article><article><i class="fa-solid fa-building-columns"></i><span>Banka/Havale Ödemeleri</span><strong id="bankExpenseTotal">₺0</strong></article><article><i class="fa-solid fa-credit-card"></i><span>Kredi Kartı Harcamaları</span><strong id="creditCardExpenseTotal">₺0</strong></article><article class="total-card"><i class="fa-solid fa-arrow-trend-down"></i><span>Toplam Gider</span><strong id="expenseTotal">₺0</strong></article></div></div></section>
+    <section class="panel period-overview-panel" aria-label="Dönem genel özeti"><div class="section-heading"><div><p class="kicker">Seçilen dönemin tamamı</p><h2>Ne Geldi, Ne Gitti?</h2></div><small>Para hareketleri ve işletme hareketleri birlikte</small></div><div class="period-overview-grid"><article class="money-in"><i class="fa-solid fa-arrow-trend-up"></i><span>Toplam Para Girişi</span><strong id="periodIncomeTotal">₺0</strong></article><article class="money-out"><i class="fa-solid fa-arrow-trend-down"></i><span>Toplam Gider</span><strong id="periodExpenseTotal">₺0</strong></article><article class="net"><i class="fa-solid fa-scale-balanced"></i><span>Gelir − Gider</span><strong id="periodNetTotal">₺0</strong></article><article><i class="fa-solid fa-boxes-stacked"></i><span>Alınan Stok Tutarı</span><strong id="periodStockPurchaseTotal">₺0</strong></article><article><i class="fa-solid fa-box-open"></i><span>Dahili Tüketim Maliyeti</span><strong id="periodInternalCostTotal">₺0</strong></article></div><p class="period-overview-note">Stok alımları ve dahili tüketimler ayrıca gösterilir. Gider toplamına yalnız Kasa ve Hesaplar'a kaydedilmiş gerçek ödeme girer; hesap aktarımları gider sayılmaz.</p></section>
+
+    <section class="panel finance-report-panel" aria-label="Gelir ve gider raporu"><div class="finance-report-column income-report"><div class="finance-report-head"><p class="kicker">Para girişi</p><h2>Satış ve Gelirler</h2></div><div class="finance-report-grid"><article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Satış</span><strong id="cashTotal">₺0</strong></article><article><i class="fa-solid fa-building-columns"></i><span>Havale</span><strong id="transferTotal">₺0</strong></article><article><i class="fa-solid fa-credit-card"></i><span>Kart / POS</span><strong id="cardTotal">₺0</strong></article><article><i class="fa-solid fa-circle-plus"></i><span>Diğer Gelirler</span><strong id="manualIncomeTotal">₺0</strong></article><article><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></article><article><i class="fa-solid fa-scale-balanced"></i><span>Eksi Yuvarlama</span><strong id="roundingTotal">₺0</strong></article><article class="total-card"><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="salesTotal">₺0</strong></article></div></div><div class="finance-report-column expense-report"><div class="finance-report-head"><p class="kicker">Para çıkışı</p><h2>Giderler</h2></div><div class="finance-report-grid expense-grid"><article><i class="fa-solid fa-money-bill-transfer"></i><span>Nakit Giderler</span><strong id="cashExpenseTotal">₺0</strong></article><article><i class="fa-solid fa-building-columns"></i><span>Banka/Havale Ödemeleri</span><strong id="bankExpenseTotal">₺0</strong></article><article><i class="fa-solid fa-credit-card"></i><span>Kredi Kartı Harcamaları</span><strong id="creditCardExpenseTotal">₺0</strong></article><article class="total-card"><i class="fa-solid fa-arrow-trend-down"></i><span>Toplam Gider</span><strong id="expenseTotal">₺0</strong></article></div></div></section>
+
+    <section class="panel movement-breakdown-panel"><div class="section-heading"><div><p class="kicker">Kalem kalem dönem hesabı</p><h2>Gelir ve Gider Kaynakları</h2></div><small>Kategori kartına basınca işlemler tek tek açılır</small></div><div class="movement-breakdown-grid"><section class="movement-breakdown-column income-breakdown"><div class="movement-breakdown-title"><i class="fa-solid fa-arrow-down"></i><div><h3>Gelir Kaynakları</h3><small>Satışlar ve diğer para girişleri</small></div></div><div id="incomeCategorySummary" class="movement-category-list"></div><p id="incomeCategoryEmpty" class="empty">Seçilen dönemde satış dışında gelir kaydı yok.</p></section><section class="movement-breakdown-column expense-breakdown"><div class="movement-breakdown-title"><i class="fa-solid fa-arrow-up"></i><div><h3>Gider Kategorileri</h3><small>Fatura, toptancı, personel ve diğer giderler</small></div></div><div id="expenseCategorySummary" class="movement-category-list"></div><p id="expenseCategoryEmpty" class="empty">Seçilen dönemde gider kaydı yok.</p></section></div></section>
 
     <section class="summary-grid operational-summary" aria-label="Satış özeti">
       <article><i class="fa-solid fa-mug-hot"></i><span>Satılan Ürün</span><strong id="itemCount">0</strong></article>
@@ -167,8 +171,20 @@
     </div>
   </dialog>
 
+  <dialog id="movementDetailDialog" class="movement-detail-dialog">
+    <div class="movement-detail-card">
+      <div class="movement-detail-head"><div><p class="kicker">Seçilen dönem</p><h2 id="movementDetailTitle">Hareket Detayı</h2></div><button id="closeMovementDetail" type="button" aria-label="Kapat">×</button></div>
+      <p id="movementDetailPeriod" class="movement-detail-period"></p>
+      <div id="movementDetailSummary" class="movement-detail-summary"></div>
+      <div class="movement-detail-list-head"><h3>İşlemler</h3><span id="movementDetailCount">0 İşlem</span></div>
+      <div id="movementDetailList" class="movement-detail-list"></div>
+      <p id="movementDetailEmpty" class="empty">Bu kategoride işlem bulunmuyor.</p>
+      <div class="movement-detail-actions"><button id="closeMovementDetailBottom" class="primary" type="button">Kapat</button></div>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=218"></script>
+  <script type="module" src="script.js?v=220"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=23"></script>
 </body>
