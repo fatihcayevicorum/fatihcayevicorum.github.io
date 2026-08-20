@@ -143,3 +143,6 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 
 /* R244 - ust hesap kartlari ve alt islem kartlari esit yukseklik */
 .account-date-row>.top-account,.account-date-row>.date-switcher,.account-date-row>.right-accounts,.right-accounts>.top-account,.main-actions>button{height:68px;min-height:68px}.account-date-row .date-switcher button{height:100%;min-height:0}
+
+/* R245 - gelir gider satirlarinda sabit sutun hizasi */
+@media(min-width:621px){.simple-movement-row{grid-template-columns:minmax(0,1fr) 118px 92px 104px}.simple-payment-method{width:118px;text-align:left}.simple-movement-amount{width:92px;text-align:right}.simple-movement-actions{width:104px;justify-content:flex-end}}
