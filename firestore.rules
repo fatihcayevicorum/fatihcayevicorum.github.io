@@ -53,6 +53,18 @@ service cloud.firestore {
       allow read: if isOwner();
       allow write: if false;
     }
+    match /adminPersonnel/{document} {
+      allow read: if hasPanel('reports');
+      allow write: if isOwner();
+    }
+    match /adminPersonnelAttendance/{document} {
+      allow read: if hasPanel('reports');
+      allow write: if isOwner();
+    }
+    match /adminPersonnelPayments/{document} {
+      allow read: if hasPanel('reports');
+      allow write: if isOwner();
+    }
     match /adminSecurity/{document} {
       allow read, write: if false;
     }

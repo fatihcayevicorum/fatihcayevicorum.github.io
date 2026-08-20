@@ -16,6 +16,7 @@ const management=[
   {permission:"merchant",name:"Esnaf Yönetimi",description:"Esnaf müşterileri ve çay siparişlerini yönet",path:"esnaf-yonetimi/",icon:"fa-store"},
   {permission:"reports",name:"Raporlar",description:"Satış ve işletme raporlarını incele",path:"raporlar/?v=200",icon:"fa-chart-column"},
   {permission:"cash",name:"Kasa ve Hesaplar",description:"Kasa ile banka hareketlerini takip et",path:"kasa-hesap-yonetimi/?v=202",icon:"fa-vault"},
+  {ownerOnly:true,name:"Personel Yönetimi",description:"Çalışma günlerini, hak edişleri ve ödemeleri takip et",path:"personel-yonetimi/",icon:"fa-people-roof"},
   {permission:"home",name:"Ana Sayfa Yönetimi",description:"Duyuru ve kampanya alanlarını düzenle",path:"ana-sayfa-yonetimi/",icon:"fa-house"},
   {ownerOnly:true,name:"Bildirim Merkezi",description:"Yeni yapı için ayrılan yönetim alanı",path:"bildirim-merkezi/",icon:"fa-bell"},
   {ownerOnly:true,name:"Veri ve Yedekleme",description:"Verileri dışa aktar ve yedekleri yönet",path:"veri-yonetimi/",icon:"fa-database"},
