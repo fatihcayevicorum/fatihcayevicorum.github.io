@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, deleteDoc, doc, getFirestore, increment, onSnapshot, query, runTransaction, serverTimestamp, setDoc, where } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, deleteDoc, deleteField, doc, getFirestore, increment, onSnapshot, query, runTransaction, serverTimestamp, setDoc, where } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 import { requireSensitiveAccess } from "../assets/js/sensitive-access.js";
