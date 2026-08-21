@@ -103,7 +103,7 @@ function paymentRowsHtml(sale){const rows=[],related=state.sales.filter(x=>x.rec
   if(cash)rows.push(["Toplam Alınan Nakit",money(cash)]);
   if(bank)rows.push(["Toplam Gelen Havale",money(bank)]);
   if(card)rows.push(["Toplam Kart / POS",money(card)]);
-  if(sale.paymentType==="merchant-marka"||sale.settlementType==="merchant-marka"){const count=number(sale.merchantTeaCount||sale.merchantMarkaCount);rows.push(["Esnafa Götürülen Çay",`${count} Adet`]);rows.push(["Esnaftan Alınan Marka",`${count} Adet`])}
+  if(sale.paymentType==="merchant-marka"||sale.settlementType==="merchant-marka"){const count=number(sale.merchantTeaCount||sale.merchantMarkaCount);rows.push(["Esnaf Çay (Marka)",`${count} Adet`])}
   if(sale.settlementType==="credit"){
     if(orderPaid)rows.push(["Adisyona Sayılan",money(orderPaid)]);
     if(oldDebtPaid)rows.push(["Eski Borçtan Düşen",money(oldDebtPaid)]);
