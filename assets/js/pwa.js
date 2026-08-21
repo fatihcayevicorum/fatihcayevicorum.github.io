@@ -11,7 +11,7 @@ if("serviceWorker"in navigator){const startServiceWorker=async()=>{try{const reg
 
 function installHead(file){
   if(!document.querySelector('link[rel="manifest"]')){const link=document.createElement("link");link.rel="manifest";link.href=new URL(file,base).href;document.head.append(link)}
-  if(!document.querySelector('link[rel="apple-touch-icon"]')){const icon=document.createElement("link");icon.rel="apple-touch-icon";icon.href=new URL("assets/icons/icon-192.png",base).href;document.head.append(icon)}
+  if(!document.querySelector('link[rel="apple-touch-icon"]')){const icon=document.createElement("link");icon.rel="apple-touch-icon";icon.href=new URL("assets/icons/icon-192.png?v=264",base).href;document.head.append(icon)}
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content","#5a1018");
   const capable=document.createElement("meta");capable.name="apple-mobile-web-app-capable";capable.content="yes";document.head.append(capable);
   const title=document.createElement("meta");title.name="apple-mobile-web-app-title";title.content=adminPaths.some(x=>location.pathname.includes(x))?"Fatih Yönetim":"Fatih Çay Evi";document.head.append(title)
