@@ -13,13 +13,13 @@
   "theme_color": "#6b1119",
   "categories": ["food", "business"],
   "icons": [
-    {"src": "assets/icons/icon-192.png?v=3", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "assets/icons/icon-512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "assets/icons/icon-maskable-192.png?v=3", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
-    {"src": "assets/icons/icon-maskable-512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {"src": "assets/icons/icon-192.png?v=261", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icons/icon-512.png?v=261", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icons/icon-maskable-192.png?v=261", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+    {"src": "assets/icons/icon-maskable-512.png?v=261", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ],
   "shortcuts": [
-    {"name": "Menü", "short_name": "Menü", "url": "./menu.html", "icons": [{"src": "assets/icons/icon-192.png?v=3", "sizes": "192x192"}]},
-    {"name": "Yönetici Girişi", "short_name": "Yönetim", "url": "./yonetici-giris.html", "icons": [{"src": "assets/icons/icon-192.png?v=3", "sizes": "192x192"}]}
+    {"name": "Menü", "short_name": "Menü", "url": "./menu.html", "icons": [{"src": "assets/icons/icon-192.png?v=261", "sizes": "192x192"}]},
+    {"name": "Yönetici Girişi", "short_name": "Yönetim", "url": "./yonetici-giris.html", "icons": [{"src": "assets/icons/icon-192.png?v=261", "sizes": "192x192"}]}
   ]
 }
