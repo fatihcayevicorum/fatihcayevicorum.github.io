@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=269">
+  <link rel="stylesheet" href="style.css?v=271">
 </head>
 <body>
   <header class="app-header">
@@ -81,6 +81,16 @@
             <div><strong>Dem süresi bitti</strong><span>Örnek: Demlik 1 için dem süresi bitti. Yeni çay demleyin.</span></div>
           </div>
         </div>
+        <div class="sound-settings" aria-label="Taze Dem uygulama içi ses ayarları">
+          <div class="sound-setting" data-sound-setting="tea-ready">
+            <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Demlik hazır sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+          </div>
+          <div class="sound-setting" data-sound-setting="tea-expired">
+            <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Dem eskidi / süre doldu sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+          </div>
+        </div>
         <div class="logo-note"><img src="../assets/images/logo.png" alt="" width="44" height="44"><span>Bildirimlerde Fatih Çay Evi adı ve logosu kullanılır.</span></div>
       </article>
     </section>
@@ -107,6 +117,12 @@
         <div class="customer-counts"><span><b id="merchantTeaCount">—</b> Taze Dem</span><span><b id="merchantAnnouncementCount">—</b> Duyuru</span></div>
       </div>
       <p class="card-text">Esnaf panelinden izin veren cihazlara gönderilir. Müşteri duyuruları ile tamamen ayrı çalışır.</p>
+      <div class="sound-settings merchant-sound-settings" aria-label="Esnaf siparişi uygulama içi ses ayarı">
+        <div class="sound-setting" data-sound-setting="merchant-order">
+          <div class="sound-setting-copy"><i class="fa-solid fa-bell"></i><span><strong>Esnaf çay siparişi sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+          <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+        </div>
+      </div>
       <form id="merchantBroadcastForm" class="broadcast-form">
         <label><span>Bildirim türü</span><select disabled><option>Esnaf Duyurusu</option></select></label>
         <label><span>Başlık</span><input id="merchantBroadcastTitle" maxlength="70" required placeholder="Örnek: Esnaflarımıza Duyuru"></label>
@@ -117,7 +133,7 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=269"></script>
-  <script type="module" src="../assets/js/system-ui.js?v=269"></script>
+  <script type="module" src="script.js?v=271"></script>
+  <script type="module" src="../assets/js/system-ui.js?v=271"></script>
 </body>
 </html>

@@ -5,9 +5,11 @@ import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js";
 import{systemConfirm}from"../assets/js/system-confirm.js";
+import{getNotificationSound,isNotificationSoundMuted,playNotificationSound,resetNotificationSound,saveNotificationSound,setNotificationSoundMuted}from"../assets/js/notification-sounds.js?v=271";
 
 const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),sendCustomerBroadcast=httpsCallable(functions,"sendCustomerBroadcast"),byId=id=>document.getElementById(id);
 let user=null,busy=false,activeIds=new Set,unsubscribeDevices=null;
+setupSoundSettings();
 
 onAuthStateChanged(auth,async current=>{
   if(!current||current.uid!==ADMIN_UID){location.replace("../yonetici-giris.html?next=bildirim-merkezi/");return}
@@ -106,5 +108,16 @@ function setStatus(message,type){
 }
 function setBusy(value){busy=value;byId("enableDevice").disabled=value;byId("disableDevice").disabled=value}
 function toast(message){const element=byId("toast");element.textContent=message;element.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>element.classList.remove("show"),3200)}
+function setupSoundSettings(){
+  document.querySelectorAll("[data-sound-setting]").forEach(card=>{
+    const type=card.dataset.soundSetting,file=card.querySelector("[data-sound-file]"),test=card.querySelector("[data-sound-test]"),mute=card.querySelector("[data-sound-mute]"),reset=card.querySelector("[data-sound-reset]");
+    const render=async()=>{const saved=await getNotificationSound(type).catch(()=>null),muted=isNotificationSoundMuted(type),status=card.querySelector("[data-sound-status]");status.textContent=muted?"Sessiz":saved?.name?`Özel ses: ${saved.name}`:"Varsayılan ses";card.classList.toggle("is-muted",muted);mute.innerHTML=muted?'<i class="fa-solid fa-volume-high"></i> Sesi Aç':'<i class="fa-solid fa-volume-xmark"></i> Sessize Al'};
+    file.onchange=async()=>{const selected=file.files?.[0];if(!selected)return;try{await saveNotificationSound(type,selected);toast("Uygulama içi bildirim sesi kaydedildi.");await render();await playNotificationSound(type,{force:true})}catch(error){toast(error.message==="file-too-large"?"Ses dosyası en fazla 5 MB olabilir.":"Lütfen geçerli bir ses dosyası seçin.")}finally{file.value=""}};
+    test.onclick=()=>playNotificationSound(type,{force:true}).then(played=>{if(!played)toast("Ses çalınamadı. Tablet sesini kontrol edin.")});
+    mute.onclick=async()=>{setNotificationSoundMuted(type,!isNotificationSoundMuted(type));await render();toast(isNotificationSoundMuted(type)?"Bu bildirim sesi sessize alındı.":"Bu bildirim sesi açıldı.")};
+    reset.onclick=async()=>{await resetNotificationSound(type);await render();toast("Varsayılan bildirim sesine dönüldü.")};
+    render()
+  })
+}
 function tick(){const now=new Date;byId("currentTime").textContent=now.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});byId("currentDate").textContent=now.toLocaleDateString("tr-TR")}
 tick();setInterval(tick,1000);
