@@ -22,13 +22,13 @@ button?.addEventListener("click",()=>{const value=preferences();tea.checked=valu
 close?.addEventListener("click",()=>dialog.close());
 dialog?.addEventListener("click",event=>{if(event.target===dialog)dialog.close()});
 form?.addEventListener("submit",async event=>{
-  event.preventDefault();if(busy)return;busy=true;save.disabled=true;const value={tea:tea.checked,campaigns:campaigns.checked};
+  event.preventDefault();if(busy)return;busy=true;save.disabled=true;const value={tea:tea.checked,campaigns:campaigns.checked};let saveStage="başlangıç";
   try{
     const oldToken=localStorage.getItem(TOKEN_KEY)||"";
-    if(value.tea||value.campaigns){const currentToken=await token();if(oldToken&&oldToken!==currentToken)await disableDevice({token:oldToken}).catch(()=>{});await registerDevice({token:currentToken,preferences:value,deviceType:deviceType(),platform:navigator.platform||"",userAgent:navigator.userAgent});localStorage.setItem(TOKEN_KEY,currentToken);await startForeground()}
-    else{let currentToken=oldToken;if(!currentToken&&await supported().catch(()=>false)&&Notification.permission==="granted")currentToken=await getToken(getMessaging(app),{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:await worker()}).catch(()=>"");if(currentToken)await disableDevice({token:currentToken});localStorage.removeItem(TOKEN_KEY)}
+    if(value.tea||value.campaigns){saveStage="bildirim-anahtarı";const currentToken=await token();if(oldToken&&oldToken!==currentToken)await disableDevice({token:oldToken}).catch(()=>{});saveStage="cihaz-kaydı";await registerDevice({token:currentToken,preferences:value,deviceType:deviceType(),platform:navigator.platform||"",userAgent:navigator.userAgent});localStorage.setItem(TOKEN_KEY,currentToken);await startForeground()}
+    else{let currentToken=oldToken;if(!currentToken&&await supported().catch(()=>false)&&Notification.permission==="granted")currentToken=await getToken(getMessaging(app),{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:await worker()}).catch(()=>"");if(currentToken){saveStage="cihaz-kapatma";await disableDevice({token:currentToken})}localStorage.removeItem(TOKEN_KEY)}
     localStorage.setItem(PREFERENCES_KEY,JSON.stringify(value));renderButton();setStatus(value.tea||value.campaigns?"Tercihleriniz kaydedildi. Uygulama kapalıyken de bildirim alacaksınız.":"Bildirimler bu cihazda kapatıldı.",value.tea||value.campaigns?"on":"off");setTimeout(()=>dialog.close(),1100)
-  }catch(error){const code=String(error?.code||error?.message||"");const message=code.includes("permission-denied")?"Bildirim izni engellenmiş. Cihaz ayarlarından izin vermelisiniz.":code.includes("unsupported")?"Bu tarayıcı bildirimleri desteklemiyor. iPhone veya iPad’de siteyi ana ekrana ekleyip uygulama olarak açın.":"Tercihler kaydedilemedi. İnternet bağlantısını kontrol edin.";setStatus(message,"off")}
+  }catch(error){console.error("Müşteri bildirim tercihi kaydedilemedi",{saveStage,code:error?.code,message:error?.message},error);const raw=String(error?.code||error?.message||"bilinmeyen-hata"),code=raw.replace(/^.*\//,"").slice(0,80);const message=raw.includes("permission-denied")?"Bildirim izni engellenmiş. Cihaz ayarlarından izin vermelisiniz.":raw.includes("unsupported")?"Bu tarayıcı bildirimleri desteklemiyor. iPhone veya iPad’de siteyi ana ekrana ekleyip uygulama olarak açın.":`Tercihler kaydedilemedi. Hata: ${saveStage} / ${code}`;setStatus(message,"off")}
   finally{busy=false;save.disabled=false}
 });
 
