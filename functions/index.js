@@ -264,9 +264,15 @@ async function notifyAdminTeaExpired(brew,position,now=Date.now()){
 }
 
 async function checkAdminTeaBrew(brew,position,now){
-  await notifyAdminTeaReady(brew,position,now);
-  await notifyCustomerTeaReady(brew,position,now);
-  await notifyAdminTeaExpired(brew,position,now)
+  const channels=[
+    ["admin-ready",notifyAdminTeaReady(brew,position,now)],
+    ["customer-ready",notifyCustomerTeaReady(brew,position,now)],
+    ["admin-expired",notifyAdminTeaExpired(brew,position,now)]
+  ];
+  const results=await Promise.allSettled(channels.map(([,task])=>task));
+  results.forEach((result,index)=>{
+    if(result.status==="rejected")logger.error("Taze Dem bildirim kanalı başarısız oldu.",{channel:channels[index][0],brewId:brew?.id||"",position,error:String(result.reason?.message||result.reason)})
+  })
 }
 
 exports.notifyAdminTeaOnStateChange=onDocumentUpdated({document:"adminTea/state",region:"europe-west1"},async event=>{
