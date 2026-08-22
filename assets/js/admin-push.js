@@ -62,6 +62,7 @@ export async function startForegroundAdminPush(){
   if(foregroundStarted||!(await adminPushSupported())||Notification.permission!=="granted")return;
   foregroundStarted=true;
   onMessage(getMessaging(app),async payload=>{
+    if(document.visibilityState==="visible")return;
     const worker=await registration(),title=payload.notification?.title||"Fatih Çay Evi";
     await worker.showNotification(title,{
       body:payload.notification?.body||"",icon:"/assets/icons/icon-192.png",badge:"/assets/icons/notification-badge-96.png",
