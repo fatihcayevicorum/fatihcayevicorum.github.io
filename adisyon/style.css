@@ -34,16 +34,6 @@
 /* R166: ikon aksiyonlarında link desteği */
 .quick-actions a.icon-action{width:44px;height:44px;min-height:44px;padding:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}.quick-actions a.icon-action i{font-size:1rem}.quick-actions a.icon-action:active{transform:scale(.97)}
 
-
-/* R170.3 — son gün kapanışını güvenli geri alma */
-.undo-close-box{margin-top:12px;padding:12px 13px;border:1px solid #e7d5c4;border-radius:14px;background:#fff9f0;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.undo-close-box strong{display:block;color:var(--red2);font-size:.82rem;margin-bottom:3px}
-.undo-close-box p{margin:0;color:var(--muted);font-size:.7rem;line-height:1.45}
-.undo-close-box button{flex:0 0 auto;white-space:nowrap}
-.undo-close-box.is-locked{background:#f7efea;border-color:#e3d3ca}
-.undo-close-box.is-locked strong{color:#6d5a54}
-@media(max-width:650px){.undo-close-box{display:grid}.undo-close-box button{width:100%}}
-
 /* R208 — Adisyon içi kompakt barkod okuyucu */
 .pos-search-row{display:grid;grid-template-columns:minmax(0,1fr) 47px;gap:8px}.pos-search-row .product-search{min-width:0}.pos-barcode-button{width:47px;height:47px;border-radius:12px;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-size:1.05rem;box-shadow:0 5px 12px rgba(101,21,28,.18);touch-action:manipulation}.pos-barcode-button:active,.pos-switch-camera:active{transform:scale(.96)}
 .pos-barcode-dialog{max-width:100vw}.barcode-card{width:min(calc(100vw - 24px),430px);padding:16px}.barcode-kicker{margin:0 0 2px;color:#b47d22;font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.pos-camera-frame{position:relative;width:min(100%,360px);aspect-ratio:16/9;margin:auto;overflow:hidden;border:2px solid #5f171d;border-radius:14px;background:#241b19}.pos-camera-frame video{width:100%;height:100%;display:block;object-fit:cover;object-position:center;transform:scale(1.08)}.pos-scan-line{position:absolute;left:10%;right:10%;top:50%;height:2px;background:#f3bd3c;box-shadow:0 0 8px #f3bd3c}.pos-switch-camera{position:absolute;right:8px;top:8px;min-height:34px;padding:0 10px;border:1px solid rgba(255,255,255,.38);border-radius:9px;background:rgba(44,24,22,.82);color:#fff;font-size:.62rem}.pos-camera-frame small{position:absolute;left:8px;right:8px;bottom:7px;padding:5px 7px;border-radius:8px;background:rgba(44,24,22,.78);color:#fff;text-align:center;font-size:.6rem}.pos-barcode-result{margin:10px 0 8px;padding:9px 11px;border-radius:10px;background:#f5eee6;color:var(--muted);font-size:.72rem;font-weight:700}.pos-barcode-result.is-success{background:#e8f4ed;color:var(--green)}.pos-barcode-result.is-error{background:#f8e7e7;color:#9c242c}.pos-manual-barcode{display:grid;grid-template-columns:minmax(0,1fr) 70px;gap:7px}.pos-manual-barcode input{min-width:0}.pos-manual-barcode button{border-radius:10px;background:#eee2d6;color:var(--red2)}.barcode-card .dialog-actions{margin-top:10px}.barcode-card .dialog-actions .primary{min-width:110px}

@@ -44,6 +44,23 @@ service cloud.firestore {
             && data.toAccount in ['cash', 'bank', 'card', 'creditCard']
             && data.fromAccount != data.toAccount));
     }
+    function validPosInstantMovement(data) {
+      return data.type == 'income'
+        && data.amount is number
+        && data.amount >= 0
+        && financeDateOpen(data.businessDate)
+        && data.account in ['cash', 'bank', 'card']
+        && data.category == 'Günlük Gelir'
+        && data.automatic == true
+        && data.source == 'pos-instant'
+        && data.sourceGroup == 'income'
+        && data.cashMovementVersion == 'r178-unified-income';
+    }
+    function isPosInstantDocument(document, account) {
+      return (account == 'cash' && document.matches('pos-gelir-cash-.*'))
+        || (account == 'bank' && document.matches('pos-gelir-bank-.*'))
+        || (account == 'card' && document.matches('pos-gelir-card-.*'));
+    }
 
     match /staffUsers/{uid} {
       allow read: if isOwner() || (request.auth != null && request.auth.uid == uid);
@@ -140,21 +157,35 @@ service cloud.firestore {
       allow write: if hasPanel('pos');
     }
     match /adminCashMovements/{document} {
-      allow read: if hasAnyPanel(['cash', 'reports']);
-      allow create: if validFinanceMovement(request.resource.data) && (hasPanel('cash') || (hasPanel('pos')
-        && request.resource.data.source == 'pos-quick-cash'
-        && request.resource.data.type in ['income', 'expense']
-        && request.resource.data.account in ['cash', 'bank', 'card', 'creditCard']
-        && request.resource.data.automatic == false)
-        || (hasPanel('stock')
-        && request.resource.data.source == 'stock-purchase'
-        && request.resource.data.type == 'expense'
-        && request.resource.data.amount is number
-        && request.resource.data.amount > 0));
-      allow update: if hasPanel('cash')
-        && financeDateOpen(resource.data.businessDate)
-        && validFinanceMovement(request.resource.data)
-        && request.resource.data.businessDate == resource.data.businessDate;
+      allow get: if hasAnyPanel(['cash', 'reports'])
+        || (hasPanel('pos') && document.matches('pos-gelir-(cash|bank|card)-.*'));
+      allow list: if hasAnyPanel(['cash', 'reports']);
+      allow create: if (validFinanceMovement(request.resource.data) && (hasPanel('cash') || (hasPanel('pos')
+          && request.resource.data.source == 'pos-quick-cash'
+          && request.resource.data.type in ['income', 'expense']
+          && request.resource.data.account in ['cash', 'bank', 'card', 'creditCard']
+          && request.resource.data.automatic == false)
+          || (hasPanel('stock')
+          && request.resource.data.source == 'stock-purchase'
+          && request.resource.data.type == 'expense'
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0)))
+        || (hasPanel('pos')
+          && validPosInstantMovement(request.resource.data)
+          && request.resource.data.amount > 0
+          && isPosInstantDocument(document, request.resource.data.account));
+      allow update: if financeDateOpen(resource.data.businessDate)
+        && request.resource.data.businessDate == resource.data.businessDate
+        && ((hasPanel('cash') && validFinanceMovement(request.resource.data))
+          || (hasPanel('pos')
+            && resource.data.source == 'pos-instant'
+            && resource.data.automatic == true
+            && validPosInstantMovement(request.resource.data)
+            && isPosInstantDocument(document, request.resource.data.account)
+            && request.resource.data.account == resource.data.account
+            && request.resource.data.type == resource.data.type
+            && request.resource.data.sourceGroup == resource.data.sourceGroup
+            && request.resource.data.cashMovementVersion == resource.data.cashMovementVersion));
       allow delete: if hasPanel('cash')
         && financeDateOpen(resource.data.businessDate);
     }

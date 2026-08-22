@@ -20,8 +20,7 @@ const management=[
   {permission:"home",name:"Ana Sayfa Yönetimi",description:"Duyuru ve kampanya alanlarını düzenle",path:"ana-sayfa-yonetimi/",icon:"fa-house"},
   {ownerOnly:true,name:"Bildirim Merkezi",description:"Yeni yapı için ayrılan yönetim alanı",path:"bildirim-merkezi/",icon:"fa-bell"},
   {ownerOnly:true,name:"Veri ve Yedekleme",description:"Verileri dışa aktar ve yedekleri yönet",path:"veri-yonetimi/",icon:"fa-database"},
-  {ownerOnly:true,name:"Kullanıcı Yönetimi",description:"Kullanıcı oluştur ve panel yetkilerini belirle",path:"kullanici-yonetimi/",icon:"fa-users-gear"},
-  {soon:true,name:"Üye Yönetimi",description:"Müşteri üyeliği ve sadakat sistemi",icon:"fa-id-card"}
+  {ownerOnly:true,name:"Kullanıcı Yönetimi",description:"Kullanıcı oluştur ve panel yetkilerini belirle",path:"kullanici-yonetimi/",icon:"fa-users-gear"}
 ];
 
 onAuthStateChanged(auth,async user=>{

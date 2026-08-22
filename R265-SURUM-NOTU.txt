@@ -1,0 +1,38 @@
+FATIH CAY EVI - R265 SURUM NOTU
+================================
+
+Kaynak surum: R264 Tablet Adisyon ve PWA Duzeltmesi Tam Sistem Yedegi
+
+YAPILAN GUVENLI GUNCELLEMELER
+
+1. POS personelinin normal odeme akisi duzeltildi.
+   - Sadece sistemin otomatik "pos-instant" gunluk gelir kayitlarina izin verildi.
+   - POS personeline genel kasa hareketlerini listeleme, manuel degistirme veya silme yetkisi verilmedi.
+   - Odeme geri alma ve duzeltme islemlerinde kullanilan otomatik toplam kayitlari desteklendi.
+
+2. Adisyon ekranindaki "Kasa Say" dugmesi yetkiye baglandi.
+   - Yalniz kasa paneli yetkisi bulunan kullanicilarda gorunur.
+   - Yetkisiz personelde gereksiz izin hatasi olusmasi onlendi.
+
+3. PWA yonetim sayfasi kapsami tamamlandi.
+   - Siparis Listesi, Personel Yonetimi ve Adisyon Gecmisi yonetim PWA kapsaminda tanimlandi.
+   - Servis calisani onbellegi R265 olarak yenilendi.
+
+4. Yonetici girisindeki "next" yonlendirmesi guvenli izin listesine alindi.
+   - Harici veya tanimsiz adrese yonlendirme engellendi.
+   - Mevcut panel ve rol yetkileri korunarak yonlendirme yapiliyor.
+
+5. Iptal edilmis Uye Yonetimi karti kaldirildi.
+
+6. Kesin olarak kullanilmayan kalintilar temizlendi.
+   - adisyon/enhancements.js
+   - taze-dem-paneli/logo.png (ana logonun kullanilmayan kopyasi)
+   - R252-SURUM-NOTU.txt
+   - Kullanilmayan undo-close-box stil kurallari
+
+KORUNANLAR
+
+- Firestore veri koleksiyonlari ve mevcut kayit yapisi degistirilmedi.
+- Ana yonetici erisimi, personel panel yetkileri ve calisan ekranlar korundu.
+- Gecmis kayit uyumlulugu icin eski veri okuma kodlari kaldirilmadi.
+- R264 yedegi degistirilmedi; R265 ayri bir tam sistem yedegi olarak hazirlandi.
