@@ -17,3 +17,12 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FATIHCAYEVI }}
           channelId: live
           projectId: fatihcayevi
+      - name: Install Functions dependencies
+        working-directory: functions
+        run: npm ci
+      - name: Deploy Firebase Functions
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FATIHCAYEVI }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
+          GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" npx --yes firebase-tools deploy --only functions --project fatihcayevi --non-interactive
