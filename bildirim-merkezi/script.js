@@ -1,16 +1,19 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js";
+import{systemConfirm}from"../assets/js/system-confirm.js";
 
-const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),byId=id=>document.getElementById(id);
+const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),sendCustomerBroadcast=httpsCallable(functions,"sendCustomerBroadcast"),byId=id=>document.getElementById(id);
 let user=null,busy=false,activeIds=new Set,unsubscribeDevices=null;
 
 onAuthStateChanged(auth,async current=>{
   if(!current||current.uid!==ADMIN_UID){location.replace("../yonetici-giris.html?next=bildirim-merkezi/");return}
   user=current;
   watchDevices();
+  watchCustomerDevices();
   await renderDeviceStatus()
 });
 
@@ -36,6 +39,17 @@ byId("disableDevice").onclick=async()=>{
   finally{setBusy(false);await renderDeviceStatus()}
 };
 
+byId("customerBroadcastForm").onsubmit=async event=>{
+  event.preventDefault();if(!user||busy)return;
+  const kind=byId("broadcastKind").value,title=byId("broadcastTitle").value.trim(),body=byId("broadcastBody").value.trim();
+  if(!title||!body)return toast("Başlık ve bildirim metnini yazın.");
+  const approved=await systemConfirm({title:"Müşteri Bildirimi Gönderilsin mi?",message:`${kind==="campaign"?"Kampanya":"Duyuru"} bildirimi, bu seçeneği açan tüm müşteri cihazlarına gönderilecek.`,confirmText:"Bildirimi Gönder"});
+  if(!approved)return;busy=true;byId("sendCustomerBroadcast").disabled=true;
+  try{const response=await sendCustomerBroadcast({kind,title,body}),result=response.data||{};toast(`${Number(result.successCount)||0} müşteri cihazına bildirim gönderildi.`);event.target.reset()}
+  catch(error){console.error(error);toast("Müşteri bildirimi gönderilemedi. İnternet bağlantısını kontrol edin.")}
+  finally{busy=false;byId("sendCustomerBroadcast").disabled=false}
+};
+
 function watchDevices(){
   unsubscribeDevices?.();
   unsubscribeDevices=onSnapshot(query(collection(db,"adminTeaPushDevices"),where("active","==",true)),snapshot=>{
@@ -43,6 +57,13 @@ function watchDevices(){
     byId("activeDeviceCount").textContent=String(snapshot.size);
     renderDeviceStatus()
   },()=>{byId("activeDeviceCount").textContent="—";toast("Bildirim cihazları alınamadı.")})
+}
+
+function watchCustomerDevices(){
+  onSnapshot(query(collection(db,"customerPushDevices"),where("active","==",true)),snapshot=>{
+    let teaCount=0,campaignCount=0;snapshot.docs.forEach(item=>{const preferences=item.data()?.preferences||{};if(preferences.tea===true)teaCount++;if(preferences.campaigns===true)campaignCount++});
+    byId("customerTeaCount").textContent=String(teaCount);byId("customerCampaignCount").textContent=String(campaignCount)
+  },()=>{byId("customerTeaCount").textContent="—";byId("customerCampaignCount").textContent="—"})
 }
 
 async function renderDeviceStatus(){

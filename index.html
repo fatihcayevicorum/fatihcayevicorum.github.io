@@ -20,11 +20,14 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/home.css?v=251"><link rel="stylesheet" href="assets/css/home-dynamic.css?v=1"><link rel="stylesheet" href="assets/css/campaign-enhancements.css?v=1"><link rel="stylesheet" href="assets/css/news-campaign-layout.css?v=1">
+    <link rel="stylesheet" href="assets/css/home.css?v=266"><link rel="stylesheet" href="assets/css/home-dynamic.css?v=1"><link rel="stylesheet" href="assets/css/campaign-enhancements.css?v=1"><link rel="stylesheet" href="assets/css/news-campaign-layout.css?v=1">
 </head>
 
 <body>
     <header class="hero">
+        <button id="customerNotificationButton" class="customer-notification-button is-off" type="button" aria-label="Bildirimler kapalı" title="Bildirimler kapalı">
+            <i class="fa-solid fa-bell" aria-hidden="true"></i>
+        </button>
         <div class="hero-atmosphere" aria-hidden="true"><span></span><span></span><span></span></div>
         <div class="hero-overlay">
             <img src="assets/images/logo.png" alt="Fatih Çay Evi logosu" class="logo" width="300" height="300">
@@ -190,9 +193,33 @@
         <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
     </button>
 
+    <dialog id="customerNotificationDialog" class="customer-notification-dialog">
+        <form id="customerNotificationForm" method="dialog">
+            <div class="customer-notification-heading">
+                <span class="customer-notification-icon"><i class="fa-solid fa-bell"></i></span>
+                <div><small>FATİH ÇAY EVİ</small><h2>Bildirim Tercihleri</h2></div>
+                <button id="closeCustomerNotifications" class="customer-notification-close" type="button" aria-label="Pencereyi kapat"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="customer-notification-intro">Haberdar olmak istediğiniz bildirimleri seçin. Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.</p>
+            <label class="customer-notification-option">
+                <input id="customerTeaNotifications" type="checkbox">
+                <span class="customer-notification-check"><i class="fa-solid fa-check"></i></span>
+                <span><strong>Her Taze Demlikten Haberdar Ol</strong><small>Yeni demlenen çay servise hazır olduğunda bildirim al.</small></span>
+            </label>
+            <label class="customer-notification-option">
+                <input id="customerCampaignNotifications" type="checkbox">
+                <span class="customer-notification-check"><i class="fa-solid fa-check"></i></span>
+                <span><strong>Duyuru ve Kampanyalardan Haberdar Ol</strong><small>Fatih Çay Evi duyurularını ve fırsatlarını kaçırma.</small></span>
+            </label>
+            <p id="customerNotificationStatus" class="customer-notification-status is-info" role="status">Almak istediğiniz bildirimleri seçin.</p>
+            <button id="saveCustomerNotifications" class="customer-notification-save" type="submit"><i class="fa-solid fa-check"></i> Tercihlerimi Kaydet</button>
+        </form>
+    </dialog>
+
     <script src="assets/js/home.js?v=251"></script>
     <script type="module" src="assets/js/tea-live.js?v=6"></script>
     <script type="module" src="assets/js/site-dynamic.js?v=250"></script>
+    <script type="module" src="assets/js/customer-push.js?v=266"></script>
     <script type="module" src="assets/js/system-ui.js?v=265"></script>
 </body>
 
