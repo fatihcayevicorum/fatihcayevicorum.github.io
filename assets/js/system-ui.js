@@ -6,6 +6,8 @@ import{getManagementProfile}from"./admin-access.js";
 import("./pwa.js?v=265").catch(error=>console.error("PWA başlatılamadı:",error));
 if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js").then(module=>module.startForegroundAdminPush()).catch(error=>console.error("Yönetici bildirimi başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const adminPageFolders=["adisyon","adisyon-gecmisi","ana-sayfa-yonetimi","bildirim-merkezi","esnaf-yonetimi","kasa-hesap-yonetimi","kullanici-yonetimi","menu-yonetimi","personel-yonetimi","raporlar","siparis-listesi","stok-yonetimi","taze-dem-paneli","veri-yonetimi","yonetim-merkezi"];
+if(adminPageFolders.some(folder=>location.pathname.includes(`/${folder}/`)))import("./admin-notifications.js?v=269").catch(error=>console.error("Uygulama içi bildirimler başlatılamadı:",error));
 ensureFooter();
 installGlobalInteractionStyle();
 installKeyboardScrollSupport();

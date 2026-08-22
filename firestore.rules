@@ -256,6 +256,35 @@ service cloud.firestore {
     match /adminTeaNotificationEvents/{document} {
       allow read, write: if false;
     }
+    match /merchantPushDevices/{deviceId} {
+      allow read: if isOwner()
+        || (isActiveMerchant() && resource.data.merchantId == request.auth.uid);
+      allow create: if isActiveMerchant()
+        && request.resource.data.merchantId == request.auth.uid
+        && request.resource.data.token is string
+        && request.resource.data.token.size() >= 20
+        && request.resource.data.token.size() <= 4096
+        && request.resource.data.active is bool;
+      allow update: if isActiveMerchant()
+        && resource.data.merchantId == request.auth.uid
+        && request.resource.data.merchantId == request.auth.uid
+        && request.resource.data.token == resource.data.token
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'active', 'preferences', 'deviceType', 'platform', 'userAgent',
+          'createdAtMs', 'updatedAtMs', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+    match /merchantBroadcastRequests/{requestId} {
+      allow read, create: if isOwner();
+      allow update, delete: if false;
+    }
+    match /adminInAppNotifications/{notificationId} {
+      allow read: if isManager();
+      allow update: if isManager()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy', 'readAtMs', 'updatedAt']);
+      allow create, delete: if false;
+    }
 
     match /{document=**} {
       allow read, write: if isOwner();

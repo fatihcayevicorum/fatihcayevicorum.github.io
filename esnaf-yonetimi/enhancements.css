@@ -23,3 +23,4 @@
 .opening-balance-field[hidden]{display:none!important}
 @media(max-width:760px){.card-actions .opening-balance{flex:1 1 46%}}
 .card-actions .delete-merchant{background:#8d2630;color:#fff}.card-actions .delete-merchant:hover{background:#6f1820}.order-card.is-double{border-color:#d7a85f;background:#fff9ee}.order-card.is-double .avatar{background:#f6dfb8;color:#7d4b00}
+.order-card.notification-focus{border-color:#8d2630;box-shadow:0 0 0 4px rgba(141,38,48,.14),0 14px 34px rgba(91,22,29,.18);animation:notificationFocusPulse 1s ease 2}@keyframes notificationFocusPulse{50%{transform:scale(1.012)}}

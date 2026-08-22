@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=266">
+  <link rel="stylesheet" href="style.css?v=269">
 </head>
 <body>
   <header class="app-header">
@@ -99,10 +99,25 @@
         <button id="sendCustomerBroadcast" class="primary wide" type="submit"><i class="fa-solid fa-paper-plane"></i> Müşterilere Gönder</button>
       </form>
     </section>
+
+    <section class="customer-push-panel merchant-push-panel">
+      <div class="card-heading">
+        <span class="card-icon"><i class="fa-solid fa-store"></i></span>
+        <div><p>ESNAF BİLDİRİMLERİ</p><h3>Esnaf Duyuru Merkezi</h3></div>
+        <div class="customer-counts"><span><b id="merchantTeaCount">—</b> Taze Dem</span><span><b id="merchantAnnouncementCount">—</b> Duyuru</span></div>
+      </div>
+      <p class="card-text">Esnaf panelinden izin veren cihazlara gönderilir. Müşteri duyuruları ile tamamen ayrı çalışır.</p>
+      <form id="merchantBroadcastForm" class="broadcast-form">
+        <label><span>Bildirim türü</span><select disabled><option>Esnaf Duyurusu</option></select></label>
+        <label><span>Başlık</span><input id="merchantBroadcastTitle" maxlength="70" required placeholder="Örnek: Esnaflarımıza Duyuru"></label>
+        <label class="wide"><span>Bildirim metni</span><textarea id="merchantBroadcastBody" maxlength="220" required placeholder="Esnaflara gönderilecek kısa mesajı yazın."></textarea></label>
+        <button id="sendMerchantBroadcast" class="primary wide" type="submit"><i class="fa-solid fa-paper-plane"></i> Esnaflara Gönder</button>
+      </form>
+    </section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=266"></script>
-  <script type="module" src="../assets/js/system-ui.js?v=265"></script>
+  <script type="module" src="script.js?v=269"></script>
+  <script type="module" src="../assets/js/system-ui.js?v=269"></script>
 </body>
 </html>

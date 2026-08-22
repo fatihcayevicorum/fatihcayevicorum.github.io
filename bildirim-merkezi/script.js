@@ -1,6 +1,6 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{addDoc,collection,getFirestore,onSnapshot,query,serverTimestamp,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js";
@@ -14,6 +14,7 @@ onAuthStateChanged(auth,async current=>{
   user=current;
   watchDevices();
   watchCustomerDevices();
+  watchMerchantDevices();
   await renderDeviceStatus()
 });
 
@@ -50,6 +51,20 @@ byId("customerBroadcastForm").onsubmit=async event=>{
   finally{busy=false;byId("sendCustomerBroadcast").disabled=false}
 };
 
+byId("merchantBroadcastForm").onsubmit=async event=>{
+  event.preventDefault();if(!user||busy)return;
+  const title=byId("merchantBroadcastTitle").value.trim(),body=byId("merchantBroadcastBody").value.trim();
+  if(!title||!body)return toast("Başlık ve bildirim metnini yazın.");
+  const approved=await systemConfirm({title:"Esnaf Duyurusu Gönderilsin mi?",message:"Duyuru, yalnızca Esnaf Duyuruları seçeneğini açmış esnaf cihazlarına gönderilecek.",confirmText:"Esnaflara Gönder"});
+  if(!approved)return;busy=true;byId("sendMerchantBroadcast").disabled=true;
+  try{
+    const ref=await addDoc(collection(db,"merchantBroadcastRequests"),{title,body,status:"pending",sentBy:user.uid,createdAtMs:Date.now(),createdAt:serverTimestamp()});
+    event.target.reset();toast("Esnaf duyurusu gönderim sırasına alındı.");
+    let stop=()=>{};stop=onSnapshot(ref,snapshot=>{const data=snapshot.data()||{};if(data.status==="sent"){toast(`${Number(data.successCount)||0} esnaf cihazına bildirim gönderildi.`);stop()}else if(data.status==="error"||data.status==="rejected"){toast("Esnaf duyurusu gönderilemedi.");stop()}})
+  }catch(error){console.error(error);toast("Esnaf duyurusu gönderilemedi. İnternet bağlantısını kontrol edin.")}
+  finally{busy=false;byId("sendMerchantBroadcast").disabled=false}
+};
+
 function watchDevices(){
   unsubscribeDevices?.();
   unsubscribeDevices=onSnapshot(query(collection(db,"adminTeaPushDevices"),where("active","==",true)),snapshot=>{
@@ -64,6 +79,13 @@ function watchCustomerDevices(){
     let teaCount=0,campaignCount=0;snapshot.docs.forEach(item=>{const preferences=item.data()?.preferences||{};if(preferences.tea===true)teaCount++;if(preferences.campaigns===true)campaignCount++});
     byId("customerTeaCount").textContent=String(teaCount);byId("customerCampaignCount").textContent=String(campaignCount)
   },()=>{byId("customerTeaCount").textContent="—";byId("customerCampaignCount").textContent="—"})
+}
+
+function watchMerchantDevices(){
+  onSnapshot(query(collection(db,"merchantPushDevices"),where("active","==",true)),snapshot=>{
+    let teaCount=0,announcementCount=0;snapshot.docs.forEach(item=>{const preferences=item.data()?.preferences||{};if(preferences.tea===true)teaCount++;if(preferences.announcements===true)announcementCount++});
+    byId("merchantTeaCount").textContent=String(teaCount);byId("merchantAnnouncementCount").textContent=String(announcementCount)
+  },()=>{byId("merchantTeaCount").textContent="—";byId("merchantAnnouncementCount").textContent="—"})
 }
 
 async function renderDeviceStatus(){

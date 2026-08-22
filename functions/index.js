@@ -1,7 +1,7 @@
 "use strict";
 const crypto=require("crypto");
 const{onCall,HttpsError}=require("firebase-functions/v2/https");
-const{onDocumentUpdated}=require("firebase-functions/v2/firestore");
+const{onDocumentCreated,onDocumentUpdated}=require("firebase-functions/v2/firestore");
 const{onSchedule}=require("firebase-functions/v2/scheduler");
 const{initializeApp}=require("firebase-admin/app");
 const{getAuth}=require("firebase-admin/auth");
@@ -92,6 +92,8 @@ exports.deleteMerchantUser=onCall({region:"europe-west1",cors:true},async reques
 const ADMIN_TEA_DEVICE_COLLECTION="adminTeaPushDevices";
 const ADMIN_TEA_EVENT_COLLECTION="adminTeaNotificationEvents";
 const CUSTOMER_PUSH_DEVICE_COLLECTION="customerPushDevices";
+const MERCHANT_PUSH_DEVICE_COLLECTION="merchantPushDevices";
+const ADMIN_IN_APP_NOTIFICATION_COLLECTION="adminInAppNotifications";
 const SITE_URL="https://fatihcayevi.com.tr";
 const TEA_BREWING_MS=20*60*1000;
 const TEA_FRESHNESS_MS=60*60*1000;
@@ -136,10 +138,10 @@ async function sendAdminTeaPush(message){
     const response=await getMessaging().sendEachForMulticast({
       tokens,
       notification:{title:"Fatih Çay Evi",body:message.body},
-      data:{type:message.type,tag:message.tag,link:`${SITE_URL}/taze-dem-paneli/`},
+      data:{type:message.type,tag:message.tag,link:message.link||`${SITE_URL}/taze-dem-paneli/`},
       webpush:{
         notification:{icon:`${SITE_URL}/assets/icons/icon-192.png`,badge:`${SITE_URL}/assets/icons/notification-badge-96.png`,tag:message.tag,renotify:true},
-        fcmOptions:{link:`${SITE_URL}/taze-dem-paneli/`}
+        fcmOptions:{link:message.link||`${SITE_URL}/taze-dem-paneli/`}
       }
     });
     result.successCount+=response.successCount;
@@ -210,6 +212,53 @@ async function sendCustomerPush(message,preference){
   return result
 }
 
+async function activeMerchantDevices(preference){
+  const snap=await db.collection(MERCHANT_PUSH_DEVICE_COLLECTION).where("active","==",true).get();
+  return snap.docs.filter(item=>item.data()?.preferences?.[preference]===true&&typeof item.data().token==="string"&&item.data().token.length>20)
+}
+
+async function sendMerchantPush(message,preference){
+  const documents=await activeMerchantDevices(preference),unique=new Map();
+  documents.forEach(item=>unique.set(item.data().token,item));
+  const entries=[...unique.entries()],result={deviceCount:entries.length,successCount:0,failureCount:0};
+  for(let offset=0;offset<entries.length;offset+=500){
+    const part=entries.slice(offset,offset+500),tokens=part.map(([token])=>token);
+    const response=await getMessaging().sendEachForMulticast({
+      tokens,notification:{title:message.title||"Fatih Çay Evi",body:message.body},
+      data:{type:message.type,tag:message.tag,link:message.link||`${SITE_URL}/esnaf-paneli/`},
+      webpush:{notification:{icon:`${SITE_URL}/assets/icons/icon-192.png`,badge:`${SITE_URL}/assets/icons/notification-badge-96.png`,tag:message.tag,renotify:true},fcmOptions:{link:message.link||`${SITE_URL}/esnaf-paneli/`}}
+    });
+    result.successCount+=response.successCount;result.failureCount+=response.failureCount;
+    const invalid=[];response.responses.forEach((item,index)=>{const code=item.error?.code||"";if(!item.success&&(code.includes("registration-token-not-registered")||code.includes("invalid-registration-token")))invalid.push(part[index][1].ref.delete())});
+    await Promise.allSettled(invalid)
+  }
+  return result
+}
+
+exports.sendMerchantBroadcastRequest=onDocumentCreated({document:"merchantBroadcastRequests/{requestId}",region:"europe-west1"},async event=>{
+  const ref=event.data?.ref,data=event.data?.data()||{},requestId=event.params.requestId;
+  if(data.sentBy!==OWNER_UID||data.status!=="pending"){await ref?.set({status:"rejected",error:"Yetkisiz istek",updatedAt:FieldValue.serverTimestamp()},{merge:true});return}
+  const title=String(data.title||"").trim().slice(0,70),body=String(data.body||"").trim().slice(0,220);
+  if(title.length<2||body.length<3){await ref.set({status:"error",error:"Başlık veya metin geçersiz",updatedAt:FieldValue.serverTimestamp()},{merge:true});return}
+  try{
+    const result=await sendMerchantPush({title,body,type:"merchant-announcement",tag:`merchant-announcement-${requestId}`,link:`${SITE_URL}/esnaf-paneli/`},"announcements");
+    await ref.set({status:"sent",...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
+  }catch(error){await ref.set({status:"error",error:String(error.message||error),updatedAt:FieldValue.serverTimestamp()},{merge:true});throw error}
+});
+
+exports.notifyAdminMerchantOrder=onDocumentCreated({document:"merchantOrders/{orderId}",region:"europe-west1"},async event=>{
+  const order=event.data?.data()||{},orderId=event.params.orderId;
+  if(order.status!=="pending")return;
+  const quantity=Math.max(1,Math.floor(Number(order.quantity)||1)),merchantName=String(order.businessName||order.merchantName||"Esnaf").trim().slice(0,80),teaType=order.teaType==="double"?" duble":"";
+  const body=`${merchantName} ${quantity} adet${teaType} çay söyledi.`;
+  await db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/${orderId}`).set({
+    type:"merchant-order",orderId,merchantId:String(order.merchantId||""),merchantName,quantity,teaType:order.teaType||"normal",body,
+    link:`/esnaf-yonetimi/?order=${encodeURIComponent(orderId)}`,readBy:{},createdAtMs:Number(order.createdAtMs)||Date.now(),createdAt:FieldValue.serverTimestamp()
+  },{merge:true});
+  try{await sendAdminTeaPush({type:"admin-merchant-order",tag:`admin-merchant-order-${orderId}`,body,link:`${SITE_URL}/esnaf-yonetimi/?order=${encodeURIComponent(orderId)}`})}
+  catch(error){logger.error("Esnaf siparişi yönetici bildirimi gönderilemedi.",{orderId,error:String(error.message||error)})}
+});
+
 exports.sendCustomerBroadcast=onCall({region:"europe-west1",cors:true},async request=>{
   requireOwner(request);
   const kind=request.data?.kind==="campaign"?"campaign":"announcement",title=String(request.data?.title||"").trim().slice(0,70),body=String(request.data?.body||"").trim().slice(0,220);
@@ -249,6 +298,16 @@ async function notifyCustomerTeaReady(brew,position,now=Date.now()){
   }catch(error){await eventRef.set({status:"error",leaseUntilMs:0,error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});throw error}
 }
 
+async function notifyMerchantTeaReady(brew,position,now=Date.now()){
+  const readyAt=teaReadyAt(brew);
+  if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt||now-readyAt>TEA_NOTIFICATION_WINDOW_MS)return;
+  const eventRef=await claimAdminTeaEvent(`merchant-ready-${brew.id}`,"merchant-tea-ready",brew.id);if(!eventRef)return;
+  try{
+    const result=await sendMerchantPush({title:"Taze Dem Hazır",body:`Demlik ${Math.max(1,position)} servise hazır. Taze çayınızı şimdi söyleyebilirsiniz.`,type:"merchant-tea-ready",tag:`merchant-tea-ready-${brew.id}`,link:`${SITE_URL}/esnaf-paneli/`},"tea");
+    await eventRef.set({status:"sent",leaseUntilMs:0,...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
+  }catch(error){await eventRef.set({status:"error",leaseUntilMs:0,error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});throw error}
+}
+
 async function notifyAdminTeaExpired(brew,position,now=Date.now()){
   const readyAt=teaReadyAt(brew);
   if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt+TEA_FRESHNESS_MS||now-(readyAt+TEA_FRESHNESS_MS)>TEA_NOTIFICATION_WINDOW_MS)return;
@@ -267,6 +326,7 @@ async function checkAdminTeaBrew(brew,position,now){
   const channels=[
     ["admin-ready",notifyAdminTeaReady(brew,position,now)],
     ["customer-ready",notifyCustomerTeaReady(brew,position,now)],
+    ["merchant-ready",notifyMerchantTeaReady(brew,position,now)],
     ["admin-expired",notifyAdminTeaExpired(brew,position,now)]
   ];
   const results=await Promise.allSettled(channels.map(([,task])=>task));
