@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=269">
+  <link rel="stylesheet" href="style.css?v=272">
 </head>
 <body>
   <header class="app-header">
@@ -32,45 +32,30 @@
   </header>
 
   <main class="page-shell">
-    <section class="intro-card">
-      <div>
-        <p class="kicker">YÖNETİCİ BİLDİRİMLERİ</p>
-        <h2>Taze Dem Bildirimleri</h2>
-        <p>Demlik hazır olduğunda ve tazelik süresi bittiğinde ayarladığınız telefon, tablet ve bilgisayarlara bildirim gönderilir.</p>
+    <nav class="section-index" aria-label="Bildirim bölümleri">
+      <a href="#taze-dem-bildirimleri"><i class="fa-solid fa-mug-hot"></i> Taze Dem</a>
+      <a href="#musteri-bildirimleri"><i class="fa-solid fa-users"></i> Müşteri</a>
+      <a href="#esnaf-bildirimleri"><i class="fa-solid fa-store"></i> Esnaf</a>
+    </nav>
+
+    <section class="notification-section tea-center-card" id="taze-dem-bildirimleri">
+      <div class="section-heading">
+        <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
+        <div><p>YÖNETİCİ BİLDİRİMLERİ</p><h2>Taze Dem Bildirimleri</h2><span>Demlik hazır ve süre doldu bildirimlerini tek yerden yönetin.</span></div>
+        <span class="live-badge"><i></i> Canlı</span>
       </div>
-      <span class="live-badge"><i></i> Canlı</span>
-    </section>
-
-    <section class="summary-grid" aria-label="Yönetici bildirim özeti">
-      <article class="summary-card">
-        <span class="summary-icon"><i class="fa-solid fa-mobile-screen-button"></i></span>
-        <div><small>Bildirim alan cihaz</small><strong id="activeDeviceCount">—</strong></div>
-      </article>
-      <article class="summary-card">
-        <span class="summary-icon status-icon"><i class="fa-solid fa-bell"></i></span>
-        <div><small>Bu cihaz</small><strong id="currentDeviceSummary">Kontrol ediliyor</strong></div>
-      </article>
-    </section>
-
-    <section class="content-grid">
-      <article class="panel-card device-card">
-        <div class="card-heading">
-          <span class="card-icon"><i class="fa-solid fa-shield-halved"></i></span>
-          <div><p>BU CİHAZ</p><h3>Yönetici Olarak Ayarla</h3></div>
-        </div>
-        <p class="card-text">Bu cihazı yönetici bildirim cihazı yaptığınızda uygulama kapalı olsa bile Taze Dem uyarıları sistem bildirim alanına gelir.</p>
+      <div class="tea-device-bar">
+        <div class="device-summary"><span><i class="fa-solid fa-mobile-screen-button"></i></span><div><small>Kayıtlı cihaz</small><strong id="activeDeviceCount">—</strong></div></div>
+        <div class="device-summary"><span><i class="fa-solid fa-bell"></i></span><div><small>Bu cihaz</small><strong id="currentDeviceSummary">Kontrol ediliyor</strong></div></div>
         <div class="device-status" id="deviceStatus" role="status"><i class="fa-solid fa-circle-info"></i><span>Cihaz durumu kontrol ediliyor.</span></div>
         <div class="device-actions">
-          <button id="enableDevice" class="primary" type="button"><i class="fa-solid fa-bell"></i> Yönetici Olarak Ayarla</button>
+          <button id="enableDevice" class="primary" type="button"><i class="fa-solid fa-bell"></i> Bu Cihazda Aç</button>
           <button id="disableDevice" class="secondary" type="button"><i class="fa-solid fa-bell-slash"></i> Bu Cihazda Kapat</button>
         </div>
-      </article>
-
-      <article class="panel-card notification-card">
-        <div class="card-heading">
-          <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
-          <div><p>TAZE DEM</p><h3>Gönderilecek Bildirimler</h3></div>
-        </div>
+      </div>
+      <div class="tea-settings-grid">
+        <div class="tea-message-column">
+          <div class="subheading"><i class="fa-solid fa-message"></i><span><strong>Gönderilecek bildirimler</strong><small>Telefon, tablet ve bilgisayarda görünür.</small></span></div>
         <div class="notification-list">
           <div class="notification-row ready">
             <i class="fa-solid fa-check"></i>
@@ -81,11 +66,25 @@
             <div><strong>Dem süresi bitti</strong><span>Örnek: Demlik 1 için dem süresi bitti. Yeni çay demleyin.</span></div>
           </div>
         </div>
-        <div class="logo-note"><img src="../assets/images/logo.png" alt="" width="44" height="44"><span>Bildirimlerde Fatih Çay Evi adı ve logosu kullanılır.</span></div>
-      </article>
+        </div>
+        <div class="tea-sound-column">
+          <div class="subheading"><i class="fa-solid fa-music"></i><span><strong>Uygulama içi sesler</strong><small>Yalnızca ayarladığınız bu cihazda geçerlidir.</small></span></div>
+        <div class="sound-settings" aria-label="Taze Dem uygulama içi ses ayarları">
+          <div class="sound-setting" data-sound-setting="tea-ready">
+            <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Demlik hazır sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+          </div>
+          <div class="sound-setting" data-sound-setting="tea-expired">
+            <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Dem eskidi / süre doldu sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="section-note"><i class="fa-solid fa-circle-info"></i><span>Uygulama kapalıyken bildirimler cihazın sistem bildirim alanına gelir.</span></div>
     </section>
 
-    <section class="customer-push-panel">
+    <section class="customer-push-panel notification-section" id="musteri-bildirimleri">
       <div class="card-heading">
         <span class="card-icon"><i class="fa-solid fa-users"></i></span>
         <div><p>MÜŞTERİ BİLDİRİMLERİ</p><h3>Bildirim Merkezi</h3></div>
@@ -100,13 +99,19 @@
       </form>
     </section>
 
-    <section class="customer-push-panel merchant-push-panel">
+    <section class="customer-push-panel merchant-push-panel notification-section" id="esnaf-bildirimleri">
       <div class="card-heading">
         <span class="card-icon"><i class="fa-solid fa-store"></i></span>
         <div><p>ESNAF BİLDİRİMLERİ</p><h3>Esnaf Duyuru Merkezi</h3></div>
         <div class="customer-counts"><span><b id="merchantTeaCount">—</b> Taze Dem</span><span><b id="merchantAnnouncementCount">—</b> Duyuru</span></div>
       </div>
       <p class="card-text">Esnaf panelinden izin veren cihazlara gönderilir. Müşteri duyuruları ile tamamen ayrı çalışır.</p>
+      <div class="sound-settings merchant-sound-settings" aria-label="Esnaf siparişi uygulama içi ses ayarı">
+        <div class="sound-setting" data-sound-setting="merchant-order">
+          <div class="sound-setting-copy"><i class="fa-solid fa-bell"></i><span><strong>Esnaf çay siparişi sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+          <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+        </div>
+      </div>
       <form id="merchantBroadcastForm" class="broadcast-form">
         <label><span>Bildirim türü</span><select disabled><option>Esnaf Duyurusu</option></select></label>
         <label><span>Başlık</span><input id="merchantBroadcastTitle" maxlength="70" required placeholder="Örnek: Esnaflarımıza Duyuru"></label>
@@ -117,7 +122,7 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=269"></script>
-  <script type="module" src="../assets/js/system-ui.js?v=269"></script>
+  <script type="module" src="script.js?v=272"></script>
+  <script type="module" src="../assets/js/system-ui.js?v=272"></script>
 </body>
 </html>
