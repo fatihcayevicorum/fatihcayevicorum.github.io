@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=254">
+  <link rel="stylesheet" href="style.css?v=275">
 </head>
 <body>
   <header class="app-header"><div class="header-inner">
@@ -35,6 +35,13 @@
       <span class="save-status" id="saveStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span>
     </section>
 
+    <section class="panel automatic-draft-panel" id="automaticDraftPanel">
+      <span class="automatic-draft-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+      <div class="automatic-draft-copy"><p class="kicker">Bildirimlerden birikenler</p><h2>Otomatik Eklenenler</h2><p>Ürünler siz işlem yapana kadar burada saklanır.</p></div>
+      <span class="automatic-draft-count"><b id="automaticDraftCount">0</b><small>ürün</small></span>
+      <button id="openAutomaticDraft" class="primary-button" type="button" disabled><i class="fa-solid fa-pen-to-square"></i> Listeyi Aç</button>
+    </section>
+
     <section class="panel order-panel">
       <div class="order-head order-grid"><strong>Ürün İsmi</strong><strong>Mevcut</strong><strong>Alınacak Miktar</strong></div>
       <p class="empty-copy" id="stockEmpty">Stok ürünleri yükleniyor…</p>
@@ -53,6 +60,14 @@
     <div class="dialog-heading"><div><p class="kicker">Sipariş özeti</p><h2 id="summaryTitle">Sipariş Listesi</h2></div><button class="icon-button" type="button" data-close="orderSummaryDialog"><i class="fa-solid fa-xmark"></i></button></div>
     <div id="summaryMeta" class="summary-meta"></div><div id="summaryTable" class="summary-table"></div>
     <div class="dialog-actions"><button id="summaryWhatsappButton" class="secondary-button" type="button"><i class="fa-brands fa-whatsapp"></i> WhatsApp'ta Gönder</button><button id="summaryPdfButton" class="secondary-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF Oluştur</button><button id="saveOrderButton" class="primary-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Siparişi Kaydet</button></div>
+  </div></dialog>
+
+  <dialog id="automaticDraftDialog" class="wide-dialog"><div class="dialog-body">
+    <div class="dialog-heading"><div><p class="kicker">Bildirimlerden birikenler</p><h2>Otomatik Eklenenler</h2></div><button class="icon-button" type="button" data-close="automaticDraftDialog"><i class="fa-solid fa-xmark"></i></button></div>
+    <p class="notice">Miktar ve birimleri düzenleyebilirsiniz. Ürünler siz sipariş listesi oluşturana veya silene kadar burada kalır.</p>
+    <div class="automatic-draft-list" id="automaticDraftList"></div>
+    <p class="empty-copy" id="automaticDraftEmpty">Henüz bildirimlerden eklenen ürün yok.</p>
+    <div class="dialog-actions automatic-draft-actions"><button id="clearAutomaticDraft" class="danger-button" type="button"><i class="fa-solid fa-trash"></i> Listeyi Temizle</button><button id="saveAutomaticDraft" class="secondary-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet</button><button id="convertAutomaticDraft" class="primary-button" type="button"><i class="fa-solid fa-file-circle-plus"></i> Sipariş Listesi Oluştur</button></div>
   </div></dialog>
 
   <dialog id="historyDialog" class="wide-dialog"><div class="dialog-body">
@@ -79,11 +94,13 @@
   <dialog id="confirmReceiptDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-box-open"></i></div><h2>Gelen ürünler kaydedilsin mi?</h2><p id="confirmReceiptText">Girilen adetler yalnızca sipariş takibine kaydedilecek.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="primary-button" value="confirm">Kaydet</button></div></form></dialog>
   <dialog id="confirmEditDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-pen-to-square"></i></div><h2>Değişiklikler kaydedilsin mi?</h2><p>Sipariş listesi yeni miktarlara göre güncellenecek.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="primary-button" value="confirm">Kaydet</button></div></form></dialog>
   <dialog id="confirmCancelDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon danger-icon"><i class="fa-solid fa-ban"></i></div><h2>Sipariş iptal edilsin mi?</h2><p>Bu sipariş kaydı kalıcı olarak silinecek. Bu işlem geri alınamaz.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="danger-button" value="confirm">Siparişi İptal Et</button></div></form></dialog>
+  <dialog id="confirmAutomaticDraftDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-file-circle-plus"></i></div><h2>Sipariş listesi oluşturulsun mu?</h2><p>Otomatik eklenen ürünler normal sipariş listesine aktarılacak ve bu taslak temizlenecek.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="primary-button" value="confirm">Listeyi Oluştur</button></div></form></dialog>
+  <dialog id="confirmClearAutomaticDraftDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon danger-icon"><i class="fa-solid fa-trash"></i></div><h2>Otomatik liste temizlensin mi?</h2><p>Listedeki tüm ürünler kaldırılacak. Bu işlem geri alınamaz.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button class="danger-button" value="confirm">Listeyi Temizle</button></div></form></dialog>
 
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=254"></script>
-  <script type="module" src="../assets/js/system-ui.js?v=265"></script>
+  <script type="module" src="script.js?v=275"></script>
+  <script type="module" src="../assets/js/system-ui.js?v=275"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
 </body>
 </html>
