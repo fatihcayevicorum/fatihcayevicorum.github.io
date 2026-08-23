@@ -129,6 +129,9 @@ service cloud.firestore {
     match /adminPurchaseOrders/{document} {
       allow read, write: if hasPanel('stock');
     }
+    match /adminPurchaseDrafts/{document} {
+      allow read, write: if hasPanel('stock');
+    }
     match /adminCreditCustomers/{document} {
       allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
       allow write: if hasAnyPanel(['credit', 'pos']);
