@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=3">
-  <link rel="stylesheet" href="simple-stock.css?v=11">
+  <link rel="stylesheet" href="simple-stock.css?v=12">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
@@ -54,6 +54,7 @@
         <div><p class="kicker">Canlı stok</p><h2>Stok Kartları</h2></div>
         <div class="stock-toolbar">
           <input id="stockSearch" type="search" placeholder="Ürün ara">
+          <button id="stockCountButton" class="secondary-button stock-count-button" type="button"><i class="fa-solid fa-calculator"></i> Stok Say</button>
           <button id="barcodeButton" class="secondary-button barcode-button" type="button"><i class="fa-solid fa-barcode"></i> Stok Girişi</button>
           <button id="barcodeSearchButton" class="secondary-button barcode-button" type="button"><i class="fa-solid fa-barcode"></i> Ürün Arama</button>
           <button id="manageProductsButton" class="primary-button" type="button"><i class="fa-solid fa-box-open"></i> Stok Ürünleri</button>
@@ -98,6 +99,29 @@
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-plus"></i> Ürünü Stok Takibine Ekle</button>
       <div class="defined-products" id="definedProducts"></div>
     </form>
+  </dialog>
+
+  <dialog id="stockCountDialog" class="stock-count-dialog">
+    <div class="dialog-body">
+      <div class="dialog-heading"><div><p class="kicker">Hızlı karşılaştırma</p><h2>Stok Sayımı</h2></div><button class="icon-button" type="button" data-close="stockCountDialog" aria-label="Sayımı kapat"><i class="fa-solid fa-xmark"></i></button></div>
+      <div id="stockCountProgress" class="stock-count-progress"><span id="stockCountCategory">Kategori</span><b id="stockCountStep">0 / 0</b></div>
+
+      <section id="stockCountEntry" class="stock-count-entry">
+        <div class="stock-count-product">
+          <span class="stock-count-icon"><i class="fa-solid fa-box-open"></i></span>
+          <div><small id="stockCountCategoryName">Kategori</small><h3 id="stockCountProductName">Ürün</h3><p>Sistemde görünen: <b id="stockCountSystemQuantity">0 Adet</b></p></div>
+        </div>
+        <label class="dialog-field stock-count-field"><span>Bulduğun miktarı yaz</span><div><input id="stockCountAmount" type="number" min="0" max="999999" step="1" inputmode="numeric" autocomplete="off" placeholder="Örn. 10"><button id="addStockCountAmount" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Ekle</button></div></label>
+        <div class="stock-count-total"><span>Bu ürün için sayılan</span><strong id="stockCountRunningTotal">0 Adet</strong><small id="stockCountExpression">Henüz miktar eklenmedi.</small></div>
+        <div class="stock-count-entry-actions"><button id="undoStockCountAmount" class="secondary-button" type="button" disabled><i class="fa-solid fa-rotate-left"></i> Son Ekleneni Geri Al</button><button id="nextStockCountProduct" class="primary-button" type="button">Diğer Ürüne Geç <i class="fa-solid fa-arrow-right"></i></button></div>
+      </section>
+
+      <section id="stockCountSummary" class="stock-count-summary" hidden>
+        <div class="stock-count-complete"><i class="fa-solid fa-clipboard-check"></i><div><h3>Sayım tamamlandı</h3><p>Sonuçlar yalnızca karşılaştırma içindir; mevcut stoklar değiştirilmedi.</p></div></div>
+        <div class="stock-count-summary-list" id="stockCountSummaryList"></div>
+        <div class="stock-count-summary-actions"><button id="restartStockCount" class="secondary-button" type="button"><i class="fa-solid fa-rotate"></i> Baştan Say</button><button id="stockCountPdfButton" class="primary-button" type="button"><i class="fa-solid fa-file-pdf"></i> Karşılaştırma PDF'i</button></div>
+      </section>
+    </div>
   </dialog>
 
   <dialog id="entryDialog">
@@ -199,7 +223,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=250"></script>
+  <script type="module" src="script.js?v=277"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
