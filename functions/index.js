@@ -346,3 +346,34 @@ exports.checkAdminTeaNotifications=onSchedule({schedule:"every 1 minutes",region
   const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now)));
   results.forEach((result,index)=>{if(result.status==="rejected")logger.error("Zamanlanmış yönetici çay bildirimi gönderilemedi.",{brewId:active[index]?.id||"",position:index+1,error:String(result.reason?.message||result.reason)})})
 });
+
+function localDate(now=new Date()){
+  const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(now).reduce((a,x)=>(a[x.type]=x.value,a),{});
+  return{date:`${parts.year}-${parts.month}-${parts.day}`,year:parts.year,month:parts.month,day:Number(parts.day),hour:Number(parts.hour),minute:Number(parts.minute)}
+}
+function lastDayOfMonth(year,month){return new Date(Date.UTC(Number(year),Number(month),0)).getUTCDate()}
+async function putBusinessNotification(id,data){const ref=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/${id}`);await db.runTransaction(async tx=>{if((await tx.get(ref)).exists)return;tx.create(ref,{...data,readBy:{},snoozedUntilBy:{},createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()})})}
+
+exports.notifyAdminStockLevel=onDocumentUpdated({document:"adminStockItems/{stockItemId}",region:"europe-west1"},async event=>{
+  const before=event.data?.before.data()||{},after=event.data?.after.data()||{},id=event.params.stockItemId;if(after.active===false)return;
+  const quantity=Number(after.quantity)||0,threshold=Math.max(0,Number(after.warningThreshold)||0),oldQuantity=Number(before.quantity)||0,oldThreshold=Math.max(0,Number(before.warningThreshold)||0);
+  const state=quantity<=0?"empty":quantity<=threshold?"critical":"normal",oldState=oldQuantity<=0?"empty":oldQuantity<=oldThreshold?"critical":"normal";if(state===oldState)return;
+  const criticalRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/stock-critical-${id}`),emptyRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/stock-empty-${id}`);
+  if(state==="normal"){await Promise.allSettled([criticalRef.delete(),emptyRef.delete()]);return}
+  const name=String(after.name||"Ürün").slice(0,90),empty=state==="empty";await Promise.allSettled([empty?criticalRef.delete():emptyRef.delete()]);
+  await putBusinessNotification(`stock-${state}-${id}`,{type:empty?"stock-empty":"stock-critical",preferenceKey:empty?"stockEmpty":"stockCritical",stockItemId:id,title:empty?`${name} stokta tükendi`:`${name} kritik seviyede`,body:empty?`${name} stokta tükendi. Sipariş listesine eklemek ister misiniz?`:`${name} kritik seviyeye düştü. Sipariş listesine eklensin mi?`,link:`/stok-yonetimi/?item=${encodeURIComponent(id)}`})
+});
+
+exports.addReminderStockToPurchaseOrder=onCall({region:"europe-west1",cors:true},async request=>{
+  await requirePanel(request,"stock");const stockItemId=String(request.data?.stockItemId||"");if(!stockItemId)throw new HttpsError("invalid-argument","Ürün seçilmedi.");const stockSnap=await db.doc(`adminStockItems/${stockItemId}`).get();if(!stockSnap.exists)throw new HttpsError("not-found","Stok ürünü bulunamadı.");
+  const open=await db.collection("adminPurchaseOrders").where("status","in",["pending","partial"]).limit(20).get(),sorted=[...open.docs].sort((a,b)=>Number(b.data().createdAtMs)-Number(a.data().createdAtMs)),existing=sorted.find(x=>(x.data().items||[]).some(i=>i.stockItemId===stockItemId&&Number(i.receivedQuantity)<Number(i.orderedQuantity)));
+  if(existing)return{orderId:existing.id,alreadyExists:true};const target=sorted[0]?.ref||db.collection("adminPurchaseOrders").doc(),now=Date.now(),stock=stockSnap.data();
+  await db.runTransaction(async tx=>{const snap=await tx.get(target),data=snap.data()||{},items=Array.isArray(data.items)?[...data.items]:[];if(!items.some(x=>x.stockItemId===stockItemId))items.push({stockItemId,name:String(stock.name||"Ürün"),category:String(stock.category||""),categoryId:String(stock.categoryId||""),currentStock:Number(stock.quantity)||0,targetStock:Number(stock.targetStock)||0,orderEntryMode:"direct",orderedQuantity:1,receivedQuantity:0,unit:"adet",unitsPerPackage:Number(stock.unitsPerPackage)||1});const totalOrdered=items.reduce((s,x)=>s+(Number(x.orderedQuantity)||0),0),totalReceived=items.reduce((s,x)=>s+(Number(x.receivedQuantity)||0),0);tx.set(target,{items,status:totalReceived>0?"partial":"pending",totalProducts:items.length,totalOrdered,totalReceived,createdAtMs:Number(data.createdAtMs)||now,createdAt:data.createdAt||FieldValue.serverTimestamp(),createdBy:data.createdBy||request.auth.uid,updatedAtMs:now,updatedAt:FieldValue.serverTimestamp(),updatedBy:request.auth.uid},{merge:true})});return{orderId:target.id,alreadyExists:false}
+});
+
+exports.checkAdminBusinessReminders=onSchedule({schedule:"every 30 minutes",region:"europe-west1",timeZone:"Europe/Istanbul"},async()=>{
+  const now=Date.now(),local=localDate(),writes=[];
+  const orders=await db.collection("adminPurchaseOrders").where("status","in",["pending","partial"]).get();orders.docs.forEach(s=>{const x=s.data(),last=Number(x.updatedAtMs)||Number(x.lastReceivedAtMs)||Number(x.createdAtMs)||now;if(now-last<48*60*60*1000)return;const pending=(x.items||[]).filter(i=>Number(i.receivedQuantity)<Number(i.orderedQuantity)).length,date=new Date(Number(x.createdAtMs)||last).toLocaleDateString("tr-TR");writes.push(putBusinessNotification(`purchase-order-stale-${s.id}-${local.date}`,{type:"purchase-order-stale",preferenceKey:"purchaseOrders",sourceId:s.id,title:"Sipariş listenizi unutmuş olabilirsiniz",body:`${date} tarihli sipariş listenizde ${pending} ürün hâlâ bekliyor.`,link:`/siparis-listesi/?order=${encodeURIComponent(s.id)}`}))});
+  const payments=await db.collection("adminPaymentReminders").where("status","==","pending").get();payments.docs.forEach(s=>{const x=s.data(),due=String(x.dueDate||"");if(!due||due>local.date)return;const overdue=due<local.date,type=overdue?"payment-overdue":"payment-due",key=overdue?"paymentOverdue":"paymentDue";writes.push(putBusinessNotification(`${type}-${s.id}-${local.date}`,{type,preferenceKey:key,sourceId:s.id,title:overdue?"Geciken ödeme":"Bugünkü ödeme",body:`${String(x.name||"Ödeme")} • ${new Date(`${due}T12:00:00`).toLocaleDateString("tr-TR")}`,link:`/kasa-hesap-yonetimi/?reminder=${encodeURIComponent(s.id)}`}))});
+  if(local.day===lastDayOfMonth(local.year,local.month)&&local.hour===21&&local.minute>=30)writes.push(putBusinessNotification(`stock-count-${local.year}-${local.month}`,{type:"stock-count",preferenceKey:"stockCount",title:"Aylık stok sayımı",body:"Ay sonu stok sayımı zamanı. Lütfen stok sayımını yapın.",link:"/stok-yonetimi/"}));await Promise.allSettled(writes)
+});

@@ -282,8 +282,12 @@ service cloud.firestore {
     match /adminInAppNotifications/{notificationId} {
       allow read: if isManager();
       allow update: if isManager()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy', 'readAtMs', 'updatedAt']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy', 'snoozedUntilBy', 'readAtMs', 'updatedAt']);
       allow create, delete: if false;
+    }
+    match /adminReminderPreferences/{uid} {
+      allow read, create, update: if isManager() && request.auth.uid == uid;
+      allow delete: if false;
     }
 
     match /{document=**} {

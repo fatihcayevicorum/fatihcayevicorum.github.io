@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=272">
+  <link rel="stylesheet" href="style.css?v=273">
 </head>
 <body>
   <header class="app-header">
@@ -36,6 +36,7 @@
       <a href="#taze-dem-bildirimleri"><i class="fa-solid fa-mug-hot"></i> Taze Dem</a>
       <a href="#musteri-bildirimleri"><i class="fa-solid fa-users"></i> Müşteri</a>
       <a href="#esnaf-bildirimleri"><i class="fa-solid fa-store"></i> Esnaf</a>
+      <a href="#uygulama-ici-bildirimler"><i class="fa-solid fa-list-check"></i> Uygulama İçi</a>
     </nav>
 
     <section class="notification-section tea-center-card" id="taze-dem-bildirimleri">
@@ -119,10 +120,23 @@
         <button id="sendMerchantBroadcast" class="primary wide" type="submit"><i class="fa-solid fa-paper-plane"></i> Esnaflara Gönder</button>
       </form>
     </section>
+    <section class="notification-section business-reminder-card" id="uygulama-ici-bildirimler">
+      <div class="section-heading"><span class="card-icon"><i class="fa-solid fa-list-check"></i></span><div><p>YÖNETİCİLERE ÖZEL</p><h2>Uygulama İçi Bildirimler</h2><span>İşletme hatırlatmalarını ayrı ayrı açıp kapatın.</span></div></div>
+      <div class="business-reminder-grid">
+        <label><input type="checkbox" data-reminder-pref="purchaseOrders"><span><strong>Sipariş listesi hatırlatmaları</strong><small>48 saat işlem görmeyen ve kısmen bekleyen listeler.</small></span></label>
+        <label><input type="checkbox" data-reminder-pref="stockCritical"><span><strong>Kritik stok</strong><small>Kritik seviyeye düşen ürünler ve sipariş listesine ekleme.</small></span></label>
+        <label><input type="checkbox" data-reminder-pref="stockEmpty"><span><strong>Tükenen ürünler</strong><small>Stokta kalmayan ürünler ve sipariş listesine ekleme.</small></span></label>
+        <label><input type="checkbox" data-reminder-pref="stockCount"><span><strong>Aylık stok sayımı</strong><small>Ayın son günü saat 21.30'da sayım hatırlatması.</small></span></label>
+        <label><input type="checkbox" data-reminder-pref="paymentDue"><span><strong>Ödeme günü gelenler</strong><small>Kasa ve Hesaplar bölümündeki bugünkü ödemeler.</small></span></label>
+        <label><input type="checkbox" data-reminder-pref="paymentOverdue"><span><strong>Geciken ödemeler</strong><small>Kasa ve Hesaplar bölümündeki süresi geçen ödemeler.</small></span></label>
+      </div>
+      <div class="business-reminder-actions"><span id="businessReminderStatus"><i class="fa-solid fa-circle-info"></i> Tercihler bu yönetici hesabına özel kaydedilir.</span><button id="saveBusinessReminderPreferences" class="primary" type="button"><i class="fa-solid fa-check"></i> Tercihleri Kaydet</button></div>
+      <div class="section-note"><i class="fa-solid fa-volume-high"></i><span>Bu bölüm standart uygulama bildirim sesini kullanır; özel ses ayarı yoktur.</span></div>
+    </section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=272"></script>
-  <script type="module" src="../assets/js/system-ui.js?v=272"></script>
+  <script type="module" src="script.js?v=273"></script>
+  <script type="module" src="../assets/js/system-ui.js?v=273"></script>
 </body>
 </html>

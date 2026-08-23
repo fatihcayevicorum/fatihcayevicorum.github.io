@@ -1,6 +1,6 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{addDoc,collection,getFirestore,onSnapshot,query,serverTimestamp,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{addDoc,collection,doc,getDoc,getFirestore,onSnapshot,query,serverTimestamp,setDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js";
@@ -17,8 +17,13 @@ onAuthStateChanged(auth,async current=>{
   watchDevices();
   watchCustomerDevices();
   watchMerchantDevices();
+  await loadBusinessReminderPreferences();
   await renderDeviceStatus()
 });
+
+const DEFAULT_REMINDER_PREFS={purchaseOrders:true,stockCritical:true,stockEmpty:true,stockCount:true,paymentDue:true,paymentOverdue:true};
+async function loadBusinessReminderPreferences(){try{const snap=await getDoc(doc(db,"adminReminderPreferences",user.uid)),prefs={...DEFAULT_REMINDER_PREFS,...(snap.data()||{})};document.querySelectorAll("[data-reminder-pref]").forEach(input=>input.checked=prefs[input.dataset.reminderPref]!==false)}catch(error){console.error(error);toast("Uygulama içi bildirim tercihleri alınamadı.")}}
+byId("saveBusinessReminderPreferences").onclick=async()=>{if(!user||busy)return;const button=byId("saveBusinessReminderPreferences"),prefs={};document.querySelectorAll("[data-reminder-pref]").forEach(input=>prefs[input.dataset.reminderPref]=input.checked);button.disabled=true;try{await setDoc(doc(db,"adminReminderPreferences",user.uid),{...prefs,uid:user.uid,updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});byId("businessReminderStatus").innerHTML='<i class="fa-solid fa-circle-check"></i> Tercihler kaydedildi.';toast("Uygulama içi bildirim tercihleri kaydedildi.")}catch(error){console.error(error);toast("Tercihler kaydedilemedi.")}finally{button.disabled=false}};
 
 byId("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 byId("enableDevice").onclick=async()=>{
