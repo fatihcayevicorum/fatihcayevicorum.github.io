@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=275">
+  <link rel="stylesheet" href="style.css?v=278">
 </head>
 <body>
   <header class="app-header"><div class="header-inner">
@@ -46,6 +46,8 @@
       <div class="order-head order-grid"><strong>Ürün İsmi</strong><strong>Mevcut</strong><strong>Alınacak Miktar</strong></div>
       <p class="empty-copy" id="stockEmpty">Stok ürünleri yükleniyor…</p>
       <div id="categoryLists"></div>
+      <div class="manual-product-bar"><div><strong>Listede olmayan ürün mü alacaksınız?</strong><span>Yalnızca bu siparişe eklenir, stok kartı oluşturulmaz.</span></div><button id="addCustomProductButton" class="secondary-button" type="button"><i class="fa-solid fa-plus"></i> Listede Olmayan Ürün Ekle</button></div>
+      <div id="customDraftList" class="custom-draft-list"></div>
       <div class="create-bar"><div><span>Listeye girecek ürün</span><strong id="selectedCount">0</strong></div><div><span>Sipariş miktarı</span><strong id="selectedUnits">0 Adet</strong></div><button id="createOrderButton" class="primary-button" type="button" disabled><i class="fa-solid fa-file-circle-plus"></i> Sipariş Listesi Oluştur</button></div>
     </section>
 
@@ -80,7 +82,15 @@
     <div class="dialog-heading"><div><p class="kicker">Sipariş düzenleme</p><h2>Siparişi Düzenle</h2></div><button class="icon-button" type="button" data-close="editOrderDialog"><i class="fa-solid fa-xmark"></i></button></div>
     <p class="notice">Miktarı ve birimi düzenleyin. Miktarı 0 yapılan, henüz gelmemiş ürün listeden çıkarılır.</p>
     <div class="edit-order-table" id="editOrderTable"></div>
+    <section class="edit-add-section"><div class="edit-add-heading"><div><strong>Bu Siparişe Ürün Ekle</strong><span>Ayrı liste oluşturmadan mevcut siparişe eklenir.</span></div></div><div class="edit-stock-add"><select id="editStockProduct" aria-label="Eklenecek stok ürünü"><option value="">Stoktaki ürünü seçin</option></select><input id="editStockQuantity" type="number" min="1" max="999999" step="1" inputmode="numeric" placeholder="Miktar" aria-label="Eklenecek miktar"><select id="editStockUnit" aria-label="Sipariş birimi"><option value="adet">Adet</option><option value="koli">Koli</option></select><button id="addStockToEditButton" class="secondary-button" type="button"><i class="fa-solid fa-plus"></i> Ekle</button></div><button id="addCustomProductEditButton" class="secondary-button custom-edit-button" type="button"><i class="fa-solid fa-plus"></i> Listede Olmayan Ürün Ekle</button></section>
     <div class="dialog-actions"><button class="secondary-button" type="button" data-close="editOrderDialog">Vazgeç</button><button id="saveEditButton" class="primary-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet</button></div>
+  </div></dialog>
+
+  <dialog id="customProductDialog" class="custom-product-dialog"><div class="dialog-body">
+    <div class="dialog-heading"><div><p class="kicker">Sipariş kalemi</p><h2>Listede Olmayan Ürün Ekle</h2></div><button class="icon-button" type="button" data-close="customProductDialog"><i class="fa-solid fa-xmark"></i></button></div>
+    <p class="notice">Bu ürün yalnızca sipariş listesine eklenir; stok sisteminde ürün oluşturulmaz.</p>
+    <div class="custom-product-form"><label><span>Ürün Adı</span><input id="customProductName" type="text" maxlength="80" autocomplete="off" placeholder="Örnek: Yeni Marka Soda"></label><label><span>Kategori</span><select id="customProductCategory"><option value="Sıcaklar">Sıcaklar</option><option value="Soğuklar">Soğuklar</option><option value="Atıştırmalıklar">Atıştırmalıklar</option><option value="Diğer" selected>Diğer</option></select></label><label><span>Alınacak Miktar</span><input id="customProductQuantity" type="number" min="1" max="999999" step="1" inputmode="numeric" placeholder="Miktar"></label><label><span>Birim</span><select id="customProductUnit"><option value="adet">Adet</option><option value="koli">Koli</option></select></label><label class="custom-note-field"><span>Not (isteğe bağlı)</span><input id="customProductNote" type="text" maxlength="120" autocomplete="off" placeholder="Marka, özellik veya açıklama"></label></div>
+    <div class="dialog-actions"><button class="secondary-button" type="button" data-close="customProductDialog">Vazgeç</button><button id="saveCustomProductButton" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Listeye Ekle</button></div>
   </div></dialog>
 
   <dialog id="receiveDialog" class="wide-dialog"><div class="dialog-body">
@@ -99,7 +109,7 @@
 
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=275"></script>
+  <script type="module" src="script.js?v=278"></script>
   <script type="module" src="../assets/js/system-ui.js?v=275"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
 </body>
