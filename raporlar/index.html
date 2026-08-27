@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=284">
+  <link rel="stylesheet" href="style.css?v=292">
 </head>
 <body>
   <header class="app-header">
@@ -66,7 +66,7 @@
     </nav>
 
     <section id="reportPanelSales" class="report-tab-panel" data-report-panel="sales">
-    <section class="panel sales-finance-panel" aria-label="Satış raporu"><div class="section-heading"><div><p class="kicker">Seçilen dönem</p><h2>Satış Raporu</h2></div><div class="export-actions"><button id="exportPdf" class="secondary" type="button"><i class="fa-solid fa-file-pdf"></i> PDF</button><button id="exportExcel" class="secondary" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button></div></div><div class="finance-report-grid sales-summary-grid"><article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Satış</span><strong id="cashTotal">₺0</strong></article><article><i class="fa-solid fa-building-columns"></i><span>Havale Satış</span><strong id="transferTotal">₺0</strong></article><article><i class="fa-solid fa-credit-card"></i><span>Kart / POS Satış</span><strong id="cardTotal">₺0</strong></article><article><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></article><article><i class="fa-solid fa-scale-balanced"></i><span>Eksi Yuvarlama</span><strong id="roundingTotal">₺0</strong></article><article class="total-card"><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="salesTotal">₺0</strong></article></div></section>
+    <section class="panel sales-finance-panel" aria-label="Satış raporu"><div class="section-heading"><div><p class="kicker">Seçilen dönem</p><h2>Satış Raporu</h2></div><div class="export-actions"><button id="exportPdf" class="secondary" type="button"><i class="fa-solid fa-file-pdf"></i> PDF</button><button id="exportExcel" class="secondary" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button></div></div><div class="finance-report-grid sales-summary-grid"><button class="finance-detail-card" type="button" data-finance-detail="cash-sales"><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Satış</span><strong id="cashTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="bank-sales"><i class="fa-solid fa-building-columns"></i><span>Havale Satış</span><strong id="transferTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="card-sales"><i class="fa-solid fa-credit-card"></i><span>Kart / POS Satış</span><strong id="cardTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="tips"><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="rounding"><i class="fa-solid fa-scale-balanced"></i><span>Eksi Yuvarlama</span><strong id="roundingTotal">₺0</strong></button><button class="finance-detail-card total-card" type="button" data-finance-detail="sales-total"><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="salesTotal">₺0</strong></button></div></section>
 
     <section class="summary-grid operational-summary" aria-label="Satış özeti">
       <article><i class="fa-solid fa-mug-hot"></i><span>Satılan Ürün</span><strong id="itemCount">0</strong></article>
@@ -103,10 +103,10 @@
       <section class="panel expense-summary-panel">
         <div class="section-heading"><div><p class="kicker">Seçilen dönem</p><h2>Gider Raporu</h2></div><small>Hesap aktarımları gider olarak sayılmaz</small></div>
         <div class="expense-summary-grid">
-          <article><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Giderler</span><strong id="cashExpenseTotal">₺0</strong></article>
-          <article><i class="fa-solid fa-building-columns"></i><span>Banka/Havale Ödemeleri</span><strong id="bankExpenseTotal">₺0</strong></article>
-          <article><i class="fa-solid fa-credit-card"></i><span>Kredi Kartı Harcamaları</span><strong id="creditCardExpenseTotal">₺0</strong></article>
-          <article class="total-card"><i class="fa-solid fa-arrow-trend-down"></i><span>Toplam Gider</span><strong id="expenseTotal">₺0</strong></article>
+          <button class="finance-detail-card" type="button" data-finance-detail="cash-expenses"><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Giderler</span><strong id="cashExpenseTotal">₺0</strong></button>
+          <button class="finance-detail-card" type="button" data-finance-detail="bank-expenses"><i class="fa-solid fa-building-columns"></i><span>Banka/Havale Ödemeleri</span><strong id="bankExpenseTotal">₺0</strong></button>
+          <button class="finance-detail-card" type="button" data-finance-detail="credit-expenses"><i class="fa-solid fa-credit-card"></i><span>Kredi Kartı Harcamaları</span><strong id="creditCardExpenseTotal">₺0</strong></button>
+          <button class="finance-detail-card total-card" type="button" data-finance-detail="expenses-total"><i class="fa-solid fa-arrow-trend-down"></i><span>Toplam Gider</span><strong id="expenseTotal">₺0</strong></button>
         </div>
       </section>
       <section class="panel expense-categories-panel">
@@ -238,6 +238,19 @@
     </div>
   </dialog>
 
+
+  <dialog id="financeDetailDialog" class="expense-detail-dialog">
+    <div class="expense-detail-card">
+      <div class="expense-detail-head"><div><p class="kicker">Seçilen dönem</p><h2 id="financeDetailTitle">Hareket Detayı</h2></div><button id="closeFinanceDetail" type="button" aria-label="Kapat">×</button></div>
+      <p id="financeDetailPeriod" class="expense-detail-period"></p>
+      <div id="financeDetailSummary" class="expense-detail-summary"></div>
+      <div class="expense-detail-list-head"><h3 id="financeDetailListTitle">İşlemler</h3><span id="financeDetailCount">0 İşlem</span></div>
+      <div id="financeDetailList" class="expense-detail-list"></div>
+      <p id="financeDetailEmpty" class="empty">Seçilen dönemde hareket bulunmuyor.</p>
+      <div class="expense-detail-actions"><button id="closeFinanceDetailBottom" class="primary" type="button">Kapat</button></div>
+    </div>
+  </dialog>
+
   <dialog id="currentAccountDetailDialog" class="current-account-detail-dialog">
     <div class="current-account-detail-card">
       <div class="current-account-detail-head"><div><p class="kicker">Cari hesap raporu</p><h2 id="currentAccountDetailTitle">Cari Detayı</h2></div><button id="closeCurrentAccountDetail" type="button" aria-label="Kapat">×</button></div>
@@ -251,7 +264,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=284"></script>
+  <script type="module" src="script.js?v=292"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
