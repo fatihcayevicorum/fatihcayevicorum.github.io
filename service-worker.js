@@ -11,7 +11,7 @@ importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
 firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
 firebase.messaging();
-const VERSION="fatih-cay-evi-r278-siparise-sonradan-urun-ekleme",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r279-cari-hesaplar-temel",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/admin-push.js","./assets/js/customer-push.js","./assets/js/merchant-push.js","./assets/js/admin-notifications.js","./assets/js/notification-sounds.js",
@@ -22,6 +22,7 @@ const CORE=[
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
   "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js","./adisyon/enhancements.css","./adisyon/internal-consumption.js","./adisyon/polish.css","./adisyon/quick-cash.css","./adisyon/quick-cash.js","./adisyon/history-modal.css","./adisyon/history-modal.js","./adisyon-gecmisi/","./adisyon-gecmisi/index.html","./adisyon-gecmisi/style.css","./adisyon-gecmisi/script.js",
   "./stok-yonetimi/index.html","./stok-yonetimi/style.css","./stok-yonetimi/simple-stock.css","./stok-yonetimi/script.js",
+  "./cari-hesaplar/","./cari-hesaplar/index.html","./cari-hesaplar/style.css","./cari-hesaplar/script.js",
   "./siparis-listesi/","./siparis-listesi/index.html","./siparis-listesi/style.css","./siparis-listesi/script.js",
   "./kasa-hesap-yonetimi/","./kasa-hesap-yonetimi/index.html","./kasa-hesap-yonetimi/style.css","./kasa-hesap-yonetimi/script.js",
   "./esnaf-paneli/index.html","./esnaf-paneli/style.css","./esnaf-paneli/header-enhancements.css","./esnaf-paneli/order-types.css","./esnaf-paneli/script.js",

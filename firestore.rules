@@ -140,6 +140,35 @@ service cloud.firestore {
       allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
       allow write: if hasAnyPanel(['credit', 'pos']);
     }
+    match /adminCurrentAccounts/{accountId} {
+      allow read: if isOwner();
+      allow create: if isOwner()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() <= 20
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 240
+        && request.resource.data.balance == 0
+        && request.resource.data.active == true
+        && request.resource.data.startDate == '2026-08-27'
+        && request.resource.data.schemaVersion == 'r279-current-account';
+      allow update: if isOwner()
+        && request.resource.data.balance == resource.data.balance
+        && request.resource.data.startDate == resource.data.startDate
+        && request.resource.data.schemaVersion == resource.data.schemaVersion
+        && request.resource.data.createdAtMs == resource.data.createdAtMs
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name', 'phone', 'note', 'active', 'updatedAtMs', 'updatedAt', 'updatedBy'
+        ]);
+      allow delete: if false;
+    }
+    match /adminCurrentAccountMovements/{movementId} {
+      allow read: if isOwner();
+      allow create, update, delete: if false;
+    }
     match /adminAppSettings/{document} {
       allow read: if isManager();
       allow write: if hasAnyPanel(['pos', 'reports', 'cash']);
