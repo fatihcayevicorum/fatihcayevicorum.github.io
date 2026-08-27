@@ -152,3 +152,8 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 
 /* R292 - aylik hesap hareketlerine hizli erisim */
 .account-summary-button,.monthly-detail-card{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}.account-summary-button{border:0;text-align:left}.account-summary-button:active,.monthly-detail-card:active{transform:scale(.98)}.monthly-detail-card{text-align:left;color:var(--ink);box-shadow:none}.monthly-detail-card:focus-visible,.account-summary-button:focus-visible{outline:3px solid rgba(125,27,36,.22);outline-offset:2px}.bank-summary-note strong{color:var(--ink)}
+
+
+/* R294 - aylik kasa raporunda cari, toplam gelir ve kar/zarar */
+.current-account-balance b{color:var(--red)}.total-income-stat b{color:#315f89}.report-result{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:12px 14px;border:1px solid var(--line);border-radius:11px;font-weight:700}.report-result span{font-size:.72rem}.report-result b{font-size:1rem}.report-result.profit{border-color:#b8d8c5;background:#eef8f2;color:var(--green)}.report-result.loss{border-color:#e5b9bd;background:#fff0f1;color:var(--red)}.report-result.neutral{background:#f3eee8;color:var(--muted)}
+@media(max-width:620px){.report-result{padding:11px 12px}.report-result b{font-size:.9rem}}
