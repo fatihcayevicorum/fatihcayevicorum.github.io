@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
-  <link rel="stylesheet" href="style.css?v=279">
+  <link rel="stylesheet" href="style.css?v=280">
 </head>
 <body>
   <header class="app-header"><div class="header-inner">
@@ -65,11 +65,18 @@
     <div class="detail-actions"><button id="editAccountButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Düzenle</button><button id="toggleAccountButton" class="passive-button" type="button"><i class="fa-solid fa-user-slash"></i> Pasife Al</button></div>
   </div></dialog>
 
+  <dialog id="movementDetailDialog" class="movement-detail-dialog"><div class="dialog-body">
+    <div class="detail-heading"><div><p class="kicker">Cari hareketi</p><h2 id="movementDetailTitle">Adisyon Detayı</h2></div><button id="closeMovementDetailDialog" class="icon-button" type="button"><i class="fa-solid fa-xmark"></i></button></div>
+    <div id="movementDetailSummary" class="movement-detail-summary"></div>
+    <div><p class="kicker movement-items-kicker">Adisyon içeriği</p><div id="movementDetailItems" class="movement-detail-items"></div></div>
+    <div class="detail-actions"><button id="finishMovementDetail" class="primary-button" type="button">Kapat</button></div>
+  </div></dialog>
+
   <dialog id="statusConfirmDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-user-slash"></i></div><h2 id="statusConfirmTitle">Cari pasife alınsın mı?</h2><p id="statusConfirmText">Cari listede pasif olarak saklanacak.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button id="confirmStatusButton" class="primary-button" value="confirm">Onayla</button></div></form></dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
-  <script type="module" src="script.js?v=279"></script>
+  <script type="module" src="script.js?v=280"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
 </body>
 </html>

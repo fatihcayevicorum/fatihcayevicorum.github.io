@@ -141,7 +141,7 @@ service cloud.firestore {
       allow write: if hasAnyPanel(['credit', 'pos']);
     }
     match /adminCurrentAccounts/{accountId} {
-      allow read: if isOwner();
+      allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
       allow create: if isOwner()
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
@@ -154,20 +154,47 @@ service cloud.firestore {
         && request.resource.data.active == true
         && request.resource.data.startDate == '2026-08-27'
         && request.resource.data.schemaVersion == 'r279-current-account';
-      allow update: if isOwner()
-        && request.resource.data.balance == resource.data.balance
-        && request.resource.data.startDate == resource.data.startDate
-        && request.resource.data.schemaVersion == resource.data.schemaVersion
-        && request.resource.data.createdAtMs == resource.data.createdAtMs
-        && request.resource.data.createdBy == resource.data.createdBy
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'name', 'phone', 'note', 'active', 'updatedAtMs', 'updatedAt', 'updatedBy'
-        ]);
+      allow update: if (isOwner()
+          && request.resource.data.balance == resource.data.balance
+          && request.resource.data.startDate == resource.data.startDate
+          && request.resource.data.schemaVersion == resource.data.schemaVersion
+          && request.resource.data.createdAtMs == resource.data.createdAtMs
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'phone', 'note', 'active', 'updatedAtMs', 'updatedAt', 'updatedBy'
+          ]))
+        || (hasPanel('pos')
+          && request.resource.data.balance is number
+          && request.resource.data.balance >= 0
+          && request.resource.data.name == resource.data.name
+          && request.resource.data.phone == resource.data.phone
+          && request.resource.data.note == resource.data.note
+          && request.resource.data.active == resource.data.active
+          && request.resource.data.startDate == resource.data.startDate
+          && request.resource.data.schemaVersion == resource.data.schemaVersion
+          && request.resource.data.createdAtMs == resource.data.createdAtMs
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'balance', 'updatedAtMs', 'updatedAt', 'updatedBy'
+          ]));
       allow delete: if false;
     }
     match /adminCurrentAccountMovements/{movementId} {
-      allow read: if isOwner();
-      allow create, update, delete: if false;
+      allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
+      allow create: if hasPanel('pos')
+        && request.resource.data.accountId is string
+        && request.resource.data.accountId.size() > 0
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.balanceBefore is number
+        && request.resource.data.balanceBefore >= 0
+        && request.resource.data.balanceAfter is number
+        && request.resource.data.balanceAfter >= 0
+        && request.resource.data.direction in ['increase', 'decrease']
+        && request.resource.data.businessDate is string
+        && request.resource.data.businessDate >= '2026-08-27'
+        && request.resource.data.schemaVersion == 'r280-current-account-movement';
+      allow update, delete: if false;
     }
     match /adminAppSettings/{document} {
       allow read: if isManager();
