@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
-  <link rel="stylesheet" href="style.css?v=281">
+  <link rel="stylesheet" href="style.css?v=282">
 </head>
 <body>
   <header class="app-header"><div class="header-inner">
@@ -84,13 +84,13 @@
 
   <dialog id="paymentCancelDialog" class="confirm-dialog"><div><div class="confirm-icon danger-icon"><i class="fa-solid fa-rotate-left"></i></div><h2>Ödeme iptal edilsin mi?</h2><p id="paymentCancelText"></p><div class="confirm-actions"><button id="closePaymentCancel" class="secondary-button" type="button">Vazgeç</button><button id="confirmPaymentCancel" class="danger-button" type="button">Ödemeyi İptal Et</button></div></div></dialog>
 
-  <dialog id="orderCancelDialog" class="confirm-dialog wide-confirm"><div><div class="confirm-icon danger-icon"><i class="fa-solid fa-ban"></i></div><h2>Cari adisyon iptal edilsin mi?</h2><p id="orderCancelText"></p><div class="cancel-impact-list"><span><i class="fa-solid fa-address-book"></i> Bu adisyonun cari borcu geri alınacak</span><span><i class="fa-solid fa-money-bill-transfer"></i> Bağlı ödemeler ilgili hesaplardan düşecek</span><span><i class="fa-solid fa-boxes-stacked"></i> Ürünler stoğa geri eklenecek</span><span><i class="fa-solid fa-chart-column"></i> Günlük satış ve adetlerden çıkarılacak</span></div><div class="confirm-actions"><button id="closeOrderCancel" class="secondary-button" type="button">Vazgeç</button><button id="confirmOrderCancel" class="danger-button" type="button">Adisyonu İptal Et</button></div></div></dialog>
+  <dialog id="orderCancelDialog" class="confirm-dialog wide-confirm"><div><div class="confirm-icon danger-icon"><i class="fa-solid fa-ban"></i></div><h2>Cari adisyon iptal edilsin mi?</h2><p id="orderCancelText"></p><div class="cancel-impact-list"><span><i class="fa-solid fa-address-book"></i> Bu adisyonun cari borcu geri alınacak</span><span><i class="fa-solid fa-money-bill-transfer"></i> Bağlı ödemeler ilgili hesaplardan düşecek</span><span><i class="fa-solid fa-boxes-stacked"></i> Ürünler stoğa geri eklenecek</span><span><i class="fa-solid fa-chart-column"></i> Günlük satış ve adetlerden çıkarılacak</span></div><p id="orderCancelError" class="confirm-error" hidden></p><div class="confirm-actions"><button id="closeOrderCancel" class="secondary-button" type="button">Vazgeç</button><button id="confirmOrderCancel" class="danger-button" type="button">Adisyonu İptal Et</button></div></div></dialog>
 
   <dialog id="statusConfirmDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-user-slash"></i></div><h2 id="statusConfirmTitle">Cari pasife alınsın mı?</h2><p id="statusConfirmText">Cari listede pasif olarak saklanacak.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button id="confirmStatusButton" class="primary-button" value="confirm">Onayla</button></div></form></dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
-  <script type="module" src="script.js?v=281"></script>
+  <script type="module" src="script.js?v=282"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
 </body>
 </html>
