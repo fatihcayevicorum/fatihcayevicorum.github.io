@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=256">
+  <link rel="stylesheet" href="style.css?v=284">
 </head>
 <body>
   <header class="app-header">
@@ -61,6 +61,7 @@
       <button class="active" type="button" role="tab" aria-selected="true" data-report-tab="sales"><i class="fa-solid fa-chart-line"></i><span>Satışlar</span><small>Ürün ve ödeme dağılımı</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="expenses"><i class="fa-solid fa-receipt"></i><span>Giderler</span><small>Kategori ve ödeme türü</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="stock"><i class="fa-solid fa-boxes-stacked"></i><span>Stok Raporu</span><small>Alım, satış ve tüketim</small></button>
+      <button type="button" role="tab" aria-selected="false" data-report-tab="currentAccounts"><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span><small>Borç ve tahsilat detayları</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="closings"><i class="fa-solid fa-calendar-check"></i><span>Gün Sonları</span><small>Kapanış arşivi</small></button>
     </nav>
 
@@ -176,6 +177,25 @@
     </section>
     </section>
 
+    <section id="reportPanelCurrentAccounts" class="report-tab-panel" data-report-panel="currentAccounts" hidden>
+      <section class="panel current-account-summary-panel">
+        <div class="section-heading"><div><p class="kicker">Seçilen dönem ve güncel durum</p><h2>Cari Hesap Raporu</h2></div><div class="export-actions"><button id="exportCurrentAccountsPdf" class="secondary" type="button"><i class="fa-solid fa-file-pdf"></i> PDF</button><button id="exportCurrentAccountsExcel" class="secondary" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button></div></div>
+        <div class="current-account-summary-grid">
+          <article class="current-total-card"><i class="fa-solid fa-wallet"></i><span>Güncel Cari Alacak</span><strong id="currentAccountReceivable">₺0</strong><small>Aktif ve pasif tüm cariler</small></article>
+          <article><i class="fa-solid fa-file-circle-plus"></i><span>Dönemde Cari Hesaba Yazılan</span><strong id="currentAccountDebtAdded">₺0</strong><small>Adisyondan eklenen borç</small></article>
+          <article><i class="fa-solid fa-hand-holding-dollar"></i><span>Dönemde Tahsil Edilen</span><strong id="currentAccountCollected">₺0</strong><small>Geçerli cari ödemeleri</small></article>
+          <article><i class="fa-solid fa-users"></i><span>Borçlu Cari</span><strong id="currentAccountDebtorCount">0</strong><small>Güncel borcu bulunan hesap</small></article>
+        </div>
+      </section>
+      <section class="panel current-account-list-panel">
+        <div class="section-heading current-account-list-heading"><div><p class="kicker">Cari bazlı ayrıntı</p><h2>Cari Borç Detayları</h2></div><input id="currentAccountSearch" class="search" type="search" placeholder="Cari ara"></div>
+        <p class="current-account-report-note"><i class="fa-solid fa-circle-info"></i> Güncel borç bugünkü gerçek bakiyedir; “Yazılan” ve “Tahsilat” sütunları yukarıda seçtiğiniz tarih aralığına göredir.</p>
+        <div class="current-account-report-head"><span>Cari</span><span>Dönemde Yazılan</span><span>Dönemde Tahsilat</span><span>Güncel Borç</span><span></span></div>
+        <div id="currentAccountReportList" class="current-account-report-list"></div>
+        <p id="currentAccountReportEmpty" class="empty">Gösterilecek cari hesap bulunmuyor.</p>
+      </section>
+    </section>
+
     <section id="reportPanelClosings" class="report-tab-panel" data-report-panel="closings" hidden>
     <section class="panel closing-panel">
       <div class="section-heading">
@@ -218,8 +238,20 @@
     </div>
   </dialog>
 
+  <dialog id="currentAccountDetailDialog" class="current-account-detail-dialog">
+    <div class="current-account-detail-card">
+      <div class="current-account-detail-head"><div><p class="kicker">Cari hesap raporu</p><h2 id="currentAccountDetailTitle">Cari Detayı</h2></div><button id="closeCurrentAccountDetail" type="button" aria-label="Kapat">×</button></div>
+      <p id="currentAccountDetailPeriod" class="current-account-detail-period"></p>
+      <div id="currentAccountDetailSummary" class="current-account-detail-summary"></div>
+      <div class="current-account-detail-list-head"><h3>Dönem Hareketleri</h3><span id="currentAccountDetailCount">0 İşlem</span></div>
+      <div id="currentAccountDetailList" class="current-account-detail-list"></div>
+      <p id="currentAccountDetailEmpty" class="empty">Seçilen dönemde bu cariye ait hareket bulunmuyor.</p>
+      <div class="current-account-detail-actions"><button id="closeCurrentAccountDetailBottom" class="primary" type="button">Kapat</button></div>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=256"></script>
+  <script type="module" src="script.js?v=284"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
