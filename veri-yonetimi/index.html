@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
   <header class="app-header">
@@ -33,8 +33,19 @@
 
     <section class="panel backup-panel">
       <div class="section-heading"><div><p class="kicker">Tek dokunuşla</p><h2><i class="fa-solid fa-cloud-arrow-up"></i> Tam Yedek Al</h2></div><button id="backupButton" class="primary"><i class="fa-solid fa-shield-halved"></i> Şimdi Tam Yedek Al</button></div>
-      <p class="description">Menü, stok, satış, gün sonu, Esnaf ve sistem ayarlarının tamamı yedeklenir. Firebase kullanıcı şifreleri güvenlik nedeniyle yedeğe dahil değildir.</p>
+      <p class="description">Menü, stok, satış, gün sonu, cari hesaplar, Esnaf ve sistem ayarlarının tamamı yedeklenir. Firebase kullanıcı şifreleri güvenlik nedeniyle yedeğe dahil değildir.</p>
       <div id="backupProgress" class="progress" hidden><i></i><span>Yedek hazırlanıyor…</span></div>
+    </section>
+
+    <section class="panel current-account-backup-panel">
+      <div class="section-heading"><div><p class="kicker">Cari hesaplara özel</p><h2><i class="fa-solid fa-address-book"></i> Cari Hesap Yedeği</h2></div><button id="currentAccountBackupButton" class="primary"><i class="fa-solid fa-file-arrow-down"></i> Cari Hesap Yedeği Al</button></div>
+      <p class="description">Cari kartları ve bütün cari hareketleri tek JSON dosyasında indirilir. Tam sistem yedeğine de otomatik olarak dahildir.</p>
+      <div class="current-account-restore">
+        <label class="file-picker"><input id="currentAccountRestoreFile" type="file" accept=".json,application/json"><i class="fa-solid fa-folder-open"></i><span><b>Cari Hesap Yedeği Seç</b><small id="currentAccountRestoreFileName">JSON dosyası seçilmedi</small></span></label>
+        <div id="currentAccountRestorePreview" class="restore-preview" hidden></div>
+        <button id="currentAccountRestoreButton" class="secondary" disabled><i class="fa-solid fa-rotate-left"></i> Cari Hesap Yedeğini Geri Yükle</button>
+      </div>
+      <p class="safe-note"><i class="fa-solid fa-shield-halved"></i> Geri yüklemede diğer sistem verileri silinmez. Aynı kimlikteki cari kayıtlar güncellenir, eksik kayıtlar eklenir ve işlem öncesinde otomatik tam yedek alınır.</p>
     </section>
 
     <section class="panel">
@@ -106,7 +117,7 @@
       }
     });
   </script>
-  <script type="module" src="script.js?v=10"></script>
+  <script type="module" src="script.js?v=11"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
