@@ -12,13 +12,10 @@ const CREATE_ONLY_COLLECTIONS=["adminFinanceDays"];
 const COLLECTIONS=[...MUTABLE_COLLECTIONS,...CREATE_ONLY_COLLECTIONS];
 const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminCashSettings","config"]];
 const BACKUP_PREFIX="system-backups/";
-let busy=false,pendingRestore=null,pendingCurrentAccountRestore=null,pendingAction=null,toastTimer;
+let busy=false,pendingRestore=null,pendingAction=null,toastTimer;
 
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 $("backupButton").onclick=()=>createBackup({download:true,reason:"manual"});
-$("currentAccountBackupButton").onclick=createCurrentAccountBackup;
-$("currentAccountRestoreFile").onchange=readCurrentAccountRestoreFile;
-$("currentAccountRestoreButton").onclick=prepareCurrentAccountRestore;
 $("cleanupOptions").onchange=handleCleanupChange;
 $("prepareCleanup").onclick=prepareCleanup;
 $("restoreFile").onchange=readRestoreFile;
@@ -50,16 +47,6 @@ async function collectAllData(){
   for(const name of COLLECTIONS){setProgress(`${displayName(name)} yedekleniyor…`);const snap=await getDocs(collection(db,name));collections[name]=snap.docs.map(d=>({id:d.id,data:encode(d.data())}));totalRecords+=snap.size}
   for(const [col,id] of SINGLE_DOCS){const snap=await getDoc(doc(db,col,id));documents[`${col}/${id}`]=snap.exists()?{id,data:encode(snap.data())}:null;if(snap.exists())totalRecords++}
   return{app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:4,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections,documents};
-}
-
-async function createCurrentAccountBackup(){
-  if(busy)return;setBusy(true,"Cari hesap yedeği hazırlanıyor…");
-  try{
-    const collections={};let totalRecords=0;
-    for(const name of CURRENT_ACCOUNT_COLLECTIONS){setProgress(`${displayName(name)} yedekleniyor…`);const snap=await getDocs(collection(db,name));collections[name]=snap.docs.map(d=>({id:d.id,data:encode(d.data())}));totalRecords+=snap.size}
-    const payload={app:"Fatih Çay Evi",type:"current-account-backup",backupVersion:1,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections},blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),name=`fatih-cay-evi-cari-hesap-yedegi-${fileStamp()}.json`;
-    downloadBlob(blob,name);toast(`Cari hesap yedeği hazırlandı: ${totalRecords} kayıt.`)
-  }catch(error){console.error(error);toast("Cari hesap yedeği alınamadı. Bağlantıyı kontrol edin.")}finally{setBusy(false)}
 }
 
 async function renderBackups(){
@@ -106,6 +93,7 @@ async function runCleanup(selected){
     if(selected.includes("merchantActivity")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await updateCollection("merchantProfiles",()=>({balance:0,updatedAtMs:Date.now()}))}
     if(selected.includes("merchantProfiles")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await deleteCollection("merchantProfiles")}
     if(selected.includes("cashAccounts")){await deleteCollection("adminCashMovements");await deleteCollection("adminCashCounts");await deleteCollection("adminPaymentReminders");await deleteDoc(doc(db,"adminCashSettings","config")).catch(()=>{})}
+    if(selected.includes("currentAccounts")){for(const name of CURRENT_ACCOUNT_COLLECTIONS)await deleteCollection(name)}
     if(selected.includes("tea")){await setDoc(doc(db,"adminTea","state"),{activeBrews:[],history:[],updatedAtMs:Date.now()},{merge:true});await setDoc(doc(db,"publicTea","status"),{activeBrews:[],updatedAtMs:Date.now()},{merge:true})}
     if(selected.includes("businessDate")){const date=today(),now=Date.now(),previous=previousDate(date);await setDoc(doc(db,"adminAppSettings","pos"),{currentBusinessDate:date,currentBusinessDayStartedAtMs:now,lastClosedDate:previous,updatedAtMs:now},{merge:true})}
     document.querySelectorAll("#cleanupOptions input").forEach(x=>x.checked=false);updateSelection();toast("Seçilen veriler güvenle temizlendi.");
@@ -117,19 +105,12 @@ async function readRestoreFile(){
   if(!file){$("restoreFileName").textContent="JSON dosyası seçilmedi";return}
   try{const data=parseBackup(await readLocalText(file));pendingRestore=data;$("restoreFileName").textContent=file.name;showRestorePreview(data,file.name);$("restoreButton").disabled=false}catch(error){console.error(error);$("restoreFileName").textContent="Geçersiz yedek dosyası";toast(`Yedek açılamadı: ${friendlyFileError(error)}`)}
 }
-async function readCurrentAccountRestoreFile(){
-  const file=$("currentAccountRestoreFile").files[0];pendingCurrentAccountRestore=null;$("currentAccountRestoreButton").disabled=true;$("currentAccountRestorePreview").hidden=true;
-  if(!file){$("currentAccountRestoreFileName").textContent="JSON dosyası seçilmedi";return}
-  try{const data=parseCurrentAccountBackup(await readLocalText(file));pendingCurrentAccountRestore=data;$("currentAccountRestoreFileName").textContent=file.name;showCurrentAccountRestorePreview(data,file.name);$("currentAccountRestoreButton").disabled=false}catch(error){console.error(error);$("currentAccountRestoreFileName").textContent="Geçersiz cari hesap yedeği";toast(`Cari yedek açılamadı: ${friendlyCurrentAccountFileError(error)}`)}
-}
 async function readCloudBackup(name){const result=await readSystemBackup({name}),raw=result.data?.text;if(typeof raw!=="string"||!raw.trim())throw Error("empty-backup");return raw}
 async function readLocalText(file){if(typeof file.text==="function")return await file.text();return await new Promise((resolve,reject)=>{const reader=new FileReader;reader.onload=()=>resolve(String(reader.result||""));reader.onerror=()=>reject(reader.error||Error("file-read"));reader.readAsText(file,"utf-8")})}
 function parseBackup(raw){const text=String(raw||"").replace(/^\uFEFF/,"").trim();if(!text)throw Error("empty-backup");return validateBackup(JSON.parse(text))}
 function friendlyFileError(error){const message=String(error?.message||error||"");if(message.includes("JSON"))return"Dosyanın JSON yapısı okunamadı.";if(message.includes("empty-backup"))return"Dosya boş görünüyor.";if(message.includes("invalid-backup"))return"Dosya Fatih Çay Evi tam yedeği değil.";return"Dosya tarayıcı tarafından okunamadı."}
 function showRestorePreview(data,name){$("restorePreview").hidden=false;$("restorePreview").innerHTML=`<b>${esc(name)}</b><br>${formatDateTime(new Date(data.createdAt))} • ${Number(data.totalRecords)||countBackup(data)} kayıt • Tam sistem yedeği`}
-function showCurrentAccountRestorePreview(data,name){const accountCount=data.collections.adminCurrentAccounts.length,movementCount=data.collections.adminCurrentAccountMovements.length;$("currentAccountRestorePreview").hidden=false;$("currentAccountRestorePreview").innerHTML=`<b>${esc(name)}</b><br>${formatDateTime(new Date(data.createdAt))} • ${accountCount} cari kartı • ${movementCount} cari hareketi`}
 function prepareRestore(){if(!pendingRestore)return;const mode=document.querySelector('input[name="restoreMode"]:checked').value;confirmAction({title:mode==="replace"?"Tam Geri Yükleme":"Yedeği Birleştir",text:mode==="replace"?"Mevcut yönetim verileri temizlenecek ve yedek aynen geri yüklenecek. İşlem öncesinde güncel sistem otomatik yedeklenecek.":"Yedekteki kayıtlar mevcut sisteme eklenecek veya aynı kimlikteki kayıtlar güncellenecek. İşlem öncesinde otomatik yedek alınacak.",phrase:"GERİ YÜKLE",action:()=>restoreBackup(mode)})}
-function prepareCurrentAccountRestore(){if(!pendingCurrentAccountRestore)return;const accounts=pendingCurrentAccountRestore.collections.adminCurrentAccounts.length,movements=pendingCurrentAccountRestore.collections.adminCurrentAccountMovements.length;confirmAction({title:"Cari Hesap Yedeği Geri Yüklensin mi?",text:`${accounts} cari kartı ve ${movements} cari hareketi sisteme eklenecek veya aynı kimlikteyse güncellenecek. Diğer veriler silinmeyecek ve işlem öncesinde otomatik tam yedek alınacak.`,phrase:"CARİYİ GERİ YÜKLE",action:restoreCurrentAccountBackup})}
 
 async function restoreBackup(mode){
   if(busy||!pendingRestore)return;
@@ -142,17 +123,6 @@ async function restoreBackup(mode){
     for(const [path,item] of Object.entries(data.documents||{})){if(!item)continue;const [col,id]=path.split("/");if(SINGLE_DOCS.some(x=>x[0]===col&&x[1]===id))await setDoc(doc(db,col,id),decode(item.data))}
     toast("Yedek başarıyla geri yüklendi.");
   }catch(error){console.error(error);toast("Yedek geri yüklenemedi. İşlem öncesi yedek korundu.")}finally{setBusy(false)}
-}
-
-async function restoreCurrentAccountBackup(){
-  if(busy||!pendingCurrentAccountRestore)return;
-  try{
-    const data=pendingCurrentAccountRestore;
-    await createBackup({download:true,reason:"before-current-account-restore"});
-    setBusy(true,"Cari hesap yedeği geri yükleniyor…");
-    for(const name of CURRENT_ACCOUNT_COLLECTIONS)await writeItems(name,data.collections[name]);
-    toast("Cari hesap yedeği güvenle geri yüklendi.")
-  }catch(error){console.error(error);toast("Cari hesap yedeği geri yüklenemedi. İşlem öncesi tam yedek korundu.")}finally{setBusy(false)}
 }
 
 async function deleteCollection(name){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.map(x=>({type:"delete",ref:x.ref})))}
@@ -173,19 +143,11 @@ function validateBackup(data){
   const documents=Object.fromEntries(Object.entries(sourceDocuments).map(([path,item])=>[path,item?{id:item.id,data:normalizeLegacyTypes(item.data??item.veri??{})}:null]));
   return{...data,app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:data.backupVersion??data["yedeklemeSürümü"]??1,createdAt:data.createdAt||data["oluşturulmaTarihi"]||new Date().toISOString(),createdAtMs:data.createdAtMs||data["oluşturulmaZamanıMs"]||Date.now(),totalRecords:data.totalRecords??data["toplamKayıt"]??0,collections,documents};
 }
-function parseCurrentAccountBackup(raw){const text=String(raw||"").replace(/^\uFEFF/,"").trim();if(!text)throw Error("empty-backup");return validateCurrentAccountBackup(JSON.parse(text))}
-function validateCurrentAccountBackup(data){
-  if(!data||data.app!=="Fatih Çay Evi"||data.type!=="current-account-backup"||!data.collections)throw Error("invalid-current-account-backup");
-  const collections={};
-  for(const name of CURRENT_ACCOUNT_COLLECTIONS){const items=data.collections[name];if(!Array.isArray(items))throw Error("invalid-current-account-backup");collections[name]=items.map(item=>{if(!item||typeof item.id!=="string"||!item.id.trim()||!item.data||typeof item.data!=="object")throw Error("invalid-current-account-backup");return{id:item.id,data:normalizeLegacyTypes(item.data)}})}
-  return{...data,app:"Fatih Çay Evi",type:"current-account-backup",backupVersion:Number(data.backupVersion)||1,createdAt:data.createdAt||new Date().toISOString(),createdAtMs:Number(data.createdAtMs)||Date.now(),totalRecords:Number(data.totalRecords)||Object.values(collections).reduce((sum,items)=>sum+items.length,0),collections}
-}
-function friendlyCurrentAccountFileError(error){const message=String(error?.message||error||"");if(message.includes("JSON"))return"Dosyanın JSON yapısı okunamadı.";if(message.includes("empty-backup"))return"Dosya boş görünüyor.";if(message.includes("invalid-current-account-backup"))return"Dosya Fatih Çay Evi cari hesap yedeği değil.";return"Dosya tarayıcı tarafından okunamadı."}
 function normalizeLegacyTypes(value){if(Array.isArray(value))return value.map(normalizeLegacyTypes);if(value&&typeof value==="object"){const normalized=Object.fromEntries(Object.entries(value).map(([k,v])=>[k,normalizeLegacyTypes(v)]));if(["zaman damgası","zamanDamgası"].includes(normalized.__fatihType))normalized.__fatihType="timestamp";if(normalized.__fatihType==="tarih")normalized.__fatihType="date";return normalized}return value}
 function encode(value){if(value instanceof Timestamp)return{__fatihType:"timestamp",ms:value.toMillis()};if(value instanceof Date)return{__fatihType:"date",iso:value.toISOString()};if(Array.isArray(value))return value.map(encode);if(value&&typeof value==="object")return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,encode(v)]));return value}
 function decode(value){if(Array.isArray(value))return value.map(decode);if(value&&typeof value==="object"){if(value.__fatihType==="timestamp")return Timestamp.fromMillis(Number(value.ms));if(value.__fatihType==="date")return new Date(value.iso);return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,decode(v)]))}return value}
 function confirmAction({title,text,phrase,action}){$("confirmTitle").textContent=title;$("confirmText").textContent=text;$("confirmInstruction").textContent=`Devam etmek için “${phrase}” yaz:`;$("confirmInput").value="";$("confirmAction").dataset.phrase=phrase.toLocaleUpperCase("tr-TR");$("confirmAction").disabled=true;pendingAction=action;$("confirmDialog").showModal()}
-function setBusy(value,message="İşlem sürüyor…"){busy=value;$("backupButton").disabled=value;$("currentAccountBackupButton").disabled=value;$("currentAccountRestoreButton").disabled=value||!pendingCurrentAccountRestore;$("prepareCleanup").disabled=value||!selectedCleanup().length;$("restoreButton").disabled=value||!pendingRestore;$("backupProgress").hidden=!value;if(value)setProgress(message)}
+function setBusy(value,message="İşlem sürüyor…"){busy=value;$("backupButton").disabled=value;$("prepareCleanup").disabled=value||!selectedCleanup().length;$("restoreButton").disabled=value||!pendingRestore;$("backupProgress").hidden=!value;if(value)setProgress(message)}
 function setProgress(message){$("backupProgress").querySelector("span").textContent=message}
 function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.style.display="none";document.body.append(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},4000)}
 function countBackup(data){return Object.values(data.collections||{}).reduce((n,x)=>n+x.length,0)+Object.values(data.documents||{}).filter(Boolean).length}

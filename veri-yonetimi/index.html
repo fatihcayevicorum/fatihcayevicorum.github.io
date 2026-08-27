@@ -37,17 +37,6 @@
       <div id="backupProgress" class="progress" hidden><i></i><span>Yedek hazırlanıyor…</span></div>
     </section>
 
-    <section class="panel current-account-backup-panel">
-      <div class="section-heading"><div><p class="kicker">Cari hesaplara özel</p><h2><i class="fa-solid fa-address-book"></i> Cari Hesap Yedeği</h2></div><button id="currentAccountBackupButton" class="primary"><i class="fa-solid fa-file-arrow-down"></i> Cari Hesap Yedeği Al</button></div>
-      <p class="description">Cari kartları ve bütün cari hareketleri tek JSON dosyasında indirilir. Tam sistem yedeğine de otomatik olarak dahildir.</p>
-      <div class="current-account-restore">
-        <label class="file-picker"><input id="currentAccountRestoreFile" type="file" accept=".json,application/json"><i class="fa-solid fa-folder-open"></i><span><b>Cari Hesap Yedeği Seç</b><small id="currentAccountRestoreFileName">JSON dosyası seçilmedi</small></span></label>
-        <div id="currentAccountRestorePreview" class="restore-preview" hidden></div>
-        <button id="currentAccountRestoreButton" class="secondary" disabled><i class="fa-solid fa-rotate-left"></i> Cari Hesap Yedeğini Geri Yükle</button>
-      </div>
-      <p class="safe-note"><i class="fa-solid fa-shield-halved"></i> Geri yüklemede diğer sistem verileri silinmez. Aynı kimlikteki cari kayıtlar güncellenir, eksik kayıtlar eklenir ve işlem öncesinde otomatik tam yedek alınır.</p>
-    </section>
-
     <section class="panel">
       <div class="section-heading"><div><p class="kicker">Sistemde saklanan</p><h2><i class="fa-solid fa-clock-rotate-left"></i> Kayıtlı Yedekler</h2></div><span class="count" id="backupCount">0 Yedek</span></div>
       <p id="backupEmpty" class="empty">Henüz sistem yedeği bulunmuyor.</p>
@@ -69,6 +58,7 @@
         <label><input type="checkbox" value="merchantActivity"><span><i class="fa-solid fa-mug-hot"></i><b>Esnaf Hareketleri</b><small>Sipariş, hareket ve bakiyeleri sıfırlar</small></span></label>
         <label><input type="checkbox" value="merchantProfiles"><span><i class="fa-solid fa-store-slash"></i><b>Esnaf Müşteri Kartları</b><small>Profilleri siler; giriş kullanıcıları Firebase'de kalır</small></span></label>
         <label><input type="checkbox" value="cashAccounts"><span><i class="fa-solid fa-vault"></i><b>Kasa ve Hesaplar</b><small>Gelir, gider, transfer ve hesap bakiyelerini sıfırlar; PIN korunur</small></span></label>
+        <label><input type="checkbox" value="currentAccounts"><span><i class="fa-solid fa-address-book"></i><b>Cari Hesaplar</b><small>Cari kartları ve bütün cari hareketlerini siler</small></span></label>
         <label><input type="checkbox" value="tea"><span><i class="fa-solid fa-fire-burner"></i><b>Taze Dem Geçmişi</b><small>Aktif ve geçmiş Demlik kayıtları</small></span></label>
         <label><input type="checkbox" value="businessDate"><span><i class="fa-solid fa-calendar-day"></i><b>İş Tarihini Bugüne Getir</b><small>Adisyon iş gününü gerçek tarihe döndürür</small></span></label>
       </div>
