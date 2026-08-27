@@ -4,6 +4,7 @@ import{ADMIN_UID}from"./firebase-config.js";
 export const PANEL_DEFINITIONS=[
   {id:"tea",name:"Taze Dem",path:"taze-dem-paneli/",icon:"fa-mug-hot"},
   {id:"pos",name:"Adisyon",path:"adisyon/",icon:"fa-receipt"},
+  {id:"currentAccounts",name:"Cari Hesaplar",path:"cari-hesaplar/",icon:"fa-address-book"},
   {id:"menu",name:"Menü Yönetimi",path:"menu-yonetimi/",icon:"fa-utensils"},
   {id:"stock",name:"Stok Yönetimi",path:"stok-yonetimi/",icon:"fa-boxes-stacked"},
   {id:"merchant",name:"Esnaf Yönetimi",path:"esnaf-yonetimi/",icon:"fa-store"},
@@ -11,7 +12,11 @@ export const PANEL_DEFINITIONS=[
   {id:"cash",name:"Kasa ve Hesaplar",path:"kasa-hesap-yonetimi/",icon:"fa-vault"},
   {id:"home",name:"Ana Sayfa Yönetimi",path:"ana-sayfa-yonetimi/",icon:"fa-house"}
 ];
-export const ALL_PANEL_IDS=PANEL_DEFINITIONS.map(x=>x.id);
+export const ACTION_DEFINITIONS=[
+  {id:"currentAccountTransfer",name:"Adisyondan Cari Hesaba Aktar",icon:"fa-arrow-right-arrow-left",kind:"action",requires:"pos"}
+];
+export const PERMISSION_DEFINITIONS=[...PANEL_DEFINITIONS.slice(0,3),...ACTION_DEFINITIONS,...PANEL_DEFINITIONS.slice(3)];
+export const ALL_PANEL_IDS=PERMISSION_DEFINITIONS.map(x=>x.id);
 export function isOwner(user){return user?.uid===ADMIN_UID}
 export async function getManagementProfile(user,db){
   if(!user)return null;
@@ -26,7 +31,12 @@ export async function getManagementProfile(user,db){
 }
 export async function hasPanelAccess(user,db,panel){
   const profile=await getManagementProfile(user,db);
-  return Boolean(profile&&(profile.role==="owner"||profile.permissions.includes(panel)));
+  return profileHasPermission(profile,panel);
+}
+export function profileHasPermission(profile,permission){
+  if(!profile)return false;
+  if(profile.role==="owner"||profile.permissions?.includes(permission))return true;
+  return permission==="currentAccountTransfer"&&profile.permissionSchemaVersion!=="r286"&&profile.permissions?.includes("pos");
 }
 export function normalizePhone(value=""){
   let digits=String(value).replace(/\D/g,"");

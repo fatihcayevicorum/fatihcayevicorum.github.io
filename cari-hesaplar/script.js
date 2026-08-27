@@ -1,15 +1,17 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{addDoc,collection,doc,getDoc,getDocs,getFirestore,increment,onSnapshot,orderBy,query,runTransaction,serverTimestamp,updateDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{firebaseConfig,ADMIN_UID}from"../assets/js/firebase-config.js";
+import{firebaseConfig}from"../assets/js/firebase-config.js";
+import{hasPanelAccess}from"../assets/js/admin-access.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const accountsCol=collection(db,"adminCurrentAccounts"),movementsCol=collection(db,"adminCurrentAccountMovements"),salesCol=collection(db,"adminSales"),stocksCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),cashMovesCol=collection(db,"adminCashMovements"),closingsCol=collection(db,"adminDailyClosings"),settingsRef=doc(db,"adminAppSettings","pos");
 const START_DATE="2026-08-27",CASH_MOVE_VERSION="r178-unified-income";
 let accounts=[],movements=[],activeAccountId="",activeMovementId="",pendingStatusId="",toastTimer,busy=false,unsubscribeMovements=null,businessDate=today(),businessDayStartedAtMs=startOfBusinessDateMs(businessDate);
 
-onAuthStateChanged(auth,user=>{
-  if(!user||user.uid!==ADMIN_UID){location.replace("../yonetici-giris.html?next=cari-hesaplar/");return}
+onAuthStateChanged(auth,async user=>{
+  if(!user){location.replace("../yonetici-giris.html?next=cari-hesaplar/");return}
+  if(!await hasPanelAccess(user,db,"currentAccounts")){location.replace("../yonetici-giris.html");return}
   onSnapshot(settingsRef,snap=>{const data=snap.data()||{};businessDate=String(data.currentBusinessDate||today());businessDayStartedAtMs=number(data.currentBusinessDayStartedAtMs)||startOfBusinessDateMs(businessDate)},error=>console.warn("İş günü bilgisi alınamadı.",error));
   onSnapshot(query(accountsCol,orderBy("name")),snap=>{accounts=snap.docs.map(d=>normalizeAccount(d.id,d.data()));connected();render();refreshOpenDetail()},fail);
 });

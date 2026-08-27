@@ -10,7 +10,7 @@ const daily=[
   {permission:"pos",name:"Adisyon",description:"Masaları, siparişleri ve ödemeleri yönet",path:"adisyon/",icon:"fa-receipt"}
 ];
 const management=[
-  {ownerOnly:true,name:"Cari Hesaplar",description:"Cari müşterileri ve alacak durumlarını yönet",path:"cari-hesaplar/",icon:"fa-address-book"},
+  {permission:"currentAccounts",name:"Cari Hesaplar",description:"Cari müşterileri ve alacak durumlarını yönet",path:"cari-hesaplar/",icon:"fa-address-book"},
   {permission:"menu",name:"Menü Yönetimi",description:"Kategori, ürün ve fiyatları düzenle",path:"menu-yonetimi/",icon:"fa-utensils"},
   {permission:"stock",name:"Stok Takibi",description:"Stok miktarlarını ve hareketlerini izle",path:"stok-yonetimi/",icon:"fa-boxes-stacked"},
   {permission:"stock",name:"Sipariş Listesi",description:"Stok siparişlerini hazırla ve teslimatları takip et",path:"siparis-listesi/",icon:"fa-clipboard-list"},

@@ -21,6 +21,15 @@ service cloud.firestore {
       return isOwner() || (isStaff()
         && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(panels));
     }
+    function hasCurrentAccountTransfer() {
+      return isOwner() || (isStaff()
+        && (get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(['currentAccountTransfer'])
+          || (get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.get('permissionSchemaVersion', '') != 'r286'
+            && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(['pos']))));
+    }
+    function hasCurrentAccountWriteAccess() {
+      return hasPanel('currentAccounts') || hasCurrentAccountTransfer();
+    }
     function isActiveMerchant() {
       return request.auth != null
         && exists(/databases/$(database)/documents/merchantProfiles/$(request.auth.uid))
@@ -117,14 +126,14 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /adminStockItems/{document} {
-      allow read: if hasAnyPanel(['stock', 'pos', 'reports']);
-      allow write: if hasAnyPanel(['stock', 'pos'])
+      allow read: if hasAnyPanel(['stock', 'pos', 'reports', 'currentAccounts']);
+      allow write: if hasAnyPanel(['stock', 'pos', 'currentAccounts'])
         && request.resource.data.quantity is number
         && request.resource.data.quantity >= 0;
     }
     match /adminStockMovements/{document} {
-      allow read: if hasAnyPanel(['stock', 'pos', 'reports']);
-      allow write: if hasAnyPanel(['stock', 'pos']);
+      allow read: if hasAnyPanel(['stock', 'pos', 'reports', 'currentAccounts']);
+      allow write: if hasAnyPanel(['stock', 'pos', 'currentAccounts']);
     }
     match /adminPurchaseOrders/{document} {
       allow read, write: if hasPanel('stock');
@@ -141,8 +150,8 @@ service cloud.firestore {
       allow write: if hasAnyPanel(['credit', 'pos']);
     }
     match /adminCurrentAccounts/{accountId} {
-      allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
-      allow create: if isOwner()
+      allow read: if hasAnyPanel(['credit', 'pos', 'reports', 'currentAccounts']);
+      allow create: if hasPanel('currentAccounts')
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 80
@@ -154,7 +163,7 @@ service cloud.firestore {
         && request.resource.data.active == true
         && request.resource.data.startDate == '2026-08-27'
         && request.resource.data.schemaVersion == 'r279-current-account';
-      allow update: if (isOwner()
+      allow update: if (hasPanel('currentAccounts')
           && request.resource.data.balance == resource.data.balance
           && request.resource.data.startDate == resource.data.startDate
           && request.resource.data.schemaVersion == resource.data.schemaVersion
@@ -163,7 +172,7 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'name', 'phone', 'note', 'active', 'updatedAtMs', 'updatedAt', 'updatedBy'
           ]))
-        || (hasPanel('pos')
+        || (hasCurrentAccountWriteAccess()
           && request.resource.data.balance is number
           && request.resource.data.balance >= 0
           && request.resource.data.name == resource.data.name
@@ -180,8 +189,8 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /adminCurrentAccountMovements/{movementId} {
-      allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
-      allow create: if hasPanel('pos')
+      allow read: if hasAnyPanel(['credit', 'pos', 'reports', 'currentAccounts']) || hasCurrentAccountTransfer();
+      allow create: if hasCurrentAccountWriteAccess()
         && request.resource.data.accountId is string
         && request.resource.data.accountId.size() > 0
         && request.resource.data.amount is number
@@ -194,7 +203,7 @@ service cloud.firestore {
         && request.resource.data.businessDate is string
         && request.resource.data.businessDate >= '2026-08-27'
         && request.resource.data.schemaVersion == 'r280-current-account-movement';
-      allow update: if hasPanel('pos')
+      allow update: if hasCurrentAccountWriteAccess()
         && (!('reversed' in resource.data) || resource.data.reversed != true)
         && request.resource.data.reversed == true
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
@@ -211,11 +220,11 @@ service cloud.firestore {
       allow read, write: if hasPanel('pos');
     }
     match /adminSales/{document} {
-      allow read: if hasAnyPanel(['pos', 'reports', 'merchant', 'cash']);
-      allow write: if hasAnyPanel(['pos', 'reports', 'merchant']);
+      allow read: if hasAnyPanel(['pos', 'reports', 'merchant', 'cash', 'currentAccounts']);
+      allow write: if hasAnyPanel(['pos', 'reports', 'merchant', 'currentAccounts']);
     }
     match /adminDailyClosings/{document} {
-      allow read: if hasAnyPanel(['reports', 'pos', 'cash']);
+      allow read: if hasAnyPanel(['reports', 'pos', 'cash', 'currentAccounts']);
       allow write: if hasAnyPanel(['reports', 'pos']);
     }
     match /adminInternalConsumptions/{document} {
@@ -224,7 +233,8 @@ service cloud.firestore {
     }
     match /adminCashMovements/{document} {
       allow get: if hasAnyPanel(['cash', 'reports'])
-        || (hasPanel('pos') && document.matches('pos-gelir-(cash|bank|card)-.*'));
+        || ((hasPanel('pos') || hasCurrentAccountWriteAccess())
+          && document.matches('pos-gelir-(cash|bank|card)-.*'));
       allow list: if hasAnyPanel(['cash', 'reports']);
       allow create: if (validFinanceMovement(request.resource.data) && (hasPanel('cash') || (hasPanel('pos')
           && request.resource.data.source == 'pos-quick-cash'
@@ -236,14 +246,14 @@ service cloud.firestore {
           && request.resource.data.type == 'expense'
           && request.resource.data.amount is number
           && request.resource.data.amount > 0)))
-        || (hasPanel('pos')
+        || ((hasPanel('pos') || hasCurrentAccountWriteAccess())
           && validPosInstantMovement(request.resource.data)
           && request.resource.data.amount > 0
           && isPosInstantDocument(document, request.resource.data.account));
       allow update: if financeDateOpen(resource.data.businessDate)
         && request.resource.data.businessDate == resource.data.businessDate
         && ((hasPanel('cash') && validFinanceMovement(request.resource.data))
-          || (hasPanel('pos')
+          || ((hasPanel('pos') || hasCurrentAccountWriteAccess())
             && resource.data.source == 'pos-instant'
             && resource.data.automatic == true
             && validPosInstantMovement(request.resource.data)
