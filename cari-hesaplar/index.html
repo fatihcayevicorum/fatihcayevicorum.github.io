@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
-  <link rel="stylesheet" href="style.css?v=280">
+  <link rel="stylesheet" href="style.css?v=281">
 </head>
 <body>
   <header class="app-header"><div class="header-inner">
@@ -68,15 +68,29 @@
   <dialog id="movementDetailDialog" class="movement-detail-dialog"><div class="dialog-body">
     <div class="detail-heading"><div><p class="kicker">Cari hareketi</p><h2 id="movementDetailTitle">Adisyon Detayı</h2></div><button id="closeMovementDetailDialog" class="icon-button" type="button"><i class="fa-solid fa-xmark"></i></button></div>
     <div id="movementDetailSummary" class="movement-detail-summary"></div>
+    <div id="movementPaymentBreakdown" class="movement-payment-breakdown" hidden></div>
     <div><p class="kicker movement-items-kicker">Adisyon içeriği</p><div id="movementDetailItems" class="movement-detail-items"></div></div>
-    <div class="detail-actions"><button id="finishMovementDetail" class="primary-button" type="button">Kapat</button></div>
+    <p id="movementActionNote" class="movement-action-note" hidden></p>
+    <div class="detail-actions movement-actions"><button id="editMovementPayment" class="secondary-button" type="button" hidden><i class="fa-solid fa-pen"></i> Ödemeyi Düzenle</button><button id="cancelMovementPayment" class="danger-button" type="button" hidden><i class="fa-solid fa-rotate-left"></i> Ödemeyi İptal Et</button><button id="cancelMovementOrder" class="danger-button" type="button" hidden><i class="fa-solid fa-ban"></i> Adisyonu İptal Et</button><button id="finishMovementDetail" class="primary-button" type="button">Kapat</button></div>
   </div></dialog>
+
+  <dialog id="paymentEditDialog" class="management-form-dialog"><form id="paymentEditForm">
+    <div class="management-dialog-heading"><div><p class="kicker">Cari tahsilatı</p><h2>Ödemeyi Düzenle</h2></div><button id="closePaymentEditDialog" class="management-dialog-close" type="button"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="form-grid payment-edit-grid"><label><span>Ödeme Tutarı</span><input id="paymentEditAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label><span>Ödeme Türü</span><select id="paymentEditType"><option value="cash">Nakit</option><option value="transfer">Havale</option><option value="card">Kart</option></select></label></div>
+    <p id="paymentEditPreview" class="form-note"></p>
+    <div class="form-actions"><button id="cancelPaymentEdit" class="secondary-button" type="button">Vazgeç</button><button id="savePaymentEdit" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Değişikliği Kaydet</button></div>
+    <p id="paymentEditMessage" class="form-message" aria-live="polite"></p>
+  </form></dialog>
+
+  <dialog id="paymentCancelDialog" class="confirm-dialog"><div><div class="confirm-icon danger-icon"><i class="fa-solid fa-rotate-left"></i></div><h2>Ödeme iptal edilsin mi?</h2><p id="paymentCancelText"></p><div class="confirm-actions"><button id="closePaymentCancel" class="secondary-button" type="button">Vazgeç</button><button id="confirmPaymentCancel" class="danger-button" type="button">Ödemeyi İptal Et</button></div></div></dialog>
+
+  <dialog id="orderCancelDialog" class="confirm-dialog wide-confirm"><div><div class="confirm-icon danger-icon"><i class="fa-solid fa-ban"></i></div><h2>Cari adisyon iptal edilsin mi?</h2><p id="orderCancelText"></p><div class="cancel-impact-list"><span><i class="fa-solid fa-address-book"></i> Bu adisyonun cari borcu geri alınacak</span><span><i class="fa-solid fa-money-bill-transfer"></i> Bağlı ödemeler ilgili hesaplardan düşecek</span><span><i class="fa-solid fa-boxes-stacked"></i> Ürünler stoğa geri eklenecek</span><span><i class="fa-solid fa-chart-column"></i> Günlük satış ve adetlerden çıkarılacak</span></div><div class="confirm-actions"><button id="closeOrderCancel" class="secondary-button" type="button">Vazgeç</button><button id="confirmOrderCancel" class="danger-button" type="button">Adisyonu İptal Et</button></div></div></dialog>
 
   <dialog id="statusConfirmDialog" class="confirm-dialog"><form method="dialog"><div class="confirm-icon"><i class="fa-solid fa-user-slash"></i></div><h2 id="statusConfirmTitle">Cari pasife alınsın mı?</h2><p id="statusConfirmText">Cari listede pasif olarak saklanacak.</p><div class="confirm-actions"><button class="secondary-button" value="cancel">Vazgeç</button><button id="confirmStatusButton" class="primary-button" value="confirm">Onayla</button></div></form></dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
-  <script type="module" src="script.js?v=280"></script>
+  <script type="module" src="script.js?v=281"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
 </body>
 </html>

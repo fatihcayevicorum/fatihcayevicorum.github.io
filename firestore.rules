@@ -194,7 +194,14 @@ service cloud.firestore {
         && request.resource.data.businessDate is string
         && request.resource.data.businessDate >= '2026-08-27'
         && request.resource.data.schemaVersion == 'r280-current-account-movement';
-      allow update, delete: if false;
+      allow update: if hasPanel('pos')
+        && (!('reversed' in resource.data) || resource.data.reversed != true)
+        && request.resource.data.reversed == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'reversed', 'reversedAtMs', 'reversedAt', 'reversedBy',
+          'reversalReason', 'reversalMovementId', 'replacementMovementId'
+        ]);
+      allow delete: if false;
     }
     match /adminAppSettings/{document} {
       allow read: if isManager();
