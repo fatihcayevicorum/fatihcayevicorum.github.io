@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../assets/css/management-forms.css?v=1">
-  <link rel="stylesheet" href="style.css?v=282">
+  <link rel="stylesheet" href="style.css?v=283">
 </head>
 <body>
   <header class="app-header"><div class="header-inner">
@@ -59,11 +59,20 @@
     <div class="detail-heading"><div><p class="kicker">Cari hesabı</p><h2 id="detailName">Cari</h2><span id="detailStatus" class="status-badge">Aktif</span></div><button id="closeDetailDialog" class="icon-button" type="button"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="detail-summary"><article><span>Güncel Borç</span><strong id="detailBalance">₺0,00</strong></article><article><span>Telefon</span><strong id="detailPhone">—</strong></article></div>
     <div class="detail-note"><span>Not</span><p id="detailNote">Not eklenmemiş.</p></div>
-    <div class="movement-heading"><div><p class="kicker">Hesap geçmişi</p><h3>Cari Hareketleri</h3></div></div>
+    <div class="movement-heading"><div><p class="kicker">Hesap geçmişi</p><h3>Cari Hareketleri</h3></div><div class="statement-tools"><button id="exportAccountPdf" class="secondary-button compact-button" type="button"><i class="fa-solid fa-file-pdf"></i> PDF</button><button id="exportAccountExcel" class="secondary-button compact-button" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button><button id="sendAccountWhatsapp" class="whatsapp-button compact-button" type="button"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button></div></div>
     <p id="movementEmpty" class="empty-state">Bu cariye ait henüz hesap hareketi yok.</p>
     <div id="movementList" class="movement-list"></div>
-    <div class="detail-actions"><button id="editAccountButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Düzenle</button><button id="toggleAccountButton" class="passive-button" type="button"><i class="fa-solid fa-user-slash"></i> Pasife Al</button></div>
+    <div class="detail-actions"><button id="receiveAccountPayment" class="payment-button" type="button"><i class="fa-solid fa-hand-holding-dollar"></i> Ödeme Al</button><button id="editAccountButton" class="secondary-button" type="button"><i class="fa-solid fa-pen"></i> Düzenle</button><button id="toggleAccountButton" class="passive-button" type="button"><i class="fa-solid fa-user-slash"></i> Pasife Al</button></div>
   </div></dialog>
+
+  <dialog id="receivePaymentDialog" class="management-form-dialog"><form id="receivePaymentForm">
+    <div class="management-dialog-heading"><div><p class="kicker">Cari tahsilatı</p><h2 id="receivePaymentTitle">Ödeme Al</h2></div><button id="closeReceivePaymentDialog" class="management-dialog-close" type="button"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="receive-debt-card"><span>Güncel Cari Borcu</span><strong id="receivePaymentDebt">₺0,00</strong></div>
+    <div class="form-grid payment-edit-grid"><label><span>Alınan Tutar</span><input id="receivePaymentAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label><span>Ödeme Türü</span><select id="receivePaymentType"><option value="cash">Nakit</option><option value="transfer">Havale</option><option value="card">Kart</option></select></label><label class="full-field"><span>Açıklama <small>(isteğe bağlı)</small></span><input id="receivePaymentNote" maxlength="160" autocomplete="off" placeholder="Örnek: Ağustos ayı tahsilatı"></label></div>
+    <p id="receivePaymentPreview" class="form-note"></p>
+    <div class="form-actions"><button id="cancelReceivePayment" class="secondary-button" type="button">Vazgeç</button><button id="saveReceivePayment" class="payment-button" type="submit"><i class="fa-solid fa-check"></i> Ödemeyi Kaydet</button></div>
+    <p id="receivePaymentMessage" class="form-message" aria-live="polite"></p>
+  </form></dialog>
 
   <dialog id="movementDetailDialog" class="movement-detail-dialog"><div class="dialog-body">
     <div class="detail-heading"><div><p class="kicker">Cari hareketi</p><h2 id="movementDetailTitle">Adisyon Detayı</h2></div><button id="closeMovementDetailDialog" class="icon-button" type="button"><i class="fa-solid fa-xmark"></i></button></div>
@@ -90,7 +99,7 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
-  <script type="module" src="script.js?v=282"></script>
+  <script type="module" src="script.js?v=283"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
 </body>
 </html>
