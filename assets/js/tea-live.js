@@ -2,8 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/fireba
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
-const BREWING_DURATION_MS = 20 * 60 * 1000;
-const FRESHNESS_DURATION_MS = 60 * 60 * 1000;
+let brewingMinutes = 20;
+let freshnessMinutes = 60;
 
 const app = initializeApp(firebaseConfig);
 const database = getFirestore(app);
@@ -23,6 +23,8 @@ onSnapshot(publicStatusReference, (snapshot) => {
         ? data.activeBrews
         : [];
     serviceOpen = data.serviceOpen !== false;
+    brewingMinutes = clampInteger(data.brewingMinutes, 1, 120, 20);
+    freshnessMinutes = clampInteger(data.freshnessMinutes, 1, 240, 60);
 
     syncBadge.classList.remove("is-offline");
     syncBadge.innerHTML = '<span aria-hidden="true"></span> Canlı';
@@ -88,7 +90,7 @@ function renderCustomerTeaStatus() {
 
 function getCustomerStage(brew, now) {
     const startedAtMs = Number(brew.startedAtMs);
-    const readyAtMs = Number(brew.readyAtMs) || startedAtMs + BREWING_DURATION_MS;
+    const readyAtMs = Number(brew.readyAtMs) || startedAtMs + brewingMinutes * 60 * 1000;
     const elapsedMs = Math.max(0, now - startedAtMs);
 
     if (now < readyAtMs) {
@@ -104,18 +106,19 @@ function getCustomerStage(brew, now) {
     }
 
     const freshnessElapsedMs = Math.max(0, now - readyAtMs);
-    const remainingMs = Math.max(0, FRESHNESS_DURATION_MS - freshnessElapsedMs);
+    const freshnessMs = freshnessMinutes * 60 * 1000;
+    const remainingMs = Math.max(0, freshnessMs - freshnessElapsedMs);
 
-    if (freshnessElapsedMs < 15 * 60 * 1000) {
+    if (freshnessElapsedMs < freshnessMs * .25) {
         return customerStage("new", "Taze Demlendi • İçime Hazır", remainingMs);
     }
-    if (freshnessElapsedMs < 30 * 60 * 1000) {
+    if (freshnessElapsedMs < freshnessMs * .5) {
         return customerStage("fresh", "Taze • İçime Hazır", remainingMs);
     }
-    if (freshnessElapsedMs < 45 * 60 * 1000) {
+    if (freshnessElapsedMs < freshnessMs * .75) {
         return customerStage("normal", "Normal", remainingMs);
     }
-    if (freshnessElapsedMs < FRESHNESS_DURATION_MS) {
+    if (freshnessElapsedMs < freshnessMs) {
         return customerStage("warning", "Dem Eskimek Üzere", remainingMs);
     }
 
@@ -134,8 +137,13 @@ function customerStage(key, label, timerMs) {
         label,
         timerMs,
         timerLabel: "Tazelik için kalan",
-        freshnessPercent: (timerMs / FRESHNESS_DURATION_MS) * 100
+        freshnessPercent: (timerMs / Math.max(1, freshnessMinutes * 60 * 1000)) * 100
     };
+}
+
+function clampInteger(value, min, max, fallback) {
+    const number = Math.floor(Number(value));
+    return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
 }
 
 function formatDuration(milliseconds) {

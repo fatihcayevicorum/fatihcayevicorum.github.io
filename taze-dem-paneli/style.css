@@ -231,6 +231,23 @@ button {
   font-weight: 700;
 }
 
+.summary-tools { display: flex; align-items: center; gap: 0.4rem; }
+.tea-settings-button {
+  display: grid;
+  width: 2.15rem;
+  height: 2.15rem;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(90, 16, 24, 0.14);
+  border-radius: 10px;
+  color: var(--burgundy-700);
+  cursor: pointer;
+  background: rgba(255, 247, 233, 0.82);
+  font-size: 0.8rem;
+}
+.tea-settings-button:active { transform: scale(0.96); }
+
 .connection-badge.is-error {
   color: #a52831;
   border-color: rgba(180, 43, 50, 0.18);
@@ -831,6 +848,31 @@ button {
   color: var(--muted);
   font-size: 0.75rem;
 }
+
+.tea-settings-dialog form { justify-items: stretch; text-align: left; }
+.tea-settings-dialog .dialog-icon { justify-self: center; }
+.tea-settings-dialog h2,
+.tea-settings-dialog > form > p { text-align: center; }
+.tea-settings-fields { display: grid; gap: 0.72rem; width: 100%; margin-top: 1rem; }
+.tea-settings-fields label > span { display: block; margin-bottom: 0.28rem; color: var(--burgundy-800); font-size: 0.7rem; font-weight: 700; }
+.tea-settings-fields input {
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.6rem 0.72rem;
+  border: 1px solid rgba(90, 16, 24, 0.18);
+  border-radius: 12px;
+  color: var(--ink);
+  outline: 0;
+  background: #fffaf3;
+  font: inherit;
+  font-weight: 700;
+}
+.tea-settings-fields input:focus { border-color: var(--burgundy-700); box-shadow: 0 0 0 3px rgba(125, 24, 35, 0.1); }
+.tea-settings-fields label > small { display: block; margin-top: 0.22rem; color: var(--muted); font-size: 0.58rem; }
+.minute-input { position: relative; }
+.minute-input input { padding-right: 4.6rem; }
+.minute-input b { position: absolute; top: 50%; right: 0.72rem; color: var(--muted); font-size: 0.65rem; transform: translateY(-50%); }
+.settings-message { min-height: 1.1rem; color: #a52831 !important; font-size: 0.65rem !important; text-align: left !important; }
 
 .dialog-actions {
   display: grid;

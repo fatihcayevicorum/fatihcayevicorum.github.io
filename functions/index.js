@@ -268,14 +268,14 @@ exports.sendCustomerBroadcast=onCall({region:"europe-west1",cors:true},async req
   return result
 });
 
-function teaReadyAt(brew){
+function teaReadyAt(brew,brewingMs=TEA_BREWING_MS){
   const startedAt=Number(brew?.startedAtMs),manualReady=Number(brew?.readyAtMs);
   if(Number.isFinite(manualReady))return manualReady;
-  return Number.isFinite(startedAt)?startedAt+TEA_BREWING_MS:NaN
+  return Number.isFinite(startedAt)?startedAt+brewingMs:NaN
 }
 
-async function notifyAdminTeaReady(brew,position,now=Date.now()){
-  const readyAt=teaReadyAt(brew);
+async function notifyAdminTeaReady(brew,position,now=Date.now(),settings={}){
+  const readyAt=teaReadyAt(brew,settings.brewingMs);
   if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt||now-readyAt>TEA_NOTIFICATION_WINDOW_MS)return;
   const eventRef=await claimAdminTeaEvent(`ready-${brew.id}`,"tea-ready",brew.id);
   if(!eventRef)return;
@@ -288,8 +288,8 @@ async function notifyAdminTeaReady(brew,position,now=Date.now()){
   }
 }
 
-async function notifyCustomerTeaReady(brew,position,now=Date.now()){
-  const readyAt=teaReadyAt(brew);
+async function notifyCustomerTeaReady(brew,position,now=Date.now(),settings={}){
+  const readyAt=teaReadyAt(brew,settings.brewingMs);
   if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt||now-readyAt>TEA_NOTIFICATION_WINDOW_MS)return;
   const eventRef=await claimAdminTeaEvent(`customer-ready-${brew.id}`,"customer-tea-ready",brew.id);if(!eventRef)return;
   try{
@@ -298,8 +298,8 @@ async function notifyCustomerTeaReady(brew,position,now=Date.now()){
   }catch(error){await eventRef.set({status:"error",leaseUntilMs:0,error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});throw error}
 }
 
-async function notifyMerchantTeaReady(brew,position,now=Date.now()){
-  const readyAt=teaReadyAt(brew);
+async function notifyMerchantTeaReady(brew,position,now=Date.now(),settings={}){
+  const readyAt=teaReadyAt(brew,settings.brewingMs);
   if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt||now-readyAt>TEA_NOTIFICATION_WINDOW_MS)return;
   const eventRef=await claimAdminTeaEvent(`merchant-ready-${brew.id}`,"merchant-tea-ready",brew.id);if(!eventRef)return;
   try{
@@ -308,9 +308,9 @@ async function notifyMerchantTeaReady(brew,position,now=Date.now()){
   }catch(error){await eventRef.set({status:"error",leaseUntilMs:0,error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});throw error}
 }
 
-async function notifyAdminTeaExpired(brew,position,now=Date.now()){
-  const readyAt=teaReadyAt(brew);
-  if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt+TEA_FRESHNESS_MS||now-(readyAt+TEA_FRESHNESS_MS)>TEA_NOTIFICATION_WINDOW_MS)return;
+async function notifyAdminTeaExpired(brew,position,now=Date.now(),settings={}){
+  const readyAt=teaReadyAt(brew,settings.brewingMs),freshnessMs=settings.freshnessMs||TEA_FRESHNESS_MS;
+  if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt+freshnessMs||now-(readyAt+freshnessMs)>TEA_NOTIFICATION_WINDOW_MS)return;
   const eventRef=await claimAdminTeaEvent(`expired-${brew.id}`,"tea-expired",brew.id);
   if(!eventRef)return;
   try{
@@ -322,12 +322,12 @@ async function notifyAdminTeaExpired(brew,position,now=Date.now()){
   }
 }
 
-async function checkAdminTeaBrew(brew,position,now){
+async function checkAdminTeaBrew(brew,position,now,settings={}){
   const channels=[
-    ["admin-ready",notifyAdminTeaReady(brew,position,now)],
-    ["customer-ready",notifyCustomerTeaReady(brew,position,now)],
-    ["merchant-ready",notifyMerchantTeaReady(brew,position,now)],
-    ["admin-expired",notifyAdminTeaExpired(brew,position,now)]
+    ["admin-ready",notifyAdminTeaReady(brew,position,now,settings)],
+    ["customer-ready",notifyCustomerTeaReady(brew,position,now,settings)],
+    ["merchant-ready",notifyMerchantTeaReady(brew,position,now,settings)],
+    ["admin-expired",notifyAdminTeaExpired(brew,position,now,settings)]
   ];
   const results=await Promise.allSettled(channels.map(([,task])=>task));
   results.forEach((result,index)=>{
@@ -336,16 +336,21 @@ async function checkAdminTeaBrew(brew,position,now){
 }
 
 exports.notifyAdminTeaOnStateChange=onDocumentUpdated({document:"adminTea/state",region:"europe-west1"},async event=>{
-  const active=Array.isArray(event.data?.after.data()?.activeBrews)?event.data.after.data().activeBrews:[],now=Date.now();
-  const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now)));
+  const state=event.data?.after.data()||{},active=Array.isArray(state.activeBrews)?state.activeBrews:[],now=Date.now(),settings=teaNotificationSettings(state);
+  const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now,settings)));
   results.forEach((result,index)=>{if(result.status==="rejected")logger.error("Yönetici çay bildirimi gönderilemedi.",{brewId:active[index]?.id||"",position:index+1,error:String(result.reason?.message||result.reason)})})
 });
 
 exports.checkAdminTeaNotifications=onSchedule({schedule:"every 1 minutes",region:"europe-west1",timeZone:"Europe/Istanbul"},async()=>{
-  const state=(await db.doc("adminTea/state").get()).data()||{},active=Array.isArray(state.activeBrews)?state.activeBrews:[],now=Date.now();
-  const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now)));
+  const state=(await db.doc("adminTea/state").get()).data()||{},active=Array.isArray(state.activeBrews)?state.activeBrews:[],now=Date.now(),settings=teaNotificationSettings(state);
+  const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now,settings)));
   results.forEach((result,index)=>{if(result.status==="rejected")logger.error("Zamanlanmış yönetici çay bildirimi gönderilemedi.",{brewId:active[index]?.id||"",position:index+1,error:String(result.reason?.message||result.reason)})})
 });
+
+function teaNotificationSettings(state={}){
+  const minutes=(value,min,max,fallback)=>{const number=Math.floor(Number(value));return Number.isFinite(number)?Math.min(max,Math.max(min,number)):fallback};
+  return{brewingMs:minutes(state.brewingMinutes,1,120,20)*60*1000,freshnessMs:minutes(state.freshnessMinutes,1,240,60)*60*1000}
+}
 
 function localDate(now=new Date()){
   const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(now).reduce((a,x)=>(a[x.type]=x.value,a),{});
