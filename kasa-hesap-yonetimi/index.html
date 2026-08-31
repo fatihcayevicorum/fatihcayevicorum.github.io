@@ -38,6 +38,7 @@
 <dialog id="bankSummaryDialog"><div class="dialog-card bank-summary-dialog"><div class="dialog-head"><div><p class="kicker">İçinde bulunduğumuz ay</p><h2 id="bankSummaryTitle">Hesap Hareketleri</h2></div><button type="button" id="closeBankSummary" aria-label="Kapat">×</button></div><div class="bank-summary-balance"><div><span id="bankSummaryDate">--</span><small id="bankSummaryBalanceLabel">Bu ay toplam</small></div><b id="bankSummaryBalance">₺0,00</b></div><p id="bankSummaryNote" class="bank-summary-note">Ay içindeki hareketler tarih ve açıklamalarıyla burada görünür.</p><div id="bankSummaryList" class="bank-summary-list"></div><p id="bankSummaryEmpty" class="empty">Bu ay hareket bulunmuyor.</p></div></dialog>
 
 <dialog id="financeCloseDialog"><div class="dialog-card confirm-card"><i class="fa-solid fa-calendar-check"></i><h2>Finans günü kapatılsın mı?</h2><p id="financeCloseText">Bu tarih kapatıldıktan sonra gelir, gider ve aktarım kayıtları değiştirilemez.</p><div class="dialog-actions"><button id="cancelFinanceClose" class="soft" type="button">Vazgeç</button><button id="confirmFinanceClose" type="button">Finansı Kapat</button></div></div></dialog>
+<dialog id="financeDayEndWarningDialog"><div class="dialog-card confirm-card"><i class="fa-solid fa-triangle-exclamation"></i><h2>Önce gün sonunu kapatın</h2><p id="financeDayEndWarningText">Adisyon bölümündeki gün sonu henüz kapatılmadığı için finans günü kapatılamaz.</p><div class="dialog-actions"><button id="closeFinanceDayEndWarning" class="soft" type="button">Tamam</button><button id="goToAdisyonFromFinanceWarning" type="button">Adisyona Git</button></div></div></dialog>
 
 <dialog id="deleteDialog"><div class="dialog-card confirm-card"><i class="fa-solid fa-trash-can"></i><h2>Hareket silinsin mi?</h2><p>Bu manuel kayıt kasa bakiyelerinden de çıkarılacak.</p><div class="dialog-actions"><button id="cancelDelete" class="soft">Vazgeç</button><button id="confirmDelete" class="danger-button">Sil</button></div></div></dialog>
 
@@ -56,5 +57,5 @@
 <dialog id="reminderPaidDialog"><div class="dialog-card reminder-paid-dialog"><div class="reminder-paid-icon"><i class="fa-solid fa-check"></i></div><p class="kicker">Ödeme doğrulama</p><h2>Ödeme yapıldı mı?</h2><p id="reminderPaidText">Bu kayıt Ödenenler bölümüne taşınacak.</p><div class="dialog-actions"><button id="cancelReminderPaid" class="soft" type="button">Vazgeç</button><button id="confirmReminderPaid" class="reminder-paid-confirm" type="button"><i class="fa-solid fa-check"></i> Evet, Ödendi</button></div></div></dialog>
 
 <div id="toast" class="toast"></div>
-  <script type="module" src="script.js?v=298"></script><script type="module" src="../assets/js/system-ui.js?v=265"></script>
+  <script type="module" src="script.js?v=300"></script><script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body></html>
