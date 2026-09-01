@@ -95,7 +95,7 @@ function productCard(item) {
             <div class="product-copy">
                 <strong>${escapeHtml(item.name)}</strong>
                 ${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}
-                ${item.available ? "" : '<span class="availability">Şu an mevcut değil</span>'}
+                ${item.available ? "" : '<span class="availability">Satışta Değil</span>'}
             </div>
             <span class="product-price-wrap"><small class="product-price-label">Fiyat</small><strong class="product-price">${formatPrice(item.price)}</strong></span>
         </article>`;
@@ -118,7 +118,8 @@ function normalizeItems(items) {
             categoryId: String(item.categoryId),
             description: String(item.description || ""),
             price: Math.max(0, Number(item.price) || 0),
-            available: item.available !== false,
+            available: item.available !== false && item.stockAvailable !== false,
+            stockAvailable: item.stockAvailable !== false,
             order: Number(item.order) || 0
         }))
         .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, "tr"));

@@ -1,7 +1,7 @@
 "use strict";
 const crypto=require("crypto");
 const{onCall,HttpsError}=require("firebase-functions/v2/https");
-const{onDocumentCreated,onDocumentUpdated}=require("firebase-functions/v2/firestore");
+const{onDocumentCreated,onDocumentUpdated,onDocumentWritten}=require("firebase-functions/v2/firestore");
 const{onSchedule}=require("firebase-functions/v2/scheduler");
 const{initializeApp}=require("firebase-admin/app");
 const{getAuth}=require("firebase-admin/auth");
@@ -368,6 +368,20 @@ exports.notifyAdminStockLevel=onDocumentUpdated({document:"adminStockItems/{stoc
   const name=String(after.name||"Ürün").slice(0,90),empty=state==="empty";await Promise.allSettled([empty?criticalRef.delete():emptyRef.delete()]);
   await putBusinessNotification(`stock-${state}-${id}`,{type:empty?"stock-empty":"stock-critical",preferenceKey:empty?"stockEmpty":"stockCritical",stockItemId:id,title:empty?`${name} stokta tükendi`:`${name} kritik seviyede`,body:empty?`${name} stokta tükendi. Sipariş listesine eklemek ister misiniz?`:`${name} kritik seviyeye düştü. Sipariş listesine eklensin mi?`,link:`/stok-yonetimi/?item=${encodeURIComponent(id)}`})
 });
+
+async function syncPublicMenuStockAvailability(menuItemIds=[]){
+  const stockSnap=await db.collection("adminStockItems").get(),targets=new Set(menuItemIds.filter(Boolean).map(String)),all=!targets.size,linked=new Map();
+  for(const stockDoc of stockSnap.docs){const stock=stockDoc.data()||{},menuId=String(stock.linkedMenuItemId||"");if(!menuId||stock.active===false||stock.automaticDeduction!==true)continue;if(!linked.has(menuId))linked.set(menuId,[]);linked.get(menuId).push(stock)}
+  const catalogRef=db.doc("publicMenu/catalog");
+  await db.runTransaction(async tx=>{const snap=await tx.get(catalogRef);if(!snap.exists)return;const data=snap.data()||{},items=Array.isArray(data.items)?data.items:[];let changed=false;const next=items.map(item=>{const id=String(item.id||"");if(!all&&!targets.has(id))return item;const stocks=linked.get(id)||[];if(!stocks.length){if(typeof item.stockAvailable!=="boolean")return item;const copy={...item};delete copy.stockAvailable;changed=true;return copy}const stockAvailable=stocks.every(stock=>(Number(stock.quantity)||0)>=Math.max(0.0001,Number(stock.deductionAmount)||1));if(item.stockAvailable===stockAvailable)return item;changed=true;return{...item,stockAvailable}});if(changed)tx.update(catalogRef,{items:next,stockAvailabilityUpdatedAt:FieldValue.serverTimestamp()})})
+}
+
+exports.syncPublicMenuStockOnWrite=onDocumentWritten({document:"adminStockItems/{stockItemId}",region:"europe-west1"},async event=>{
+  const before=event.data?.before.data()||{},after=event.data?.after.data()||{};
+  await syncPublicMenuStockAvailability([before.linkedMenuItemId,after.linkedMenuItemId])
+});
+
+exports.syncPublicMenuStockSchedule=onSchedule({schedule:"every 5 minutes",region:"europe-west1",timeZone:"Europe/Istanbul"},()=>syncPublicMenuStockAvailability());
 
 exports.addReminderStockToPurchaseOrder=onCall({region:"europe-west1",cors:true},async request=>{
   await requirePanel(request,"stock");const stockItemId=String(request.data?.stockItemId||"");if(!stockItemId)throw new HttpsError("invalid-argument","Ürün seçilmedi.");const stockSnap=await db.doc(`adminStockItems/${stockItemId}`).get();if(!stockSnap.exists)throw new HttpsError("not-found","Stok ürünü bulunamadı.");
