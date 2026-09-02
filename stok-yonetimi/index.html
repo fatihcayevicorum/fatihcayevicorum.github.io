@@ -175,6 +175,8 @@
       <label class="dialog-field"><span>Ürün adı</span><input id="editProductName" maxlength="90" required></label>
       <div class="compact-grid"><label class="dialog-field"><span>Marka <small>(isteğe bağlı)</small></span><input id="editProductBrand" maxlength="70"></label><label class="dialog-field"><span>Barkod <small>(isteğe bağlı)</small></span><input id="editProductBarcode" inputmode="numeric" maxlength="32"></label></div>
       <div class="compact-grid"><label class="dialog-field"><span>Bir kolideki adet</span><input id="editUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label><label class="dialog-field"><span>Kritik stok uyarısı</span><input id="editWarningThreshold" type="number" min="0" max="999999" step="1" required></label></div>
+      <label class="switch-row"><input id="editStockTrackingEnabled" type="checkbox" checked><span>Bu ürünün stok takibini yap</span></label>
+      <p class="notice">Kapalıysa satışta stok düşmez, kritik/tükendi bildirimi oluşmaz ve ürün müşteri menüsünde stok nedeniyle kapanmaz.</p>
       <p class="notice" id="editProductLinkInfo"></p>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Değişiklikleri Kaydet</button>
     </form>

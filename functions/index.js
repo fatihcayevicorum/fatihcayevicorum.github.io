@@ -360,10 +360,11 @@ function lastDayOfMonth(year,month){return new Date(Date.UTC(Number(year),Number
 async function putBusinessNotification(id,data){const ref=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/${id}`);await db.runTransaction(async tx=>{if((await tx.get(ref)).exists)return;tx.create(ref,{...data,readBy:{},snoozedUntilBy:{},createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()})})}
 
 exports.notifyAdminStockLevel=onDocumentUpdated({document:"adminStockItems/{stockItemId}",region:"europe-west1"},async event=>{
-  const before=event.data?.before.data()||{},after=event.data?.after.data()||{},id=event.params.stockItemId;if(after.active===false)return;
+  const before=event.data?.before.data()||{},after=event.data?.after.data()||{},id=event.params.stockItemId;
+  const criticalRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/stock-critical-${id}`),emptyRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/stock-empty-${id}`);
+  if(after.active===false||after.stockTrackingEnabled===false){await Promise.allSettled([criticalRef.delete(),emptyRef.delete()]);return}
   const quantity=Number(after.quantity)||0,threshold=Math.max(0,Number(after.warningThreshold)||0),oldQuantity=Number(before.quantity)||0,oldThreshold=Math.max(0,Number(before.warningThreshold)||0);
   const state=quantity<=0?"empty":quantity<=threshold?"critical":"normal",oldState=oldQuantity<=0?"empty":oldQuantity<=oldThreshold?"critical":"normal";if(state===oldState)return;
-  const criticalRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/stock-critical-${id}`),emptyRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/stock-empty-${id}`);
   if(state==="normal"){await Promise.allSettled([criticalRef.delete(),emptyRef.delete()]);return}
   const name=String(after.name||"Ürün").slice(0,90),empty=state==="empty";await Promise.allSettled([empty?criticalRef.delete():emptyRef.delete()]);
   await putBusinessNotification(`stock-${state}-${id}`,{type:empty?"stock-empty":"stock-critical",preferenceKey:empty?"stockEmpty":"stockCritical",stockItemId:id,title:empty?`${name} stokta tükendi`:`${name} kritik seviyede`,body:empty?`${name} stokta tükendi. Sipariş listesine eklemek ister misiniz?`:`${name} kritik seviyeye düştü. Sipariş listesine eklensin mi?`,link:`/stok-yonetimi/?item=${encodeURIComponent(id)}`})

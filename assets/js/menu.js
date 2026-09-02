@@ -30,7 +30,7 @@ onSnapshot(catalogReference, (snapshot) => {
     const visibleCategoryIds = new Set(categories.map((category) => category.id));
     catalog = {
         categories,
-        items: normalizeItems(data.items).filter((item) => visibleCategoryIds.has(item.categoryId))
+        items: normalizeItems(data.items).filter((item) => visibleCategoryIds.has(item.categoryId) && item.active)
     };
     loading.hidden = true;
     syncBadge.classList.remove("is-error");
@@ -118,7 +118,8 @@ function normalizeItems(items) {
             categoryId: String(item.categoryId),
             description: String(item.description || ""),
             price: Math.max(0, Number(item.price) || 0),
-            available: item.available !== false && item.stockAvailable !== false,
+            active: item.available !== false,
+            available: item.stockAvailable !== false,
             stockAvailable: item.stockAvailable !== false,
             order: Number(item.order) || 0
         }))
