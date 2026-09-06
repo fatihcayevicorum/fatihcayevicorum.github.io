@@ -10,7 +10,7 @@ const CURRENT_ACCOUNT_COLLECTIONS=["adminCurrentAccounts","adminCurrentAccountMo
 const MUTABLE_COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","adminPurchaseOrders","adminCreditCustomers","adminCreditMovements",...CURRENT_ACCOUNT_COLLECTIONS,"merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","adminPersonnel","adminPersonnelAttendance","adminPersonnelPayments"];
 const CREATE_ONLY_COLLECTIONS=["adminFinanceDays"];
 const COLLECTIONS=[...MUTABLE_COLLECTIONS,...CREATE_ONLY_COLLECTIONS];
-const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminCashSettings","config"]];
+const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminAppSettings","analytics"],["adminCashSettings","config"]];
 const BACKUP_PREFIX="system-backups/";
 let busy=false,pendingRestore=null,pendingAction=null,toastTimer;
 

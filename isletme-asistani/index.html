@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>İşletme Asistanı | Fatih Çay Evi</title>
+  <meta name="theme-color" content="#5a1018">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
+  <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
+  <link rel="stylesheet" href="style.css?v=307">
+</head>
+<body>
+  <header class="app-header"><div class="header-inner">
+    <div class="brand"><img src="../assets/images/logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>İşletme Asistanı</h1></div></div>
+    <div class="header-actions"><div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div><details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a href="../adisyon/"><i class="fa-solid fa-receipt"></i>Adisyon</a><a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a><a class="is-current" href="./"><i class="fa-solid fa-wand-magic-sparkles"></i>İşletme Asistanı</a><a href="../kasa-hesap-yonetimi/"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a></nav></details><button id="settingsButton" class="header-page-link" type="button"><i class="fa-solid fa-gear"></i><span>Ayarlar</span></button><button id="logoutButton" class="logout-button" type="button"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button></div>
+  </div></header>
+
+  <main class="page-shell">
+    <section class="panel period-panel"><div class="section-heading"><div><p class="kicker">Karşılaştırmalı değerlendirme</p><h2>Analiz Dönemi</h2></div><span id="connection" class="connection"><i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor</span></div><div id="periodButtons" class="period-buttons"><button class="active" data-period="today">Bugün</button><button data-period="week">Bu Hafta</button><button data-period="month">Bu Ay</button><button data-period="lastMonth">Geçen Ay</button><button data-period="custom">Tarih Aralığı</button></div><div id="dateRange" class="date-range" hidden><label>Başlangıç<input id="startDate" type="date"></label><label>Bitiş<input id="endDate" type="date"></label><button id="applyRange" type="button">Analiz Et</button></div><div class="period-copy"><i class="fa-regular fa-calendar"></i><strong id="periodLabel">Bugün</strong><span id="compareLabel"></span></div></section>
+
+    <nav id="analysisTabs" class="analysis-tabs" role="tablist" aria-label="İşletme asistanı bölümleri">
+      <button class="active" data-tab="overview"><i class="fa-solid fa-chart-line"></i><span>Genel Durum</span></button>
+      <button data-tab="assistant"><i class="fa-solid fa-comment-dots"></i><span>Değerlendirme</span></button>
+      <button data-tab="products"><i class="fa-solid fa-box-open"></i><span>Ürün ve Maliyet</span></button>
+      <button data-tab="attention"><i class="fa-solid fa-triangle-exclamation"></i><span>Dikkat</span><b id="attentionBadge">0</b></button>
+      <button data-tab="ask"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Asistana Sor</span></button>
+    </nav>
+
+    <section data-panel="overview" class="tab-panel">
+      <div id="summaryCards" class="summary-grid"></div>
+      <div class="chart-grid"><article class="panel chart-card"><div class="section-heading"><div><p class="kicker">Gün gün değişim</p><h2>Satış ve Brüt Kazanç</h2></div></div><div class="canvas-wrap"><canvas id="trendChart"></canvas></div><div class="chart-legend"><span><i class="sales-dot"></i>Satış</span><span><i class="profit-dot"></i>Brüt kazanç</span></div></article><article class="panel chart-card"><div class="section-heading"><div><p class="kicker">Kategori performansı</p><h2>Satış Dağılımı</h2></div></div><div id="categoryBars" class="category-bars"></div></article></div>
+      <article class="panel comparison-card"><div class="section-heading"><div><p class="kicker">Eşit gün karşılaştırması</p><h2>Önceki Döneme Göre</h2></div></div><div id="comparisonRows" class="comparison-rows"></div></article>
+    </section>
+
+    <section data-panel="assistant" class="tab-panel" hidden><article class="panel assistant-panel"><div class="assistant-heading"><span><i class="fa-solid fa-wand-magic-sparkles"></i></span><div><p class="kicker">Otomatik işletme yorumu</p><h2 id="assistantTitle">Dönem Değerlendirmesi</h2></div></div><div id="assistantNarrative" class="narrative"></div><p class="calculation-note"><i class="fa-solid fa-shield-halved"></i> Mali rakamlar kayıtlı satış ve stok maliyetlerinden hesaplanır. Eksik maliyet bulunan ürünler ayrıca bildirilir.</p></article><article class="panel tea-analysis"><div class="section-heading"><div><p class="kicker">Dem ve servis verimi</p><h2>Çay Analizi</h2></div></div><div id="teaCards" class="tea-grid"></div><p id="teaNarrative" class="tea-copy"></p></article></section>
+
+    <section data-panel="products" class="tab-panel" hidden><article class="panel"><div class="section-heading product-heading"><div><p class="kicker">Satış, maliyet ve stok</p><h2>Ürün Performansı</h2></div><input id="productSearch" type="search" placeholder="Ürün ara"></div><div class="product-table-head"><span>Ürün</span><span>Satış</span><span>Maliyet</span><span>Brüt Kazanç</span><span>Stok</span></div><div id="productRows" class="product-rows"></div><p id="productEmpty" class="empty" hidden>Bu dönemde gösterilecek ürün bulunmuyor.</p></article><article class="panel"><div class="section-heading"><div><p class="kicker">Uzun vadeli planlama</p><h2>Stok İhtiyaç Tahmini</h2></div><small>Veri arttıkça güvenilirlik yükselir</small></div><div id="forecastRows" class="forecast-rows"></div></article></section>
+
+    <section data-panel="attention" class="tab-panel" hidden><article class="panel"><div class="section-heading"><div><p class="kicker">Kontrol edilmesi gerekenler</p><h2>Dikkat Listesi</h2></div></div><div id="attentionList" class="attention-list"></div><p id="attentionEmpty" class="empty" hidden>Şu anda dikkat gerektiren belirgin bir durum bulunmuyor.</p></article></section>
+
+    <section data-panel="ask" class="tab-panel" hidden><article class="panel ask-panel"><div class="assistant-heading"><span><i class="fa-solid fa-comments"></i></span><div><p class="kicker">Kayıtlarını sor</p><h2>Asistana Sor</h2></div></div><div id="suggestedQuestions" class="question-chips"><button>Bugün ne kadar kazandım?</button><button>Geçen dönemle karşılaştır</button><button>En çok ne kazandırdı?</button><button>Hangi stoklara dikkat etmeliyim?</button><button>Satılmayan ürünler hangileri?</button><button>Çay durumunu anlat</button></div><div id="chatMessages" class="chat-messages"><div class="message assistant-message">Seçtiğin dönemin satış, maliyet, stok ve çay kayıtları hakkında soru sorabilirsin.</div></div><form id="askForm" class="ask-form"><input id="questionInput" maxlength="180" autocomplete="off" placeholder="Örn. Bu ay neden daha az Çay sattım?"><button type="submit"><i class="fa-solid fa-paper-plane"></i><span>Sor</span></button></form><p class="ask-note">Bu ilk sürüm, mali kayıtlarını cihazda matematiksel olarak yorumlar; veriler dışarı gönderilmez.</p></article></section>
+  </main>
+
+  <dialog id="settingsDialog"><form id="settingsForm" class="dialog-card"><div class="dialog-head"><div><p class="kicker">Analiz hesapları</p><h2>İşletme Asistanı Ayarları</h2></div><button id="closeSettings" type="button" aria-label="Kapat">×</button></div><p class="dialog-copy">Çay ve stok tahminlerinin işletmene uygun hesaplanması için ölçüleri gir.</p><div class="settings-grid"><label>Bir demlikte kullanılan kuru çay (gram)<input id="teaGramsPerPot" type="number" min="1" max="1000" step="1" required></label><label>Bir demlikten beklenen bardak<input id="expectedCupsPerPot" type="number" min="1" max="100" step="1" required></label><label>Stok güvenlik payı (%)<input id="safetyPercent" type="number" min="0" max="100" step="1" required></label><label>Satılmayan ürün uyarısı (gün)<input id="inactiveDays" type="number" min="7" max="365" step="1" required></label></div><div class="dialog-actions"><button id="cancelSettings" class="soft" type="button">Vazgeç</button><button type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="script.js?v=307"></script><script type="module" src="../assets/js/system-ui.js?v=265"></script>
+</body>
+</html>
