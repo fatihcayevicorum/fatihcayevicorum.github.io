@@ -1,10 +1,10 @@
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,doc,getFirestore,onSnapshot,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
 import{hasPanelAccess}from"../assets/js/admin-access.js";
 
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const refs={sales:collection(db,"adminSales"),closings:collection(db,"adminDailyClosings"),cash:collection(db,"adminCashMovements"),stocks:collection(db,"adminStockItems"),internal:collection(db,"adminInternalConsumptions"),current:collection(db,"adminCurrentAccounts"),menu:doc(db,"publicMenu","catalog"),pos:doc(db,"adminAppSettings","pos"),tea:doc(db,"adminTea","state"),settings:doc(db,"adminAppSettings","analytics")};
 let sales=[],closings=[],cash=[],stocks=[],internal=[],current=[],catalog={categories:[],items:[]},teaState={activeBrews:[],history:[]},pos={},settings={teaGramsPerPot:90,expectedCupsPerPot:11,safetyPercent:10,inactiveDays:60},period="today",range={start:today(),end:today()},activeTab="overview",loaded=0,toastTimer,analysis={};
 
