@@ -103,7 +103,8 @@ service cloud.firestore {
       allow write: if hasAnyPanel(['tea', 'pos']);
     }
     match /adminTea/{document} {
-      allow read, write: if hasAnyPanel(['tea', 'pos']);
+      allow read: if hasAnyPanel(['tea', 'pos', 'reports']);
+      allow write: if hasAnyPanel(['tea', 'pos']);
     }
     match /publicMenu/catalog {
       allow read: if true;
@@ -202,8 +203,9 @@ service cloud.firestore {
         && request.resource.data.direction in ['increase', 'decrease']
         && request.resource.data.businessDate is string
         && request.resource.data.businessDate >= '2026-08-27'
-        && request.resource.data.schemaVersion == 'r280-current-account-movement';
-      allow update: if hasCurrentAccountWriteAccess()
+        && request.resource.data.schemaVersion == 'r280-current-account-movement'
+        && (isOwner() || request.resource.data.type in ['payment', 'order']);
+      allow update: if isOwner()
         && (!('reversed' in resource.data) || resource.data.reversed != true)
         && request.resource.data.reversed == true
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
@@ -239,6 +241,7 @@ service cloud.firestore {
       allow create: if (validFinanceMovement(request.resource.data) && (hasPanel('cash') || (hasPanel('pos')
           && request.resource.data.source == 'pos-quick-cash'
           && request.resource.data.type in ['income', 'expense']
+          && (request.resource.data.type == 'income' || request.resource.data.account == 'cash')
           && request.resource.data.account in ['cash', 'bank', 'card', 'creditCard']
           && request.resource.data.automatic == false)
           || (hasPanel('stock')
@@ -266,7 +269,7 @@ service cloud.firestore {
         && financeDateOpen(resource.data.businessDate);
     }
     match /adminFinanceDays/{businessDate} {
-      allow read: if hasAnyPanel(['cash', 'pos', 'reports']);
+      allow read: if hasAnyPanel(['cash', 'pos', 'reports', 'currentAccounts']);
       allow create: if hasPanel('cash')
         && businessDate >= '2026-08-13'
         && request.resource.data.businessDate == businessDate

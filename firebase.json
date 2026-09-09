@@ -11,12 +11,18 @@
       "**/node_modules/**",
       "functions/**",
       "**/*.rules",
-      "**/*.zip"
+      "**/*.zip",
+      "R308_KURULUM_VE_DEGISIKLIKLER.txt"
     ],
     "headers": [
       {
         "source": "/service-worker.js",
-        "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
       }
     ]
   },

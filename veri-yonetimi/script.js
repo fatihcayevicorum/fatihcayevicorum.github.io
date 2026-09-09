@@ -7,7 +7,7 @@ import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),functions=getFunctions(app,"europe-west1"),readSystemBackup=httpsCallable(functions,"readSystemBackup"),$=id=>document.getElementById(id);
 const CURRENT_ACCOUNT_COLLECTIONS=["adminCurrentAccounts","adminCurrentAccountMovements"];
-const MUTABLE_COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","adminPurchaseOrders","adminCreditCustomers","adminCreditMovements",...CURRENT_ACCOUNT_COLLECTIONS,"merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","adminPersonnel","adminPersonnelAttendance","adminPersonnelPayments"];
+const MUTABLE_COLLECTIONS=["adminPurchaseDrafts","adminReminderPreferences","adminAppSettings","staffUserAudit","adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","adminPurchaseOrders","adminCreditCustomers","adminCreditMovements",...CURRENT_ACCOUNT_COLLECTIONS,"merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","adminPersonnel","adminPersonnelAttendance","adminPersonnelPayments"];
 const CREATE_ONLY_COLLECTIONS=["adminFinanceDays"];
 const COLLECTIONS=[...MUTABLE_COLLECTIONS,...CREATE_ONLY_COLLECTIONS];
 const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminAppSettings","analytics"],["adminCashSettings","config"]];
@@ -45,8 +45,8 @@ async function createBackup({download=true,reason="manual"}={}){
 async function collectAllData(){
   const collections={},documents={};let totalRecords=0;
   for(const name of COLLECTIONS){setProgress(`${displayName(name)} yedekleniyor…`);const snap=await getDocs(collection(db,name));collections[name]=snap.docs.map(d=>({id:d.id,data:encode(d.data())}));totalRecords+=snap.size}
-  for(const [col,id] of SINGLE_DOCS){const snap=await getDoc(doc(db,col,id));documents[`${col}/${id}`]=snap.exists()?{id,data:encode(snap.data())}:null;if(snap.exists())totalRecords++}
-  return{app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:4,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections,documents};
+  for(const [col,id] of SINGLE_DOCS){if(collections[col]){const row=collections[col].find(x=>x.id===id);documents[`${col}/${id}`]=row||null;if(row)totalRecords++;continue}const snap=await getDoc(doc(db,col,id));documents[`${col}/${id}`]=snap.exists()?{id,data:encode(snap.data())}:null;if(snap.exists())totalRecords++}
+  return{app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:5,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections,documents,scope:"firestore-operational-data",excluded:["Firebase Authentication kullanıcıları ve parolaları","Storage görsel/ses dosyaları","Cihaz ve bildirim teslim kayıtları","Yönetici PIN ayarı","Tarayıcıdaki kaydedilmemiş taslaklar"]};
 }
 
 async function renderBackups(){
@@ -105,24 +105,21 @@ async function readRestoreFile(){
   if(!file){$("restoreFileName").textContent="JSON dosyası seçilmedi";return}
   try{const data=parseBackup(await readLocalText(file));pendingRestore=data;$("restoreFileName").textContent=file.name;showRestorePreview(data,file.name);$("restoreButton").disabled=false}catch(error){console.error(error);$("restoreFileName").textContent="Geçersiz yedek dosyası";toast(`Yedek açılamadı: ${friendlyFileError(error)}`)}
 }
-async function readCloudBackup(name){const result=await readSystemBackup({name}),raw=result.data?.text;if(typeof raw!=="string"||!raw.trim())throw Error("empty-backup");return raw}
+async function readCloudBackup(name){const chunks=[];let offset=0,generation='',size=null;do{const result=await readSystemBackup({name,chunked:true,offset,generation}),part=result.data;if(typeof part?.text==='string'&&offset===0)return part.text;if(!part||part.offset!==offset||!Number.isSafeInteger(part.size)||part.size<=0||part.size>25*1024*1024||part.nextOffset<=offset||part.nextOffset>part.size||(generation&&part.generation!==generation)||(size!==null&&part.size!==size))throw Error('invalid-backup');const bytes=Uint8Array.from(atob(part.base64),c=>c.charCodeAt(0));if(bytes.length!==part.nextOffset-offset)throw Error('invalid-backup');chunks.push(bytes);offset=part.nextOffset;size=part.size;generation=part.generation}while(offset<size);return await new Blob(chunks).text()}
 async function readLocalText(file){if(typeof file.text==="function")return await file.text();return await new Promise((resolve,reject)=>{const reader=new FileReader;reader.onload=()=>resolve(String(reader.result||""));reader.onerror=()=>reject(reader.error||Error("file-read"));reader.readAsText(file,"utf-8")})}
 function parseBackup(raw){const text=String(raw||"").replace(/^\uFEFF/,"").trim();if(!text)throw Error("empty-backup");return validateBackup(JSON.parse(text))}
 function friendlyFileError(error){const message=String(error?.message||error||"");if(message.includes("JSON"))return"Dosyanın JSON yapısı okunamadı.";if(message.includes("empty-backup"))return"Dosya boş görünüyor.";if(message.includes("invalid-backup"))return"Dosya Fatih Çay Evi tam yedeği değil.";return"Dosya tarayıcı tarafından okunamadı."}
-function showRestorePreview(data,name){$("restorePreview").hidden=false;$("restorePreview").innerHTML=`<b>${esc(name)}</b><br>${formatDateTime(new Date(data.createdAt))} • ${Number(data.totalRecords)||countBackup(data)} kayıt • Tam sistem yedeği`}
-function prepareRestore(){if(!pendingRestore)return;const mode=document.querySelector('input[name="restoreMode"]:checked').value;confirmAction({title:mode==="replace"?"Tam Geri Yükleme":"Yedeği Birleştir",text:mode==="replace"?"Mevcut yönetim verileri temizlenecek ve yedek aynen geri yüklenecek. İşlem öncesinde güncel sistem otomatik yedeklenecek.":"Yedekteki kayıtlar mevcut sisteme eklenecek veya aynı kimlikteki kayıtlar güncellenecek. İşlem öncesinde otomatik yedek alınacak.",phrase:"GERİ YÜKLE",action:()=>restoreBackup(mode)})}
+function showRestorePreview(data,name){$("restorePreview").hidden=false;$("restorePreview").innerHTML=`<b>${esc(name)}</b><br>${formatDateTime(new Date(data.createdAt))} • ${Number(data.totalRecords)||countBackup(data)} kayıt • Firestore veri yedeği (Auth kullanıcıları ve görsel dosyaları içermez)`}
+function prepareRestore(){if(!pendingRestore)return;const mode=document.querySelector('input[name="restoreMode"]:checked').value;confirmAction({title:mode==="replace"?"Tam Geri Yükleme":"Yedeği Birleştir",text:mode==="replace"?"Yedekte bulunan bölümler değiştirilecek; yedekte bulunmayan bölümler korunacak. Diğer cihazlarda işlem yapmayın. Büyük yedeklerde kesinti kısmi yüklemeye yol açabilir. İşlem öncesinde güncel sistem otomatik yedeklenecek.":"Yedekteki kayıtlar mevcut sisteme eklenecek veya aynı kimlikteki kayıtlar güncellenecek. İşlem öncesinde otomatik yedek alınacak.",phrase:"GERİ YÜKLE",action:()=>restoreBackup(mode)})}
 
 async function restoreBackup(mode){
-  if(busy||!pendingRestore)return;
-  try{
-    const data=pendingRestore;
-    await createBackup({download:true,reason:"before-restore"});
-    setBusy(true,"Yedek geri yükleniyor…");
-    if(mode==="replace"){for(const name of MUTABLE_COLLECTIONS)await deleteCollection(name);for(const [col,id] of SINGLE_DOCS)await deleteDoc(doc(db,col,id)).catch(()=>{})}
-    for(const [name,items] of Object.entries(data.collections||{})){if(MUTABLE_COLLECTIONS.includes(name))await writeItems(name,items);else if(CREATE_ONLY_COLLECTIONS.includes(name))await writeMissingItems(name,items)}
-    for(const [path,item] of Object.entries(data.documents||{})){if(!item)continue;const [col,id]=path.split("/");if(SINGLE_DOCS.some(x=>x[0]===col&&x[1]===id))await setDoc(doc(db,col,id),decode(item.data))}
-    toast("Yedek başarıyla geri yüklendi.");
-  }catch(error){console.error(error);toast("Yedek geri yüklenemedi. İşlem öncesi yedek korundu.")}finally{setBusy(false)}
+ if(busy||!pendingRestore)return;let committed=0;
+ try{const data=validateBackup(pendingRestore);if(!['replace','merge'].includes(mode))throw Error('invalid-backup');await createBackup({download:true,reason:'before-restore'});setBusy(true,'Yedek geri yükleniyor…');
+ const writes=[],deletes=[];
+ for(const [name,items] of Object.entries(data.collections)){const current=await getDocs(collection(db,name)),ids=new Set(items.map(x=>x.id)),existing=new Set(current.docs.map(x=>x.id));for(const item of items){if(mode==='merge'&&CREATE_ONLY_COLLECTIONS.includes(name)&&existing.has(item.id))continue;writes.push({type:'set',ref:doc(db,name,item.id),data:decode(item.data)})}if(mode==='replace')for(const item of current.docs)if(!ids.has(item.id))deletes.push({type:'delete',ref:item.ref})}
+ for(const [path,item] of Object.entries(data.documents)){const [col,id]=path.split('/');if(data.collections[col])continue;if(item)writes.push({type:'set',ref:doc(db,col,id),data:decode(item.data)});else if(mode==='replace')deletes.push({type:'delete',ref:doc(db,col,id)})}
+ const operations=[...writes,...deletes];for(let i=0;i<operations.length;i+=400){setProgress(`Geri yükleniyor: ${i} / ${operations.length}`);await runBatches(operations.slice(i,i+400));committed=Math.min(i+400,operations.length)}toast('Yedek başarıyla geri yüklendi. Diğer ekranları yenileyin.');
+ }catch(error){console.error(error);toast(committed?`Yükleme yarıda kaldı (${committed} işlem). Diğer ekranlarda işlem yapmayın; işlem öncesi yedekten kurtarın.`:'Yedek geri yüklenemedi. İşlem öncesi yedek korundu.')}finally{setBusy(false)}
 }
 
 async function deleteCollection(name){const snap=await getDocs(collection(db,name));await runBatches(snap.docs.map(x=>({type:"delete",ref:x.ref})))}
@@ -136,12 +133,16 @@ async function writeMissingItems(name,items){const current=await getDocs(collect
 async function runBatches(operations){for(let i=0;i<operations.length;i+=400){const batch=writeBatch(db);for(const op of operations.slice(i,i+400)){if(op.type==="delete")batch.delete(op.ref);else batch.set(op.ref,op.data,{merge:op.merge===true})}await batch.commit()}}
 
 function validateBackup(data){
-  if(!data)throw Error("invalid-backup");
-  const app=data.app||data.uygulama,type=data.type||data["tür"],sourceCollections=data.collections||data.koleksiyonlar,sourceDocuments=data.documents||data.belgeler||{};
-  if(app!=="Fatih Çay Evi"||!["full-firestore-backup","tam-firestore-yedeklemesi"].includes(type)||!sourceCollections)throw Error("invalid-backup");
-  const collections=Object.fromEntries(Object.entries(sourceCollections).map(([name,items])=>[name,(items||[]).map(item=>({id:item.id,data:normalizeLegacyTypes(item.data??item.veri??{})}))]));
-  const documents=Object.fromEntries(Object.entries(sourceDocuments).map(([path,item])=>[path,item?{id:item.id,data:normalizeLegacyTypes(item.data??item.veri??{})}:null]));
-  return{...data,app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:data.backupVersion??data["yedeklemeSürümü"]??1,createdAt:data.createdAt||data["oluşturulmaTarihi"]||new Date().toISOString(),createdAtMs:data.createdAtMs||data["oluşturulmaZamanıMs"]||Date.now(),totalRecords:data.totalRecords??data["toplamKayıt"]??0,collections,documents};
+ const object=x=>x&&typeof x==='object'&&!Array.isArray(x),validId=x=>typeof x==='string'&&x.length>0&&!x.includes('/')&&x!=='.'&&x!=='..';
+ if(!object(data))throw Error('invalid-backup');const app=data.app||data.uygulama,type=data.type||data['tür'],sourceCollections=data.collections||data.koleksiyonlar,sourceDocuments=data.documents||data.belgeler||{};
+ if(app!=='Fatih Çay Evi'||!['full-firestore-backup','tam-firestore-yedeklemesi'].includes(type)||!object(sourceCollections)||!object(sourceDocuments)||!Object.keys(sourceCollections).length)throw Error('invalid-backup');
+ const collections={},documents={};let count=0;
+ for(const [name,rows] of Object.entries(sourceCollections)){if(!COLLECTIONS.includes(name)||!Array.isArray(rows))throw Error('invalid-backup');const seen=new Set();collections[name]=rows.map(row=>{if(!object(row)||!validId(row.id)||seen.has(row.id)||!object(row.data??row.veri))throw Error('invalid-backup');seen.add(row.id);const value=normalizeLegacyTypes(row.data??row.veri);validateBackupValue(value);count++;return{id:row.id,data:value}})}
+ for(const [path,row] of Object.entries(sourceDocuments)){if(!SINGLE_DOCS.some(x=>x.join('/')===path))throw Error('invalid-backup');if(row===null){documents[path]=null;continue}if(!object(row)||row.id!==path.split('/')[1]||!object(row.data??row.veri))throw Error('invalid-backup');const value=normalizeLegacyTypes(row.data??row.veri);validateBackupValue(value);documents[path]={id:row.id,data:value};count++}
+ if(Number(data.backupVersion)>=5&&(COLLECTIONS.some(x=>!(x in collections))||SINGLE_DOCS.some(x=>!(x.join('/') in documents))))throw Error('invalid-backup');
+ for(const [path,item] of Object.entries(documents)){const [col,id]=path.split('/');if(collections[col]){const same=collections[col].find(x=>x.id===id);if((!same)!==(!item)||same&&JSON.stringify(same.data)!==JSON.stringify(item.data))throw Error('invalid-backup')}}
+ const stated=data.totalRecords??data['toplamKayıt'];if(stated!==undefined&&(!Number.isInteger(stated)||stated!==count))throw Error('invalid-backup');
+ return{...data,app:'Fatih Çay Evi',type:'full-firestore-backup',backupVersion:data.backupVersion??data['yedeklemeSürümü']??1,createdAt:data.createdAt||data['oluşturulmaTarihi']||new Date().toISOString(),totalRecords:count,collections,documents};
 }
 function normalizeLegacyTypes(value){if(Array.isArray(value))return value.map(normalizeLegacyTypes);if(value&&typeof value==="object"){const normalized=Object.fromEntries(Object.entries(value).map(([k,v])=>[k,normalizeLegacyTypes(v)]));if(["zaman damgası","zamanDamgası"].includes(normalized.__fatihType))normalized.__fatihType="timestamp";if(normalized.__fatihType==="tarih")normalized.__fatihType="date";return normalized}return value}
 function encode(value){if(value instanceof Timestamp)return{__fatihType:"timestamp",ms:value.toMillis()};if(value instanceof Date)return{__fatihType:"date",iso:value.toISOString()};if(Array.isArray(value))return value.map(encode);if(value&&typeof value==="object")return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,encode(v)]));return value}
@@ -163,3 +164,5 @@ function fileSize(bytes){return bytes<1024*1024?`${Math.max(1,Math.round(bytes/1
 function tick(){const n=new Date();$("currentTime").textContent=n.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});$("currentDate").textContent=n.toLocaleDateString("tr-TR")}
 function esc(value=""){const div=document.createElement("div");div.textContent=value;return div.innerHTML}
 function toast(message){clearTimeout(toastTimer);$("toast").textContent=message;$("toast").classList.add("show");toastTimer=setTimeout(()=>$("toast").classList.remove("show"),3200)}
+
+function validateBackupValue(value,depth=0){if(depth>20)throw Error('invalid-backup');if(typeof value==='number'&&!Number.isFinite(value))throw Error('invalid-backup');if(value&&typeof value==='object'){if(value.__fatihType==='timestamp'&&(!Number.isFinite(value.ms)||value.ms<-62135596800000||value.ms>253402300799999))throw Error('invalid-backup');if(value.__fatihType==='date'&&!Number.isFinite(Date.parse(value.iso)))throw Error('invalid-backup');if(value.__fatihType&&!['timestamp','date'].includes(value.__fatihType))throw Error('invalid-backup');for(const entry of Object.values(value))validateBackupValue(entry,depth+1)}}
