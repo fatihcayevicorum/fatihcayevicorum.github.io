@@ -1,5 +1,5 @@
 const DATABASE_NAME="fatihNotificationSounds",STORE_NAME="sounds",DATABASE_VERSION=1;
-export const SOUND_TYPES={reminder:"reminder",merchantOrder:"merchant-order",teaReady:"tea-ready",teaExpired:"tea-expired"};
+export const SOUND_TYPES={merchantOrder:"merchant-order",teaReady:"tea-ready",teaExpired:"tea-expired"};
 const MUTE_PREFIX="fatihNotificationSoundMuted:";
 
 function database(){
@@ -59,7 +59,7 @@ export async function playNotificationSound(type,{force=false}={}){
 function playDefault(type){
   try{
     const Context=window.AudioContext||window.webkitAudioContext,context=new Context,now=context.currentTime;
-    const notes=type===SOUND_TYPES.reminder?[[523,0,.12],[659,.16,.16]]:type===SOUND_TYPES.teaExpired?[[392,0,.2],[294,.24,.24]]:type===SOUND_TYPES.teaReady?[[660,0,.12],[880,.15,.18]]:[[880,0,.14],[660,.18,.18],[880,.4,.22]];
+    const notes=type===SOUND_TYPES.teaExpired?[[392,0,.2],[294,.24,.24]]:type===SOUND_TYPES.teaReady?[[660,0,.12],[880,.15,.18]]:[[880,0,.14],[660,.18,.18],[880,.4,.22]];
     notes.forEach(([frequency,delay,duration])=>{const oscillator=context.createOscillator(),gain=context.createGain();oscillator.type=type===SOUND_TYPES.teaExpired?"triangle":"sine";oscillator.frequency.value=frequency;gain.gain.setValueAtTime(.0001,now+delay);gain.gain.exponentialRampToValueAtTime(.22,now+delay+.02);gain.gain.exponentialRampToValueAtTime(.0001,now+delay+duration);oscillator.connect(gain).connect(context.destination);oscillator.start(now+delay);oscillator.stop(now+delay+duration+.03)});
     return true
   }catch{return false}
