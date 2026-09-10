@@ -73,7 +73,15 @@ service cloud.firestore {
 
     match /staffUsers/{uid} {
       allow read: if isOwner() || (request.auth != null && request.auth.uid == uid);
-      allow write: if isOwner();
+      allow create, update: if isOwner()
+        && (uid != 'obuZLQXuPAWsHE20bZxcAxCNsO02'
+          || (request.resource.data.role == 'owner'
+            && request.resource.data.active == true
+            && request.resource.data.permissions.hasAll([
+              'tea', 'pos', 'currentAccounts', 'currentAccountTransfer', 'menu',
+              'stock', 'credit', 'merchant', 'reports', 'cash', 'home'
+            ])));
+      allow delete: if isOwner() && uid != 'obuZLQXuPAWsHE20bZxcAxCNsO02';
     }
     match /staffUserAudit/{document} {
       allow read: if isOwner();
@@ -81,7 +89,12 @@ service cloud.firestore {
     }
     match /adminPersonnel/{document} {
       allow read: if hasPanel('reports');
-      allow write: if isOwner();
+      allow create, update: if isOwner()
+        && (document != 'obuZLQXuPAWsHE20bZxcAxCNsO02'
+          || (request.resource.data.isOwnerProfile == true
+            && request.resource.data.active == true
+            && request.resource.data.linkedUserUid == 'obuZLQXuPAWsHE20bZxcAxCNsO02'));
+      allow delete: if isOwner() && document != 'obuZLQXuPAWsHE20bZxcAxCNsO02';
     }
     match /adminPersonnelAttendance/{document} {
       allow read: if hasPanel('reports');

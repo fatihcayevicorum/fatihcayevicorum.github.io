@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=250">
+  <link rel="stylesheet" href="style.css?v=309">
 </head>
 <body>
   <header class="app-header">
@@ -73,6 +73,8 @@
         <div><p class="kicker">Seçili personel</p><h2 id="detailName">—</h2><span id="detailRole">—</span></div>
         <div class="detail-actions">
           <button id="editPersonnelButton" type="button"><i class="fa-solid fa-pen"></i> Düzenle</button>
+          <button id="personnelPermissionsButton" type="button"><i class="fa-solid fa-user-shield"></i> Yetkiler</button>
+          <button id="personnelShiftButton" type="button"><i class="fa-solid fa-cash-register"></i> Kasa / Vardiya</button>
           <button id="markTodayButton" class="worked-button" type="button"><i class="fa-solid fa-calendar-check"></i> Bugün Çalıştı</button>
           <button id="newPaymentButton" class="primary" type="button"><i class="fa-solid fa-money-bill-transfer"></i> Ödeme Yap</button>
         </div>
@@ -115,9 +117,38 @@
         <label>Telefon<input id="personnelPhone" inputmode="tel" maxlength="20" placeholder="05XX XXX XX XX"></label>
       </div>
       <label>Günlük ücret<input id="personnelWage" type="number" inputmode="decimal" min="0" step="0.01" required><small>Çalıştı işaretlenen günlerde hak ediş bu ücret üzerinden hesaplanır.</small></label>
+      <label>Kullanıcı hesabı<select id="linkedUserUid"><option value="">Kullanıcı hesabı bağlı değil</option></select><small id="linkedUserHint">Personelin uygulamaya giriş yapacağı kullanıcı hesabını seçin. Bir hesap yalnızca bir personele bağlanabilir.</small></label>
       <label class="active-row"><input id="personnelActive" type="checkbox" checked><span>Personel aktif</span></label>
       <p id="personnelMessage" class="message"></p>
       <button class="primary full" type="submit"><i class="fa-solid fa-floppy-disk"></i> Personeli Kaydet</button>
+    </form>
+  </dialog>
+
+  <dialog id="permissionsDialog">
+    <form id="permissionsForm">
+      <button id="closePermissionsDialog" class="close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div class="dialog-icon"><i class="fa-solid fa-user-shield"></i></div>
+      <p class="kicker">Personel kullanıcı hesabı</p><h2 id="permissionsDialogTitle">Personel Yetkileri</h2>
+      <div id="linkedAccountSummary" class="linked-account-summary"></div>
+      <fieldset id="personnelPermissionFieldset"><legend>Erişebileceği paneller</legend><div id="personnelPermissionGrid" class="permission-grid"></div></fieldset>
+      <div id="passwordChangeFields" class="password-change-fields">
+        <p class="password-heading"><i class="fa-solid fa-lock"></i><span>Şifre görüntülenmez; yalnızca yenisi belirlenebilir.</span></p>
+        <label>Yeni şifre <small>(değişmeyecekse boş bırakın)</small><input id="personnelNewPassword" type="password" minlength="8" autocomplete="new-password"></label>
+        <label>Yeni şifre tekrar<input id="personnelNewPasswordAgain" type="password" minlength="8" autocomplete="new-password"></label>
+      </div>
+      <p id="permissionsMessage" class="message"></p>
+      <button id="savePermissionsButton" class="primary full" type="submit"><i class="fa-solid fa-floppy-disk"></i> Yetkileri Kaydet</button>
+    </form>
+  </dialog>
+
+  <dialog id="shiftDialog">
+    <form method="dialog">
+      <button class="close" value="cancel" type="submit" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div class="dialog-icon"><i class="fa-solid fa-cash-register"></i></div>
+      <p class="kicker">Ayrı personel işlemi</p><h2 id="shiftDialogTitle">Kasa / Vardiya</h2>
+      <div id="shiftAccountSummary" class="linked-account-summary"></div>
+      <div class="cash-note"><i class="fa-solid fa-circle-info"></i><span>Bu alan, çekmece hesabı ve zorunlu vardiya sayımı eklenirken kullanılacak ayrı personel işlemi olarak hazırlandı. Mevcut çalışma takvimi ve ödeme hesaplamaları değiştirilmedi.</span></div>
+      <button id="goAttendanceButton" class="primary full" value="attendance" type="submit"><i class="fa-solid fa-calendar-days"></i> Çalışma Takvimine Git</button>
     </form>
   </dialog>
 
@@ -167,7 +198,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=250"></script>
+  <script type="module" src="script.js?v=309"></script>
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
 </html>
