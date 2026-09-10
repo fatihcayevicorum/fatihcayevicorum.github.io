@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="style.css?v=310">
 </head>
 <body>
   <header class="app-header">
@@ -22,6 +22,7 @@
       </div>
       <div class="header-actions">
         <div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
+        <button class="settings-button" id="staffSettingsButton" type="button" aria-label="Personel ayarları" title="Personel ayarları" hidden><i class="fa-solid fa-gear"></i></button>
         <button class="logout-button" id="logoutButton" type="button" aria-label="Çıkış yap"><i class="fa-solid fa-right-from-bracket"></i><span>Güvenli Çıkış</span></button>
       </div>
     </div>
@@ -40,8 +41,33 @@
     </section>
   </main>
 
+  <dialog id="staffSettingsDialog" class="settings-dialog">
+    <form id="staffSettingsForm">
+      <button id="closeStaffSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div class="dialog-icon"><i class="fa-solid fa-user-gear"></i></div>
+      <p class="dialog-kicker">Personel hesabım</p><h2>Kullanıcı Ayarları</h2>
+      <p class="dialog-copy">İsim ve telefon değişiklikleri tam yetkili yönetici onayından sonra uygulanır.</p>
+      <label>İsim / kullanıcı adı<input id="settingsDisplayName" maxlength="60" required></label>
+      <label>Telefon numarası<input id="settingsPhone" inputmode="tel" maxlength="20" placeholder="05XX XXX XX XX" required></label>
+      <label class="password-request-row"><input id="settingsPasswordRequest" type="checkbox"><span><b>Şifremi de değiştirmek istiyorum</b><small>Yönetici onayından sonra yeni şifreni güvenli şekilde belirleyeceksin.</small></span></label>
+      <div id="settingsRequestStatus" class="request-status" hidden></div>
+      <p id="settingsMessage" class="dialog-message"></p>
+      <button id="submitSettingsRequest" class="dialog-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Onaya Gönder</button>
+    </form>
+    <form id="approvedPasswordForm" hidden>
+      <button id="closeApprovedPassword" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div class="dialog-icon approved"><i class="fa-solid fa-key"></i></div>
+      <p class="dialog-kicker">Talep onaylandı</p><h2>Yeni Şifreni Belirle</h2>
+      <p class="dialog-copy">Şifre değişikliği yönetici tarafından onaylandı. Yeni şifren hiçbir kayıt veya bildirimde gösterilmez.</p>
+      <label>Yeni şifre<input id="approvedPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+      <label>Yeni şifre tekrar<input id="approvedPasswordAgain" type="password" minlength="8" autocomplete="new-password" required></label>
+      <p id="approvedPasswordMessage" class="dialog-message"></p>
+      <button id="saveApprovedPassword" class="dialog-primary" type="submit"><i class="fa-solid fa-check"></i> Yeni Şifreyi Kaydet</button>
+    </form>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=307"></script>
+  <script type="module" src="script.js?v=310"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>

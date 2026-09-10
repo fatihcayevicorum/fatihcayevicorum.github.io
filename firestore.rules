@@ -369,7 +369,7 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     match /adminInAppNotifications/{notificationId} {
-      allow read: if isManager();
+      allow read: if isOwner() || (isStaff() && resource.data.get('ownerOnly', false) != true);
       allow update: if isManager()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy', 'snoozedUntilBy', 'readAtMs', 'updatedAt']);
       allow create, delete: if false;
@@ -377,6 +377,10 @@ service cloud.firestore {
     match /adminReminderPreferences/{uid} {
       allow read, create, update: if isManager() && request.auth.uid == uid;
       allow delete: if false;
+    }
+    match /staffProfileChangeRequests/{uid} {
+      allow read: if isOwner() || (request.auth != null && request.auth.uid == uid);
+      allow create, update, delete: if false;
     }
 
     match /{document=**} {

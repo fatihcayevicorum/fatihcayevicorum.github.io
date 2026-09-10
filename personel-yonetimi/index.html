@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=309">
+  <link rel="stylesheet" href="style.css?v=310">
 </head>
 <body>
   <header class="app-header">
@@ -131,11 +131,6 @@
       <p class="kicker">Personel kullanıcı hesabı</p><h2 id="permissionsDialogTitle">Personel Yetkileri</h2>
       <div id="linkedAccountSummary" class="linked-account-summary"></div>
       <fieldset id="personnelPermissionFieldset"><legend>Erişebileceği paneller</legend><div id="personnelPermissionGrid" class="permission-grid"></div></fieldset>
-      <div id="passwordChangeFields" class="password-change-fields">
-        <p class="password-heading"><i class="fa-solid fa-lock"></i><span>Şifre görüntülenmez; yalnızca yenisi belirlenebilir.</span></p>
-        <label>Yeni şifre <small>(değişmeyecekse boş bırakın)</small><input id="personnelNewPassword" type="password" minlength="8" autocomplete="new-password"></label>
-        <label>Yeni şifre tekrar<input id="personnelNewPasswordAgain" type="password" minlength="8" autocomplete="new-password"></label>
-      </div>
       <p id="permissionsMessage" class="message"></p>
       <button id="savePermissionsButton" class="primary full" type="submit"><i class="fa-solid fa-floppy-disk"></i> Yetkileri Kaydet</button>
     </form>
@@ -198,7 +193,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=309"></script>
+  <script type="module" src="script.js?v=310"></script>
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
 </html>
