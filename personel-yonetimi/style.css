@@ -18,3 +18,20 @@ dialog{width:min(540px,calc(100% - 24px));max-height:calc(100dvh - 24px);padding
 @media(max-width:650px){.page-shell{width:min(100% - 18px,1180px);margin:12px auto 28px;gap:12px}.panel{padding:15px;border-radius:17px}.month-panel{grid-template-columns:1fr auto}.month-panel .connection{grid-column:1/-1;justify-self:start}.month-controls input{width:138px}.summary-grid{grid-template-columns:repeat(2,1fr);gap:8px}.summary-grid article{min-height:91px;padding:13px}.summary-grid article:last-child{grid-column:1/-1}.summary-grid strong{font-size:1rem}.personnel-list{grid-template-columns:1fr}.section-heading{align-items:flex-start}.section-heading button{padding:0 11px}.detail-heading{align-items:flex-start;flex-wrap:wrap;padding:16px}.detail-heading>div:nth-child(2){max-width:calc(100% - 68px)}.detail-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.detail-actions button:first-child{grid-column:1/-1}.person-summary{grid-template-columns:repeat(2,1fr);padding:12px}.person-summary article:last-child{grid-column:1/-1}.attendance-card,.payments-card{padding:15px}.calendar-day{min-height:52px;padding:6px}.calendar-day small{font-size:.43rem}.form-grid{grid-template-columns:1fr}.status-options{grid-template-columns:1fr 1fr}}
 @media(max-width:390px){.month-panel{grid-template-columns:1fr}.month-controls{justify-content:space-between}.summary-grid{grid-template-columns:1fr 1fr}.weekday-row,.attendance-calendar{gap:3px}.calendar-day{min-height:47px;border-radius:9px}.calendar-day small{display:none}}
 @media(max-width:650px){.detail-actions button:first-child{grid-column:auto}.detail-actions .primary{grid-column:1/-1}.permission-grid{grid-template-columns:1fr}.permission-grid .permission-action{grid-column:auto}}
+
+/* R311 personel detay penceresi ve ücret işlemleri */
+.detail-dialog{width:min(1120px,calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:auto}
+.detail-dialog .detail-panel{position:relative;padding:0;overflow:hidden}
+.detail-dialog .detail-heading{padding:21px 64px 21px 21px}
+.detail-close{z-index:2}
+.person-summary{grid-template-columns:repeat(4,minmax(0,1fr))}
+.wage-settings{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fffaf5}
+.wage-settings[hidden]{display:none}
+.wage-action-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wage-action-options label{display:block}
+.wage-action-options input{position:absolute;opacity:0;pointer-events:none}
+.wage-action-options span{display:flex;min-height:48px;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:.64rem}
+.wage-action-options input:checked+span{color:var(--wine);border-color:var(--wine);background:#f9e8e9;box-shadow:0 0 0 2px rgba(116,23,34,.12)}
+.wage-action-options .cash input:checked+span{color:#185b3b;border-color:#7cbd98;background:#e8f6ee}
+.wage-action-options .bank input:checked+span{color:#205c86;border-color:#85b5d6;background:#edf6fa}
+@media(max-width:650px){.person-summary{grid-template-columns:repeat(2,1fr)}.person-summary article:last-child{grid-column:auto}.form-grid,.wage-settings{grid-template-columns:1fr}.wage-action-options{grid-template-columns:1fr}.detail-dialog{width:calc(100% - 12px);max-height:calc(100dvh - 12px);border-radius:17px}.detail-dialog .detail-heading{padding:16px 54px 16px 16px}}
