@@ -56,3 +56,9 @@ dialog select{
 .wage-action-options button.bank{color:#205c86;border-color:#85b5d6;background:#edf6fa}
 .wage-action-options button:disabled{cursor:wait;opacity:.6}
 .wage-action-options button.saving i{animation:fa-spin 1s infinite linear}
+
+/* R314 izinli gün ve doğrudan durum işlemleri */
+.calendar-day.leave{color:#8e345d;border-color:#dda6c0;background:#fde9f2}
+.calendar-legend i.leave{border-color:#dda6c0;background:#fde9f2}
+.status-options .leave input:checked+span{color:#8e345d;border-color:#d58bad;background:#fde9f2}
+.status-options input:disabled+span{cursor:wait;opacity:.62}
