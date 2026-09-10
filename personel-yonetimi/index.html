@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=312">
+  <link rel="stylesheet" href="style.css?v=313">
 </head>
 <body>
   <header class="app-header">
@@ -178,14 +178,13 @@
       <p class="kicker">Çalışılan gün ücreti</p><h2 id="attendanceWageTitle">—</h2>
       <label id="workedHoursLabel">Çalışılan saat<input id="workedHours" type="number" inputmode="decimal" min="0.25" step="0.25"><small>Saatlik ücret üzerinden önerilen tutar hesaplanır.</small></label>
       <label>İşlem tutarı<input id="attendanceWageAmount" type="number" inputmode="decimal" min="0" step="0.01" required><small>Tutarı gerektiğinde elle değiştirebilirsiniz.</small></label>
-      <div class="wage-action-options">
-        <label><input type="radio" name="wageAction" value="earned" checked><span><i class="fa-solid fa-wallet"></i>Hak Etti</span></label>
-        <label class="cash"><input type="radio" name="wageAction" value="cash"><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label>
-        <label class="bank"><input type="radio" name="wageAction" value="bank"><span><i class="fa-solid fa-building-columns"></i>Banka</span></label>
+      <div id="wageActionOptions" class="wage-action-options">
+        <button type="button" data-wage-action="earned"><i class="fa-solid fa-wallet"></i>Hak Etti</button>
+        <button class="cash" type="button" data-wage-action="cash"><i class="fa-solid fa-money-bill-wave"></i>Nakit</button>
+        <button class="bank" type="button" data-wage-action="bank"><i class="fa-solid fa-building-columns"></i>Banka</button>
       </div>
       <div class="cash-note"><i class="fa-solid fa-circle-info"></i><span><b>Hak Etti</b> yalnızca alacağa ekler. Nakit veya banka seçilirse aynı tutar ödenmiş sayılır ve Kasa ve Hesaplar'a maaş gideri işlenir.</span></div>
       <p id="attendanceWageMessage" class="message"></p>
-      <button class="primary full" type="submit"><i class="fa-solid fa-check"></i> İşlemi Kaydet</button>
     </form>
   </dialog>
 
@@ -217,7 +216,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=311"></script>
+  <script type="module" src="script.js?v=313"></script>
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
 </html>

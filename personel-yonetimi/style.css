@@ -49,3 +49,10 @@ dialog select{
   background-position:right 14px center;
   background-size:18px 18px
 }
+
+/* R313 tek dokunuş ücret işlemleri */
+.wage-action-options button{display:flex;min-height:48px;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);border-radius:12px;color:var(--wine);background:#f9e8e9;font-size:.64rem;font-weight:800}
+.wage-action-options button.cash{color:#185b3b;border-color:#7cbd98;background:#e8f6ee}
+.wage-action-options button.bank{color:#205c86;border-color:#85b5d6;background:#edf6fa}
+.wage-action-options button:disabled{cursor:wait;opacity:.6}
+.wage-action-options button.saving i{animation:fa-spin 1s infinite linear}
