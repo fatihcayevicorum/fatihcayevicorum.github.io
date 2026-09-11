@@ -331,19 +331,19 @@ service cloud.firestore {
     }
 
     match /adminTeaPushDevices/{deviceId} {
-      allow read: if isOwner();
-      allow create: if isOwner()
+      allow get: if isManager();
+      allow list: if isOwner();
+      allow create: if isManager()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.token is string
         && request.resource.data.token.size() >= 20
         && request.resource.data.token.size() <= 4096
         && request.resource.data.active is bool;
-      allow update: if isOwner()
-        && resource.data.uid == request.auth.uid
+      allow update: if isManager()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.token == resource.data.token
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'active', 'deviceType', 'platform', 'userAgent', 'createdAtMs',
+          'uid', 'active', 'deviceType', 'platform', 'userAgent', 'createdAtMs',
           'updatedAtMs', 'updatedAt'
         ]);
       allow delete: if false;
