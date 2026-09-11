@@ -47,41 +47,41 @@ html[data-personnel="true"] .quick-actions {
   justify-self: stretch;
 }
 
-/* Tablet: Taze Dem ve servis üst üste, hızlı işlemler sağda 4 x 2. */
+/* Tablet: Normal adisyon düzeni korunur. Taze Dem'in yanındaki boşluğa
+   Servisi Başlat gelir; hızlı işlemler son sütunda 4 x 2 kalır. */
 @media (min-width: 701px) and (max-width: 1700px) {
   html[data-personnel="true"] .overview-row {
     grid-template-columns: repeat(6, minmax(0, 1fr));
-    grid-template-rows: 42px 42px;
+    grid-template-rows: 88px;
     column-gap: 13px;
-    row-gap: 4px;
     max-height: 130px;
   }
 
   html[data-personnel="true"] .open-total-card,
   html[data-personnel="true"] .pos-tea-card {
-    grid-row: 1 / span 2;
+    grid-row: 1;
     min-height: 88px;
   }
 
   html[data-personnel="true"] #startPosTeaBrew,
   html[data-personnel="true"] #toggleTeaService {
-    width: 76px !important;
-    min-height: 42px;
+    grid-column: 5;
+    grid-row: 1;
+    width: min(74px, calc(50% - 4px)) !important;
+    min-width: 0;
+    min-height: 88px;
     padding: 0 4px;
-    flex-direction: row;
-    gap: 4px;
+    flex-direction: column;
+    gap: 5px;
     font-size: .49rem;
-    justify-self: center;
   }
 
   html[data-personnel="true"] #startPosTeaBrew {
-    grid-column: 5;
-    grid-row: 1;
+    justify-self: start;
   }
 
   html[data-personnel="true"] #toggleTeaService {
-    grid-column: 5;
-    grid-row: 2;
+    justify-self: end;
   }
 
   html[data-personnel="true"] #startPosTeaBrew i,
@@ -91,7 +91,7 @@ html[data-personnel="true"] .quick-actions {
 
   html[data-personnel="true"] .quick-actions {
     grid-column: 6;
-    grid-row: 1 / span 2;
+    grid-row: 1;
     width: 100%;
     grid-template-columns: repeat(4, 42px);
     grid-template-rows: repeat(2, 42px);
