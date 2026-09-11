@@ -2,11 +2,12 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <script>if(new URLSearchParams(location.search).get("personel")==="1")document.documentElement.dataset.personnelIntent="true"</script>
   <title>Adisyon Yönetimi | Fatih Çay Evi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=232"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=1851"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8"><link rel="stylesheet" href="personnel-mode.css?v=323">
+  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=232"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=1851"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8"><link rel="stylesheet" href="personnel-mode.css?v=324">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -29,7 +30,7 @@
         <button id="internalConsumptionButton" class="secondary icon-action internal-consumption-button" title="Dahili Tüketim" aria-label="Dahili Tüketim"><i class="fa-solid fa-box-open"></i></button>
         <button id="tableSettings" class="secondary icon-action" title="Masa Ayarı" aria-label="Masa Ayarı"><i class="fa-solid fa-table-cells-large"></i></button>
         <button id="personnelWageButton" class="secondary icon-action personnel-only" title="Çalışma ve Ücret Takibim" aria-label="Çalışma ve Ücret Takibim" hidden><i class="fa-solid fa-calendar-days"></i></button>
-        <a id="personnelSettingsButton" class="secondary icon-action personnel-only" href="../yonetim-merkezi/?ayar=1" title="Kullanıcı Ayarlarım" aria-label="Kullanıcı Ayarlarım" hidden><i class="fa-solid fa-gear"></i></a>
+        <button id="personnelSettingsButton" class="secondary icon-action personnel-only" type="button" title="Kullanıcı Ayarlarım" aria-label="Kullanıcı Ayarlarım" hidden><i class="fa-solid fa-gear"></i></button>
       </div>
     </div>
     <div class="control-panel-divider"><button id="togglePosControlPanel" type="button" aria-label="Kontrol panelini kapat" aria-expanded="true"><i class="fa-solid fa-chevron-up"></i></button></div>
@@ -107,12 +108,31 @@
   </section>
 </dialog>
 <dialog id="personnelWageDialog"><section class="dialog-card report-card"><div class="dialog-head"><div><p class="notice">Personel hesabım</p><h2>Çalışma ve Ücret Takibim</h2></div><button type="button" id="closePersonnelWage">×</button></div><div id="personnelWageSummary" class="daily-report"></div><div id="personnelAttendanceList" class="recent-payments-list"></div><div class="dialog-actions"><button type="button" id="closePersonnelWageBottom" class="primary">Kapat</button></div></section></dialog>
+<dialog id="personnelSettingsDialog" class="personnel-settings-dialog">
+  <form id="personnelSettingsForm" class="dialog-card">
+    <div class="dialog-head"><div><p class="personnel-dialog-kicker">Personel hesabım</p><h2>Kullanıcı Ayarları</h2></div><button id="closePersonnelSettings" type="button" aria-label="Kapat">×</button></div>
+    <p class="personnel-settings-copy">İsim ve telefon değişiklikleri tam yetkili yönetici onayından sonra uygulanır.</p>
+    <label>İsim / kullanıcı adı<input id="personnelSettingsName" maxlength="60" required></label>
+    <label>Telefon numarası<input id="personnelSettingsPhone" inputmode="tel" maxlength="20" placeholder="05XX XXX XX XX" required></label>
+    <label class="personnel-password-request"><input id="personnelSettingsPasswordRequest" type="checkbox"><span><b>Şifremi de değiştirmek istiyorum</b><small>Yönetici onayından sonra yeni şifreni belirleyebilirsin.</small></span></label>
+    <div id="personnelSettingsStatus" class="personnel-request-status" hidden></div>
+    <p id="personnelSettingsMessage" class="personnel-settings-message"></p>
+    <div class="dialog-actions"><button type="button" class="secondary" id="cancelPersonnelSettings">Vazgeç</button><button type="submit" class="primary" id="savePersonnelSettings"><i class="fa-solid fa-paper-plane"></i> Onaya Gönder</button></div>
+  </form>
+  <form id="personnelPasswordForm" class="dialog-card" hidden>
+    <div class="dialog-head"><div><p class="personnel-dialog-kicker">Talep onaylandı</p><h2>Yeni Şifreni Belirle</h2></div><button id="closePersonnelPassword" type="button" aria-label="Kapat">×</button></div>
+    <label>Yeni şifre<input id="personnelNewPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+    <label>Yeni şifre tekrar<input id="personnelNewPasswordAgain" type="password" minlength="8" autocomplete="new-password" required></label>
+    <p id="personnelPasswordMessage" class="personnel-settings-message"></p>
+    <div class="dialog-actions"><button type="button" class="secondary" id="cancelPersonnelPassword">Vazgeç</button><button type="submit" class="primary"><i class="fa-solid fa-check"></i> Şifreyi Kaydet</button></div>
+  </form>
+</dialog>
 <div id="toast" class="toast" role="status"></div>
 <script type="module" src="script.js?v=299"></script>
 <script type="module" src="internal-consumption.js?v=221"></script>
 <script type="module" src="quick-cash.js?v=197"></script>
 <script type="module" src="history-modal.js?v=1861"></script>
-<script type="module" src="personnel-mode.js?v=315"></script>
+<script type="module" src="personnel-mode.js?v=324"></script>
 
 <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body></html>

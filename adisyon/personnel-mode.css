@@ -10,6 +10,15 @@ html[data-personnel="true"] .personnel-only {
   text-decoration: none;
 }
 
+html[data-personnel="true"] .management-center-link,
+html[data-personnel="true"] .panel-menu,
+html[data-personnel="true"] .header-page-link,
+html[data-personnel-intent="true"] .management-center-link,
+html[data-personnel-intent="true"] .panel-menu,
+html[data-personnel-intent="true"] .header-page-link {
+  display: none !important;
+}
+
 #personnelWageDialog {
   width: min(94vw, 680px);
   border: 0;
@@ -26,6 +35,98 @@ html[data-personnel="true"] .personnel-only {
   max-height: 88vh;
   overflow: auto;
 }
+
+#personnelWageSummary {
+  display: block;
+  margin: 0;
+}
+
+.personnel-wage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.personnel-wage-card {
+  min-width: 0;
+  padding: 13px 10px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fffaf4;
+}
+
+.personnel-wage-card span,
+.personnel-wage-card b {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.personnel-wage-card span {
+  min-height: 2.5em;
+  color: var(--muted);
+  font-size: .61rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.personnel-wage-card b {
+  margin-top: 5px;
+  color: var(--red);
+  font-size: clamp(.72rem, 1.7vw, .94rem);
+  line-height: 1.2;
+}
+
+.personnel-wage-card.is-days b { color: var(--green); }
+.personnel-wage-card.is-earned { border-color: #a8c7e8; background: #eef6fd; }
+.personnel-wage-card.is-earned b { color: #286ba5; }
+.personnel-wage-card.is-paid { border-color: #c8b9df; background: #f3effa; }
+.personnel-wage-card.is-paid b { color: #664596; }
+.personnel-wage-card.is-remaining { border-color: #e4bf93; background: #fff2e2; }
+
+.personnel-attendance-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+}
+
+.personnel-attendance-row strong,
+.personnel-attendance-row small { display: block; }
+.personnel-attendance-row strong { font-size: .72rem; }
+.personnel-attendance-row small { margin-top: 2px; color: var(--muted); font-size: .61rem; }
+.personnel-attendance-row > b { color: var(--red); font-size: .75rem; white-space: nowrap; }
+
+.personnel-settings-dialog {
+  width: min(94vw, 510px);
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  border: 0;
+  border-radius: 21px;
+  background: transparent;
+}
+
+.personnel-settings-dialog::backdrop { background: #26090a99; backdrop-filter: blur(3px); }
+.personnel-settings-dialog .dialog-card { width: 100%; max-height: calc(100dvh - 24px); }
+.personnel-settings-dialog .dialog-card[hidden] { display: none; }
+.personnel-dialog-kicker { margin: 0 0 2px; color: var(--red); font-size: .61rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.personnel-settings-copy { margin: 0 0 10px; color: var(--muted); font-size: .68rem; line-height: 1.5; }
+.personnel-password-request { display: flex; align-items: flex-start; gap: 9px; padding: 11px; border-radius: 11px; background: #f5eee6; }
+.personnel-password-request input { width: 18px; height: 18px; flex: 0 0 auto; margin-top: 2px; accent-color: var(--red); }
+.personnel-password-request span { display: grid; gap: 2px; }
+.personnel-password-request b { font-size: .68rem; }
+.personnel-password-request small { color: var(--muted); font-size: .57rem; font-weight: 500; line-height: 1.4; }
+.personnel-request-status { display: grid; gap: 3px; padding: 10px 11px; border-radius: 11px; color: #6d4b1e; background: #fff2d9; }
+.personnel-request-status.approved { color: #235e40; background: #e9f5ed; }
+.personnel-request-status.rejected { color: #8b2730; background: #fdebec; }
+.personnel-request-status b { font-size: .68rem; }
+.personnel-request-status small { font-size: .58rem; }
+.personnel-settings-message { min-height: 17px; margin: 0; color: #a12631; font-size: .62rem; }
 
 /* Personel ekranı normal adisyonun kart ölçülerini korur. */
 html[data-personnel="true"] .overview-row {
@@ -71,7 +172,9 @@ html[data-personnel="true"] .quick-actions {
     min-width: 74px;
     min-height: 88px;
     padding: 0 4px;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: 18px 2.5em;
+    align-content: center;
     gap: 5px;
     font-size: .49rem;
     align-items: center;
@@ -86,6 +189,16 @@ html[data-personnel="true"] .quick-actions {
     line-height: 1.25;
     text-align: center;
     white-space: normal;
+    align-self: start;
+  }
+
+  html[data-personnel="true"] #startPosTeaBrew i,
+  html[data-personnel="true"] #toggleTeaService i {
+    display: block;
+    width: 100%;
+    margin: 0;
+    line-height: 1;
+    text-align: center;
   }
 
   html[data-personnel="true"] #startPosTeaBrew {
@@ -121,6 +234,10 @@ html[data-personnel="true"] .quick-actions {
 
 /* Telefon */
 @media (max-width: 700px) {
+  .personnel-wage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   #personnelWageDialog .daily-money-grid {
     grid-template-columns: 1fr 1fr;
   }
