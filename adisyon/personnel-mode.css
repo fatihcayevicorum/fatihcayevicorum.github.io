@@ -48,7 +48,7 @@ html[data-personnel="true"] .quick-actions {
 }
 
 /* Tablet: Taze Dem ve servis üst üste, hızlı işlemler sağda 4 x 2. */
-@media (min-width: 701px) and (max-width: 1180px) {
+@media (min-width: 701px) and (max-width: 1700px) {
   html[data-personnel="true"] .overview-row {
     grid-template-columns: repeat(4, minmax(0, 1fr)) 76px 181px;
     grid-template-rows: 34px 34px;
