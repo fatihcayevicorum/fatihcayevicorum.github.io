@@ -13,6 +13,39 @@ initializeApp();
 const db=getFirestore();
 const OWNER_UID="obuZLQXuPAWsHE20bZxcAxCNsO02";
 const PANEL_IDS=["tea","pos","currentAccounts","currentAccountTransfer","menu","stock","credit","merchant","reports","cash","home","personnel"];
+const PERSONNEL_CASH_START_DATE="2026-09-11";
+
+function businessDateNow(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}
+function numberValue(value){return Number(value)||0}
+async function personnelProfile(request){
+  const uid=request.auth?.uid;if(!uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");
+  const staff=await db.doc(`staffUsers/${uid}`).get(),data=staff.data()||{},permissions=Array.isArray(data.permissions)?data.permissions:[];
+  if(!staff.exists||data.active!==true||!permissions.includes("personnel")||!data.personnelId)throw new HttpsError("permission-denied","Bu işlem personel hesabına özeldir.");
+  return{uid,personnelId:String(data.personnelId),displayName:String(data.personnelName||data.displayName||"Personel")};
+}
+async function personnelCashBalance(){
+  const[movementSnap,saleSnap,staffSnap]=await Promise.all([db.collection("adminCashMovements").get(),db.collection("adminSales").get(),db.collection("staffUsers").get()]);
+  const personnelUids=new Set(staffSnap.docs.filter(item=>Boolean(item.data().personnelId)||(Array.isArray(item.data().permissions)&&item.data().permissions.includes("personnel"))).map(item=>item.id));
+  let balance=0;
+  movementSnap.docs.forEach(item=>{const movement=item.data(),amount=numberValue(movement.amount);if(String(movement.businessDate||"")<PERSONNEL_CASH_START_DATE)return;if(movement.type==="transfer"){if(movement.toAccount==="personnel")balance+=amount;if(movement.fromAccount==="personnel")balance-=amount}if(personnelUids.has(String(movement.createdBy||""))&&movement.source==="pos-quick-cash"&&movement.account==="cash"){if(movement.type==="income")balance+=amount;if(movement.type==="expense")balance-=amount}});
+  saleSnap.docs.forEach(item=>{const sale=item.data();if(String(sale.businessDate||"")<PERSONNEL_CASH_START_DATE||!personnelUids.has(String(sale.createdBy||""))||sale.recordType==="correction"||sale.reversed===true||sale.cancelled===true||sale.cashMovementApplied!==true)return;balance+=numberValue(sale.cashAmount)});
+  return balance;
+}
+async function openShiftFor(uid){const snap=await db.collection("adminPersonnelShifts").where("personnelUserUid","==",uid).get();return snap.docs.find(item=>item.data().status==="open")||null}
+async function personnelShiftSummary(uid,openedAtMs){const[snap,movements]=await Promise.all([db.collection("adminSales").where("createdBy","==",uid).get(),db.collection("adminCashMovements").where("createdBy","==",uid).get()]),summary={cash:0,bank:0,card:0,current:0,tip:0,rounding:0,expense:0,total:0};snap.docs.forEach(item=>{const sale=item.data(),time=numberValue(sale.createdAtMs||sale.closedAtMs);if(time<numberValue(openedAtMs)||sale.recordType==="correction"||sale.reversed===true||sale.cancelled===true)return;summary.cash+=numberValue(sale.cashAmount);summary.bank+=numberValue(sale.transferAmount);summary.card+=numberValue(sale.cardAmount);summary.current+=numberValue(sale.currentAccountAmount);summary.tip+=numberValue(sale.tipAmount);summary.rounding+=numberValue(sale.roundingDiscount)||Math.max(0,-numberValue(sale.roundingAmount))});movements.docs.forEach(item=>{const movement=item.data(),time=numberValue(movement.createdAtMs||movement.updatedAtMs);if(time>=numberValue(openedAtMs)&&movement.source==="pos-quick-cash"&&movement.type==="expense"&&movement.account==="cash")summary.expense+=numberValue(movement.amount)});summary.total=summary.cash+summary.bank+summary.card+summary.current;return summary}
+
+exports.getPersonnelShiftState=onCall({region:"europe-west1",cors:true},async request=>{const person=await personnelProfile(request),open=await openShiftFor(person.uid),openedAtMs=numberValue(open?.data()?.openedAtMs);return{requiresOpeningCount:!open,shiftId:open?.id||"",openedAtMs,businessDate:open?.data()?.businessDate||businessDateNow(),salesSummary:open?await personnelShiftSummary(person.uid,openedAtMs):null}});
+exports.openPersonnelShift=onCall({region:"europe-west1",cors:true},async request=>{
+  const person=await personnelProfile(request),counted=Math.max(0,numberValue(request.data?.countedAmount));if(!Number.isFinite(Number(request.data?.countedAmount)))throw new HttpsError("invalid-argument","Geçerli bir kasa sayımı girin.");
+  const existing=await openShiftFor(person.uid);if(existing)return{opened:true,shiftId:existing.id};
+  const expected=await personnelCashBalance(),now=Date.now(),ref=db.collection("adminPersonnelShifts").doc();await ref.set({personnelId:person.personnelId,personnelUserUid:person.uid,personnelName:person.displayName,businessDate:businessDateNow(),status:"open",openingCount:counted,openingExpected:expected,openingDifference:counted-expected,openedAtMs:now,openedAt:FieldValue.serverTimestamp(),createdAtMs:now,createdAt:FieldValue.serverTimestamp(),createdBy:person.uid});return{opened:true,shiftId:ref.id};
+});
+exports.closePersonnelShift=onCall({region:"europe-west1",cors:true},async request=>{
+  const person=await personnelProfile(request),counted=Math.max(0,numberValue(request.data?.countedAmount));if(!Number.isFinite(Number(request.data?.countedAmount)))throw new HttpsError("invalid-argument","Geçerli bir kasa sayımı girin.");
+  const open=await openShiftFor(person.uid);if(!open)throw new HttpsError("failed-precondition","Açık vardiya bulunamadı.");
+  const expected=await personnelCashBalance(),now=Date.now(),data=open.data(),summary=await personnelShiftSummary(person.uid,data.openedAtMs);
+  await open.ref.set({status:"closed",closingCount:counted,closingExpected:expected,closingDifference:counted-expected,closedAtMs:now,closedAt:FieldValue.serverTimestamp(),salesSummary:summary,updatedAtMs:now,updatedAt:FieldValue.serverTimestamp(),updatedBy:person.uid},{merge:true});return{closed:true};
+});
 
 function requireOwner(request){if(request.auth?.uid!==OWNER_UID)throw new HttpsError("permission-denied","Bu işlem yalnızca ana yönetici tarafından yapılabilir.")}
 async function requirePanel(request,panel){if(request.auth?.uid===OWNER_UID)return;if(!request.auth?.uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const snap=await db.doc(`staffUsers/${request.auth.uid}`).get(),data=snap.data()||{},permissions=Array.isArray(data.permissions)?data.permissions:[],legacyCurrentTransfer=panel==="currentAccountTransfer"&&data.permissionSchemaVersion!=="r286"&&permissions.includes("pos");if(!snap.exists||data.active!==true||(!permissions.includes(panel)&&!legacyCurrentTransfer))throw new HttpsError("permission-denied","Bu işlem için panel yetkiniz bulunmuyor.")}

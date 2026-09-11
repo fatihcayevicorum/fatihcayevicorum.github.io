@@ -36,6 +36,9 @@ dialog{width:min(540px,calc(100% - 24px));max-height:calc(100dvh - 24px);padding
 .wage-action-options .bank input:checked+span{color:#205c86;border-color:#85b5d6;background:#edf6fa}
 @media(max-width:650px){.person-summary{grid-template-columns:repeat(2,1fr)}.person-summary article:last-child{grid-column:auto}.form-grid,.wage-settings{grid-template-columns:1fr}.wage-action-options{grid-template-columns:1fr}.detail-dialog{width:calc(100% - 12px);max-height:calc(100dvh - 12px);border-radius:17px}.detail-dialog .detail-heading{padding:16px 54px 16px 16px}}
 
+/* R333 personel kasa vardiya geçmişi */
+.shift-history-list{display:grid;gap:8px;max-height:44vh;overflow:auto}.shift-history-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px;border:1px solid var(--line);border-radius:13px;background:#fffaf5}.shift-history-row>i{display:grid;width:36px;height:36px;place-items:center;border-radius:11px;color:#fff;background:var(--green)}.shift-history-row.is-open>i{background:var(--orange)}.shift-history-row strong,.shift-history-row small{display:block}.shift-history-row strong{font-size:.68rem}.shift-history-row small{margin-top:2px;color:var(--muted);font-size:.54rem}.shift-history-row>b{font-size:.63rem;white-space:nowrap}.shift-history-row>b.is-match{color:var(--green)}.shift-history-row>b.is-difference{color:#a12631}@media(max-width:540px){.shift-history-row{grid-template-columns:auto minmax(0,1fr)}.shift-history-row>b{grid-column:2}}
+
 /* R312 form hizası ve seçim okları */
 .wage-settings{align-items:start}
 .wage-settings>label{align-content:start}

@@ -19,6 +19,10 @@ html[data-personnel-intent="true"] .panel-menu,
 html[data-personnel-intent="true"] .header-page-link {
   display: none !important;
 }
+html[data-personnel="true"] #logoutButton{display:none!important}
+html[data-personnel="true"] #personnelCloseCashButton{display:flex!important;white-space:nowrap;background:linear-gradient(145deg,#a56624,#7b4013)}
+.personnel-cash-dialog{width:min(94vw,560px);padding:0;border:0;border-radius:22px}.personnel-cash-dialog::backdrop{background:#26090ab8;backdrop-filter:blur(5px)}.personnel-cash-dialog .dialog-card{width:100%;max-height:calc(100dvh - 24px);overflow:auto}.personnel-cash-dialog h2{margin:0}.personnel-cash-dialog p{color:var(--muted);font-size:.68rem;line-height:1.5}.personnel-cash-icon{display:grid;width:54px;height:54px;place-items:center;border-radius:17px;color:#fff;background:linear-gradient(145deg,#a56624,#7b4013);font-size:1.2rem}.personnel-shift-sales{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:4px 0 10px}.personnel-shift-sales article{padding:10px 11px;border:1px solid #eadfd2;border-radius:12px;background:#fffaf4}.personnel-shift-sales span,.personnel-shift-sales b{display:block}.personnel-shift-sales span{color:var(--muted);font-size:.58rem}.personnel-shift-sales b{margin-top:3px;font-size:.72rem}.personnel-shift-sales .is-total{grid-column:1/-1;color:#fff;border-color:#6d1720;background:linear-gradient(145deg,#4c0d14,#741722)}.personnel-shift-sales .is-total span{color:#f5d9c9}
+@media(max-width:650px){html[data-personnel="true"] #personnelCloseCashButton span{font-size:.58rem}.personnel-cash-dialog{width:calc(100% - 12px)}.personnel-shift-sales{grid-template-columns:1fr 1fr}}
 
 #personnelWageDialog {
   width: min(94vw, 680px);

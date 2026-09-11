@@ -53,8 +53,8 @@ service cloud.firestore {
         && ((data.type == 'income' && data.account in ['cash', 'bank', 'card'])
           || (data.type == 'expense' && data.account in ['cash', 'bank', 'creditCard'])
           || (data.type == 'transfer'
-            && data.fromAccount in ['cash', 'bank', 'card', 'creditCard']
-            && data.toAccount in ['cash', 'bank', 'card', 'creditCard']
+            && data.fromAccount in ['cash', 'personnel', 'bank', 'card', 'creditCard']
+            && data.toAccount in ['cash', 'personnel', 'bank', 'card', 'creditCard']
             && data.fromAccount != data.toAccount));
     }
     function validPosInstantMovement(data) {
@@ -297,6 +297,10 @@ service cloud.firestore {
     }
     match /adminCashCounts/{document} {
       allow read, write: if hasPanel('cash');
+    }
+    match /adminPersonnelShifts/{document} {
+      allow read: if isOwner() || (hasPanel('personnel') && resource.data.personnelUserUid == request.auth.uid);
+      allow write: if false;
     }
     match /adminPaymentReminders/{document} {
       allow read, write: if hasPanel('cash');
