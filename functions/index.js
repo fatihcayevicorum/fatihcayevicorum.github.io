@@ -38,13 +38,13 @@ exports.getPersonnelShiftState=onCall({region:"europe-west1",cors:true},async re
 exports.openPersonnelShift=onCall({region:"europe-west1",cors:true},async request=>{
   const person=await personnelProfile(request),counted=Math.max(0,numberValue(request.data?.countedAmount));if(!Number.isFinite(Number(request.data?.countedAmount)))throw new HttpsError("invalid-argument","Geçerli bir kasa sayımı girin.");
   const existing=await openShiftFor(person.uid);if(existing)return{opened:true,shiftId:existing.id};
-  const expected=await personnelCashBalance(),now=Date.now(),ref=db.collection("adminPersonnelShifts").doc();await ref.set({personnelId:person.personnelId,personnelUserUid:person.uid,personnelName:person.displayName,businessDate:businessDateNow(),status:"open",openingCount:counted,openingExpected:expected,openingDifference:counted-expected,openedAtMs:now,openedAt:FieldValue.serverTimestamp(),createdAtMs:now,createdAt:FieldValue.serverTimestamp(),createdBy:person.uid});return{opened:true,shiftId:ref.id};
+  const expected=await personnelCashBalance(),difference=counted-expected,now=Date.now(),ref=db.collection("adminPersonnelShifts").doc();await ref.set({personnelId:person.personnelId,personnelUserUid:person.uid,personnelName:person.displayName,businessDate:businessDateNow(),status:"open",openingCount:counted,openingExpected:expected,openingDifference:difference,openedAtMs:now,openedAt:FieldValue.serverTimestamp(),createdAtMs:now,createdAt:FieldValue.serverTimestamp(),createdBy:person.uid});await notifyPersonnelCashEvent({shiftId:ref.id,event:"open",person,counted,expected,difference,occurredAtMs:now});return{opened:true,shiftId:ref.id};
 });
 exports.closePersonnelShift=onCall({region:"europe-west1",cors:true},async request=>{
   const person=await personnelProfile(request),counted=Math.max(0,numberValue(request.data?.countedAmount));if(!Number.isFinite(Number(request.data?.countedAmount)))throw new HttpsError("invalid-argument","Geçerli bir kasa sayımı girin.");
   const open=await openShiftFor(person.uid);if(!open)throw new HttpsError("failed-precondition","Açık vardiya bulunamadı.");
-  const expected=await personnelCashBalance(),now=Date.now(),data=open.data(),summary=await personnelShiftSummary(person.uid,data.openedAtMs);
-  await open.ref.set({status:"closed",closingCount:counted,closingExpected:expected,closingDifference:counted-expected,closedAtMs:now,closedAt:FieldValue.serverTimestamp(),salesSummary:summary,updatedAtMs:now,updatedAt:FieldValue.serverTimestamp(),updatedBy:person.uid},{merge:true});return{closed:true};
+  const expected=await personnelCashBalance(),difference=counted-expected,now=Date.now(),data=open.data(),summary=await personnelShiftSummary(person.uid,data.openedAtMs);
+  await open.ref.set({status:"closed",closingCount:counted,closingExpected:expected,closingDifference:difference,closedAtMs:now,closedAt:FieldValue.serverTimestamp(),salesSummary:summary,updatedAtMs:now,updatedAt:FieldValue.serverTimestamp(),updatedBy:person.uid},{merge:true});await notifyPersonnelCashEvent({shiftId:open.id,event:"close",person,counted,expected,difference,occurredAtMs:now});return{closed:true};
 });
 
 function requireOwner(request){if(request.auth?.uid!==OWNER_UID)throw new HttpsError("permission-denied","Bu işlem yalnızca ana yönetici tarafından yapılabilir.")}
@@ -215,6 +215,13 @@ async function sendAdminTeaPush(message){
     throw error
   }
   return result
+}
+
+function personnelCashMoney(value){return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",minimumFractionDigits:2}).format(numberValue(value))}
+async function notifyPersonnelCashEvent({shiftId,event,person,counted,expected,difference,occurredAtMs}){
+  const isOpen=event==="open",exact=Math.abs(difference)<0.005,title=isOpen?"Personel kasayı açtı":"Personel kasayı kapattı",action=isOpen?"açtı":"kapattı",differenceText=exact?"Kasa eksiksiz onaylandı.":`Fark: ${difference>0?"+":""}${personnelCashMoney(difference)}.`,body=`${person.displayName} kasayı ${action}. Sayılan: ${personnelCashMoney(counted)}, beklenen: ${personnelCashMoney(expected)}. ${differenceText}`,type=isOpen?"personnel-cash-opened":"personnel-cash-closed",tag=`${type}-${shiftId}`,link="/personel-yonetimi/#kasa-vardiya",notificationRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/${tag}`);
+  try{await notificationRef.set({type,title,body,personnelId:person.personnelId,personnelUserUid:person.uid,personnelName:person.displayName,shiftId,event,countedAmount:counted,expectedAmount:expected,difference,ownerOnly:true,link,readBy:{},createdAtMs:occurredAtMs,createdAt:FieldValue.serverTimestamp()},{merge:true})}catch(error){logger.warn("Personel kasa uygulama içi bildirimi kaydedilemedi.",{shiftId,event,error:String(error.message||error)})}
+  try{await sendAdminTeaPush({type,tag,body,link:`${SITE_URL}${link}`})}catch(error){logger.warn("Personel kasa push bildirimi gönderilemedi.",{shiftId,event,error:String(error.message||error)})}
 }
 
 function cleanPushToken(value){
