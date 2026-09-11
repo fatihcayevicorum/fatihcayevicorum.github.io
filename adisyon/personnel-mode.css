@@ -4,6 +4,13 @@ html[data-personnel="true"] .personnel-only {
   text-decoration: none;
 }
 
+html[data-personnel="true"] #cashCountButton,
+html[data-personnel="true"] #closeDayButton,
+html[data-personnel-intent="true"] #cashCountButton,
+html[data-personnel-intent="true"] #closeDayButton {
+  display: none !important;
+}
+
 html[data-personnel="true"] .management-center-link,
 html[data-personnel="true"] .panel-menu,
 html[data-personnel="true"] .header-page-link,
@@ -164,7 +171,7 @@ html[data-personnel="true"] .quick-actions {
 
 /* Tablet: Normal adisyon düzeni korunur. Taze Dem'in yanındaki boşluğa
    Servisi Başlat gelir; hızlı işlemler son sütunda 4 x 2 kalır. */
-@media (min-width: 701px) and (max-width: 1700px) {
+@media (min-width: 701px) {
   html[data-personnel="true"] .overview-row {
     grid-template-columns: repeat(6, minmax(0, 1fr));
     grid-template-rows: 88px;
