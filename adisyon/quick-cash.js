@@ -14,7 +14,7 @@ let categories={income:defaultIncome,expense:defaultExpense},activeBusinessDate=
 button?.addEventListener("click",openQuickCash);
 $("closeQuickCash")?.addEventListener("click",()=>dialog.close());
 $("cancelQuickCash")?.addEventListener("click",()=>dialog.close());
-form?.addEventListener("change",event=>{if(event.target.name==="quickCashType")renderCategories()});
+form?.addEventListener("change",event=>{if(event.target.name==="quickCashType"){renderCategories();syncPersonnelAccounts()}});
 form?.addEventListener("submit",saveQuickMovement);
 
 async function openQuickCash(){
@@ -34,7 +34,8 @@ async function openQuickCash(){
   setTimeout(()=>amount.focus(),80);
 }
 
-function applyPersonnelLimits(personnel){form.dataset.personnel=personnel?"true":"false";const expense=form.querySelector('[name="quickCashType"][value="expense"]'),bank=form.querySelector('[name="quickCashAccount"][value="bank"]'),card=form.querySelector('[name="quickCashAccount"][value="creditCard"], [name="quickCashAccount"][value="card"]');if(expense)expense.onchange=()=>{if(form.dataset.personnel==="true"&&expense.checked){form.elements.quickCashAccount.value="cash";if(bank)bank.disabled=true;if(card)card.disabled=true}else{if(bank)bank.disabled=false;if(card)card.disabled=false}};expense?.onchange()}
+function applyPersonnelLimits(personnel){form.dataset.personnel=personnel?"true":"false";syncPersonnelAccounts()}
+function syncPersonnelAccounts(){const personnel=form.dataset.personnel==="true",expense=form.elements.quickCashType.value==="expense",bank=form.querySelector('[name="quickCashAccount"][value="bank"]'),card=$("quickCashCardAccount"),cashOnly=personnel&&expense;if(bank)bank.disabled=cashOnly;if(card)card.disabled=cashOnly;if(cashOnly)form.elements.quickCashAccount.value="cash"}
 
 async function loadCategories(){
   try{
