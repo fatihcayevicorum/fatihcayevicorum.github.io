@@ -67,13 +67,22 @@ html[data-personnel="true"] .quick-actions {
   html[data-personnel="true"] #toggleTeaService {
     grid-column: 5;
     grid-row: 1;
-    width: min(74px, calc(50% - 4px)) !important;
+    width: min(74px, calc((100% - 13px) / 2)) !important;
     min-width: 0;
     min-height: 88px;
     padding: 0 4px;
     flex-direction: column;
     gap: 5px;
     font-size: .49rem;
+    text-align: center;
+  }
+
+  html[data-personnel="true"] #startPosTeaBrew span,
+  html[data-personnel="true"] #toggleTeaService span {
+    display: block;
+    width: 100%;
+    line-height: 1.25;
+    text-align: center;
   }
 
   html[data-personnel="true"] #startPosTeaBrew {
