@@ -15,11 +15,15 @@ service cloud.firestore {
     }
     function hasPanel(panel) {
       return isOwner() || (isStaff()
-        && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny([panel]));
+        && (get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny([panel])
+          || (get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(['personnel'])
+            && panel in ['tea', 'pos', 'currentAccounts', 'currentAccountTransfer'])));
     }
     function hasAnyPanel(panels) {
       return isOwner() || (isStaff()
-        && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(panels));
+        && (get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(panels)
+          || (get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(['personnel'])
+            && panels.hasAny(['tea', 'pos', 'currentAccounts', 'currentAccountTransfer']))));
     }
     function hasCurrentAccountTransfer() {
       return isOwner() || (isStaff()
@@ -88,7 +92,7 @@ service cloud.firestore {
       allow write: if false;
     }
     match /adminPersonnel/{document} {
-      allow read: if hasPanel('reports');
+      allow read: if hasPanel('reports') || (hasPanel('personnel') && resource.data.linkedUserUid == request.auth.uid);
       allow create, update: if isOwner()
         && (document != 'obuZLQXuPAWsHE20bZxcAxCNsO02'
           || (request.resource.data.isOwnerProfile == true
@@ -97,11 +101,11 @@ service cloud.firestore {
       allow delete: if isOwner() && document != 'obuZLQXuPAWsHE20bZxcAxCNsO02';
     }
     match /adminPersonnelAttendance/{document} {
-      allow read: if hasPanel('reports');
+      allow read: if hasPanel('reports') || (hasPanel('personnel') && resource.data.personnelId == get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.personnelId);
       allow write: if isOwner();
     }
     match /adminPersonnelPayments/{document} {
-      allow read: if hasPanel('reports');
+      allow read: if hasPanel('reports') || (hasPanel('personnel') && resource.data.personnelId == get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.personnelId);
       allow write: if isOwner();
     }
     match /adminSecurity/{document} {
@@ -253,6 +257,7 @@ service cloud.firestore {
           && request.resource.data.source == 'pos-quick-cash'
           && request.resource.data.type in ['income', 'expense']
           && request.resource.data.account in ['cash', 'bank', 'card', 'creditCard']
+          && (!hasPanel('personnel') || request.resource.data.type == 'income' || request.resource.data.account == 'cash')
           && request.resource.data.automatic == false)
           || (hasPanel('stock')
           && request.resource.data.source == 'stock-purchase'
@@ -287,7 +292,8 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     match /adminCashSettings/{document} {
-      allow read, write: if hasPanel('cash');
+      allow read: if hasPanel('cash') || hasPanel('personnel');
+      allow write: if hasPanel('cash');
     }
     match /adminCashCounts/{document} {
       allow read, write: if hasPanel('cash');

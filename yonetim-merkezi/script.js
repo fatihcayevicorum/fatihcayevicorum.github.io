@@ -31,11 +31,14 @@ onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=yonetim-merkezi/");return}
   const profile=await getManagementProfile(user,db).catch(()=>null);
   if(!profile){await signOut(auth);location.replace("../yonetici-giris.html");return}
+  const personnelSettings=profile.permissions?.includes("personnel")&&new URLSearchParams(location.search).get("ayar")==="1";
+  if(profile.permissions?.includes("personnel")&&!personnelSettings){location.replace("../personel-adisyon/");return}
   currentUser=user;currentProfile=profile;
   renderWelcome(profile);
   const owner=isOwner(user),can=item=>item.soon||owner||(!item.ownerOnly&&profile.permissions.includes(item.permission));
   $("staffSettingsButton").hidden=owner;
   if(!owner){watchStaffProfile(user.uid);watchOwnRequest(user.uid)}
+  if(personnelSettings){document.querySelector("main").hidden=true;setTimeout(openStaffSettings,80)}
   const visibleDaily=daily.filter(can),visibleManagement=management.filter(can);
   $("dailySection").hidden=!visibleDaily.length;
   $("dailyGrid").innerHTML=visibleDaily.map(card).join("");
@@ -45,8 +48,8 @@ onAuthStateChanged(auth,async user=>{
 
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 $("staffSettingsButton").onclick=openStaffSettings;
-$("closeStaffSettings").onclick=()=>$("staffSettingsDialog").close();
-$("closeApprovedPassword").onclick=()=>$("staffSettingsDialog").close();
+$("closeStaffSettings").onclick=()=>{if(currentProfile?.permissions?.includes("personnel"))location.replace("../personel-adisyon/");else $("staffSettingsDialog").close()};
+$("closeApprovedPassword").onclick=()=>{if(currentProfile?.permissions?.includes("personnel"))location.replace("../personel-adisyon/");else $("staffSettingsDialog").close()};
 $("staffSettingsForm").onsubmit=sendSettingsRequest;
 $("approvedPasswordForm").onsubmit=saveApprovedPassword;
 function card(item){

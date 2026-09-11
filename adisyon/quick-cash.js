@@ -3,6 +3,7 @@ import{getAuth}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js"
 import{collection,doc,getDoc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{lockSensitiveAccess,requireSensitiveAccess}from"../assets/js/sensitive-access.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
+import{getManagementProfile}from"../assets/js/admin-access.js";
 
 const app=getApps().find(item=>item.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const defaultIncome=["İşletmeye Para Girişi","PET Şişe Dönüşüm İadesi","Diğer Gelir"];
@@ -17,8 +18,9 @@ form?.addEventListener("change",event=>{if(event.target.name==="quickCashType")r
 form?.addEventListener("submit",saveQuickMovement);
 
 async function openQuickCash(){
-  lockSensitiveAccess();
-  const unlocked=await requireSensitiveAccess({title:"Hızlı Kasa İşlemi",message:"Gelir veya gider eklemek için yönetici PIN'ini girin."});
+  const profile=await getManagementProfile(auth.currentUser,db),personnel=profile?.permissions?.includes("personnel");
+  if(!personnel)lockSensitiveAccess();
+  const unlocked=personnel||await requireSensitiveAccess({title:"Hızlı Kasa İşlemi",message:"Gelir veya gider eklemek için yönetici PIN'ini girin."});
   if(!unlocked)return;
   form.reset();
   form.elements.quickCashType.value="expense";
@@ -26,10 +28,13 @@ async function openQuickCash(){
   await Promise.all([loadCategories(),loadBusinessDate()]);
   renderCategories();
   renderAccountLabel();
+  applyPersonnelLimits(personnel);
   $("quickCashDate").textContent=`İş günü: ${formatDate(activeBusinessDate)} • Saat otomatik kaydedilir`;
   dialog.showModal();
   setTimeout(()=>amount.focus(),80);
 }
+
+function applyPersonnelLimits(personnel){form.dataset.personnel=personnel?"true":"false";const expense=form.querySelector('[name="quickCashType"][value="expense"]'),bank=form.querySelector('[name="quickCashAccount"][value="bank"]'),card=form.querySelector('[name="quickCashAccount"][value="creditCard"], [name="quickCashAccount"][value="card"]');if(expense)expense.onchange=()=>{if(form.dataset.personnel==="true"&&expense.checked){form.elements.quickCashAccount.value="cash";if(bank)bank.disabled=true;if(card)card.disabled=true}else{if(bank)bank.disabled=false;if(card)card.disabled=false}};expense?.onchange()}
 
 async function loadCategories(){
   try{
@@ -64,6 +69,7 @@ async function saveQuickMovement(event){
   event.preventDefault();
   if(busy)return;
   const type=form.elements.quickCashType.value,account=form.elements.quickCashAccount.value,value=Number(amount.value),selectedCategory=category.value,note=description.value.trim();
+  if(form.dataset.personnel==="true"&&type==="expense"&&account!=="cash")return toast("Personel yalnızca nakit gider ekleyebilir.");
   const validAccount=type==="income"?["cash","bank","card"].includes(account):["cash","bank","creditCard"].includes(account);
   if(!["income","expense"].includes(type)||!validAccount)return toast("İşlem türü veya hesap seçimi geçersiz.");
   if(!Number.isFinite(value)||value<=0)return toast("Geçerli bir tutar girin.");
