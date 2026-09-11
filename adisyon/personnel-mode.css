@@ -1,1 +1,112 @@
-html[data-personnel="true"] .gift-toggle,html[data-personnel="true"] #merchantMarka,html[data-personnel="true"] .merchant-marka-toggle{display:none!important}html[data-personnel="true"] .personnel-only{display:inline-grid!important;place-items:center;text-decoration:none}#personnelWageDialog{width:min(94vw,680px);border:0;border-radius:21px;padding:0}#personnelWageDialog::backdrop{background:#26090a99;backdrop-filter:blur(3px)}#personnelWageDialog .dialog-card{max-height:88vh;overflow:auto}.pos-live-overview{flex-wrap:wrap}@media(max-width:700px){#personnelWageDialog .daily-money-grid{grid-template-columns:1fr 1fr}}
+html[data-personnel="true"] .gift-toggle,
+html[data-personnel="true"] #merchantMarka,
+html[data-personnel="true"] .merchant-marka-toggle {
+  display: none !important;
+}
+
+html[data-personnel="true"] .personnel-only {
+  display: inline-grid !important;
+  place-items: center;
+  text-decoration: none;
+}
+
+#personnelWageDialog {
+  width: min(94vw, 680px);
+  border: 0;
+  border-radius: 21px;
+  padding: 0;
+}
+
+#personnelWageDialog::backdrop {
+  background: #26090a99;
+  backdrop-filter: blur(3px);
+}
+
+#personnelWageDialog .dialog-card {
+  max-height: 88vh;
+  overflow: auto;
+}
+
+/* Personel ekranı normal adisyonun kart ölçülerini korur. */
+html[data-personnel="true"] .overview-row {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  max-height: 290px;
+}
+
+html[data-personnel="true"] .pos-tea-start {
+  width: 100% !important;
+  min-width: 0;
+}
+
+html[data-personnel="true"] .quick-actions {
+  grid-column: 1 / -1;
+  width: 100%;
+  grid-template-columns: repeat(8, 44px);
+  grid-template-rows: 44px;
+  justify-content: end;
+  justify-self: stretch;
+}
+
+/* Tablet yatay ve küçük bilgisayar */
+@media (min-width: 901px) and (max-width: 1180px) {
+  html[data-personnel="true"] .overview-row {
+    gap: 10px;
+  }
+
+  html[data-personnel="true"] .quick-actions {
+    grid-template-columns: repeat(8, 42px);
+    grid-template-rows: 42px;
+    gap: 7px;
+  }
+
+  html[data-personnel="true"] .quick-actions .icon-action {
+    width: 42px;
+    min-height: 42px;
+  }
+}
+
+/* Tablet dikey */
+@media (min-width: 701px) and (max-width: 900px) {
+  html[data-personnel="true"] .overview-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-height: 380px;
+    gap: 10px;
+  }
+
+  html[data-personnel="true"] .quick-actions {
+    grid-template-columns: repeat(4, 42px);
+    grid-template-rows: repeat(2, 42px);
+    justify-content: end;
+    gap: 7px;
+  }
+
+  html[data-personnel="true"] .quick-actions .icon-action {
+    width: 42px;
+    min-height: 42px;
+  }
+}
+
+/* Telefon */
+@media (max-width: 700px) {
+  #personnelWageDialog .daily-money-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  html[data-personnel="true"] .overview-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 520px;
+  }
+
+  html[data-personnel="true"] .quick-actions {
+    grid-template-columns: repeat(4, 40px);
+    grid-template-rows: repeat(2, 40px);
+    justify-content: end;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 390px) {
+  html[data-personnel="true"] .quick-actions {
+    justify-content: center;
+  }
+}
