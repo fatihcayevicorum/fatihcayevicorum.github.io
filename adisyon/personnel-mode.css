@@ -50,26 +50,28 @@ html[data-personnel="true"] .quick-actions {
 /* Tablet: Taze Dem ve servis üst üste, hızlı işlemler sağda 4 x 2. */
 @media (min-width: 701px) and (max-width: 1700px) {
   html[data-personnel="true"] .overview-row {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) 76px 181px;
-    grid-template-rows: 34px 34px;
-    column-gap: 10px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: 42px 42px;
+    column-gap: 13px;
     row-gap: 4px;
-    max-height: 110px;
+    max-height: 130px;
   }
 
   html[data-personnel="true"] .open-total-card,
   html[data-personnel="true"] .pos-tea-card {
     grid-row: 1 / span 2;
-    min-height: 72px;
+    min-height: 88px;
   }
 
   html[data-personnel="true"] #startPosTeaBrew,
   html[data-personnel="true"] #toggleTeaService {
-    min-height: 34px;
+    width: 76px !important;
+    min-height: 42px;
     padding: 0 4px;
     flex-direction: row;
     gap: 4px;
     font-size: .49rem;
+    justify-self: center;
   }
 
   html[data-personnel="true"] #startPosTeaBrew {
@@ -90,10 +92,10 @@ html[data-personnel="true"] .quick-actions {
   html[data-personnel="true"] .quick-actions {
     grid-column: 6;
     grid-row: 1 / span 2;
-    width: 181px;
+    width: 100%;
     grid-template-columns: repeat(4, 42px);
     grid-template-rows: repeat(2, 42px);
-    justify-content: start;
+    justify-content: center;
     align-self: center;
     gap: 4px;
   }
