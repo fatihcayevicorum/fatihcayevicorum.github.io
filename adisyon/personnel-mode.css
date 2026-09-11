@@ -1,9 +1,3 @@
-html[data-personnel="true"] .gift-toggle,
-html[data-personnel="true"] #merchantMarka,
-html[data-personnel="true"] .merchant-marka-toggle {
-  display: none !important;
-}
-
 html[data-personnel="true"] .personnel-only {
   display: inline-grid !important;
   place-items: center;
