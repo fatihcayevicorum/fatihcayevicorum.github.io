@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=232"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=1851"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8"><link rel="stylesheet" href="personnel-mode.css?v=326">
+  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=232"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=1851"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8"><link rel="stylesheet" href="personnel-mode.css?v=327">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -114,6 +114,7 @@
     <p class="personnel-settings-copy">İsim ve telefon değişiklikleri tam yetkili yönetici onayından sonra uygulanır.</p>
     <label>İsim / kullanıcı adı<input id="personnelSettingsName" maxlength="60" required></label>
     <label>Telefon numarası<input id="personnelSettingsPhone" inputmode="tel" maxlength="20" placeholder="05XX XXX XX XX" required></label>
+    <label class="personnel-tea-notification-setting"><span class="personnel-setting-icon"><i class="fa-solid fa-bell"></i></span><span><b>Taze Dem Bildirimleri</b><small id="personnelTeaNotificationStatus">Bu cihazdaki bildirim durumu kontrol ediliyor.</small></span><input id="personnelTeaNotifications" type="checkbox" role="switch" aria-label="Taze Dem bildirimlerini aç veya kapat"></label>
     <label class="personnel-password-request"><input id="personnelSettingsPasswordRequest" type="checkbox"><span><b>Şifremi de değiştirmek istiyorum</b><small>Yönetici onayından sonra yeni şifreni belirleyebilirsin.</small></span></label>
     <div id="personnelSettingsStatus" class="personnel-request-status" hidden></div>
     <p id="personnelSettingsMessage" class="personnel-settings-message"></p>
@@ -132,7 +133,7 @@
 <script type="module" src="internal-consumption.js?v=221"></script>
 <script type="module" src="quick-cash.js?v=325"></script>
 <script type="module" src="history-modal.js?v=1861"></script>
-<script type="module" src="personnel-mode.js?v=324"></script>
+<script type="module" src="personnel-mode.js?v=327"></script>
 
 <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body></html>

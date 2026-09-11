@@ -1,12 +1,14 @@
 import{getApps}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,doc,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getDoc,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{getManagementProfile,normalizePhone}from"../assets/js/admin-access.js?v=324";
+import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js?v=327";
 
 const app=getApps()[0],auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
 const submitProfileChange=httpsCallable(functions,"submitOwnStaffProfileChange"),completePasswordChange=httpsCallable(functions,"completeOwnStaffPasswordChange");
 let profile,currentUser,currentRequest,person,attendance=[],payments=[],toastTimer;
+let teaNotificationBusy=false;
 
 onSnapshot(doc(db,"adminTea","state"),snapshot=>{
   const open=snapshot.data()?.serviceOpen!==false,button=$("toggleTeaService");
@@ -43,6 +45,7 @@ $("closePersonnelSettings").onclick=$("cancelPersonnelSettings").onclick=closePe
 $("closePersonnelPassword").onclick=$("cancelPersonnelPassword").onclick=closePersonnelSettings;
 $("personnelSettingsForm").onsubmit=sendSettingsRequest;
 $("personnelPasswordForm").onsubmit=saveApprovedPassword;
+$("personnelTeaNotifications").onchange=changeTeaNotifications;
 
 function renderWageTracking(){
   if(!person)return;
@@ -72,7 +75,50 @@ function openPersonnelSettings(){
   $("personnelPasswordMessage").textContent="";
   renderRequestState();
   $("personnelSettingsDialog").showModal();
+  renderTeaNotificationState();
   setTimeout(()=>{const target=$("personnelPasswordForm").hidden?$("personnelSettingsName"):$("personnelNewPassword");target.focus();target.select()},60);
+}
+
+async function renderTeaNotificationState(){
+  const input=$("personnelTeaNotifications"),status=$("personnelTeaNotificationStatus");
+  if(!input||!status)return;
+  input.disabled=true;
+  status.textContent="Bu cihazdaki bildirim durumu kontrol ediliyor.";
+  const supported=await adminPushSupported().catch(()=>false);
+  if(!supported){input.checked=false;status.textContent="Bu cihaz veya tarayıcı bildirimleri desteklemiyor.";return}
+  const deviceId=currentAdminPushDeviceId();
+  let active=false;
+  if(deviceId){
+    const snapshot=await getDoc(doc(db,"adminTeaPushDevices",deviceId)).catch(()=>null);
+    active=Boolean(snapshot?.exists()&&snapshot.data()?.active===true);
+  }
+  input.checked=active;
+  input.disabled=false;
+  if(active)status.textContent="Hazır ve yeni dem uyarıları bu cihazda açık.";
+  else if(Notification.permission==="denied")status.textContent="Bildirim izni cihaz ayarlarından kapatılmış.";
+  else status.textContent="Hazır ve yeni dem uyarıları bu cihazda kapalı.";
+}
+
+async function changeTeaNotifications(event){
+  const input=event.currentTarget,status=$("personnelTeaNotificationStatus"),enable=input.checked;
+  if(!currentUser||teaNotificationBusy)return;
+  teaNotificationBusy=true;input.disabled=true;
+  status.textContent=enable?"Bildirim izni hazırlanıyor…":"Bildirimler kapatılıyor…";
+  try{
+    if(enable){
+      await registerAdminTeaPushDevice(currentUser.uid);
+      status.textContent="Hazır ve yeni dem uyarıları bu cihazda açık.";
+      toast("Taze Dem bildirimleri bu cihazda açıldı.");
+    }else{
+      await disableAdminTeaPushDevice(currentUser.uid);
+      status.textContent="Hazır ve yeni dem uyarıları bu cihazda kapalı.";
+      toast("Taze Dem bildirimleri bu cihazda kapatıldı.");
+    }
+  }catch(error){
+    console.error(error);input.checked=!enable;
+    status.textContent=error.message==="permission-denied"?"Bildirim izni verilmedi. Cihaz ayarlarından izin vermelisiniz.":error.message==="unsupported"?"Bu cihaz veya tarayıcı bildirimleri desteklemiyor.":"Bildirim ayarı kaydedilemedi. Bağlantıyı kontrol edin.";
+    toast(status.textContent);
+  }finally{teaNotificationBusy=false;input.disabled=false}
 }
 
 function closePersonnelSettings(){
