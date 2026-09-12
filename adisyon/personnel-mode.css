@@ -19,8 +19,6 @@ html[data-personnel-intent="true"] .panel-menu,
 html[data-personnel-intent="true"] .header-page-link {
   display: none !important;
 }
-html[data-personnel="true"] #logoutButton{display:none!important}
-
 #personnelWageDialog {
   width: min(94vw, 680px);
   border: 0;
