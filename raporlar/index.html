@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=292">
+  <link rel="stylesheet" href="style.css?v=341">
 </head>
 <body>
   <header class="app-header">
@@ -62,6 +62,7 @@
       <button type="button" role="tab" aria-selected="false" data-report-tab="expenses"><i class="fa-solid fa-receipt"></i><span>Giderler</span><small>Kategori ve ödeme türü</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="stock"><i class="fa-solid fa-boxes-stacked"></i><span>Stok Raporu</span><small>Alım, satış ve tüketim</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="currentAccounts"><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span><small>Borç ve tahsilat detayları</small></button>
+      <button type="button" role="tab" aria-selected="false" data-report-tab="personnel"><i class="fa-solid fa-users-gear"></i><span>Personel Performansı</span><small>Satış, işlem ve ücret takibi</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="closings"><i class="fa-solid fa-calendar-check"></i><span>Gün Sonları</span><small>Kapanış arşivi</small></button>
     </nav>
 
@@ -196,6 +197,24 @@
       </section>
     </section>
 
+    <section id="reportPanelPersonnel" class="report-tab-panel" data-report-panel="personnel" hidden>
+      <section class="panel personnel-performance-summary-panel">
+        <div class="section-heading"><div><p class="kicker">Seçilen dönem</p><h2>Personel Performansı</h2></div><small>Satış, ödeme, cari, hızlı işlem ve ücret özeti</small></div>
+        <div class="personnel-performance-summary">
+          <article><i class="fa-solid fa-users"></i><span>İşlem Yapan Personel</span><strong id="personnelPerformanceCount">0</strong></article>
+          <article><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="personnelPerformanceSales">₺0</strong></article>
+          <article><i class="fa-solid fa-receipt"></i><span>Kapanan Adisyon</span><strong id="personnelPerformanceOrders">0</strong></article>
+          <article><i class="fa-solid fa-wallet"></i><span>Ödenen Ücret</span><strong id="personnelPerformancePaid">₺0</strong></article>
+        </div>
+        <p class="personnel-performance-note"><i class="fa-solid fa-circle-info"></i> Satış tutarı personelin cebine aldığı para değil, kendi kullanıcı hesabıyla sisteme kaydettiği işlemdir. Ücret kayıtları Personel Yönetimi'nden düzenlenir.</p>
+      </section>
+      <section class="panel personnel-performance-list-panel">
+        <div class="section-heading"><div><p class="kicker">Personel bazlı ayrıntı</p><h2>Kim Ne Yapmış?</h2></div><small>Personel kartına basarak tüm ayrıntıları açın</small></div>
+        <div id="personnelPerformanceList" class="personnel-performance-list"></div>
+        <p id="personnelPerformanceEmpty" class="empty">Seçilen dönemde personel işlemi veya ücret kaydı bulunmuyor.</p>
+      </section>
+    </section>
+
     <section id="reportPanelClosings" class="report-tab-panel" data-report-panel="closings" hidden>
     <section class="panel closing-panel">
       <div class="section-heading">
@@ -264,7 +283,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=292"></script>
+  <script type="module" src="script.js?v=341"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
