@@ -6,10 +6,10 @@ import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 import{PERMISSION_DEFINITIONS,profileHasPermission}from"../assets/js/admin-access.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
-const personnelCol=collection(db,"adminPersonnel"),staffUsersCol=collection(db,"staffUsers"),attendanceCol=collection(db,"adminPersonnelAttendance"),paymentsCol=collection(db,"adminPersonnelPayments"),cashMovementsCol=collection(db,"adminCashMovements"),financeDaysCol=collection(db,"adminFinanceDays"),shiftsCol=collection(db,"adminPersonnelShifts");
+const personnelCol=collection(db,"adminPersonnel"),staffUsersCol=collection(db,"staffUsers"),attendanceCol=collection(db,"adminPersonnelAttendance"),paymentsCol=collection(db,"adminPersonnelPayments"),cashMovementsCol=collection(db,"adminCashMovements"),financeDaysCol=collection(db,"adminFinanceDays");
 const updateStaffUser=httpsCallable(functions,"updateStaffUser");
 const FINANCE_START_DATE="2026-08-13";
-let personnel=[],staffUsers=[],attendance=[],payments=[],financeDays=[],shifts=[],selectedMonth=today().slice(0,7),selectedPersonnelId="",pendingDeletePaymentId="",pendingAttendance=null,toastTimer,started=false;
+let personnel=[],staffUsers=[],attendance=[],payments=[],financeDays=[],selectedMonth=today().slice(0,7),selectedPersonnelId="",pendingDeletePaymentId="",pendingAttendance=null,toastTimer,started=false;
 
 tick();setInterval(tick,1000);$("monthPicker").value=selectedMonth;
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
@@ -17,7 +17,6 @@ $("previousMonth").onclick=()=>changeMonth(-1);$("nextMonth").onclick=()=>change
 $("monthPicker").onchange=e=>{if(!e.target.value)return;e.target.value=e.target.value>today().slice(0,7)?today().slice(0,7):e.target.value;selectedMonth=e.target.value;render()};
 $("newPersonnelButton").onclick=()=>openPersonnelDialog();$("editPersonnelButton").onclick=()=>openPersonnelDialog(selectedPerson());
 $("personnelPermissionsButton").onclick=openPermissionsDialog;
-$("personnelShiftButton").onclick=openShiftDialog;
 $("newPaymentButton").onclick=()=>openPaymentDialog();
 $("personnelList").onclick=e=>{const card=e.target.closest("[data-personnel-id]");if(card){selectedPersonnelId=card.dataset.personnelId;render();if(!$("personnelDetailDialog").open)$("personnelDetailDialog").showModal()}};
 $("attendanceCalendar").onclick=e=>{const day=e.target.closest("[data-attendance-date]");if(day&&!day.disabled)openAttendanceDialog(day.dataset.attendanceDate)};
@@ -28,7 +27,6 @@ $("wageTrackingEnabled").onchange=renderWageSettings;$("personnelWageType").onch
 document.querySelectorAll('input[name="attendanceStatus"]').forEach(input=>{input.onclick=()=>{if($("attendanceDialog").open)$("attendanceForm").requestSubmit()}});
 $("wageActionOptions").onclick=e=>{const button=e.target.closest("[data-wage-action]");if(button)saveAttendanceWage(button.dataset.wageAction,button)};
 $("personnelPermissionGrid").onchange=e=>{const input=e.target.closest('input[name="personnelPermission"]');if(!input)return;const all=[...document.querySelectorAll('input[name="personnelPermission"]')],personnel=all.find(x=>x.value==="personnel"),pos=all.find(x=>x.value==="pos"),transfer=all.find(x=>x.value==="currentAccountTransfer");if(input.value==="personnel"&&input.checked)all.filter(x=>x!==input).forEach(x=>x.checked=false);else if(input.checked&&personnel)personnel.checked=false;if(input.value==="currentAccountTransfer"&&input.checked&&pos)pos.checked=true;if(input.value==="pos"&&!input.checked&&transfer)transfer.checked=false};
-$("shiftDialog").addEventListener("close",()=>{if($("shiftDialog").returnValue==="attendance"){document.querySelector(".attendance-card")?.scrollIntoView({behavior:"smooth",block:"start"})}});
 document.addEventListener("click",e=>{const menu=document.querySelector(".panel-menu");if(menu?.open&&!menu.contains(e.target))menu.removeAttribute("open")});
 
 onAuthStateChanged(auth,async user=>{
@@ -40,7 +38,6 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(attendanceCol,s=>{attendance=s.docs.map(d=>({id:d.id,...d.data()}));connected();render()},loadError);
   onSnapshot(paymentsCol,s=>{payments=s.docs.map(d=>({id:d.id,...d.data()}));connected();render()},loadError);
   onSnapshot(financeDaysCol,s=>{financeDays=s.docs.map(d=>({id:d.id,...d.data()}));connected();render()},loadError);
-  onSnapshot(shiftsCol,s=>{shifts=s.docs.map(d=>({id:d.id,...d.data()}));connected();render()},loadError);
 });
 
 async function ensureOwnerPersonnel(user){
@@ -110,10 +107,6 @@ function openPermissionsDialog(){
 async function savePermissions(e){
   e.preventDefault();const person=selectedPerson(),user=linkedUser(person);if(!person||!user||user.uid===ADMIN_UID)return;const permissions=[...document.querySelectorAll('input[name="personnelPermission"]:checked')].map(x=>x.value);if(!permissions.length)return message("permissionsMessage","En az bir panel yetkisi seçin.");e.submitter.disabled=true;try{await updateStaffUser({uid:user.uid,displayName:user.displayName||person.displayName,phone:user.phone,permissions,deviceLimit:user.deviceLimit||1,active:user.active!==false});$("permissionsDialog").close();toast("Personel yetkileri kaydedildi.")}catch(error){console.error(error);message("permissionsMessage",callableMessage(error))}finally{e.submitter.disabled=false}
 }
-function openShiftDialog(){const person=selectedPerson(),user=linkedUser(person);if(!person)return;$("shiftDialogTitle").textContent=`${person.displayName} • Kasa / Vardiya`;$("shiftAccountSummary").innerHTML=`<i class="fa-solid fa-cash-register"></i><span><strong>${user?"Kullanıcı hesabı bağlı":"Kullanıcı hesabı bağlı değil"}</strong><small>${user?esc(`${user.displayName||"Kullanıcı"} • ${formatPhone(user.phone)||"Telefon yok"}`):"Vardiya hesabı başlamadan önce kullanıcı bağlantısı yapılmalı."}</small></span>`;renderShiftHistory(person);$("shiftDialog").showModal()}
-function renderShiftHistory(person){const rows=shifts.filter(item=>item.personnelId===person.id&&String(item.businessDate||"").startsWith(selectedMonth)).sort((a,b)=>number(b.openedAtMs)-number(a.openedAtMs));$("shiftHistoryEmpty").hidden=rows.length>0;$("shiftHistoryList").innerHTML=rows.map(item=>{const open=item.status==="open",duration=shiftDuration(item),difference=open?item.openingDifference:item.closingDifference;return`<article class="shift-history-row ${open?"is-open":""}"><i class="fa-solid ${open?"fa-clock":"fa-circle-check"}"></i><div><strong>${formatDate(item.businessDate)}</strong><small>Giriş ${formatClock(item.openedAtMs)} • Çıkış ${open?"Yapılmadı":formatClock(item.closedAtMs)}${duration?` • ${duration}`:""}</small><small>Açılış sayımı ${money(item.openingCount)}${open?"":` • Kapanış sayımı ${money(item.closingCount)}`}</small></div><b class="${number(difference)===0?"is-match":"is-difference"}">${number(difference)===0?"Kasa doğru":`${money(Math.abs(number(difference)))} ${number(difference)>0?"fazla":"eksik"}`}</b></article>`}).join("")}
-function formatClock(ms){return ms?new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"}).format(new Date(ms)):"—"}
-function shiftDuration(item){if(!item.openedAtMs||!item.closedAtMs)return"";const minutes=Math.max(0,Math.round((number(item.closedAtMs)-number(item.openedAtMs))/60000)),hours=Math.floor(minutes/60),rest=minutes%60;return`${hours?`${hours} sa. `:""}${rest} dk.`}
 function openAttendanceDialog(date,preset=""){
   const person=selectedPerson();if(!person)return;const existing=attendance.find(x=>x.personnelId===person.id&&x.businessDate===date);if(person.active===false&&!existing){toast("Pasif personele yeni çalışma günü eklenemez.");return}const status=preset||existing?.status||"none";$("attendanceDate").value=date;$("attendanceTitle").textContent=`${formatDate(date)} • ${person.displayName}`;document.querySelector(`input[name="attendanceStatus"][value="${status}"]`).checked=true;$("attendanceNote").value=existing?.note||"";$("attendanceMessage").textContent="";$("attendanceDialog").showModal()
 }

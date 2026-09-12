@@ -78,7 +78,6 @@
         <div class="detail-actions">
           <button id="editPersonnelButton" type="button"><i class="fa-solid fa-pen"></i> Düzenle</button>
           <button id="personnelPermissionsButton" type="button"><i class="fa-solid fa-user-shield"></i> Yetkiler</button>
-          <button id="personnelShiftButton" type="button"><i class="fa-solid fa-cash-register"></i> Kasa / Vardiya</button>
           <button id="newPaymentButton" class="primary" type="button"><i class="fa-solid fa-money-bill-transfer"></i> Ödeme Yap</button>
         </div>
       </div>
@@ -139,18 +138,6 @@
       <fieldset id="personnelPermissionFieldset"><legend>Erişebileceği paneller</legend><div id="personnelPermissionGrid" class="permission-grid"></div></fieldset>
       <p id="permissionsMessage" class="message"></p>
       <button id="savePermissionsButton" class="primary full" type="submit"><i class="fa-solid fa-floppy-disk"></i> Yetkileri Kaydet</button>
-    </form>
-  </dialog>
-
-  <dialog id="shiftDialog">
-    <form method="dialog">
-      <button class="close" value="cancel" type="submit" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
-      <div class="dialog-icon"><i class="fa-solid fa-cash-register"></i></div>
-      <p class="kicker">Ayrı personel işlemi</p><h2 id="shiftDialogTitle">Kasa / Vardiya</h2>
-      <div id="shiftAccountSummary" class="linked-account-summary"></div>
-      <div id="shiftHistoryList" class="shift-history-list"></div>
-      <p id="shiftHistoryEmpty" class="empty">Bu ay vardiya kaydı bulunmuyor.</p>
-      <button id="goAttendanceButton" class="primary full" value="attendance" type="submit"><i class="fa-solid fa-calendar-days"></i> Çalışma Takvimine Git</button>
     </form>
   </dialog>
 
@@ -216,7 +203,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script type="module" src="script.js?v=333"></script>
+<script type="module" src="script.js?v=338"></script>
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
 </html>

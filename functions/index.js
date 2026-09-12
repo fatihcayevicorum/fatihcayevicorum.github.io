@@ -13,40 +13,9 @@ initializeApp();
 const db=getFirestore();
 const OWNER_UID="obuZLQXuPAWsHE20bZxcAxCNsO02";
 const PANEL_IDS=["tea","pos","currentAccounts","currentAccountTransfer","menu","stock","credit","merchant","reports","cash","home","personnel"];
-const PERSONNEL_CASH_START_DATE="2026-09-11";
 
 function businessDateNow(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}
 function numberValue(value){return Number(value)||0}
-async function personnelProfile(request){
-  const uid=request.auth?.uid;if(!uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");
-  const staff=await db.doc(`staffUsers/${uid}`).get(),data=staff.data()||{},permissions=Array.isArray(data.permissions)?data.permissions:[];
-  if(!staff.exists||data.active!==true||!permissions.includes("personnel")||!data.personnelId)throw new HttpsError("permission-denied","Bu işlem personel hesabına özeldir.");
-  return{uid,personnelId:String(data.personnelId),displayName:String(data.personnelName||data.displayName||"Personel")};
-}
-async function personnelCashBalance(){
-  const[movementSnap,saleSnap,staffSnap]=await Promise.all([db.collection("adminCashMovements").get(),db.collection("adminSales").get(),db.collection("staffUsers").get()]);
-  const personnelUids=new Set(staffSnap.docs.filter(item=>Boolean(item.data().personnelId)||(Array.isArray(item.data().permissions)&&item.data().permissions.includes("personnel"))).map(item=>item.id));
-  let balance=0;
-  movementSnap.docs.forEach(item=>{const movement=item.data(),amount=numberValue(movement.amount);if(String(movement.businessDate||"")<PERSONNEL_CASH_START_DATE)return;if(movement.type==="transfer"){if(movement.toAccount==="personnel")balance+=amount;if(movement.fromAccount==="personnel")balance-=amount}if(personnelUids.has(String(movement.createdBy||""))&&movement.source==="pos-quick-cash"&&movement.account==="cash"){if(movement.type==="income")balance+=amount;if(movement.type==="expense")balance-=amount}});
-  saleSnap.docs.forEach(item=>{const sale=item.data();if(String(sale.businessDate||"")<PERSONNEL_CASH_START_DATE||!personnelUids.has(String(sale.createdBy||""))||sale.recordType==="correction"||sale.reversed===true||sale.cancelled===true||sale.cashMovementApplied!==true)return;balance+=numberValue(sale.cashAmount)});
-  return balance;
-}
-async function openShiftFor(uid){const snap=await db.collection("adminPersonnelShifts").where("personnelUserUid","==",uid).get();return snap.docs.find(item=>item.data().status==="open")||null}
-async function personnelShiftSummary(uid,openedAtMs){const[snap,movements]=await Promise.all([db.collection("adminSales").where("createdBy","==",uid).get(),db.collection("adminCashMovements").where("createdBy","==",uid).get()]),summary={cash:0,bank:0,card:0,current:0,tip:0,rounding:0,expense:0,total:0};snap.docs.forEach(item=>{const sale=item.data(),time=numberValue(sale.createdAtMs||sale.closedAtMs);if(time<numberValue(openedAtMs)||sale.recordType==="correction"||sale.reversed===true||sale.cancelled===true)return;summary.cash+=numberValue(sale.cashAmount);summary.bank+=numberValue(sale.transferAmount);summary.card+=numberValue(sale.cardAmount);summary.current+=numberValue(sale.currentAccountAmount);summary.tip+=numberValue(sale.tipAmount);summary.rounding+=numberValue(sale.roundingDiscount)||Math.max(0,-numberValue(sale.roundingAmount))});movements.docs.forEach(item=>{const movement=item.data(),time=numberValue(movement.createdAtMs||movement.updatedAtMs);if(time>=numberValue(openedAtMs)&&movement.source==="pos-quick-cash"&&movement.type==="expense"&&movement.account==="cash")summary.expense+=numberValue(movement.amount)});summary.total=summary.cash+summary.bank+summary.card+summary.current;return summary}
-
-exports.getPersonnelShiftState=onCall({region:"europe-west1",cors:true},async request=>{const person=await personnelProfile(request),open=await openShiftFor(person.uid),openedAtMs=numberValue(open?.data()?.openedAtMs);return{requiresOpeningCount:!open,shiftId:open?.id||"",openedAtMs,businessDate:open?.data()?.businessDate||businessDateNow(),salesSummary:open?await personnelShiftSummary(person.uid,openedAtMs):null}});
-exports.openPersonnelShift=onCall({region:"europe-west1",cors:true},async request=>{
-  const person=await personnelProfile(request),counted=Math.max(0,numberValue(request.data?.countedAmount));if(!Number.isFinite(Number(request.data?.countedAmount)))throw new HttpsError("invalid-argument","Geçerli bir kasa sayımı girin.");
-  const existing=await openShiftFor(person.uid);if(existing)return{opened:true,shiftId:existing.id};
-  const expected=await personnelCashBalance(),difference=counted-expected,now=Date.now(),ref=db.collection("adminPersonnelShifts").doc();await ref.set({personnelId:person.personnelId,personnelUserUid:person.uid,personnelName:person.displayName,businessDate:businessDateNow(),status:"open",openingCount:counted,openingExpected:expected,openingDifference:difference,openedAtMs:now,openedAt:FieldValue.serverTimestamp(),createdAtMs:now,createdAt:FieldValue.serverTimestamp(),createdBy:person.uid});await notifyPersonnelCashEvent({shiftId:ref.id,event:"open",person,counted,expected,difference,occurredAtMs:now});return{opened:true,shiftId:ref.id};
-});
-exports.closePersonnelShift=onCall({region:"europe-west1",cors:true},async request=>{
-  const person=await personnelProfile(request),counted=Math.max(0,numberValue(request.data?.countedAmount));if(!Number.isFinite(Number(request.data?.countedAmount)))throw new HttpsError("invalid-argument","Geçerli bir kasa sayımı girin.");
-  const open=await openShiftFor(person.uid);if(!open)throw new HttpsError("failed-precondition","Açık vardiya bulunamadı.");
-  const expected=await personnelCashBalance(),difference=counted-expected,now=Date.now(),data=open.data(),summary=await personnelShiftSummary(person.uid,data.openedAtMs);
-  await open.ref.set({status:"closed",closingCount:counted,closingExpected:expected,closingDifference:difference,closedAtMs:now,closedAt:FieldValue.serverTimestamp(),salesSummary:summary,updatedAtMs:now,updatedAt:FieldValue.serverTimestamp(),updatedBy:person.uid},{merge:true});await notifyPersonnelCashEvent({shiftId:open.id,event:"close",person,counted,expected,difference,occurredAtMs:now});return{closed:true};
-});
-
 function requireOwner(request){if(request.auth?.uid!==OWNER_UID)throw new HttpsError("permission-denied","Bu işlem yalnızca ana yönetici tarafından yapılabilir.")}
 async function requirePanel(request,panel){if(request.auth?.uid===OWNER_UID)return;if(!request.auth?.uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const snap=await db.doc(`staffUsers/${request.auth.uid}`).get(),data=snap.data()||{},permissions=Array.isArray(data.permissions)?data.permissions:[],legacyCurrentTransfer=panel==="currentAccountTransfer"&&data.permissionSchemaVersion!=="r286"&&permissions.includes("pos");if(!snap.exists||data.active!==true||(!permissions.includes(panel)&&!legacyCurrentTransfer))throw new HttpsError("permission-denied","Bu işlem için panel yetkiniz bulunmuyor.")}
 function normalizePhone(value){let digits=String(value||"").replace(/\D/g,"");if(digits.startsWith("0090"))digits=digits.slice(2);if(digits.length===11&&digits.startsWith("0"))digits=`90${digits.slice(1)}`;if(digits.length===10)digits=`90${digits}`;if(digits.length!==12||!digits.startsWith("90"))throw new HttpsError("invalid-argument","Telefon numarası geçersiz.");return digits}
@@ -215,13 +184,6 @@ async function sendAdminTeaPush(message){
     throw error
   }
   return result
-}
-
-function personnelCashMoney(value){return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",minimumFractionDigits:2}).format(numberValue(value))}
-async function notifyPersonnelCashEvent({shiftId,event,person,counted,expected,difference,occurredAtMs}){
-  const isOpen=event==="open",exact=Math.abs(difference)<0.005,title=isOpen?"Personel kasayı açtı":"Personel kasayı kapattı",action=isOpen?"açtı":"kapattı",differenceText=exact?"Kasa eksiksiz onaylandı.":`Fark: ${difference>0?"+":""}${personnelCashMoney(difference)}.`,body=`${person.displayName} kasayı ${action}. Sayılan: ${personnelCashMoney(counted)}, beklenen: ${personnelCashMoney(expected)}. ${differenceText}`,type=isOpen?"personnel-cash-opened":"personnel-cash-closed",tag=`${type}-${shiftId}`,link="/personel-yonetimi/#kasa-vardiya",notificationRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/${tag}`);
-  try{await notificationRef.set({type,title,body,personnelId:person.personnelId,personnelUserUid:person.uid,personnelName:person.displayName,shiftId,event,countedAmount:counted,expectedAmount:expected,difference,ownerOnly:true,link,readBy:{},createdAtMs:occurredAtMs,createdAt:FieldValue.serverTimestamp()},{merge:true})}catch(error){logger.warn("Personel kasa uygulama içi bildirimi kaydedilemedi.",{shiftId,event,error:String(error.message||error)})}
-  try{await sendAdminTeaPush({type,tag,body,link:`${SITE_URL}${link}`})}catch(error){logger.warn("Personel kasa push bildirimi gönderilemedi.",{shiftId,event,error:String(error.message||error)})}
 }
 
 function cleanPushToken(value){

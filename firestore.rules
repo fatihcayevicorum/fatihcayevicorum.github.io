@@ -292,15 +292,11 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     match /adminCashSettings/{document} {
-      allow read: if hasPanel('cash') || hasPanel('personnel');
+      allow read: if hasPanel('cash');
       allow write: if hasPanel('cash');
     }
     match /adminCashCounts/{document} {
       allow read, write: if hasPanel('cash');
-    }
-    match /adminPersonnelShifts/{document} {
-      allow read: if isOwner() || (hasPanel('personnel') && resource.data.personnelUserUid == request.auth.uid);
-      allow write: if false;
     }
     match /adminPaymentReminders/{document} {
       allow read, write: if hasPanel('cash');

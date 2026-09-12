@@ -1,5 +1,5 @@
 import{getApps}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,doc,getDoc,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{getManagementProfile,normalizePhone}from"../assets/js/admin-access.js?v=324";
@@ -7,7 +7,6 @@ import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,reg
 
 const app=getApps()[0],auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
 const submitProfileChange=httpsCallable(functions,"submitOwnStaffProfileChange"),completePasswordChange=httpsCallable(functions,"completeOwnStaffPasswordChange");
-const getPersonnelShiftState=httpsCallable(functions,"getPersonnelShiftState"),openPersonnelShift=httpsCallable(functions,"openPersonnelShift"),closePersonnelShift=httpsCallable(functions,"closePersonnelShift");
 let profile,currentUser,currentRequest,person,attendance=[],payments=[],toastTimer;
 let teaNotificationBusy=false;
 
@@ -24,12 +23,10 @@ onAuthStateChanged(auth,async user=>{
   document.documentElement.dataset.personnel=personnel?"true":"false";
   if(!personnel)return;
   $("posPageTitle").textContent="Personel Adisyonu";
-  $("logoutButton").hidden=true;
   removePersonnelHeaderLinks();
   new MutationObserver(removePersonnelHeaderLinks).observe(document.querySelector(".header-actions"),{childList:true,subtree:true});
   ["cashCountButton","closeDayButton"].forEach(id=>$(id).hidden=true);
   document.querySelectorAll(".personnel-only").forEach(element=>element.hidden=false);
-  await enforcePersonnelShift();
   watchOwnSettings(user.uid);
   if(!profile.personnelId)return;
   onSnapshot(query(collection(db,"adminPersonnel"),where("linkedUserUid","==",user.uid)),snapshot=>{person=snapshot.docs[0]?{id:snapshot.docs[0].id,...snapshot.docs[0].data()}:null;renderWageTracking()});
@@ -49,22 +46,6 @@ $("closePersonnelPassword").onclick=$("cancelPersonnelPassword").onclick=closePe
 $("personnelSettingsForm").onsubmit=sendSettingsRequest;
 $("personnelPasswordForm").onsubmit=saveApprovedPassword;
 $("personnelTeaNotifications").onchange=changeTeaNotifications;
-$("personnelOpeningCashForm").onsubmit=submitOpeningCash;
-$("personnelOpeningLogout").onclick=logoutPersonnel;
-$("personnelCloseCashButton").onclick=openClosingCash;
-$("closePersonnelClosingCash").onclick=$("cancelPersonnelClosingCash").onclick=()=>$("personnelClosingCashDialog").close();
-$("personnelClosingCashForm").onsubmit=submitClosingCash;
-
-async function enforcePersonnelShift(){
-  try{const result=(await getPersonnelShiftState()).data;if(!result.requiresOpeningCount)return;const dialog=$("personnelOpeningCashDialog");dialog.addEventListener("cancel",event=>event.preventDefault());dialog.showModal();setTimeout(()=>$("personnelOpeningCashAmount").focus(),80)}catch(error){console.error(error);toast("Vardiya durumu alınamadı. Bağlantıyı kontrol edin.")}
-}
-async function submitOpeningCash(event){event.preventDefault();const input=$("personnelOpeningCashAmount"),amount=input.value.trim();if(amount==="")return cashMessage("personnelOpeningCashMessage","Kasada saydığın tutarı gir.");event.submitter.disabled=true;try{await openPersonnelShift({countedAmount:Number(amount)});$("personnelOpeningCashDialog").close();toast("Kasa sayımı onaylandı, vardiyan başladı.")}catch(error){console.error(error);cashMessage("personnelOpeningCashMessage","Kasa sayımı kaydedilemedi. Bağlantıyı kontrol et.")}finally{event.submitter.disabled=false}}
-async function openClosingCash(){try{const result=(await getPersonnelShiftState()).data;if(result.requiresOpeningCount)return enforcePersonnelShift();renderShiftSales(result.salesSummary||{});$("personnelClosingCashForm").reset();cashMessage("personnelClosingCashMessage","");$("personnelClosingCashDialog").showModal();setTimeout(()=>$("personnelClosingCashAmount").focus(),80)}catch(error){console.error(error);toast("Vardiya satışları alınamadı.")}}
-function renderShiftSales(summary){const items=[["Nakit",summary.cash],["Kart",summary.card],["Banka / Havale",summary.bank],["Cari Yazılan",summary.current],["Bahşiş",summary.tip],["Eksi Yuvarlama",summary.rounding],["Nakit Gider",summary.expense],["Toplam Satış",summary.total]];$("personnelShiftSalesSummary").innerHTML=items.map(([name,value],index)=>`<article class="${index===items.length-1?"is-total":""}"><span>${name}</span><b>${money(value)}</b></article>`).join("")}
-async function submitClosingCash(event){event.preventDefault();const input=$("personnelClosingCashAmount"),amount=input.value.trim();if(amount==="")return cashMessage("personnelClosingCashMessage","Kasada saydığın tutarı gir.");event.submitter.disabled=true;try{await closePersonnelShift({countedAmount:Number(amount)});await logoutPersonnel()}catch(error){console.error(error);cashMessage("personnelClosingCashMessage","Kasa kapanışı gönderilemedi. Bağlantıyı kontrol et.");event.submitter.disabled=false}}
-async function logoutPersonnel(){await signOut(auth);location.replace("../yonetici-giris.html")}
-function cashMessage(id,value){$(id).textContent=value}
-
 function renderWageTracking(){
   if(!person)return;
   const worked=attendance.filter(item=>item.status==="worked"),earned=worked.reduce((sum,item)=>sum+Number(item.wageSnapshot||0),0),paid=payments.reduce((sum,item)=>sum+Number(item.amount||0),0);
