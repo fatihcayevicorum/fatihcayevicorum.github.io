@@ -393,7 +393,15 @@ async function stockInOpenPurchaseFlow(stockItemId){
   return inItems(draftSnap.data()?.items)||ordersSnap.docs.some(item=>inItems(item.data()?.items))
 }
 
-exports.cleanDisabledAdminBusinessReminders=onDocumentWritten({document:"adminReminderPreferences/{uid}",region:"europe-west1"},async event=>{
+// Bu ad daha once HTTPS fonksiyonu olarak yayinlandigi icin tipini koruyoruz.
+// Boylece Firebase, HTTPS -> Firestore tetikleyicisi donusumunu reddetmez.
+exports.cleanDisabledAdminBusinessReminders=onCall({region:"europe-west1",cors:true},async request=>{
+  requireOwner(request);const after=await ownerReminderPreferences(),types=[];
+  if(after.purchaseOrders===false)types.push("purchase-order-stale");if(after.stockCritical===false)types.push("stock-critical");if(after.stockEmpty===false)types.push("stock-empty");if(after.stockCount===false)types.push("stock-count");if(after.paymentDue===false)types.push("payment-due");if(after.paymentOverdue===false)types.push("payment-overdue");
+  await clearBusinessNotifications(types);return{cleaned:true,types}
+});
+
+exports.cleanupDisabledAdminReminderNotificationsOnWrite=onDocumentWritten({document:"adminReminderPreferences/{uid}",region:"europe-west1"},async event=>{
   if(event.params.uid!==OWNER_UID)return;const after=event.data?.after.data()||{},types=[];
   if(after.purchaseOrders===false)types.push("purchase-order-stale");if(after.stockCritical===false)types.push("stock-critical");if(after.stockEmpty===false)types.push("stock-empty");if(after.stockCount===false)types.push("stock-count");if(after.paymentDue===false)types.push("payment-due");if(after.paymentOverdue===false)types.push("payment-overdue");
   await clearBusinessNotifications(types)
