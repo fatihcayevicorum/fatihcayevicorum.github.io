@@ -25,4 +25,4 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FATIHCAYEVI }}
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
-          GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" npx --yes firebase-tools deploy --only functions,firestore:rules --project fatihcayevi --non-interactive
+          GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" npx --yes firebase-tools deploy --only functions,firestore:rules --project fatihcayevi --non-interactive --force
