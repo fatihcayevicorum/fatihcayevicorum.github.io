@@ -169,7 +169,7 @@ service cloud.firestore {
       allow write: if hasAnyPanel(['credit', 'pos']);
     }
     match /adminCurrentAccounts/{accountId} {
-      allow read: if hasAnyPanel(['credit', 'pos', 'reports', 'currentAccounts']);
+      allow read: if hasAnyPanel(['credit', 'pos', 'reports', 'cash', 'currentAccounts']);
       allow create: if hasPanel('currentAccounts')
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
@@ -208,7 +208,7 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /adminCurrentAccountMovements/{movementId} {
-      allow read: if hasAnyPanel(['credit', 'pos', 'reports', 'currentAccounts']) || hasCurrentAccountTransfer();
+      allow read: if hasAnyPanel(['credit', 'pos', 'reports', 'cash', 'currentAccounts']) || hasCurrentAccountTransfer();
       allow create: if hasCurrentAccountWriteAccess()
         && request.resource.data.accountId is string
         && request.resource.data.accountId.size() > 0
