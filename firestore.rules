@@ -8,7 +8,9 @@ service cloud.firestore {
     function isStaff() {
       return request.auth != null
         && exists(/databases/$(database)/documents/staffUsers/$(request.auth.uid))
-        && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.active == true;
+        && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.active == true
+        && (!get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.permissions.hasAny(['personnel'])
+          || get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.get('personnelAccessLockedUntilMs', 0) <= request.time.toMillis());
     }
     function isManager() {
       return isOwner() || isStaff();

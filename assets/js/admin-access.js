@@ -19,6 +19,7 @@ export const ACTION_DEFINITIONS=[
 export const PERMISSION_DEFINITIONS=[...PANEL_DEFINITIONS.slice(0,3),...ACTION_DEFINITIONS,...PANEL_DEFINITIONS.slice(3)];
 export const ALL_PANEL_IDS=PERMISSION_DEFINITIONS.map(x=>x.id).filter(id=>id!=="personnel");
 export function isOwner(user){return user?.uid===ADMIN_UID}
+export function isPersonnelAccessLocked(profile,now=Date.now()){return Boolean(profile?.permissions?.includes("personnel")&&Number(profile.personnelAccessLockedUntilMs)>now)}
 export async function getManagementProfile(user,db){
   if(!user)return null;
   if(isOwner(user)){
@@ -32,6 +33,7 @@ export async function getManagementProfile(user,db){
 }
 export async function hasPanelAccess(user,db,panel){
   const profile=await getManagementProfile(user,db);
+  if(isPersonnelAccessLocked(profile))return false;
   return profileHasPermission(profile,panel);
 }
 export function profileHasPermission(profile,permission){

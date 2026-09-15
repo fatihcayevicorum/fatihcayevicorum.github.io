@@ -14,10 +14,12 @@ const db=getFirestore();
 const OWNER_UID="obuZLQXuPAWsHE20bZxcAxCNsO02";
 const PANEL_IDS=["tea","pos","currentAccounts","currentAccountTransfer","menu","stock","credit","merchant","reports","cash","home","personnel"];
 
-function businessDateNow(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}
+function businessDateNow(now=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(now)}
 function numberValue(value){return Number(value)||0}
 function requireOwner(request){if(request.auth?.uid!==OWNER_UID)throw new HttpsError("permission-denied","Bu işlem yalnızca ana yönetici tarafından yapılabilir.")}
-async function requirePanel(request,panel){if(request.auth?.uid===OWNER_UID)return;if(!request.auth?.uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const snap=await db.doc(`staffUsers/${request.auth.uid}`).get(),data=snap.data()||{},permissions=Array.isArray(data.permissions)?data.permissions:[],legacyCurrentTransfer=panel==="currentAccountTransfer"&&data.permissionSchemaVersion!=="r286"&&permissions.includes("pos");if(!snap.exists||data.active!==true||(!permissions.includes(panel)&&!legacyCurrentTransfer))throw new HttpsError("permission-denied","Bu işlem için panel yetkiniz bulunmuyor.")}
+function personnelAccessLocked(data={},now=Date.now()){return Array.isArray(data.permissions)&&data.permissions.includes("personnel")&&Number(data.personnelAccessLockedUntilMs)>now}
+function nextPersonnelAccessAtMs(now=Date.now()){const date=businessDateNow(new Date(now)),todayReset=new Date(`${date}T05:00:00+03:00`).getTime();return now<todayReset?todayReset:todayReset+24*60*60*1000}
+async function requirePanel(request,panel){if(request.auth?.uid===OWNER_UID)return;if(!request.auth?.uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const snap=await db.doc(`staffUsers/${request.auth.uid}`).get(),data=snap.data()||{},permissions=Array.isArray(data.permissions)?data.permissions:[],legacyCurrentTransfer=panel==="currentAccountTransfer"&&data.permissionSchemaVersion!=="r286"&&permissions.includes("pos");if(!snap.exists||data.active!==true)throw new HttpsError("permission-denied","Bu işlem için panel yetkiniz bulunmuyor.");if(personnelAccessLocked(data))throw new HttpsError("failed-precondition","Bugünkü çalışmanızı tamamladınız. Yeni işletme günü saat 05.00'te açılır.");if(!permissions.includes(panel)&&!legacyCurrentTransfer)throw new HttpsError("permission-denied","Bu işlem için panel yetkiniz bulunmuyor.")}
 function normalizePhone(value){let digits=String(value||"").replace(/\D/g,"");if(digits.startsWith("0090"))digits=digits.slice(2);if(digits.length===11&&digits.startsWith("0"))digits=`90${digits.slice(1)}`;if(digits.length===10)digits=`90${digits}`;if(digits.length!==12||!digits.startsWith("90"))throw new HttpsError("invalid-argument","Telefon numarası geçersiz.");return digits}
 function loginEmail(phone){return`p${phone}@login.fatihcayevi.local`}
 function cleanPermissions(value){const permissions=[...new Set(Array.isArray(value)?value:[])].filter(x=>PANEL_IDS.includes(x));if(!permissions.length)throw new HttpsError("invalid-argument","En az bir panel yetkisi seçin.");if(permissions.includes("personnel")&&permissions.length!==1)throw new HttpsError("invalid-argument","Personel yetkisi diğer yetkilerle birlikte seçilemez.");return permissions}
@@ -82,7 +84,7 @@ exports.configureOwnerLogin=onCall({region:"europe-west1",cors:true},async reque
 
 exports.registerLoginDevice=onCall({region:"europe-west1",cors:true},async request=>{
   const uid=request.auth?.uid;if(!uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const deviceId=String(request.data?.deviceId||"");if(!/^[a-f0-9]{36}$/.test(deviceId))throw new HttpsError("invalid-argument","Cihaz kimliği geçersiz.");
-  let role="",profile=null,limit=1;if(uid===OWNER_UID){role="owner";profile=(await db.doc(`staffUsers/${uid}`).get()).data()||{};limit=7}else{const staff=await db.doc(`staffUsers/${uid}`).get();if(staff.exists&&staff.data().active!==false){role="staff";profile=staff.data();limit=cleanDeviceLimit(profile.deviceLimit,1)}else{const merchant=await db.doc(`merchantProfiles/${uid}`).get();if(!merchant.exists||merchant.data().active===false)throw new HttpsError("permission-denied","Hesap aktif değil.");role="merchant";profile=merchant.data();limit=4}}
+  let role="",profile=null,limit=1;if(uid===OWNER_UID){role="owner";profile=(await db.doc(`staffUsers/${uid}`).get()).data()||{};limit=7}else{const staff=await db.doc(`staffUsers/${uid}`).get();if(staff.exists&&staff.data().active!==false){role="staff";profile=staff.data();if(personnelAccessLocked(profile))throw new HttpsError("failed-precondition","Bugünkü çalışmanızı tamamladınız. Yeni işletme günü saat 05.00'te açılır.");limit=cleanDeviceLimit(profile.deviceLimit,1)}else{const merchant=await db.doc(`merchantProfiles/${uid}`).get();if(!merchant.exists||merchant.data().active===false)throw new HttpsError("permission-denied","Hesap aktif değil.");role="merchant";profile=merchant.data();limit=4}}
   const accountRef=db.doc(`accountDevices/${uid}`),deviceRef=accountRef.collection("devices").doc(deviceId),now=Date.now();await db.runTransaction(async tx=>{const account=await tx.get(accountRef),current=Array.isArray(account.data()?.deviceIds)?account.data().deviceIds:[];if(!current.includes(deviceId)&&current.length>=limit)throw new HttpsError("resource-exhausted",`Bu hesap en fazla ${limit} cihazda kullanılabilir.`);const ids=current.includes(deviceId)?current:[...current,deviceId];tx.set(accountRef,{uid,role,deviceLimit:limit,deviceIds:ids,updatedAtMs:now,updatedAt:FieldValue.serverTimestamp()},{merge:true});tx.set(deviceRef,{deviceId,deviceName:String(request.data?.deviceName||"Cihaz").slice(0,40),deviceType:String(request.data?.deviceType||"bilinmiyor").slice(0,20),platform:String(request.data?.platform||"").slice(0,50),userAgent:String(request.data?.userAgent||"").slice(0,240),firstSeenAtMs:now,lastSeenAtMs:now,lastSeenAt:FieldValue.serverTimestamp()},{merge:true})});return{allowed:true,role,deviceLimit:limit}
 });
 exports.clearLoginDevices=onCall({region:"europe-west1",cors:true},async request=>{
@@ -95,6 +97,21 @@ exports.clearLoginDevices=onCall({region:"europe-west1",cors:true},async request
   await getAuth().revokeRefreshTokens(targetUid).catch(error=>logger.warn("Oturumlar iptal edilemedi.",{targetUid,error:error.message}));
   await auditUserAction("clear-login-devices",targetUid,request.auth.uid,{cleared:devices.size});
   return{cleared:devices.size,verified:true}
+});
+
+exports.finishOwnPersonnelWorkday=onCall({region:"europe-west1",cors:true},async request=>{
+  const uid=request.auth?.uid;if(!uid||uid===OWNER_UID)throw new HttpsError("permission-denied","Bu işlem yalnızca personel hesabına özeldir.");
+  const ref=db.doc(`staffUsers/${uid}`),snap=await ref.get(),data=snap.data()||{},permissions=Array.isArray(data.permissions)?data.permissions:[];
+  if(!snap.exists||data.active!==true||!permissions.includes("personnel"))throw new HttpsError("permission-denied","Aktif personel hesabı bulunamadı.");
+  const now=Date.now(),lockedUntilMs=nextPersonnelAccessAtMs(now);await ref.set({personnelAccessLockedUntilMs:lockedUntilMs,personnelAccessLockedAtMs:now,personnelAccessLockedAt:FieldValue.serverTimestamp(),personnelAccessLockedBy:uid},{merge:true});
+  await auditUserAction("personnel-workday-finish",uid,uid,{lockedUntilMs});await getAuth().revokeRefreshTokens(uid).catch(error=>logger.warn("Personel oturumları iptal edilemedi.",{uid,error:error.message}));return{locked:true,lockedUntilMs}
+});
+
+exports.resetPersonnelDailyAccess=onCall({region:"europe-west1",cors:true},async request=>{
+  requireOwner(request);const uid=String(request.data?.uid||"");if(!uid||uid===OWNER_UID)throw new HttpsError("invalid-argument","Personel hesabı geçersiz.");
+  const ref=db.doc(`staffUsers/${uid}`),snap=await ref.get(),data=snap.data()||{},permissions=Array.isArray(data.permissions)?data.permissions:[];if(!snap.exists||!permissions.includes("personnel"))throw new HttpsError("failed-precondition","Personel hesabı bulunamadı.");
+  await ref.set({personnelAccessLockedUntilMs:FieldValue.delete(),personnelAccessLockedAtMs:FieldValue.delete(),personnelAccessLockedAt:FieldValue.delete(),personnelAccessLockedBy:FieldValue.delete(),personnelAccessResetAtMs:Date.now(),personnelAccessResetAt:FieldValue.serverTimestamp(),personnelAccessResetBy:request.auth.uid},{merge:true});
+  await auditUserAction("personnel-daily-access-reset",uid,request.auth.uid);return{reset:true}
 });
 
 exports.readSystemBackup=onCall({region:"europe-west1",cors:true,memory:"256MiB"},async request=>{
@@ -392,14 +409,6 @@ async function stockInOpenPurchaseFlow(stockItemId){
   const inItems=items=>Array.isArray(items)&&items.some(item=>String(item.stockItemId||"")===String(stockItemId)&&(Number(item.receivedQuantity)||0)<(Number(item.orderedQuantity)||0));
   return inItems(draftSnap.data()?.items)||ordersSnap.docs.some(item=>inItems(item.data()?.items))
 }
-
-// Bu ad daha once HTTPS fonksiyonu olarak yayinlandigi icin tipini koruyoruz.
-// Boylece Firebase, HTTPS -> Firestore tetikleyicisi donusumunu reddetmez.
-exports.cleanDisabledAdminBusinessReminders=onCall({region:"europe-west1",cors:true},async request=>{
-  requireOwner(request);const after=await ownerReminderPreferences(),types=[];
-  if(after.purchaseOrders===false)types.push("purchase-order-stale");if(after.stockCritical===false)types.push("stock-critical");if(after.stockEmpty===false)types.push("stock-empty");if(after.stockCount===false)types.push("stock-count");if(after.paymentDue===false)types.push("payment-due");if(after.paymentOverdue===false)types.push("payment-overdue");
-  await clearBusinessNotifications(types);return{cleaned:true,types}
-});
 
 exports.cleanupDisabledAdminReminderNotificationsOnWrite=onDocumentWritten({document:"adminReminderPreferences/{uid}",region:"europe-west1"},async event=>{
   if(event.params.uid!==OWNER_UID)return;const after=event.data?.after.data()||{},types=[];

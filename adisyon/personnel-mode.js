@@ -1,14 +1,14 @@
 import{getApps}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,doc,getDoc,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
-import{getManagementProfile,normalizePhone}from"../assets/js/admin-access.js?v=324";
+import{getManagementProfile,isPersonnelAccessLocked,normalizePhone}from"../assets/js/admin-access.js?v=346";
 import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js?v=327";
 
 const app=getApps()[0],auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
-const submitProfileChange=httpsCallable(functions,"submitOwnStaffProfileChange"),completePasswordChange=httpsCallable(functions,"completeOwnStaffPasswordChange");
+const submitProfileChange=httpsCallable(functions,"submitOwnStaffProfileChange"),completePasswordChange=httpsCallable(functions,"completeOwnStaffPasswordChange"),finishPersonnelWorkday=httpsCallable(functions,"finishOwnPersonnelWorkday");
 let profile,currentUser,currentRequest,person,attendance=[],payments=[],toastTimer;
-let teaNotificationBusy=false;
+let teaNotificationBusy=false,endingWorkday=false;
 
 onSnapshot(doc(db,"adminTea","state"),snapshot=>{
   const open=snapshot.data()?.serviceOpen!==false,button=$("toggleTeaService");
@@ -27,6 +27,7 @@ onAuthStateChanged(auth,async user=>{
   new MutationObserver(removePersonnelHeaderLinks).observe(document.querySelector(".header-actions"),{childList:true,subtree:true});
   ["cashCountButton","closeDayButton"].forEach(id=>$(id).hidden=true);
   document.querySelectorAll(".personnel-only").forEach(element=>element.hidden=false);
+  const logout=$("logoutButton");logout.title="İşi Bitir ve Çık";logout.setAttribute("aria-label","İşi Bitir ve Çık");logout.onclick=finishAndLockPersonnelDay;
   watchOwnSettings(user.uid);
   if(!profile.personnelId)return;
   onSnapshot(query(collection(db,"adminPersonnel"),where("linkedUserUid","==",user.uid)),snapshot=>{person=snapshot.docs[0]?{id:snapshot.docs[0].id,...snapshot.docs[0].data()}:null;renderWageTracking()});
@@ -60,8 +61,16 @@ function recordDate(item){
 }
 
 function watchOwnSettings(uid){
-  onSnapshot(doc(db,"staffUsers",uid),snapshot=>{if(snapshot.exists())profile={...profile,...snapshot.data(),uid}});
+  onSnapshot(doc(db,"staffUsers",uid),async snapshot=>{if(!snapshot.exists())return;profile={...profile,...snapshot.data(),uid};if(isPersonnelAccessLocked(profile)&&!endingWorkday){await signOut(auth);location.replace("../yonetici-giris.html?reason=personnel-day-locked")}});
   onSnapshot(doc(db,"staffProfileChangeRequests",uid),snapshot=>{currentRequest=snapshot.exists()?{id:snapshot.id,...snapshot.data()}:null;renderRequestState()});
+}
+
+async function finishAndLockPersonnelDay(){
+  if(endingWorkday||!currentUser)return;
+  if(!confirm("İşinizi bitirip çıkış yaptığınızda saat 05.00'e kadar tekrar giriş yapamazsınız. Devam edilsin mi?"))return;
+  const button=$("logoutButton");endingWorkday=true;button.disabled=true;
+  try{await finishPersonnelWorkday();await signOut(auth);location.replace("../yonetici-giris.html?reason=personnel-day-locked")}
+  catch(error){console.error(error);endingWorkday=false;button.disabled=false;toast("Çıkış kilidi kaydedilemedi. İnternet bağlantısını kontrol edin.")}
 }
 
 function openPersonnelSettings(){
