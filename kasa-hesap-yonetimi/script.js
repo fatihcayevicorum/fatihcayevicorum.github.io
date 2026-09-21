@@ -1,4 +1,3 @@
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, deleteDoc, doc, getFirestore, onSnapshot, serverTimestamp, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -129,47 +128,3 @@ function printReport(){const d=reportData(),title=monthName(d.month),content=$("
 function groupAmounts(rows,key){const map=new Map;for(const row of rows){const name=key(row);map.set(name,(map.get(name)||0)+number(row.amount))}return[...map].sort((a,b)=>b[1]-a[1])}function groupProducts(items){const map=new Map;for(const c of items)for(const p of c.products||[]){const name=p.name||"Ürün",v=map.get(name)||{quantity:0,total:0};v.quantity+=number(p.quantity);v.total+=number(p.total);map.set(name,v)}return[...map].sort((a,b)=>b[1].quantity-a[1].quantity)}function reportSection(title,rows,empty){return`<section class="report-section"><h3>${title}</h3>${rows.length?rows.map(([name,total])=>`<div class="report-row"><span>${esc(name)}</span><b>${money(total)}</b></div>`).join(""):`<p class="empty">${empty}</p>`}</section>`}function productSection(rows){return`<section class="report-section"><h3>Ürün Satışları</h3>${rows.length?rows.map(([name,v])=>`<div class="report-row"><span>${esc(name)}</span><b>${v.quantity} adet <small>• ${money(v.total)}</small></b></div>`).join(""):'<p class="empty">Bu ay kapatılmış ürün satışı yok.</p>'}</section>`}
 
 function sortMovements(a,b){return number(b.createdAtMs)-number(a.createdAtMs)||String(b.id).localeCompare(String(a.id))}function movementIcon(m){return m.automatic?"fa-lock":m.type==="income"?"fa-arrow-trend-up":m.type==="expense"?"fa-arrow-trend-down":"fa-right-left"}function sign(m){return m.type==="income"?"+":m.type==="expense"?"−":"↔"}function typeName(t){return t==="income"?"Gelir":t==="expense"?"Gider":"Aktarım"}function accountText(m){const n={cash:"Nakit",bank:"Banka Havalesi",card:"Kart / POS",creditCard:"Kredi Kartı",bankLoan:"Banka Kredisi"};return m.type==="transfer"?`${n[m.fromAccount]||""} → ${n[m.toAccount]||""}`:n[m.account]||""}function number(v){return Number(v)||0}function money(v){return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(number(v))}function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}function shiftDate(v,n){const d=new Date(`${v}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}function dateObject(v){return new Date(`${v}T12:00:00Z`)}function formatBusinessDate(v){return new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"}).format(dateObject(v))}function dayName(v){return new Intl.DateTimeFormat("tr-TR",{weekday:"long",timeZone:"UTC"}).format(dateObject(v))}function monthName(v){return new Intl.DateTimeFormat("tr-TR",{month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(`${v}-01T12:00:00Z`))}function formatTime(ms){return ms?new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"}).format(new Date(ms)):""}function updateClock(){const n=new Date();$("currentTime").textContent=n.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});$("currentDate").textContent=n.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit"})}function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}function toast(message){clearTimeout(toastTimer);$("toast").textContent=message;$("toast").classList.add("show");toastTimer=setTimeout(()=>$("toast").classList.remove("show"),3000)}
-
-
-// R349: one-record correction, with server-side owner and original-value checks.
-const correctLoanR349=httpsCallable(getFunctions(app,"europe-west1"),"correctAkbankLoanPaymentR349");
-let loanCorrectionBusy=false,loanCorrectionReady=false;
-onAuthStateChanged(auth,user=>{$("loanCorrectionButton").hidden=user?.uid!==ADMIN_UID});
-$("loanCorrectionButton").onclick=async()=>{
-  if(loanCorrectionBusy||auth.currentUser?.uid!==ADMIN_UID)return;
-  loanCorrectionReady=false;
-  $("applyLoanCorrection").disabled=true;
-  $("loanCorrectionStatus").textContent="Canlı kayıt kontrol ediliyor…";
-  $("loanCorrectionDialog").showModal();
-  loanCorrectionBusy=true;
-  try{
-    const {data}=await correctLoanR349({mode:"preview"});
-    if(data.status==="already-corrected")$("loanCorrectionStatus").textContent="Bu kayıt zaten düzeltildi. İkinci kez uygulanmayacak.";
-    else{
-      loanCorrectionReady=true;
-      $("loanCorrectionStatus").textContent="21.09.2026 • 11.234,55 TL: POS çıkışı aynı kalacak. Kredi kartı borcundaki yanlış 11.234,55 TL indirim kaldırılacak. Kayıt banka kredisi taksit ödemesine dönüşecek. Günler kapalı kalacak; eski kayıt bilgileri saklanacak.";
-      $("applyLoanCorrection").disabled=false;
-    }
-  }catch(error){$("loanCorrectionStatus").textContent=loanCorrectionError(error)}
-  finally{loanCorrectionBusy=false}
-};
-function loanCorrectionError(error){
-  const code=String(error?.code||"");
-  if(code.includes("not-found")||code.includes("unavailable")||code.includes("internal"))
-    return "İşlem doğrulanamadı. Functions dağıtımının tamamlandığını ve bağlantıyı kontrol edin. Tekrar açtığınızda kayıt durumu yeniden denetlenir.";
-  return error?.message||"İşlem doğrulanamadı; yeniden kontrol edin.";
-}
-$("cancelLoanCorrection").onclick=()=>{if(!loanCorrectionBusy)$("loanCorrectionDialog").close()};
-$("loanCorrectionDialog").addEventListener("cancel",event=>{if(loanCorrectionBusy)event.preventDefault()});
-$("applyLoanCorrection").onclick=async()=>{
-  if(loanCorrectionBusy||!loanCorrectionReady)return;
-  loanCorrectionBusy=true;loanCorrectionReady=false;
-  $("applyLoanCorrection").disabled=true;$("cancelLoanCorrection").disabled=true;
-  $("loanCorrectionStatus").textContent="Tek kayıt güvenli işlemle düzeltiliyor…";
-  try{
-    const {data}=await correctLoanR349({mode:"apply",confirmation:"AKBANK-20260921-11234.55"});
-    $("loanCorrectionStatus").textContent=data.status==="already-corrected"?"Kayıt zaten düzeltilmiş; tekrar işlem yapılmadı.":"Düzeltme tamamlandı. POS çıkışı korundu; kredi kartı borcuna yapılan yanlış etki kaldırıldı. 21 Eylül tarihini seçerek sonucu kontrol edin.";
-    render();
-  }catch(error){$("loanCorrectionStatus").textContent=loanCorrectionError(error)}
-  finally{loanCorrectionBusy=false;$("cancelLoanCorrection").disabled=false}
-};
