@@ -1,3 +1,4 @@
+import{systemConfirm}from"../assets/js/system-confirm.js";
 import{getApps}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,doc,getDoc,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -67,7 +68,11 @@ function watchOwnSettings(uid){
 
 async function finishAndLockPersonnelDay(){
   if(endingWorkday||!currentUser)return;
-  if(!confirm("İşinizi bitirip çıkış yaptığınızda saat 05.00'e kadar tekrar giriş yapamazsınız. Devam edilsin mi?"))return;
+  const dialog=$("systemConfirmDialog");
+  if(dialog?.open)return;
+  if(dialog)dialog.returnValue="";
+  if(!await systemConfirm({title:"İşi Bitir ve Çık",message:"İşinizi bitirip çıkış yaptığınızda saat 05.00'e kadar tekrar giriş yapamazsınız. Devam etmek istiyor musunuz?",confirmText:"İşi Bitir ve Çık",cancelText:"Vazgeç",danger:true}))return;
+  if(endingWorkday||!currentUser)return;
   const button=$("logoutButton");endingWorkday=true;button.disabled=true;
   try{await finishPersonnelWorkday();await signOut(auth);location.replace("../yonetici-giris.html?reason=personnel-day-locked")}
   catch(error){console.error(error);endingWorkday=false;button.disabled=false;toast("Çıkış kilidi kaydedilemedi. İnternet bağlantısını kontrol edin.")}
