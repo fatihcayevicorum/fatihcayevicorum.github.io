@@ -465,3 +465,39 @@ exports.checkAdminBusinessReminders=onSchedule({schedule:"every 30 minutes",regi
   const payments=await db.collection("adminPaymentReminders").where("status","==","pending").get();payments.docs.forEach(s=>{const x=s.data(),due=String(x.dueDate||"");if(!due||due>local.date)return;const overdue=due<local.date,type=overdue?"payment-overdue":"payment-due",key=overdue?"paymentOverdue":"paymentDue";if(preferences[key]===false)return;writes.push(putBusinessNotification(`${type}-${s.id}-${local.date}`,{type,preferenceKey:key,sourceId:s.id,title:overdue?"Geciken ödeme":"Bugünkü ödeme",body:`${String(x.name||"Ödeme")} • ${new Date(`${due}T12:00:00`).toLocaleDateString("tr-TR")}`,link:`/kasa-hesap-yonetimi/?reminder=${encodeURIComponent(s.id)}`}))});
   if(preferences.stockCount!==false&&local.day===lastDayOfMonth(local.year,local.month)&&local.hour===21&&local.minute>=30)writes.push(putBusinessNotification(`stock-count-${local.year}-${local.month}`,{type:"stock-count",preferenceKey:"stockCount",title:"Aylık stok sayımı",body:"Ay sonu stok sayımı zamanı. Lütfen stok sayımını yapın.",link:"/stok-yonetimi/"}));await Promise.allSettled(writes)
 });
+
+
+// R349: deliberately restricted to the verified 21 September loan payment.
+// The full original record is retained atomically inside the same backed-up document.
+exports.correctAkbankLoanPaymentR349=onCall({region:"europe-west1",cors:true},async request=>{
+  requireOwner(request);
+  const mode=request.data?.mode;
+  if(!["preview","apply"].includes(mode))throw new HttpsError("invalid-argument","İşlem türü geçersiz.");
+  if(mode==="apply"&&request.data?.confirmation!=="AKBANK-20260921-11234.55")throw new HttpsError("invalid-argument","Düzeltme onayı eksik.");
+  const ref=db.doc("adminCashMovements/d0SW4fjrPrewk4CrZn6k");
+  return db.runTransaction(async transaction=>{
+    const snap=await transaction.get(ref);
+    if(!snap.exists)throw new HttpsError("not-found","Düzeltilecek kayıt bulunamadı.");
+    const before=snap.data();
+    if(before.correctionR349?.version==="r349"){
+      if(before.toAccount!=="bankLoan")throw new HttpsError("failed-precondition","Düzeltilmiş kayıt sonradan değişmiş; yeniden inceleme gerekli.");
+      return{status:"already-corrected",amount:11234.55};
+    }
+    if(before.type!=="transfer"||before.fromAccount!=="card"||before.toAccount!=="creditCard"||
+      before.amount!==11234.55||before.businessDate!=="2026-09-21"||before.source!=="manual"||
+      before.automatic!==false||before.createdBy!==OWNER_UID||before.createdAtMs!==1789984315408||
+      before.updatedAtMs!==1789984315407||before.description!=="Akbank kredi ödmeesi"||
+      before.category!=="Hesap Aktarımı"||before.account!==""||before.correctionR349)
+      throw new HttpsError("failed-precondition","Kayıt incelenen yedekle uyuşmuyor. Hiçbir değişiklik yapılmadı.");
+    if(mode==="preview")return{status:"ready",amount:11234.55,date:before.businessDate,cardDebtIncrease:11234.55,posChange:0};
+    const now=Date.now();
+    transaction.update(ref,{
+      toAccount:"bankLoan",category:"Banka Kredisi Taksit Ödemesi",
+      description:"Akbank banka kredisi taksit ödemesi",
+      updatedAtMs:now,updatedAt:FieldValue.serverTimestamp(),updatedBy:request.auth.uid,
+      correctionR349:{version:"r349",reason:"Banka kredisi taksiti yanlışlıkla kredi kartı borç ödemesi olarak seçilmiş.",
+        before,correctedAtMs:now,correctedBy:request.auth.uid}
+    });
+    return{status:"corrected",amount:11234.55,cardDebtIncrease:11234.55,posChange:0};
+  });
+});
