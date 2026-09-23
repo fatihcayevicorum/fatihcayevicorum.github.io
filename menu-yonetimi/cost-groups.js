@@ -1,0 +1,27 @@
+import {portionCost,validateCostGroups} from '../assets/js/estimated-cost.js?v=364';
+export function setupCostGroups({db,auth,doc,onSnapshot,runTransaction,serverTimestamp,getCatalog,confirm,notify}){
+ const $=id=>document.getElementById(id),ref=doc(db,'adminAppSettings','analytics');
+ let saved=[],draft=[],revision=0,openedRevision=0,ready=false,busy=false,index=0;
+ const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const blank=(name='Yeni grup',price=1,grams=1,used=1,yieldCount=1)=>({id:crypto.randomUUID(),name,price,grams,used,yield:yieldCount,products:[]});
+ const presets=()=>[blank('Çay',345,1000,57.5,37.5),blank('Oralet',80,300,6,1),blank('Türk kahvesi',100,100,8,1)];
+ onSnapshot(ref,s=>{const data=s.data()||{},versions=data.estimatedCostVersions||[];saved=versions.at(-1)?.groups||[];revision=Number(data.estimatedCostRevision)||0;ready=true;},()=>{ready=false;notify('Maliyet ayarları okunamadı.');});
+ $('costGroupsButton').onclick=()=>{if(!ready)return notify('Maliyet bilgileri yükleniyor.');draft=structuredClone(saved.length?saved:presets());openedRevision=revision;index=0;$('costSearch').value='';render();$('costGroupsDialog').showModal();$('costGroupName').focus();};
+ const close=()=>{if(!busy)$('costGroupsDialog').close();};$('closeCostGroups').onclick=$('cancelCostGroups').onclick=close;
+ $('costGroupsDialog').addEventListener('cancel',e=>{if(busy)e.preventDefault();});
+ $('costGroupSelect').onchange=e=>{index=Number(e.target.value);render();};
+ $('newCostGroup').onclick=()=>{draft.push(blank());index=draft.length-1;render();$('costGroupName').focus();};
+ $('deleteCostGroup').onclick=async()=>{if(!draft[index])return;if(!await confirm({title:'Maliyet grubu kaldırılsın mı?',message:'Bu grubun yeni satışlar için maliyet bağlantısı kaldırılacak. Eski maliyet geçmişi korunacak.',confirmText:'Grubu Kaldır',danger:true}))return;draft.splice(index,1);index=Math.max(0,index-1);render();};
+ const fields={costGroupName:'name',costPrice:'price',costGrams:'grams',costUsed:'used',costYield:'yield'};
+ for(const[id,key]of Object.entries(fields))$(id).oninput=e=>{if(!draft[index])return;draft[index][key]=key==='name'?e.target.value:Number(e.target.value);preview();};
+ $('costSearch').oninput=renderProducts;
+ $('costProducts').onchange=e=>{const row=e.target.closest('[data-cost-product]'),g=draft[index];if(!row||!g)return;const id=row.dataset.costProduct;if(e.target.type==='checkbox'){g.products=g.products.filter(p=>p.id!==id);if(e.target.checked)g.products.push({id,factor:1});renderProducts();}else{const link=g.products.find(p=>p.id===id);if(link)link.factor=Number(e.target.value);}preview();};
+ $('selectCostProducts').onclick=()=>{const g=draft[index];if(!g)return;for(const p of visibleProducts())if(!taken(p.id)&&!g.products.some(x=>x.id===p.id))g.products.push({id:p.id,factor:1});renderProducts();preview();};
+ $('costGroupForm').onsubmit=async e=>{e.preventDefault();if(busy)return;try{validateCostGroups(draft);}catch(error){return notify(error.message);}busy=true;$('saveCostGroups').disabled=true;
+ try{await runTransaction(db,async tx=>{const snap=await tx.get(ref),data=snap.data()||{};if((Number(data.estimatedCostRevision)||0)!==openedRevision)throw new Error('Ayarlar başka bir cihazda değişti. Pencereyi kapatıp yeniden açın.');const versions=data.estimatedCostVersions||[],at=Math.max(Date.now(),Number(versions.at(-1)?.at||0)+1);tx.set(ref,{estimatedCostVersions:[...versions,{at,groups:structuredClone(draft)}],estimatedCostRevision:openedRevision+1,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});});$('costGroupsDialog').close();notify('Tahmini maliyet grupları kaydedildi.');}catch(error){notify(error.message?.includes('başka bir cihazda')?error.message:'Maliyetler kaydedilemedi. Bağlantıyı kontrol edin.');}finally{busy=false;$('saveCostGroups').disabled=false;}};
+ function taken(id){return draft.some((g,i)=>i!==index&&g.products.some(p=>p.id===id));}
+ function visibleProducts(){const q=$('costSearch').value.trim().toLocaleLowerCase('tr');return getCatalog().items.filter(p=>p.name.toLocaleLowerCase('tr').includes(q));}
+ function render(){const g=draft[index];$('costGroupSelect').innerHTML=draft.map((g,i)=>`<option value="${i}" ${i===index?'selected':''}>${escape(g.name)}</option>`).join('');$('costEditor').hidden=!g;for(const[id,key]of Object.entries(fields))$(id).value=g?.[key]??'';renderProducts();preview();}
+ function renderProducts(){const g=draft[index];$('costProducts').innerHTML=!g?'':visibleProducts().map(p=>{const link=g.products.find(x=>x.id===p.id),disabled=taken(p.id);return `<div class="cost-product" data-cost-product="${escape(p.id)}"><label><input type="checkbox" ${link?'checked':''} ${disabled?'disabled':''}><span>${escape(p.name)}${disabled?' · Başka gruba bağlı':''}</span></label><label class="cost-factor"><span>Katsayı</span><input aria-label="${escape(p.name)} katsayısı" type="number" min="0.01" step="any" value="${link?.factor||1}" ${!link?'disabled':''}></label></div>`;}).join('');}
+ function preview(){const g=draft[index],value=g?portionCost(g):NaN;$('costPreview').textContent=Number.isFinite(value)&&value>0?`Tahmini birim maliyet: ${value.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:4})} TL · ${g.products.length} ürün bağlı`:'Geçerli fiyat ve miktarları girin.';}
+}

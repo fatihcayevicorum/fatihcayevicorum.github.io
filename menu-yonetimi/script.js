@@ -1,6 +1,7 @@
+import {setupCostGroups} from "./cost-groups.js?v=364";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, doc, getFirestore, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, runTransaction, doc, getFirestore, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 import { systemConfirm } from "../assets/js/system-confirm.js";
@@ -50,6 +51,7 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
     subscribeCatalog();
+    setupCostGroups({db:database,auth,doc,onSnapshot,runTransaction,serverTimestamp,getCatalog:()=>catalog,confirm:systemConfirm,notify:showToast});
     onSnapshot(collection(database,"adminStockItems"),snap=>{recipeStocks=snap.docs.map(d=>({id:d.id,...d.data()}));stocksReady=true;renderRecipe();},()=>{stocksReady=false;document.getElementById("recipeStatus").textContent="Stok bilgileri alınamadı. Reçete kaydedilemez.";});
 });
 
