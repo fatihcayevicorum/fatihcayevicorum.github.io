@@ -1,3 +1,4 @@
+import {stockLinks} from "../assets/js/stock-recipe.js?v=363";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, doc, getFirestore, onSnapshot, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -19,7 +20,7 @@ tabs.addEventListener("click",e=>{const b=e.target.closest("[data-internal-categ
 grid.addEventListener("click",e=>{const b=e.target.closest("[data-internal-product]");if(!b||busy)return;const product=availableProducts().find(x=>x.id===b.dataset.internalProduct);if(!product)return;const line=cart.find(x=>x.id===product.id);line?line.quantity++:cart.push({id:product.id,name:product.name,quantity:1});search.value="";persistPending();render();requestAnimationFrame(()=>search.focus({preventScroll:true}))});
 items.addEventListener("click",e=>{const b=e.target.closest("[data-internal-qty]");if(!b||busy)return;const line=cart.find(x=>x.id===b.dataset.internalId);if(!line)return;line.quantity+=Number(b.dataset.internalQty);if(line.quantity<=0)cart=cart.filter(x=>x.id!==line.id);persistPending();render()});
 onAuthStateChanged(auth,async user=>{if(!await hasPanelAccess(user,db,"pos"))return;onSnapshot(settingsRef,s=>{businessDate=String(s.data()?.currentBusinessDate||today());restorePending();render()},error=>{console.warn(error);restorePending();render()});onSnapshot(menuRef,s=>{const d=s.exists()?s.data():{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[]};render()},error=>notify("Menü bilgileri alınamadı."));onSnapshot(stockCol,s=>{stocks=s.docs.map(x=>({id:x.id,...x.data()}));render()},error=>notify("Stok bilgileri alınamadı."))});
-function availableProducts(){return catalog.items.filter(p=>p.available!==false&&stocks.some(s=>s.active!==false&&s.automaticDeduction&&s.linkedMenuItemId===p.id)).sort((a,b)=>String(a.name).localeCompare(String(b.name),"tr"))}
+function availableProducts(){return catalog.items.filter(p=>p.available!==false&&stockLinks(p.id,catalog,stocks).length>0).sort((a,b)=>String(a.name).localeCompare(String(b.name),"tr"))}
 function render(){renderProducts();renderCart()}
 function renderProducts(){const all=availableProducts(),q=search.value.trim().toLocaleLowerCase("tr-TR"),cats=catalog.categories.filter(c=>all.some(p=>p.categoryId===c.id));tabs.innerHTML=`<button class="${category==="all"?"active":""}" data-internal-category="all">Tümü</button>`+cats.map(c=>`<button class="${category===c.id?"active":""}" data-internal-category="${esc(c.id)}">${esc(c.name)}</button>`).join("");const filtered=all.filter(p=>(category==="all"||p.categoryId===category)&&(!q||String(p.name).toLocaleLowerCase("tr-TR").includes(q)));empty.hidden=filtered.length>0;grid.innerHTML=filtered.map(p=>`<button type="button" class="product internal-product-button" data-internal-product="${esc(p.id)}"><strong>${esc(p.name)}</strong></button>`).join("")}
 function renderCart(){const qty=cart.reduce((s,x)=>s+x.quantity,0);cartEmpty.hidden=cart.length>0;items.innerHTML=cart.map(x=>`<article class="order-item"><div><strong>${esc(x.name)}</strong><small>Dahili tüketim</small></div><div class="qty"><button type="button" data-internal-id="${esc(x.id)}" data-internal-qty="-1">−</button><b>${x.quantity}</b><button type="button" data-internal-id="${esc(x.id)}" data-internal-qty="1">+</button></div></article>`).join("");total.textContent=qty;save.disabled=!qty||busy}
@@ -29,16 +30,20 @@ async function saveConsumption(){
   try{
     const submittedCart=cart.map(x=>({...x})),submittedNote=note.value.trim(),ref=doc(consumptionCol),date=businessDate,createdAtMs=Date.now();
     await runTransaction(db,async tx=>{
-      const deductions=[];
+      const deductions=[],running=new Map();
       for(const line of submittedCart){
-        const links=stocks.filter(s=>s.active!==false&&s.automaticDeduction&&s.linkedMenuItemId===line.id);
+        const links=stockLinks(line.id,catalog,stocks);
         if(!links.length)throw new Error("stock-link");
         for(const stock of links){
+          if(stock.unavailable)throw new Error("stock-link");
           const sr=doc(stockCol,stock.id),snap=await tx.get(sr);
           if(!snap.exists())throw new Error("stock-missing");
-          const fresh=snap.data(),amount=line.quantity*(Number(stock.deductionAmount)||1),before=Number(fresh.quantity)||0,unitCost=Number(fresh.unitCost)||Number(stock.unitCost)||0;
+          if(stock.recipeIngredient&&(snap.data().active===false||snap.data().stockTrackingEnabled===false))throw new Error("stock-link");
+          const fresh=snap.data(),amount=line.quantity*(Number(stock.deductionAmount)||1),before=running.has(stock.id)?running.get(stock.id):(Number(fresh.quantity)||0),unitCost=Number(fresh.unitCost)||Number(stock.unitCost)||0;
+          if(!Number.isFinite(amount)||amount<=0)throw new Error("stock-link");
+          running.set(stock.id,Math.round((before-amount)*1e8)/1e8);
           if(before<amount)throw new Error(`insufficient:${stock.name||line.name}:${before}:${amount}`);
-          deductions.push({line,stock,sr,amount,before,after:before-amount,unitCost,totalCost:amount*unitCost});
+          deductions.push({line,stock,sr,amount,before,after:running.get(stock.id),unitCost,totalCost:amount*unitCost});
         }
       }
       const costByItem=new Map();

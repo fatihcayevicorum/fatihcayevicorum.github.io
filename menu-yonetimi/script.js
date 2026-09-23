@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { doc, getFirestore, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, doc, getFirestore, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 import { systemConfirm } from "../assets/js/system-confirm.js";
@@ -18,6 +18,7 @@ const elements = {
 };
 
 let catalog = { categories: [], items: [], bundleRules: [] };
+let recipeStocks=[], recipeDraft=[], stocksReady=false;
 let isBusy = false;
 let unsubscribeCatalog = null;
 let toastTimer = null;
@@ -49,6 +50,7 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
     subscribeCatalog();
+    onSnapshot(collection(database,"adminStockItems"),snap=>{recipeStocks=snap.docs.map(d=>({id:d.id,...d.data()}));stocksReady=true;renderRecipe();},()=>{stocksReady=false;document.getElementById("recipeStatus").textContent="Stok bilgileri alınamadı. Reçete kaydedilemez.";});
 });
 
 function subscribeCatalog() {
@@ -95,11 +97,14 @@ async function importMenuFile(event) {
 async function saveProduct(event) {
     event.preventDefault();
     if (isBusy || !catalog.categories.length) { showToast("Önce en az bir kategori ekleyin."); return; }
+    if(!stocksReady){showToast("Stok bilgileri yüklenmeden ürün kaydedilemez.");return;}
+    if(recipeDraft.some(r=>!r.stockItemId||!Number.isFinite(Number(r.amount))||Number(r.amount)<=0||!recipeStocks.some(s=>s.id===r.stockItemId&&s.active!==false&&s.stockTrackingEnabled!==false))){showToast("Her malzeme için stok takibi açık bir ürün ve sıfırdan büyük miktar seçin.");return;}
+    if(new Set(recipeDraft.map(r=>r.stockItemId)).size!==recipeDraft.length){showToast("Aynı malzemeyi tek satırda tanımlayın.");return;}
     const product = {
         id: elements.editingProductId.value || createId("product"),
         name: elements.productName.value.trim(), categoryId: elements.productCategory.value,
         price: Math.max(0, Number(elements.productPrice.value) || 0), order: Number(elements.productOrder.value) || 0,
-        description: elements.productDescription.value.trim(), available: elements.productAvailable.checked
+        description: elements.productDescription.value.trim(), available: elements.productAvailable.checked, recipe:recipeDraft.map(r=>({stockItemId:r.stockItemId,amount:Number(r.amount)}))
     };
     if (!product.name || !product.categoryId) return;
     const existingIndex = catalog.items.findIndex((item) => item.id === product.id);
@@ -108,7 +113,11 @@ async function saveProduct(event) {
         const existingStockAvailable = catalog.items[existingIndex].stockAvailable;
         items[existingIndex] = { ...product, ...(typeof existingStockAvailable === "boolean" ? { stockAvailable: existingStockAvailable } : {}) };
     } else items.push(product);
-    const succeeded = await persistCatalog({ ...catalog, items }, existingIndex >= 0 ? "Ürün güncellendi." : "Ürün eklendi.");
+    const ingredientIds=new Set(product.recipe.map(r=>r.stockItemId));
+    const conflicts=catalog.bundleRules.filter(r=>r.active!==false&&r.triggerProductId===product.id&&recipeStocks.some(s=>ingredientIds.has(s.id)&&s.linkedMenuItemId===r.rewardProductId));
+    if(conflicts.length&&!await systemConfirm({title:"Malzeme kampanyaları kapatılsın mı?",message:"Aynı malzemenin iki kez düşmemesi için şu kampanyalar kapatılacak (açık adisyonlardaki eski ikram satırlarını ayrıca kaldırın): "+conflicts.map(r=>r.name).join(", "),confirmText:"Kapat ve Reçeteyi Kaydet"}))return;
+    const bundleRules=catalog.bundleRules.map(r=>conflicts.some(c=>c.id===r.id)?{...r,active:false}:r);
+    const succeeded = await persistCatalog({ ...catalog, items, bundleRules }, existingIndex >= 0 ? "Ürün güncellendi." : "Ürün eklendi.");
     if (succeeded) resetProductForm();
 }
 
@@ -118,6 +127,7 @@ async function saveBundleRule(event) {
     const triggerProductId = elements.bundleTriggerProduct.value, rewardProductId = elements.bundleRewardProduct.value;
     if (!triggerProductId || !rewardProductId) { showToast("Ana ürün ve bağlı ürünü seçin."); return; }
     if (triggerProductId === rewardProductId) { showToast("Ana ürün ile bağlı ürün aynı olamaz."); return; }
+    if(recipeCampaignConflict(triggerProductId,rewardProductId)){showToast("Bu malzeme zaten ana ürünün reçetesinde. İkinci kez düşmemesi için kampanyaya eklenemez.");return;}
     const startDate = elements.bundleStartDate.value, endDate = elements.bundleEndDate.value;
     if (startDate && endDate && startDate > endDate) { showToast("Bitiş tarihi başlangıçtan önce olamaz."); return; }
     const rule = {
@@ -136,6 +146,7 @@ async function saveBundleRule(event) {
 async function handleBundleAction(event) {
     const edit = event.target.closest("[data-edit-bundle]"), toggle = event.target.closest("[data-toggle-bundle]"), remove = event.target.closest("[data-delete-bundle]");
     if (edit) beginEditBundle(edit.dataset.editBundle);
+    if(toggle){const rule=catalog.bundleRules.find(r=>r.id===toggle.dataset.toggleBundle);if(rule&&!rule.active&&recipeCampaignConflict(rule.triggerProductId,rule.rewardProductId)){showToast("Bağlı ürün zaten reçetede; kampanya açılamaz.");return;}}
     if (toggle) persistCatalog({ ...catalog, bundleRules: catalog.bundleRules.map((rule) => rule.id === toggle.dataset.toggleBundle ? { ...rule, active: !rule.active } : rule) }, "Kural durumu güncellendi.");
     if (remove && await systemConfirm({title:"Bağlı Ürün Kuralı Silinsin mi?",message:"Bu kampanya ve otomatik eşleştirme kuralı menüden kaldırılacak.",confirmText:"Kuralı Sil",danger:true})) persistCatalog({ ...catalog, bundleRules: catalog.bundleRules.filter((rule) => rule.id !== remove.dataset.deleteBundle) }, "Kural silindi.");
 }
@@ -201,6 +212,7 @@ function handleProductAction(event) {
 function beginEditProduct(productId) {
     const item = catalog.items.find((product) => product.id === productId); if (!item) return;
     elements.editingProductId.value = item.id; elements.productName.value = item.name; elements.productCategory.value = item.categoryId; elements.productPrice.value = String(item.price); elements.productOrder.value = String(item.order); elements.productDescription.value = item.description; elements.productAvailable.checked = item.available;
+    recipeDraft=(item.recipe||[]).map(r=>({...r}));renderRecipe();
     elements.productFormTitle.textContent = "Ürünü Düzenle"; elements.cancelEditButton.hidden = false; elements.saveProductButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Değişiklikleri Kaydet';
     elements.productForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -260,8 +272,8 @@ function renderProducts() {
     elements.productList.innerHTML = items.map((item) => { const category = catalog.categories.find((entry) => entry.id === item.categoryId); return `<article class="product-item"><div class="product-copy"><strong>${escapeHtml(item.name)} — ${formatPrice(item.price)}</strong><span>${escapeHtml(item.description || "Açıklama yok")}</span><div class="product-meta"><span>${escapeHtml(category?.name || "Kategorisiz")}</span><span>Sıra ${item.order}</span><span class="${item.available ? "" : "off"}">${item.available ? "Aktif" : "Pasif"}</span></div></div><div class="item-actions"><button class="icon-button" type="button" data-toggle-product="${escapeHtml(item.id)}" aria-label="Aktiflik durumunu değiştir"><i class="fa-solid ${item.available ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i></button><button class="icon-button" type="button" data-edit-product="${escapeHtml(item.id)}" aria-label="Ürünü düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button><button class="icon-button is-danger" type="button" data-delete-product="${escapeHtml(item.id)}" aria-label="Ürünü sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`; }).join("");
 }
 
-function resetProductForm() { elements.productForm.reset(); elements.editingProductId.value = ""; elements.productOrder.value = "0"; elements.productAvailable.checked = true; elements.productFormTitle.textContent = "Yeni Ürün"; elements.cancelEditButton.hidden = true; elements.saveProductButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ürünü Kaydet'; }
-function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0, customerVisible:x.customerVisible!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false, ...(typeof x.stockAvailable==="boolean"?{stockAvailable:x.stockAvailable}:{}) })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), bundleRules: (Array.isArray(data.bundleRules) ? data.bundleRules : []).map((x)=>({ id:String(x.id), name:String(x.name||"Bağlı ürün kuralı"), triggerProductId:String(x.triggerProductId), triggerQuantity:clampQuantity(x.triggerQuantity), rewardProductId:String(x.rewardProductId), rewardQuantity:clampQuantity(x.rewardQuantity), priceMode:["free","regular","fixed"].includes(x.priceMode)?x.priceMode:"free", fixedPrice:Math.max(0,Number(x.fixedPrice)||0), startDate:String(x.startDate||""), endDate:String(x.endDate||""), active:x.active!==false })) }; }
+function resetProductForm() { recipeDraft=[];renderRecipe(); elements.productForm.reset(); elements.editingProductId.value = ""; elements.productOrder.value = "0"; elements.productAvailable.checked = true; elements.productFormTitle.textContent = "Yeni Ürün"; elements.cancelEditButton.hidden = true; elements.saveProductButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ürünü Kaydet'; }
+function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0, customerVisible:x.customerVisible!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false, recipe:Array.isArray(x.recipe)?x.recipe.map(r=>({stockItemId:String(r.stockItemId||""),amount:Number(r.amount)})):[], ...(typeof x.stockAvailable==="boolean"?{stockAvailable:x.stockAvailable}:{}) })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), bundleRules: (Array.isArray(data.bundleRules) ? data.bundleRules : []).map((x)=>({ id:String(x.id), name:String(x.name||"Bağlı ürün kuralı"), triggerProductId:String(x.triggerProductId), triggerQuantity:clampQuantity(x.triggerQuantity), rewardProductId:String(x.rewardProductId), rewardQuantity:clampQuantity(x.rewardQuantity), priceMode:["free","regular","fixed"].includes(x.priceMode)?x.priceMode:"free", fixedPrice:Math.max(0,Number(x.fixedPrice)||0), startDate:String(x.startDate||""), endDate:String(x.endDate||""), active:x.active!==false })) }; }
 function validateImport(data) { if (!data || !Array.isArray(data.categories) || !Array.isArray(data.items) || !data.categories.length || !data.items.length) throw new Error("invalid-menu-file"); const normalized = normalizeCatalog(data); const categoryIds = new Set(normalized.categories.map((category) => category.id)); const uniqueCategoryIds = new Set(); const uniqueItemIds = new Set(); for (const category of normalized.categories) { if (!category.id || !category.name.trim() || uniqueCategoryIds.has(category.id)) throw new Error("invalid-category"); uniqueCategoryIds.add(category.id); } for (const item of normalized.items) { if (!item.id || !item.name.trim() || !categoryIds.has(item.categoryId) || uniqueItemIds.has(item.id) || !Number.isFinite(item.price)) throw new Error("invalid-item"); uniqueItemIds.add(item.id); } return normalized; }
 function setBusy(value) { isBusy = value; elements.saveProductButton.disabled = value; elements.saveBundleButton.disabled = value; elements.setupCoffeeWater.disabled = value; }
 function setConnection(connected) { elements.saveStatus.classList.toggle("is-error", !connected); elements.saveStatus.innerHTML = connected ? '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Canlı bağlantı' : '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Bağlantı yok'; }
@@ -270,3 +282,13 @@ function formatPrice(value) { return new Intl.NumberFormat("tr-TR", { style:"cur
 function createId(prefix) { return `${prefix}-${window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`; }
 function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (character) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" })[character]); }
 function updateClock() { const now = new Date(); elements.currentDate.textContent = new Intl.DateTimeFormat("tr-TR", { day:"2-digit", month:"2-digit", year:"2-digit", timeZone:"Europe/Istanbul" }).format(now).replace(/\./g, "/"); elements.currentTime.textContent = new Intl.DateTimeFormat("tr-TR", { hour:"2-digit", minute:"2-digit", hour12:false, timeZone:"Europe/Istanbul" }).format(now); }
+
+document.getElementById("addRecipeRow").addEventListener("click",()=>{recipeDraft.push({stockItemId:"",amount:1});renderRecipe();});
+document.getElementById("recipeRows").addEventListener("change",e=>{const row=e.target.closest("[data-recipe-row]");if(!row)return;const r=recipeDraft[Number(row.dataset.recipeRow)];if(e.target.matches("select")){r.stockItemId=e.target.value;renderRecipe();}else r.amount=e.target.value;});
+document.getElementById("recipeRows").addEventListener("click",e=>{const b=e.target.closest("[data-remove-recipe]");if(b){recipeDraft.splice(Number(b.dataset.removeRecipe),1);renderRecipe();}});
+function renderRecipe(){
+ document.getElementById("recipeStatus").textContent=stocksReady?"Miktarlar stoktaki birimle aynıdır. Yarım limon: 0,5 adet. Malzemelerin stok takibi açık olmalı.":"Stok bilgileri yükleniyor…";
+ document.getElementById("recipeRows").innerHTML=recipeDraft.map((r,i)=>{const stock=recipeStocks.find(s=>s.id===r.stockItemId);return `<div class="recipe-row" data-recipe-row="${i}"><label><span>Malzeme</span><select required aria-label="Malzeme"><option value="">Stok ürünü seçin</option>${!stock&&r.stockItemId?`<option selected value="${escapeHtml(r.stockItemId)}">Bulunamayan stok ürünü</option>`:""}${recipeStocks.filter(s=>s.active!==false||s.id===r.stockItemId).map(s=>`<option value="${escapeHtml(s.id)}" ${r.stockItemId===s.id?"selected":""}>${escapeHtml(s.name)} (${escapeHtml(s.unit||"adet")})${s.stockTrackingEnabled===false?" • Takip kapalı":""}</option>`).join("")}</select></label><label><span>${escapeHtml(stock?.unit||"Miktar")}</span><input aria-label="Malzeme miktarı" type="number" min="0.000001" step="any" required value="${escapeHtml(r.amount)}"></label><button type="button" class="icon-button is-danger" data-remove-recipe="${i}" aria-label="Malzemeyi kaldır">×</button></div>`}).join("");
+}
+
+function recipeCampaignConflict(trigger,reward){return(catalog.items.find(p=>p.id===trigger)?.recipe||[]).some(r=>recipeStocks.some(s=>s.id===r.stockItemId&&s.linkedMenuItemId===reward));}

@@ -437,7 +437,7 @@ async function syncPublicMenuStockAvailability(menuItemIds=[]){
   const stockSnap=await db.collection("adminStockItems").get(),targets=new Set(menuItemIds.filter(Boolean).map(String)),all=!targets.size,linked=new Map();
   for(const stockDoc of stockSnap.docs){const stock=stockDoc.data()||{},menuId=String(stock.linkedMenuItemId||"");if(!menuId||stock.active===false||stock.automaticDeduction!==true)continue;if(!linked.has(menuId))linked.set(menuId,[]);linked.get(menuId).push(stock)}
   const catalogRef=db.doc("publicMenu/catalog");
-  await db.runTransaction(async tx=>{const snap=await tx.get(catalogRef);if(!snap.exists)return;const data=snap.data()||{},items=Array.isArray(data.items)?data.items:[];let changed=false;const next=items.map(item=>{const id=String(item.id||"");if(!all&&!targets.has(id))return item;const stocks=linked.get(id)||[];if(!stocks.length){if(typeof item.stockAvailable!=="boolean")return item;const copy={...item};delete copy.stockAvailable;changed=true;return copy}const stockAvailable=stocks.every(stock=>(Number(stock.quantity)||0)>=Math.max(0.0001,Number(stock.deductionAmount)||1));if(item.stockAvailable===stockAvailable)return item;changed=true;return{...item,stockAvailable}});if(changed)tx.update(catalogRef,{items:next,stockAvailabilityUpdatedAt:FieldValue.serverTimestamp()})})
+  await db.runTransaction(async tx=>{const snap=await tx.get(catalogRef);if(!snap.exists)return;const data=snap.data()||{},items=Array.isArray(data.items)?data.items:[];let changed=false;const next=items.map(item=>{const id=String(item.id||"");if(!all&&!targets.has(id)&&!item.recipe?.length)return item;const stocks=Array.isArray(item.recipe)&&item.recipe.length?item.recipe.map(r=>{const d=stockSnap.docs.find(d=>d.id===r.stockItemId),stock=d?.data();return stock&&stock.active!==false&&stock.stockTrackingEnabled!==false?{...stock,deductionAmount:Number(r.amount)}:{quantity:0,deductionAmount:1}}):(linked.get(id)||[]);if(!stocks.length){if(typeof item.stockAvailable!=="boolean")return item;const copy={...item};delete copy.stockAvailable;changed=true;return copy}const stockAvailable=stocks.every(stock=>(Number(stock.quantity)||0)>=Math.max(0.0001,Number(stock.deductionAmount)||1));if(item.stockAvailable===stockAvailable)return item;changed=true;return{...item,stockAvailable}});if(changed)tx.update(catalogRef,{items:next,stockAvailabilityUpdatedAt:FieldValue.serverTimestamp()})})
 }
 
 exports.syncPublicMenuStockOnWrite=onDocumentWritten({document:"adminStockItems/{stockItemId}",region:"europe-west1"},async event=>{
@@ -500,4 +500,10 @@ exports.correctAkbankLoanPaymentR349=onCall({region:"europe-west1",cors:true},as
     });
     return{status:"corrected",amount:11234.55,cardDebtIncrease:11234.55,posChange:0};
   });
+});
+
+exports.syncRecipeMenuOnWrite=onDocumentWritten({document:"publicMenu/catalog",region:"europe-west1"},async event=>{
+ const before=event.data?.before.data()?.items||[],after=event.data?.after.data()?.items||[];
+ const recipes=items=>JSON.stringify(items.map(i=>({id:i.id,recipe:i.recipe||[]})));
+ if(recipes(before)!==recipes(after))await syncPublicMenuStockAvailability();
 });

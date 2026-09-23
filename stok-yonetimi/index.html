@@ -88,14 +88,14 @@
         <div class="product-lookup-preview" id="productLookupPreview" hidden><img id="lookupProductImage" alt=""><div><strong id="lookupProductTitle"></strong><span id="lookupProductInfo"></span></div></div>
         <label class="dialog-field"><span>Ürün adı</span><input id="independentName" maxlength="90" placeholder="Ürün adını yazın"></label>
         <div class="compact-grid"><label class="dialog-field"><span>Marka <small>(isteğe bağlı)</small></span><input id="independentBrand" maxlength="70"></label><label class="dialog-field"><span>Barkod <small>(isteğe bağlı)</small></span><input id="independentBarcode" inputmode="numeric" maxlength="32"></label></div>
-        <input id="independentImageUrl" type="hidden">
+        <input id="independentImageUrl" type="hidden"><label class="dialog-field"><span>Stok birimi</span><select id="ingredientStockUnit"><option value="adet">Adet</option><option value="gr">Gram</option><option value="kg">Kilogram</option><option value="ml">Mililitre</option><option value="lt">Litre</option></select></label><p class="notice">Malzemeyi menüdeki reçeteye bağlayabilirsiniz. Aşağıdaki koli miktarı seçtiğiniz birim cinsindendir; örneğin 1 kg tuz için gram seçip 1000 girin.</p>
       </div>
       <div class="compact-grid">
-        <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
+        <label class="dialog-field"><span>Bir Kolideki Miktar</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
         <label class="dialog-field"><span>Kritik stok uyarısı</span><input id="warningThreshold" type="number" min="0" max="999999" step="1" value="10" required></label>
       </div>
       <label class="dialog-field"><span>Bir koli alış fiyatı (TL)</span><input id="newPackageCost" type="number" min=".01" max="99999999" step=".01" inputmode="decimal" required placeholder="Örn. 240"></label>
-      <p class="notice" id="productTypeNotice">Bu bağımsız ürün yalnız stokta takip edilir; adisyonda otomatik düşmez.</p>
+      <p class="notice" id="productTypeNotice">Bu malzeme menüde reçeteye bağlandığında otomatik stoktan düşer.</p>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-plus"></i> Ürünü Stok Takibine Ekle</button>
       <div class="defined-products" id="definedProducts"></div>
     </form>
@@ -111,7 +111,7 @@
           <span class="stock-count-icon"><i class="fa-solid fa-box-open"></i></span>
           <div><small id="stockCountCategoryName">Kategori</small><h3 id="stockCountProductName">Ürün</h3><p>Sistemde görünen: <b id="stockCountSystemQuantity">0 Adet</b></p></div>
         </div>
-        <label class="dialog-field stock-count-field"><span>Bulduğun miktarı yaz</span><div><input id="stockCountAmount" type="number" min="0" max="999999" step="1" inputmode="numeric" autocomplete="off" placeholder="Örn. 10"><button id="addStockCountAmount" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Ekle</button></div></label>
+        <label class="dialog-field stock-count-field"><span>Bulduğun miktarı yaz</span><div><input id="stockCountAmount" type="number" min="0" max="999999" step="any" inputmode="decimal" autocomplete="off" placeholder="Örn. 10"><button id="addStockCountAmount" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Ekle</button></div></label>
         <div class="stock-count-total"><span>Bu ürün için sayılan</span><strong id="stockCountRunningTotal">0 Adet</strong><small id="stockCountExpression">Henüz miktar eklenmedi.</small></div>
         <div class="stock-count-entry-actions"><button id="undoStockCountAmount" class="secondary-button" type="button" disabled><i class="fa-solid fa-rotate-left"></i> Son Ekleneni Geri Al</button><button id="nextStockCountProduct" class="primary-button" type="button">Diğer Ürüne Geç <i class="fa-solid fa-arrow-right"></i></button></div>
       </section>
@@ -130,7 +130,7 @@
       <input id="entryStockId" type="hidden">
       <div class="compact-grid">
         <label class="dialog-field"><span>Koli sayısı</span><input id="packageCount" type="number" min=".001" max="999999" step=".001" required placeholder="Örn. 2"></label>
-        <label class="dialog-field"><span>Bir Kolideki Adet</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
+        <label class="dialog-field"><span>Bir Kolideki Miktar</span><input id="entryUnitsPerPackage" type="number" min="1" max="999999" step="1" required></label>
       </div>
       <label class="dialog-field"><span>Bir koli alış fiyatı (TL)</span><input id="purchaseTotal" type="number" min=".01" max="99999999" step=".01" required placeholder="Örn. 300"></label>
       <label class="cash-expense-toggle"><input id="addCashExpense" type="checkbox"><span><b>Kasaya gider olarak da ekle</b><small>Stok alımıyla birlikte Kasa ve Hesaplara otomatik işlenir.</small></span></label>
@@ -225,7 +225,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=277"></script>
+  <script type="module" src="script.js?v=363"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>

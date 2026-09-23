@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=363">
     <link rel="stylesheet" href="../assets/css/management-forms.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
@@ -68,6 +68,10 @@
                     <label><span>Görünme sırası</span><input id="productOrder" type="number" min="0" max="999" value="0"></label>
                     <label class="full-field"><span>Kısa açıklama <small>(isteğe bağlı)</small></span><textarea id="productDescription" maxlength="140" rows="3" placeholder="Ürünle ilgili kısa bilgi"></textarea></label>
                 </div>
+                <section class="recipe-editor"><h3>Reçete / Kullanılan malzemeler</h3>
+                <p>Bir ürün için kullanılacak miktarları girin. Adisyon kapanınca malzemeler stoktan düşer; ikram satırı oluşmaz. Reçete varsa bu ürünün eski doğrudan stok bağlantısının yerine kullanılır.</p>
+                <div id="recipeRows"></div><button id="addRecipeRow" class="secondary-button" type="button">+ Malzeme ekle</button>
+                <p id="recipeStatus" role="status">Stok bilgileri yükleniyor…</p></section>
                 <label class="switch-row"><input id="productAvailable" type="checkbox" checked><span>Ürün aktif; müşteri menüsünde ve adisyonda görünsün</span></label>
                 <div class="form-actions">
                     <button class="secondary-button" id="cancelEditButton" type="button" hidden>Vazgeç</button>
@@ -120,7 +124,7 @@
     <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="../assets/js/management-forms.js?v=2"></script>
-    <script type="module" src="script.js?v=250"></script>
+    <script type="module" src="script.js?v=363"></script>
     
     <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
