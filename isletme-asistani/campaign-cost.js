@@ -1,6 +1,7 @@
 import {estimatedCostFor} from '../assets/js/estimated-cost.js?v=364';
 function materialLinks(product,stocks){return (product?.recipe||[]).map(r=>({id:r.stockItemId,stock:stocks.find(s=>s.id===r.stockItemId),amount:Number(r.amount)}));}
-function totalMaterials(links){let cost=0,missing=!links.length;for(const l of links){const unit=Number(l.stock?.unitCost);if(!Number.isFinite(unit)||unit<=0||!Number.isFinite(l.amount)||l.amount<=0){missing=true;continue;}cost+=unit*l.amount;}return{cost,missing};}
+function stockUnitCost(stock){const current=Number(stock?.unitCost)||0;if(current>0)return current;const units=Math.max(1,Number(stock?.unitsPerPackage)||1);if(stock?.purchasePriceBasis==='package')return (Number(stock.purchasePrice)||0)/units;if(stock?.purchasePriceBasis==='unit')return Number(stock.purchasePrice)||0;return 0;}
+function totalMaterials(links){let cost=0,missing=!links.length;for(const l of links){const unit=stockUnitCost(l.stock);if(!Number.isFinite(unit)||unit<=0||!Number.isFinite(l.amount)||l.amount<=0){missing=true;continue;}cost+=unit*l.amount;}return{cost,missing};}
 export function productMaterialCost(id,sale,catalog,stocks,settings){
  const product=catalog.items.find(p=>p.id===id),estimate=estimatedCostFor(id,sale,settings),mode=product?.costMode||'auto';
  const useRecipe=mode==='recipe'||mode==='combined'||(mode==='auto'&&!estimate&&product?.recipe?.length);
@@ -20,9 +21,16 @@ export function campaignGiftCosts(sale,catalog,stocks,settings={}){
   const product=catalog.items.find(i=>i.id===gift.id),links=product?.recipe?.length?materialLinks(product,stocks):stocks.filter(s=>s.linkedMenuItemId===gift.id).map(stock=>({id:stock.id,stock,amount:Number(stock.deductionAmount)||1}));
   const row=result.get(parentId)||{cost:0,missing:false,parentQuantity,materials:new Map()};
   if(!links.length)row.missing=true;
-  for(const l of links){const unit=Number(l.stock?.unitCost);if(!Number.isFinite(unit)||unit<=0||!Number.isFinite(l.amount)||l.amount<=0){row.missing=true;continue;}const amount=Number(gift.quantity)*l.amount,old=row.materials.get(l.id);row.materials.set(l.id,{amount:(old?.amount||0)+amount,unit});}
+  for(const l of links){const unit=stockUnitCost(l.stock);if(!Number.isFinite(unit)||unit<=0||!Number.isFinite(l.amount)||l.amount<=0){row.missing=true;continue;}const amount=Number(gift.quantity)*l.amount,old=row.materials.get(l.id);row.materials.set(l.id,{amount:(old?.amount||0)+amount,unit});}
   result.set(parentId,row);
  }
  for(const[id,row]of result){const base=productMaterialCost(id,sale,catalog,stocks,settings),covered=new Map();for(const l of base.ingredients)covered.set(l.id,(covered.get(l.id)||0)+l.amount*row.parentQuantity);for(const[stockId,m]of row.materials)row.cost+=Math.max(0,m.amount-(covered.get(stockId)||0))*m.unit;delete row.materials;}
  return result;
+}
+
+// Match Stock Management's legacy purchase-price normalization.
+export function normalizedStockCost(stock){
+ const units=Math.max(1,Number(stock.unitsPerPackage)||1);
+ const legacy=stock.purchasePriceBasis==='package'?(Number(stock.purchasePrice)||0)/units:stock.purchasePriceBasis==='unit'?(Number(stock.purchasePrice)||0):0;
+ return {...stock,unitCost:(Number(stock.unitCost)||0)||legacy};
 }
