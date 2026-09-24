@@ -427,6 +427,7 @@ exports.notifyAdminStockLevel=onDocumentUpdated({document:"adminStockItems/{stoc
   const criticalRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/stock-critical-${id}`),emptyRef=db.doc(`${ADMIN_IN_APP_NOTIFICATION_COLLECTION}/stock-empty-${id}`);
   if(after.active===false||after.stockTrackingEnabled===false){await Promise.allSettled([criticalRef.delete(),emptyRef.delete()]);return}
   const quantity=Number(after.quantity)||0,threshold=Math.max(0,Number(after.warningThreshold)||0),oldQuantity=Number(before.quantity)||0,oldThreshold=Math.max(0,Number(before.warningThreshold)||0);
+  if(after.stockAlertsEnabled===false){await Promise.allSettled([criticalRef.delete(),emptyRef.delete()]);return}
   const state=quantity<=0?"empty":quantity<=threshold?"critical":"normal",oldState=oldQuantity<=0?"empty":oldQuantity<=oldThreshold?"critical":"normal";if(state===oldState)return;
   if(state==="normal"){await Promise.allSettled([criticalRef.delete(),emptyRef.delete()]);return}
   const name=String(after.name||"Ürün").slice(0,90),empty=state==="empty",preferences=await ownerReminderPreferences(),enabled=empty?preferences.stockEmpty!==false:preferences.stockCritical!==false;if(!enabled||await stockInOpenPurchaseFlow(id)){await Promise.allSettled([criticalRef.delete(),emptyRef.delete()]);return}await Promise.allSettled([empty?criticalRef.delete():emptyRef.delete()]);
