@@ -1,14 +1,17 @@
 import {estimatedCostFor} from '../assets/js/estimated-cost.js?v=364';
 function materialLinks(product,stocks){return (product?.recipe||[]).map(r=>({id:r.stockItemId,stock:stocks.find(s=>s.id===r.stockItemId),amount:Number(r.amount)}));}
-function stockUnitCost(stock){const units=Math.max(1,Number(stock?.unitsPerPackage)||1),latest=Number(stock?.purchasePrice)||0;if(latest>0&&stock?.purchasePriceBasis==='package')return latest/units;if(latest>0&&stock?.purchasePriceBasis==='unit')return latest;const current=Number(stock?.unitCost)||0;return current>0?current:0;}
+function stockUnitCost(stock){const units=Math.max(1,Number(stock?.unitsPerPackage)||1),lastPackage=Number(stock?.lastPurchasePackageCost)||((Number(stock?.lastPurchaseTotal)||0)/(Math.max(1,Number(stock?.lastPurchasePackageCount)||1))),latest=lastPackage>0?lastPackage:Number(stock?.purchasePrice)||0;if(latest>0)return stock?.purchasePriceBasis==='unit'?latest:latest/units;const current=Number(stock?.unitCost)||0;return current>0?current:0;}
 function totalMaterials(links){let cost=0,missing=!links.length;for(const l of links){const unit=stockUnitCost(l.stock);if(!Number.isFinite(unit)||unit<=0||!Number.isFinite(l.amount)||l.amount<=0){missing=true;continue;}cost+=unit*l.amount;}return{cost,missing};}
 export function productMaterialCost(id,sale,catalog,stocks,settings){
  const product=catalog.items.find(p=>p.id===id),estimate=estimatedCostFor(id,sale,settings),mode=product?.costMode||'auto';
  const useRecipe=mode==='recipe'||mode==='combined'||(mode==='auto'&&!estimate&&product?.recipe?.length);
  const ingredients=useRecipe?materialLinks(product,stocks):[];
  if(useRecipe){const recipe=totalMaterials(ingredients),base=mode==='combined'?estimate?.unitCost||0:0;return{unitCost:base+recipe.cost,missing:recipe.missing||(mode==='combined'&&!estimate),estimated:true,ingredients};}
- if(mode==='estimate'||estimate)return{unitCost:estimate?.unitCost||0,missing:!estimate,estimated:true,ingredients:[]};
- const links=stocks.filter(s=>s.active!==false&&s.linkedMenuItemId===id).map(stock=>({stock,amount:Number(stock.deductionAmount)||1}));const direct=totalMaterials(links);return{unitCost:direct.cost,missing:direct.missing,estimated:false,ingredients:[]};
+ const links=stocks.filter(s=>s.active!==false&&s.linkedMenuItemId===id).map(stock=>({stock,amount:Number(stock.deductionAmount)||1}));
+ if(mode==='estimate'&&!links.length)return{unitCost:estimate?.unitCost||0,missing:!estimate,estimated:true,ingredients:[]};
+ if(links.length){const direct=totalMaterials(links);return{unitCost:direct.cost,missing:direct.missing,estimated:false,ingredients:[]};}
+ if(estimate)return{unitCost:estimate.unitCost,missing:false,estimated:true,ingredients:[]};
+ return{unitCost:0,missing:true,estimated:false,ingredients:[]};
 }
 // Actual campaign gifts only. Recipe overlap is counted once in the cost report.
 export function campaignGiftCosts(sale,catalog,stocks,settings={}){
@@ -31,6 +34,6 @@ export function campaignGiftCosts(sale,catalog,stocks,settings={}){
 // Match Stock Management's legacy purchase-price normalization.
 export function normalizedStockCost(stock){
  const units=Math.max(1,Number(stock.unitsPerPackage)||1);
- const latest=stock.purchasePriceBasis==='package'?(Number(stock.purchasePrice)||0)/units:stock.purchasePriceBasis==='unit'?(Number(stock.purchasePrice)||0):0;
+ const packageCost=Number(stock.lastPurchasePackageCost)||((Number(stock.lastPurchaseTotal)||0)/(Math.max(1,Number(stock.lastPurchasePackageCount)||1))), latest=packageCost>0?(stock.purchasePriceBasis==='unit'?packageCost:packageCost/units):stock.purchasePriceBasis==='package'?(Number(stock.purchasePrice)||0)/units:stock.purchasePriceBasis==='unit'?(Number(stock.purchasePrice)||0):0;
  return {...stock,unitCost:latest>0?latest:(Number(stock.unitCost)||0)};
 }
