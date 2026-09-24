@@ -1,6 +1,6 @@
 import {estimatedCostFor} from '../assets/js/estimated-cost.js?v=364';
 function materialLinks(product,stocks){return (product?.recipe||[]).map(r=>({id:r.stockItemId,stock:stocks.find(s=>s.id===r.stockItemId),amount:Number(r.amount)}));}
-function stockUnitCost(stock){const units=Math.max(1,Number(stock?.unitsPerPackage)||1),lastPackage=Number(stock?.lastPurchasePackageCost)||((Number(stock?.lastPurchaseTotal)||0)/(Math.max(1,Number(stock?.lastPurchasePackageCount)||1))),latest=lastPackage>0?lastPackage:Number(stock?.purchasePrice)||0;if(latest>0)return stock?.purchasePriceBasis==='unit'?latest:latest/units;const current=Number(stock?.unitCost)||0;return current>0?current:0;}
+function stockUnitCost(stock){const current=Number(stock?.unitCost)||0;if(current>0)return current;const units=Math.max(1,Number(stock?.unitsPerPackage)||1),lastPackage=Number(stock?.lastPurchasePackageCost)||((Number(stock?.lastPurchaseTotal)||0)/(Math.max(1,Number(stock?.lastPurchasePackageCount)||1))),latest=lastPackage>0?lastPackage:Number(stock?.purchasePrice)||0;if(latest>0)return stock?.purchasePriceBasis==='unit'?latest:latest/units;return 0;}
 function totalMaterials(links){let cost=0,missing=!links.length;for(const l of links){const unit=stockUnitCost(l.stock);if(!Number.isFinite(unit)||unit<=0||!Number.isFinite(l.amount)||l.amount<=0){missing=true;continue;}cost+=unit*l.amount;}return{cost,missing};}
 export function productMaterialCost(id,sale,catalog,stocks,settings){
  const product=catalog.items.find(p=>p.id===id),estimate=estimatedCostFor(id,sale,settings),mode=product?.costMode||'auto';
@@ -34,6 +34,6 @@ export function campaignGiftCosts(sale,catalog,stocks,settings={}){
 // Match Stock Management's legacy purchase-price normalization.
 export function normalizedStockCost(stock){
  const units=Math.max(1,Number(stock.unitsPerPackage)||1);
- const packageCost=Number(stock.lastPurchasePackageCost)||((Number(stock.lastPurchaseTotal)||0)/(Math.max(1,Number(stock.lastPurchasePackageCount)||1))), latest=packageCost>0?(stock.purchasePriceBasis==='unit'?packageCost:packageCost/units):stock.purchasePriceBasis==='package'?(Number(stock.purchasePrice)||0)/units:stock.purchasePriceBasis==='unit'?(Number(stock.purchasePrice)||0):0;
- return {...stock,unitCost:latest>0?latest:(Number(stock.unitCost)||0)};
+ const current=Number(stock.unitCost)||0, packageCost=Number(stock.lastPurchasePackageCost)||((Number(stock.lastPurchaseTotal)||0)/(Math.max(1,Number(stock.lastPurchasePackageCount)||1))), latest=packageCost>0?(stock.purchasePriceBasis==='unit'?packageCost:packageCost/units):stock.purchasePriceBasis==='package'?(Number(stock.purchasePrice)||0)/units:stock.purchasePriceBasis==='unit'?(Number(stock.purchasePrice)||0):0;
+ return {...stock,unitCost:current>0?current:latest};
 }
