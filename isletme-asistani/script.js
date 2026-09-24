@@ -1,4 +1,4 @@
-import {campaignGiftCosts,productMaterialCost,normalizedStockCost} from "./campaign-cost.js?v=367";
+import {campaignGiftCosts,productMaterialCost,normalizedStockCost} from "./campaign-cost.js?v=371";
 import {estimatedCostFor} from "../assets/js/estimated-cost.js?v=364";
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
