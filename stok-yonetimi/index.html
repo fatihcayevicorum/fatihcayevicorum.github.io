@@ -94,7 +94,7 @@
         <label class="dialog-field"><span>Bir Kolideki Miktar</span><input id="defaultUnitsPerPackage" type="number" min="1" max="999999" step="1" value="24" required></label>
         <label class="dialog-field"><span>Kritik stok uyarısı</span><input id="warningThreshold" type="number" min="0" max="999999" step="1" value="10" required></label>
       </div>
-      <label class="dialog-field"><span>Bir koli alış fiyatı (TL)</span><input id="newPackageCost" type="number" min=".01" max="99999999" step=".01" inputmode="decimal" required placeholder="Örn. 240"></label>
+      <label class="dialog-field"><span>Bir koli alış fiyatı (TL) <small>(isteğe bağlı)</small></span><input id="newPackageCost" type="number" min=".01" max="99999999" step=".01" inputmode="decimal" placeholder="Gerçek alışta girebilirsiniz"></label>
       <p class="notice" id="productTypeNotice">Bu malzeme menüde reçeteye bağlandığında otomatik stoktan düşer.</p>
       <button class="primary-button full-button" type="submit"><i class="fa-solid fa-plus"></i> Ürünü Stok Takibine Ekle</button>
       <div class="defined-products" id="definedProducts"></div>
@@ -187,7 +187,7 @@
   <dialog id="missingCostDialog" class="missing-cost-dialog">
     <div class="dialog-body">
       <div class="dialog-heading"><div><p class="kicker">Sermaye hesabı</p><h2>Alış Fiyatı Eksik Ürünler</h2></div><button class="icon-button" type="button" data-close="missingCostDialog"><i class="fa-solid fa-xmark"></i></button></div>
-      <p class="notice">Bir kolinin toplam alış fiyatını girin. Sistem kolideki adet üzerinden birim maliyeti hesaplar ve mevcut stok miktarına uygular. Bu işlem stok miktarını, kasayı veya stok hareketlerini değiştirmez.</p>
+      <p class="notice">Koli fiyatını biliyorsanız girin. Bilmiyorsanız boş bırakabilirsiniz; ürün stokta oluşturulur ancak tahmini maliyet hesaplara katılmaz. Gerçek alımda fiyatı girmeniz yeterlidir.</p>
       <div class="missing-cost-list" id="missingCostList"></div>
       <button id="saveMissingCostsButton" class="primary-button full-button" type="button"><i class="fa-solid fa-floppy-disk"></i> Alış Fiyatlarını Kaydet</button>
     </div>
@@ -227,7 +227,7 @@
   <footer>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</footer>
   <div class="toast" id="toast"></div>
   <script src="../assets/js/management-forms.js?v=1"></script>
-  <script type="module" src="script.js?v=369"></script>
+  <script type="module" src="script.js?v=370"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
   <script src="../assets/js/panel-scroll.js?v=2"></script>
