@@ -849,3 +849,27 @@ button:focus:not(:focus-visible) {
   .org-stage .org-account-card .org-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
   .org-stage #orgExportPdf{min-width:0}
 }
+
+/* R385: organizasyon masası turuncu, hesap özeti sabit sütunlu tek tablo. */
+.table-card.occupied.organization-table{border-color:#e58a20;background:linear-gradient(145deg,#f29b2f,#c96a12);color:#fff;box-shadow:0 9px 20px rgba(190,94,12,.27)}
+.table-card.occupied.organization-table .table-open,.table-card.occupied.organization-table .table-open>i,.table-card.occupied.organization-table .table-open>span,.table-card.occupied.organization-table .table-open>b,.table-card.occupied.organization-table .table-open>small{color:#fff}
+.table-card.occupied.organization-table .table-open small{opacity:.94}
+.org-stage .org-account-items{display:block!important;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:auto}
+.org-account-head,.org-account-line{display:grid;grid-template-columns:minmax(190px,1fr) 56px 105px 90px 115px;align-items:center;gap:8px}
+.org-account-head{position:sticky;top:0;z-index:2;min-height:34px;padding:6px 10px;border-bottom:1px solid var(--line);background:#f4e9de;color:var(--muted);font-size:.64rem;font-weight:700}
+.org-account-head span:not(:first-child){text-align:center}
+.org-account-line{min-height:48px;padding:7px 10px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:#fff;font-size:.76rem}
+.org-account-line:last-child{border-bottom:0}
+.org-account-name{display:-webkit-box;min-width:0;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;white-space:normal;line-height:1.25}
+.org-account-qty,.org-account-unit,.org-account-discount{text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+.org-account-line>[data-org-line-total]{min-width:0;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--red)}
+.org-account-discount .org-inline-discount{display:flex;grid-column:auto;align-items:center;justify-content:center;gap:3px;margin:0;white-space:nowrap}
+.org-account-discount .org-inline-discount[hidden]{display:none!important}
+.org-account-discount .org-inline-discount input{width:58px;height:34px;padding:0 5px;text-align:center;font-variant-numeric:tabular-nums}
+@media(max-width:420px){
+  .org-account-head,.org-account-line{grid-template-columns:minmax(66px,1fr) 34px 72px 54px 72px;gap:2px}
+  .org-account-head{padding:5px 4px;font-size:.53rem}
+  .org-account-line{padding:6px 4px;font-size:.58rem}
+  .org-account-discount .org-inline-discount{gap:1px}
+  .org-account-discount .org-inline-discount input{width:42px;height:31px;padding:0 2px;font-size:.58rem}
+}
