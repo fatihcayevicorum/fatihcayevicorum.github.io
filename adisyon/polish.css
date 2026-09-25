@@ -784,3 +784,44 @@ button:focus:not(:focus-visible) {
 .org-clear-discount{width:100%;margin-top:10px}
 @media(max-width:700px){.org-bottom-actions{grid-template-columns:1fr 1fr}.org-bottom-actions .danger{grid-column:1/-1}.org-summary-items{grid-template-columns:repeat(2,minmax(0,1fr))}.org-summary-card{max-height:92vh}.org-account-card{max-height:92vh}.org-bottom-actions .org-summary-button{font-size:.7rem}}
 @media(max-width:420px){.org-summary-items{grid-template-columns:1fr}.org-quick-qty{gap:4px}.org-quick-qty button{height:44px}.org-discount-choices{grid-template-columns:1fr}}
+
+/* R383: kompakt organizasyon adisyonu ve içeriği kayan pencereler. */
+.order-dialog.organization-dialog{width:min(96vw,980px)}
+.order-dialog.organization-dialog .pos-layout{display:flex;flex-direction:column;height:min(70vh,620px);min-height:430px;overflow:hidden;gap:10px}
+.order-dialog.organization-dialog .products{height:auto;min-height:0;flex:1;display:flex;flex-direction:column}
+.order-dialog.organization-dialog .order{height:auto;min-height:0;flex:none;padding:9px 12px}
+.order-dialog.organization-dialog .product-grid{grid-template-columns:repeat(5,minmax(0,1fr));min-height:0;overflow-y:auto}
+.order-dialog.organization-dialog .product{min-height:86px;padding:12px}
+.organization-mode .pos-search-row{grid-template-columns:minmax(0,1fr);margin-bottom:2px}
+.organization-mode:not(.org-search-open) .pos-search-row{display:none}
+.organization-mode .pos-barcode-button{display:none}
+.org-product-controls .org-tools{display:flex;gap:7px}
+.org-tools #orgSearchToggle{width:40px;min-width:40px;padding:0}
+.org-summary-card,.org-account-card{width:min(96vw,980px)!important}
+.org-summary-card{max-height:78vh}
+.org-summary-items{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));overflow-y:auto}
+.org-summary-line{grid-template-columns:minmax(0,1fr) auto;align-items:center;min-height:62px;padding:7px 9px}
+.org-summary-line>div:first-child{min-width:0}
+.org-summary-line strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.org-line-actions{grid-column:auto;justify-content:flex-end;flex-wrap:nowrap;gap:3px}
+.org-line-actions button{min-width:30px;min-height:36px;padding:0 6px}
+.org-account-card{max-height:78vh;display:flex;flex-direction:column;overflow:hidden}
+.org-account-items{grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;min-height:0;max-height:none;flex:1;overflow-y:auto}
+.org-account-line{grid-template-columns:minmax(0,1fr) 78px auto;gap:3px 6px;min-height:66px;padding:8px 10px}
+.org-account-line strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.org-account-line b{text-align:right;white-space:nowrap}
+.org-account-line small{grid-column:1/-1;color:var(--muted);font-size:.65rem}
+.org-account-line .org-inline-discount{grid-column:2;display:flex;align-items:center;gap:3px;margin:0;white-space:nowrap}
+.org-account-line .org-inline-discount[hidden]{display:none!important}
+.org-inline-discount input{width:56px;height:34px;padding:0 5px}
+.org-account-card .org-summary-totals,.org-account-card .org-product-discount-editor,.org-account-card .org-actions{flex:none}
+@media(max-width:700px){
+  .order-dialog.organization-dialog{width:98vw}
+  .order-dialog.organization-dialog .pos-layout{height:min(78vh,690px);min-height:0}
+  .order-dialog.organization-dialog .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .order-dialog.organization-dialog .products{min-height:0}
+  .org-summary-card,.org-account-card{width:96vw!important;max-height:90vh}
+  .org-summary-items,.org-account-items{grid-template-columns:1fr}
+  .org-product-controls{align-items:flex-start}
+  .org-tabs button{padding:8px}
+}
