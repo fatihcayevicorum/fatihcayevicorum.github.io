@@ -873,3 +873,25 @@ button:focus:not(:focus-visible) {
   .org-account-discount .org-inline-discount{gap:1px}
   .org-account-discount .org-inline-discount input{width:42px;height:31px;padding:0 2px;font-size:.58rem}
 }
+
+/* R386: eklenen ürünler de hesap özetiyle aynı bütün tablo düzeninde. */
+.org-stage .org-summary-items{display:block!important;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:auto}
+.org-summary-head,.org-summary-line{display:grid;grid-template-columns:minmax(220px,1fr) 64px 80px 205px;align-items:center;gap:8px}
+.org-summary-head{position:sticky;top:0;z-index:2;min-height:34px;padding:6px 10px;border-bottom:1px solid var(--line);background:#f4e9de;color:var(--muted);font-size:.64rem;font-weight:700}
+.org-summary-head span:not(:first-child){text-align:center}
+.org-summary-line{min-height:48px;padding:6px 10px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:#fff;font-size:.76rem}
+.org-summary-line:last-child{border-bottom:0}
+.org-summary-name{min-width:0}
+.org-summary-name strong{display:-webkit-box;min-width:0;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;white-space:normal;line-height:1.25}
+.org-summary-name small{display:block;margin-top:2px;color:var(--green);font-size:.58rem;font-weight:700}
+.org-summary-qty,.org-summary-line time,.org-summary-automatic{text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+.org-summary-automatic{color:var(--muted);font-size:.62rem}
+.org-summary-line .org-line-actions{display:flex;grid-column:auto;justify-content:center;flex-wrap:nowrap;gap:4px}
+.org-summary-line .org-line-actions button{min-width:32px;min-height:34px;padding:0 7px}
+@media(max-width:420px){
+  .org-summary-head,.org-summary-line{grid-template-columns:minmax(66px,1fr) 32px 48px 142px;gap:2px}
+  .org-summary-head{padding:5px 4px;font-size:.53rem}
+  .org-summary-line{padding:6px 4px;font-size:.58rem}
+  .org-summary-line .org-line-actions{gap:2px}
+  .org-summary-line .org-line-actions button{min-width:27px;min-height:31px;padding:0 4px;font-size:.56rem}
+}
