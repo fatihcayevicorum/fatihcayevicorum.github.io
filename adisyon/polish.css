@@ -825,3 +825,27 @@ button:focus:not(:focus-visible) {
   .org-product-controls{align-items:flex-start}
   .org-tabs button{padding:8px}
 }
+
+/* R384: organizasyon akışı aynı adisyon penceresinde sabit ölçülü üç görünüm. */
+.order-dialog.organization-dialog .view{height:min(82vh,760px);display:flex;flex-direction:column;overflow:hidden}
+.order-dialog.organization-dialog .order-toolbar{flex:none}
+.order-dialog.organization-dialog .pos-layout{flex:1;height:auto;min-height:0}
+.organization-mode[data-org-page="items"] .pos-layout,.organization-mode[data-org-page="account"] .pos-layout{display:none!important}
+[hidden].org-stage{display:none!important}
+.org-stage{display:flex;flex:1;min-height:0}
+.org-stage .dialog-card{width:100%!important;height:100%;max-height:none;min-height:0;box-shadow:var(--shadow);border:1px solid var(--line);border-radius:18px;padding:16px}
+.org-stage .dialog-head{flex:none}
+.org-stage .org-summary-items,.org-stage .org-account-items{flex:1;min-height:0;max-height:none;overflow-y:auto;grid-auto-flow:row}
+.org-stage .org-summary-card .org-actions{display:flex;justify-content:flex-end;flex:none;margin-top:10px}
+.org-stage #orgExportPdf{flex:none;width:auto;min-width:185px}
+.org-stage .org-account-card .org-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;flex:none;margin-top:9px}
+.org-stage .org-account-card .org-actions button{width:100%;min-width:0;white-space:normal;line-height:1.2;padding:6px 8px}
+.org-stage .org-summary-totals{flex:none;margin:8px 0 0}
+.org-stage .org-product-discount-editor{flex:none}
+.organization-mode[data-org-page="items"] #orderMore,.organization-mode[data-org-page="account"] #orderMore{visibility:hidden}
+@media(max-width:700px){
+  .order-dialog.organization-dialog .view{height:86vh}
+  .org-stage .dialog-card{padding:10px}
+  .org-stage .org-account-card .org-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .org-stage #orgExportPdf{min-width:0}
+}
