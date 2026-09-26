@@ -4,7 +4,7 @@ import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasej
 import{collection,doc,getDoc,getFirestore,onSnapshot,query,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{getManagementProfile,isPersonnelAccessLocked,normalizePhone}from"../assets/js/admin-access.js?v=346";
-import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js?v=327";
+import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js?v=388";
 
 const app=getApps()[0],auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
 const submitProfileChange=httpsCallable(functions,"submitOwnStaffProfileChange"),completePasswordChange=httpsCallable(functions,"completeOwnStaffPasswordChange"),finishPersonnelWorkday=httpsCallable(functions,"finishOwnPersonnelWorkday");
