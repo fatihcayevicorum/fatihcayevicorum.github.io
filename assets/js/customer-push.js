@@ -16,7 +16,8 @@ async function worker(){if(!("serviceWorker"in navigator))throw new Error("unsup
 function deviceType(){const agent=navigator.userAgent;if(/iPad|Tablet|Android(?!.*Mobile)/i.test(agent))return"Tablet";if(/iPhone|Android.*Mobile|Mobile/i.test(agent))return"Telefon";return"Bilgisayar"}
 async function supported(){return location.protocol==="https:"&&"Notification"in window&&await isSupported()}
 async function token(){if(!await supported())throw new Error("unsupported");const permission=await Notification.requestPermission();if(permission!=="granted")throw new Error("permission-denied");const value=await getToken(getMessaging(app),{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:await worker()});if(!value)throw new Error("token-missing");return value}
-async function startForeground(){if(foregroundStarted||!await supported()||Notification.permission!=="granted")return;foregroundStarted=true;onMessage(getMessaging(app),async payload=>{const registration=await worker();await registration.showNotification(payload.notification?.title||"Fatih Çay Evi",{body:payload.notification?.body||"",icon:"/assets/icons/icon-192.png",badge:"/assets/icons/notification-badge-96.png",tag:payload.data?.tag||payload.data?.type||"fatih-customer",renotify:true,data:{link:payload.data?.link||"/"}})})}
+async function startForeground(){if(foregroundStarted||!await supported()||Notification.permission!=="granted")return;foregroundStarted=true;onMessage(getMessaging(app),async payload=>{const registration=await worker();await registration.showNotification(payload.notification?.title||payload.data?.title||"Fatih Çay Evi",{body:payload.notification?.body||payload.data?.body||"",icon:"/assets/icons/icon-192.png",badge:"/assets/icons/notification-badge-96.png",tag:payload.data?.tag||payload.data?.type||"fatih-customer",renotify:true,data:{link:payload.data?.link||"/"}})})}
+async function syncSavedDevice(){const value=preferences();if((!value.tea&&!value.campaigns)||!(await supported())||Notification.permission!=="granted")return;const oldToken=localStorage.getItem(TOKEN_KEY)||"",currentToken=await token();if(oldToken&&oldToken!==currentToken)await disableDevice({token:oldToken}).catch(()=>{});await registerDevice({token:currentToken,preferences:value,deviceType:deviceType(),platform:navigator.platform||"",userAgent:navigator.userAgent});localStorage.setItem(TOKEN_KEY,currentToken)}
 
 button?.addEventListener("click",()=>{const value=preferences();tea.checked=value.tea;campaigns.checked=value.campaigns;setStatus(value.tea||value.campaigns?"Bildirim tercihleriniz açık.":"Almak istediğiniz bildirimleri seçin.",value.tea||value.campaigns?"on":"info");dialog.showModal()});
 close?.addEventListener("click",()=>dialog.close());
@@ -32,4 +33,4 @@ form?.addEventListener("submit",async event=>{
   finally{busy=false;save.disabled=false}
 });
 
-renderButton();startForeground().catch(()=>{});
+renderButton();startForeground().catch(()=>{});syncSavedDevice().catch(error=>console.error("Müşteri bildirim cihazı yenilenemedi:",error));

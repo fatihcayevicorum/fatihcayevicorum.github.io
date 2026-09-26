@@ -1,6 +1,6 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import{doc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import{getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
+import{doc,getDoc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{deleteToken,getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
 import{FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
 
 const app=getApps().length?getApp():initializeApp(firebaseConfig),db=getFirestore(app);
@@ -29,17 +29,19 @@ export function currentAdminPushDeviceId(){return localStorage.getItem(DEVICE_KE
 
 export async function adminPushSupported(){return location.protocol==="https:"&&"Notification"in window&&await isSupported()}
 
-async function requestToken(){
+async function requestToken(forceRefresh=false){
   if(!await adminPushSupported())throw new Error("unsupported");
   const permission=await Notification.requestPermission();
   if(permission!=="granted")throw new Error("permission-denied");
-  const token=await getToken(getMessaging(app),{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:await registration()});
+  const messaging=getMessaging(app),serviceWorkerRegistration=await registration();
+  if(forceRefresh)await deleteToken(messaging).catch(()=>{});
+  const token=await getToken(messaging,{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration});
   if(!token)throw new Error("token-missing");
   return token
 }
 
-export async function registerAdminTeaPushDevice(uid){
-  const token=await requestToken(),deviceId=await hash(token),previous=currentAdminPushDeviceId();
+export async function registerAdminTeaPushDevice(uid,{forceRefresh=false}={}){
+  const token=await requestToken(forceRefresh),deviceId=await hash(token),previous=currentAdminPushDeviceId();
   if(previous&&previous!==deviceId){
     await setDoc(doc(db,"adminTeaPushDevices",previous),{uid,active:false,updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true}).catch(()=>{})
   }
@@ -55,17 +57,25 @@ export async function registerAdminTeaPushDevice(uid){
 export async function disableAdminTeaPushDevice(uid){
   const deviceId=currentAdminPushDeviceId();
   if(deviceId)await setDoc(doc(db,"adminTeaPushDevices",deviceId),{uid,active:false,updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});
+  localStorage.removeItem(DEVICE_KEY);
   return deviceId
+}
+
+export async function syncAdminTeaPushDevice(uid){
+  const deviceId=currentAdminPushDeviceId();
+  if(!uid||!deviceId||!(await adminPushSupported())||Notification.permission!=="granted")return"";
+  const snapshot=await getDoc(doc(db,"adminTeaPushDevices",deviceId)).catch(()=>null);
+  if(snapshot?.exists()&&snapshot.data()?.active===false){localStorage.removeItem(DEVICE_KEY);return""}
+  return registerAdminTeaPushDevice(uid,{forceRefresh:Boolean(snapshot&&!snapshot.exists())})
 }
 
 export async function startForegroundAdminPush(){
   if(foregroundStarted||!(await adminPushSupported())||Notification.permission!=="granted")return;
   foregroundStarted=true;
   onMessage(getMessaging(app),async payload=>{
-    if(document.visibilityState==="visible")return;
-    const worker=await registration(),title=payload.notification?.title||"Fatih Çay Evi";
+    const worker=await registration(),title=payload.notification?.title||payload.data?.title||"Fatih Çay Evi";
     await worker.showNotification(title,{
-      body:payload.notification?.body||"",icon:"/assets/icons/icon-192.png",badge:"/assets/icons/notification-badge-96.png",
+      body:payload.notification?.body||payload.data?.body||"",icon:"/assets/icons/icon-192.png",badge:"/assets/icons/notification-badge-96.png",
       tag:payload.data?.tag||payload.data?.type||"fatih-admin-tea",renotify:true,
       data:{link:payload.data?.link||"/taze-dem-paneli/"}
     })
