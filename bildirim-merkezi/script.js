@@ -3,7 +3,7 @@ import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasej
 import{addDoc,collection,doc,getDoc,getFirestore,onSnapshot,query,serverTimestamp,setDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
-import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js";
+import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js?v=388";
 import{systemConfirm}from"../assets/js/system-confirm.js";
 import{getNotificationSound,isNotificationSoundMuted,playNotificationSound,resetNotificationSound,saveNotificationSound,setNotificationSoundMuted}from"../assets/js/notification-sounds.js?v=271";
 
