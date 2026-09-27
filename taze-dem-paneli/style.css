@@ -849,6 +849,7 @@ button {
   font-size: 0.75rem;
 }
 
+.tea-settings-dialog { max-height: 92dvh; overflow: auto; }
 .tea-settings-dialog form { justify-items: stretch; text-align: left; }
 .tea-settings-dialog .dialog-icon { justify-self: center; }
 .tea-settings-dialog h2,
@@ -873,6 +874,7 @@ button {
 .minute-input input { padding-right: 4.6rem; }
 .minute-input b { position: absolute; top: 50%; right: 0.72rem; color: var(--muted); font-size: 0.65rem; transform: translateY(-50%); }
 .settings-message { min-height: 1.1rem; color: #a52831 !important; font-size: 0.65rem !important; text-align: left !important; }
+.tea-notification-settings{display:grid;gap:.55rem;width:100%;margin-top:.9rem;padding:.75rem;border:1px solid rgba(90,16,24,.14);border-radius:14px;background:#fffaf3}.tea-notification-settings>p{display:grid;gap:.12rem;margin:0!important;text-align:left!important}.tea-notification-settings>p b{color:var(--burgundy-800);font-size:.72rem}.tea-notification-settings>p small{color:var(--muted);font-size:.56rem;line-height:1.4}.tea-notification-switch{display:grid;grid-template-columns:minmax(0,1fr) 46px;align-items:center;gap:.65rem;padding:.62rem;border:1px solid rgba(90,16,24,.12);border-radius:12px;background:#fff}.tea-notification-switch>span{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:.55rem;min-width:0}.tea-notification-switch>span>i{display:grid;width:34px;height:34px;place-items:center;border-radius:10px;color:#fff;background:linear-gradient(135deg,var(--burgundy-700),var(--burgundy-900))}.tea-notification-switch>span>span{display:grid;gap:.08rem;min-width:0}.tea-notification-switch b{color:var(--ink);font-size:.66rem}.tea-notification-switch small{color:var(--muted);font-size:.52rem;line-height:1.35}.tea-notification-switch>input{position:relative;width:46px;height:26px;margin:0;padding:0;border:0;border-radius:99px;appearance:none;background:#cbbfb5;cursor:pointer;box-shadow:none}.tea-notification-switch>input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 6px #3b211f38;transition:.18s}.tea-notification-switch>input:checked{background:#2d7b55}.tea-notification-switch>input:checked::after{transform:translateX(20px)}.tea-notification-switch>input:focus-visible{outline:2px solid rgba(125,24,35,.45);outline-offset:2px;box-shadow:none}
 
 .dialog-actions {
   display: grid;

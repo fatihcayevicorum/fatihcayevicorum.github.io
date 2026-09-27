@@ -174,7 +174,7 @@
         <form id="teaSettingsForm">
             <div class="dialog-icon" aria-hidden="true"><i class="fa-solid fa-gear"></i></div>
             <h2>Taze Dem Ayarları</h2>
-            <p>Demlik kapasitesini ve sayaç sürelerini buradan değiştirebilirsiniz.</p>
+            <p>Demlik kapasitesini, sayaç sürelerini ve dış bildirimleri buradan yönetebilirsiniz.</p>
             <div class="tea-settings-fields">
                 <label>
                     <span>Demlik sayısı</span>
@@ -190,6 +190,17 @@
                     <div class="minute-input"><input id="freshnessMinutesInput" type="number" inputmode="numeric" min="1" max="240" required><b>Dakika</b></div>
                 </label>
             </div>
+            <section class="tea-notification-settings" aria-label="Taze Dem bildirim gönderim ayarları">
+                <p><b>Bildirim Gönderimi</b><small>Servis kapalıyken müşteri ve esnafa bildirim gönderilmez.</small></p>
+                <label class="tea-notification-switch">
+                    <span><i class="fa-solid fa-user-group" aria-hidden="true"></i><span><b>Müşteriye Bildirim Gönder</b><small>Bildirimleri açık müşterilere yeni dem hazır uyarısı gider.</small></span></span>
+                    <input id="customerTeaBroadcastInput" type="checkbox" role="switch" aria-label="Müşteriye Taze Dem bildirimi gönder">
+                </label>
+                <label class="tea-notification-switch">
+                    <span><i class="fa-solid fa-store" aria-hidden="true"></i><span><b>Esnafa Bildirim Gönder</b><small>Bildirimleri açık esnaflara yeni dem hazır uyarısı gider.</small></span></span>
+                    <input id="merchantTeaBroadcastInput" type="checkbox" role="switch" aria-label="Esnafa Taze Dem bildirimi gönder">
+                </label>
+            </section>
             <p class="settings-message" id="teaSettingsMessage" aria-live="polite"></p>
             <div class="dialog-actions">
                 <button class="secondary-button" id="cancelTeaSettings" type="button">Vazgeç</button>
@@ -200,7 +211,7 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="script.js?v=12"></script>
+    <script type="module" src="script.js?v=389"></script>
     
     <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
