@@ -328,6 +328,7 @@ async function notifyAdminTeaReady(brew,position,now=Date.now(),settings={}){
 }
 
 async function notifyCustomerTeaReady(brew,position,now=Date.now(),settings={}){
+  if(settings.serviceOpen===false||settings.customerNotificationsEnabled===false)return;
   const readyAt=teaReadyAt(brew,settings.brewingMs);
   if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt||now-readyAt>TEA_NOTIFICATION_WINDOW_MS)return;
   const eventRef=await claimAdminTeaEvent(`customer-ready-${brew.id}`,"customer-tea-ready",brew.id);if(!eventRef)return;
@@ -338,6 +339,7 @@ async function notifyCustomerTeaReady(brew,position,now=Date.now(),settings={}){
 }
 
 async function notifyMerchantTeaReady(brew,position,now=Date.now(),settings={}){
+  if(settings.serviceOpen===false||settings.merchantNotificationsEnabled===false)return;
   const readyAt=teaReadyAt(brew,settings.brewingMs);
   if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt||now-readyAt>TEA_NOTIFICATION_WINDOW_MS)return;
   const eventRef=await claimAdminTeaEvent(`merchant-ready-${brew.id}`,"merchant-tea-ready",brew.id);if(!eventRef)return;
@@ -388,7 +390,7 @@ exports.checkAdminTeaNotifications=onSchedule({schedule:"every 1 minutes",region
 
 function teaNotificationSettings(state={}){
   const minutes=(value,min,max,fallback)=>{const number=Math.floor(Number(value));return Number.isFinite(number)?Math.min(max,Math.max(min,number)):fallback};
-  return{brewingMs:minutes(state.brewingMinutes,1,120,20)*60*1000,freshnessMs:minutes(state.freshnessMinutes,1,240,60)*60*1000}
+  return{brewingMs:minutes(state.brewingMinutes,1,120,20)*60*1000,freshnessMs:minutes(state.freshnessMinutes,1,240,60)*60*1000,serviceOpen:state.serviceOpen!==false,customerNotificationsEnabled:state.customerNotificationsEnabled!==false,merchantNotificationsEnabled:state.merchantNotificationsEnabled!==false}
 }
 
 function localDate(now=new Date()){
