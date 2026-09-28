@@ -243,7 +243,15 @@ async function sendCustomerPush(message,preference){
     const part=entries.slice(offset,offset+500),tokens=part.map(([token])=>token);
     const response=await getMessaging().sendEachForMulticast({
       tokens,data:{title:message.title||"Fatih Çay Evi",body:String(message.body||""),type:message.type,tag:message.tag,link:message.link||SITE_URL},
-      webpush:{headers:{Urgency:"high"},fcmOptions:{link:message.link||SITE_URL}}
+      webpush:{
+        headers:{Urgency:"high"},
+        notification:{
+          title:message.title||"Fatih Çay Evi",body:String(message.body||""),
+          icon:`${SITE_URL}/assets/icons/icon-192.png`,badge:`${SITE_URL}/assets/icons/notification-badge-96.png`,
+          tag:message.tag||message.type||"fatih-customer",renotify:true
+        },
+        fcmOptions:{link:message.link||SITE_URL}
+      }
     });
     result.successCount+=response.successCount;result.failureCount+=response.failureCount;
     const invalid=[];response.responses.forEach((item,index)=>{const code=item.error?.code||"";if(!item.success&&(code.includes("registration-token-not-registered")||code.includes("invalid-registration-token")))invalid.push(part[index][1].ref.delete())});
