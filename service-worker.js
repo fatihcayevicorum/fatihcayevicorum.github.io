@@ -1,4 +1,4 @@
-/* R390 - Taze Dem gönderim ayarları Bildirim Merkezi'ne taşındı */
+/* R391 - Müşteri bildirimleri için doğrudan sistem bildirimi desteği */
 self.addEventListener("notificationclick",event=>{
   const raw=event.notification?.data||{},link=raw.link||raw.FCM_MSG?.data?.link||raw.FCM_MSG?.fcmOptions?.link||"/taze-dem-paneli/";
   event.notification.close();
@@ -12,6 +12,7 @@ importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-com
 firebase.initializeApp({apiKey:"AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",authDomain:"fatihcayevi.firebaseapp.com",projectId:"fatihcayevi",storageBucket:"fatihcayevi.firebasestorage.app",messagingSenderId:"511481308540",appId:"1:511481308540:web:7229a1eb147bc7dfc4f0f9"});
 const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
+  if(payload?.notification?.title||payload?.notification?.body)return;
   const data=payload?.data||{},type=String(data.type||"");
   if(!data.title&&!data.body)return;
   return self.registration.showNotification(data.title||"Fatih Çay Evi",{
@@ -19,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r390-bildirim-merkezi-taze-dem-ayarlari",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r391-musteri-bildirim-teslim-onarimi",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=["./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/admin-push.js","./assets/js/customer-push.js","./assets/js/merchant-push.js","./assets/js/admin-notifications.js","./assets/js/notification-sounds.js",
