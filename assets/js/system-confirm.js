@@ -4,9 +4,9 @@ export function systemConfirm({title="İşlemi Onayla",message="Bu işlem uygula
   dialog.querySelector("[data-confirm-title]").textContent=title;
   dialog.querySelector("[data-confirm-message]").textContent=message;
   const icon=dialog.querySelector(".system-confirm-icon");
-  const isLogout=title==="Güvenli Çıkış";
-  icon.classList.toggle("is-brand-logo",isLogout);
-  icon.innerHTML=isLogout?'<img src="/assets/images/logo.png" alt="Fatih Çay Evi logosu">':'<i class="fa-solid fa-circle-question" aria-hidden="true"></i>';
+  const showBrandLogo=title==="Güvenli Çıkış"||title==="Taze Demden Haberdar Olun";
+  icon.classList.toggle("is-brand-logo",showBrandLogo);
+  icon.innerHTML=showBrandLogo?'<img src="/assets/images/logo.png" alt="Fatih Çay Evi logosu">':'<i class="fa-solid fa-circle-question" aria-hidden="true"></i>';
   const confirmButton=dialog.querySelector('[value="confirm"]');
   const cancelButton=dialog.querySelector('[value="cancel"]');
   confirmButton.textContent=confirmText;
@@ -28,8 +28,8 @@ function ensureDialog(){
     #systemConfirmDialog::backdrop{background:rgba(45,12,15,.6);backdrop-filter:blur(3px)}
     #systemConfirmDialog form{display:grid;gap:12px;margin:0;padding:22px;text-align:center}
     #systemConfirmDialog .system-confirm-icon{display:grid;width:54px;height:54px;margin:0 auto;place-items:center;border-radius:50%;color:#fff;background:linear-gradient(135deg,#5a1018,#8f2028);font-size:1.2rem}
-    #systemConfirmDialog .system-confirm-icon.is-brand-logo{width:76px;height:76px;border-radius:0;background:transparent}
-    #systemConfirmDialog .system-confirm-icon.is-brand-logo img{display:block;width:100%;height:100%;object-fit:contain}
+    #systemConfirmDialog .system-confirm-icon.is-brand-logo{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#5a1018,#8f2028)}
+    #systemConfirmDialog .system-confirm-icon.is-brand-logo img{display:block;width:84%;height:84%;object-fit:contain}
     #systemConfirmDialog h2{margin:0;color:#5a1018;font-size:1.08rem}
     #systemConfirmDialog p{margin:0;color:#776b67;font-size:.72rem;line-height:1.55}
     #systemConfirmDialog .system-confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}

@@ -18,12 +18,6 @@ async function showTeaTip(){
   if(!button||preferences().tea)return;
   try{if(sessionStorage.getItem(TEA_TIP_SESSION_KEY))return;sessionStorage.setItem(TEA_TIP_SESSION_KEY,"1")}catch{}
   const confirmation=systemConfirm({title:"Taze Demden Haberdar Olun",message:"Yeni dem hazır olduğunda bildirim almak için sağ üstteki zil simgesinden Taze Dem bildirimlerini açabilirsiniz.",confirmText:"Bildirimleri Aç",cancelText:"Şimdi Değil"});
-  const icon=document.querySelector("#systemConfirmDialog .system-confirm-icon");
-  if(icon){
-    const logo=document.createElement("img");logo.src="/assets/images/logo.png";logo.alt="Fatih Çay Evi logosu";
-    logo.width=110;logo.height=110;logo.style.cssText="width:110px;height:110px;object-fit:contain";
-    icon.replaceChildren(logo);icon.style.cssText="width:110px;height:110px;border-radius:0;background:transparent";
-  }
   const enable=await confirmation;
   if(enable)button.click();
 }
