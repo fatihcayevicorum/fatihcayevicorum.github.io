@@ -88,6 +88,16 @@
       <div class="section-note"><i class="fa-solid fa-circle-info"></i><span>Uygulama kapalıyken bildirimler cihazın sistem bildirim alanına gelir.</span></div>
     </section>
 
+    <section class="notification-section business-reminder-card" id="taze-dem-gonderim-ayarlari">
+      <div class="section-heading"><span class="card-icon"><i class="fa-solid fa-paper-plane"></i></span><div><p>TAZE DEM AYARLARI</p><h2>Taze Dem Gönderim Ayarları</h2><span>Müşteri ve esnafa giden yeni dem bildirimlerini buradan yönetin.</span></div></div>
+      <div class="business-reminder-grid">
+        <label><input id="customerTeaBroadcastInput" type="checkbox"><span><strong>Müşteriye Bildirim Gönder</strong><small>Bildirimleri açık müşterilere yeni dem hazır uyarısı gider.</small></span></label>
+        <label><input id="merchantTeaBroadcastInput" type="checkbox"><span><strong>Esnafa Bildirim Gönder</strong><small>Bildirimleri açık esnaflara yeni dem hazır uyarısı gider.</small></span></label>
+      </div>
+      <div class="business-reminder-actions"><span id="teaBroadcastStatus"><i class="fa-solid fa-circle-info"></i> Servis durumu kontrol ediliyor.</span><button id="saveTeaBroadcastPreferences" class="primary" type="button"><i class="fa-solid fa-check"></i> Ayarları Kaydet</button></div>
+      <div class="section-note"><i class="fa-solid fa-shield-halved"></i><span>Servis kapalıyken müşteri ve esnafa Taze Dem bildirimi gitmez. Yönetici bildirimleri bu ayarlardan etkilenmez.</span></div>
+    </section>
+
     <section class="customer-push-panel notification-section" id="musteri-bildirimleri">
       <div class="card-heading">
         <span class="card-icon"><i class="fa-solid fa-users"></i></span>
@@ -139,7 +149,7 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=310"></script>
+  <script type="module" src="script.js?v=390"></script>
   <script type="module" src="../assets/js/system-ui.js?v=273"></script>
 </body>
 </html>

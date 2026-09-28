@@ -18,11 +18,15 @@ onAuthStateChanged(auth,async current=>{
   watchCustomerDevices();
   watchMerchantDevices();
   watchProfileChangeRequests();
+  await loadTeaBroadcastPreferences();
   await loadBusinessReminderPreferences();
   await renderDeviceStatus()
 });
 
 const DEFAULT_REMINDER_PREFS={purchaseOrders:true,stockCritical:true,stockEmpty:true,stockCount:true,paymentDue:true,paymentOverdue:true};
+async function loadTeaBroadcastPreferences(){try{const snap=await getDoc(doc(db,"adminTea","state")),settings=snap.data()||{};byId("customerTeaBroadcastInput").checked=settings.customerNotificationsEnabled!==false;byId("merchantTeaBroadcastInput").checked=settings.merchantNotificationsEnabled!==false;renderTeaBroadcastStatus(settings.serviceOpen!==false)}catch(error){console.error(error);toast("Taze Dem bildirim ayarları alınamadı.")}}
+function renderTeaBroadcastStatus(serviceOpen){byId("teaBroadcastStatus").innerHTML=`<i class="fa-solid ${serviceOpen?"fa-circle-check":"fa-circle-pause"}"></i> Servis şu anda ${serviceOpen?"açık":"kapalı"}.`}
+byId("saveTeaBroadcastPreferences").onclick=async()=>{if(!user||busy)return;const button=byId("saveTeaBroadcastPreferences");button.disabled=true;try{await setDoc(doc(db,"adminTea","state"),{customerNotificationsEnabled:byId("customerTeaBroadcastInput").checked,merchantNotificationsEnabled:byId("merchantTeaBroadcastInput").checked,teaSettingsVersion:"r390",updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});toast("Taze Dem bildirim ayarları kaydedildi.")}catch(error){console.error(error);toast("Taze Dem bildirim ayarları kaydedilemedi.")}finally{button.disabled=false}};
 async function loadBusinessReminderPreferences(){try{const snap=await getDoc(doc(db,"adminReminderPreferences",user.uid)),prefs={...DEFAULT_REMINDER_PREFS,...(snap.data()||{})};document.querySelectorAll("[data-reminder-pref]").forEach(input=>input.checked=prefs[input.dataset.reminderPref]!==false)}catch(error){console.error(error);toast("Uygulama içi bildirim tercihleri alınamadı.")}}
 byId("saveBusinessReminderPreferences").onclick=async()=>{if(!user||busy)return;const button=byId("saveBusinessReminderPreferences"),prefs={};document.querySelectorAll("[data-reminder-pref]").forEach(input=>prefs[input.dataset.reminderPref]=input.checked);button.disabled=true;try{await setDoc(doc(db,"adminReminderPreferences",user.uid),{...prefs,uid:user.uid,updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});byId("businessReminderStatus").innerHTML='<i class="fa-solid fa-circle-check"></i> Tercihler kaydedildi.';toast("Uygulama içi bildirim tercihleri kaydedildi.")}catch(error){console.error(error);toast("Tercihler kaydedilemedi.")}finally{button.disabled=false}};
 
