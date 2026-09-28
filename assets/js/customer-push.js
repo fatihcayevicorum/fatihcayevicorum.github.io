@@ -1,3 +1,4 @@
+import{systemConfirm}from"./system-confirm.js";
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
@@ -6,12 +7,19 @@ import{FCM_VAPID_KEY,firebaseConfig}from"./firebase-config.js";
 const app=getApps().length?getApp():initializeApp(firebaseConfig),functions=getFunctions(app,"europe-west1");
 const registerDevice=httpsCallable(functions,"registerCustomerPushDevice"),disableDevice=httpsCallable(functions,"disableCustomerPushDevice");
 const PREFERENCES_KEY="fatihCustomerPushPreferences",TOKEN_KEY="fatihCustomerPushToken";
+const TEA_TIP_SESSION_KEY="fatihCustomerTeaTipShown";
 const button=document.getElementById("customerNotificationButton"),dialog=document.getElementById("customerNotificationDialog"),form=document.getElementById("customerNotificationForm"),tea=document.getElementById("customerTeaNotifications"),campaigns=document.getElementById("customerCampaignNotifications"),status=document.getElementById("customerNotificationStatus"),save=document.getElementById("saveCustomerNotifications"),close=document.getElementById("closeCustomerNotifications");
 let busy=false,foregroundStarted=false;
 
 function preferences(){try{return{tea:false,campaigns:false,...JSON.parse(localStorage.getItem(PREFERENCES_KEY)||"{}")}}catch{return{tea:false,campaigns:false}}}
 function setStatus(message,type="info"){status.textContent=message;status.className=`customer-notification-status is-${type}`}
 function renderButton(){const value=preferences(),active=value.tea||value.campaigns;button.classList.toggle("is-on",active);button.classList.toggle("is-off",!active);button.setAttribute("aria-label",active?"Bildirimler açık":"Bildirimler kapalı");button.title=active?"Bildirimler açık":"Bildirimler kapalı"}
+async function showTeaTip(){
+  if(!button||preferences().tea)return;
+  try{if(sessionStorage.getItem(TEA_TIP_SESSION_KEY))return;sessionStorage.setItem(TEA_TIP_SESSION_KEY,"1")}catch{}
+  const enable=await systemConfirm({title:"Taze Demden Haberdar Olun",message:"Yeni dem hazır olduğunda bildirim almak için sağ üstteki zil simgesinden Taze Dem bildirimlerini açabilirsiniz.",confirmText:"Bildirimleri Aç",cancelText:"Şimdi Değil"});
+  if(enable)button.click();
+}
 async function worker(){if(!("serviceWorker"in navigator))throw new Error("unsupported");await navigator.serviceWorker.register("/service-worker.js",{scope:"/",updateViaCache:"none"});return navigator.serviceWorker.ready}
 function deviceType(){const agent=navigator.userAgent;if(/iPad|Tablet|Android(?!.*Mobile)/i.test(agent))return"Tablet";if(/iPhone|Android.*Mobile|Mobile/i.test(agent))return"Telefon";return"Bilgisayar"}
 async function supported(){return location.protocol==="https:"&&"Notification"in window&&await isSupported()}
@@ -33,4 +41,4 @@ form?.addEventListener("submit",async event=>{
   finally{busy=false;save.disabled=false}
 });
 
-renderButton();startForeground().catch(()=>{});syncSavedDevice().catch(error=>console.error("Müşteri bildirim cihazı yenilenemedi:",error));
+renderButton();setTimeout(showTeaTip,350);startForeground().catch(()=>{});syncSavedDevice().catch(error=>console.error("Müşteri bildirim cihazı yenilenemedi:",error));
