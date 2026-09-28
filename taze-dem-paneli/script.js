@@ -51,8 +51,7 @@ Object.assign(elements, {
     settingsForm: document.getElementById("teaSettingsForm"), cancelSettings: document.getElementById("cancelTeaSettings"),
     saveSettings: document.getElementById("saveTeaSettings"), settingsMessage: document.getElementById("teaSettingsMessage"),
     maxActiveInput: document.getElementById("maxActiveBrewsInput"), brewingInput: document.getElementById("brewingMinutesInput"),
-    freshnessInput: document.getElementById("freshnessMinutesInput"), brewDurationNote: document.getElementById("brewDurationNote"),
-    customerNotificationsInput: document.getElementById("customerTeaBroadcastInput"), merchantNotificationsInput: document.getElementById("merchantTeaBroadcastInput")
+    freshnessInput: document.getElementById("freshnessMinutesInput"), brewDurationNote: document.getElementById("brewDurationNote")
 });
 
 let appState = createEmptyState();
@@ -545,7 +544,7 @@ function normalizeTeaSettings(data = {}) {
         merchantNotificationsEnabled: data.merchantNotificationsEnabled !== false
     };
 }
-function teaSettingsPayload(state = appState) { const s = normalizeTeaSettings(state); return { ...s, teaSettingsVersion: "r389" }; }
+function teaSettingsPayload(state = appState) { const s = normalizeTeaSettings(state); return { ...s, teaSettingsVersion: "r390" }; }
 function clampInteger(value, min, max, fallback) { const n = Math.floor(Number(value)); return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback; }
 function brewingDurationMs() { return appState.brewingMinutes * 60 * 1000; }
 function freshnessDurationMs() { return appState.freshnessMinutes * 60 * 1000; }
@@ -553,15 +552,17 @@ function openTeaSettings() {
     elements.maxActiveInput.value = appState.maxActiveBrews;
     elements.brewingInput.value = appState.brewingMinutes;
     elements.freshnessInput.value = appState.freshnessMinutes;
-    elements.customerNotificationsInput.checked = appState.customerNotificationsEnabled !== false;
-    elements.merchantNotificationsInput.checked = appState.merchantNotificationsEnabled !== false;
     elements.settingsMessage.textContent = "";
     elements.settingsDialog.showModal();
     setTimeout(() => { elements.maxActiveInput.focus(); elements.maxActiveInput.select(); }, 50);
 }
 async function saveTeaSettings(event) {
     event.preventDefault(); if (isBusy) return;
-    const next = normalizeTeaSettings({ maxActiveBrews: elements.maxActiveInput.value, brewingMinutes: elements.brewingInput.value, freshnessMinutes: elements.freshnessInput.value, customerNotificationsEnabled: elements.customerNotificationsInput.checked, merchantNotificationsEnabled: elements.merchantNotificationsInput.checked });
+    const next = {
+        maxActiveBrews: clampInteger(elements.maxActiveInput.value, 1, 8, DEFAULT_TEA_SETTINGS.maxActiveBrews),
+        brewingMinutes: clampInteger(elements.brewingInput.value, 1, 120, DEFAULT_TEA_SETTINGS.brewingMinutes),
+        freshnessMinutes: clampInteger(elements.freshnessInput.value, 1, 240, DEFAULT_TEA_SETTINGS.freshnessMinutes)
+    };
     if (next.maxActiveBrews < appState.activeBrews.length) { elements.settingsMessage.textContent = `Şu anda ${appState.activeBrews.length} aktif Demlik var. Önce fazla demlikleri bitirin.`; return; }
     setBusy(true); elements.saveSettings.disabled = true; elements.settingsMessage.textContent = "";
     try {
@@ -569,7 +570,7 @@ async function saveTeaSettings(event) {
             const snapshot = await transaction.get(adminStateReference), state = normalizeState(snapshot.exists() ? snapshot.data() : createEmptyState());
             if (next.maxActiveBrews < state.activeBrews.length) throw new Error("active-capacity");
             Object.assign(state, next);
-            transaction.set(adminStateReference, { ...state, teaSettingsVersion: "r389", updatedAt: serverTimestamp() });
+            transaction.set(adminStateReference, { ...state, teaSettingsVersion: "r390", updatedAt: serverTimestamp() });
             transaction.set(publicStatusReference, { activeBrews: state.activeBrews, serviceOpen: state.serviceOpen, orderingOpen: state.serviceOpen, ...teaSettingsPayload(state), updatedAt: serverTimestamp() });
         });
         elements.settingsDialog.close(); showToast("Taze Dem ayarları kaydedildi. Tüm ekranlar güncellendi.");
