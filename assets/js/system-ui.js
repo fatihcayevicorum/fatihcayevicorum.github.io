@@ -3,6 +3,7 @@ import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasej
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"./firebase-config.js";
 import{getManagementProfile,isPersonnelAccessLocked}from"./admin-access.js?v=346";
+import{systemConfirm}from"./system-confirm.js";
 import("./pwa.js?v=265").catch(error=>console.error("PWA başlatılamadı:",error));
 if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js?v=388").then(module=>module.startForegroundAdminPush()).catch(error=>console.error("Yönetici bildirimi başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
@@ -13,8 +14,19 @@ installGlobalInteractionStyle();
 installKeyboardScrollSupport();
 installTopLayerToasts();
 installSensitiveLinkGate();
+installLogoutConfirmation();
 const panelMenu=document.querySelector(".panel-menu-list");
 if(panelMenu)installManagementCenterLink();
+function installLogoutConfirmation(){
+  document.addEventListener("click",async event=>{
+    const button=event.target.closest?.("#logoutButton");
+    if(!button||button.getAttribute("aria-label")==="İşi Bitir ve Çık")return;
+    event.preventDefault();event.stopImmediatePropagation();
+    if(!await systemConfirm({title:"Güvenli Çıkış",message:"Çıkmak istediğinize emin misiniz?",confirmText:"Çıkış Yap",cancelText:"Vazgeç"}))return;
+    try{await signOut(auth);location.replace(new URL("../../yonetici-giris.html",import.meta.url).href)}
+    catch(error){console.error("Güvenli çıkış başarısız:",error)}
+  },true);
+}
 if(isAdminPage)onAuthStateChanged(auth,async user=>{if(!user)return;if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js?v=388").then(module=>module.syncAdminTeaPushDevice(user.uid)).catch(error=>console.error("Yönetici bildirim cihazı yenilenemedi:",error));const profile=await getManagementProfile(user,db).catch(()=>null);if(isPersonnelAccessLocked(profile)){await signOut(auth);location.replace(new URL("../../yonetici-giris.html?reason=personnel-day-locked",import.meta.url).href);return}if(profile&&(panelMenu||location.pathname.includes("/yonetim-merkezi/")))renderWelcome(profile)});
 const panelBrand=document.querySelector(".app-header .brand");if(panelBrand){panelBrand.classList.add("brand-home-link");panelBrand.tabIndex=0;panelBrand.setAttribute("role","link");panelBrand.setAttribute("title","Taze Dem paneline git");const goTea=()=>location.href=new URL("../../taze-dem-paneli/",import.meta.url).href;panelBrand.addEventListener("click",goTea);panelBrand.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();goTea()}});const brandStyle=document.createElement("style");brandStyle.textContent=".brand-home-link{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}.brand-home-link,.brand-home-link:active,.brand-home-link:focus{outline:none!important;filter:none!important;box-shadow:none!important}.brand-home-link .brand-logo,.brand-home-link:active .brand-logo{transform:none!important;filter:none!important;box-shadow:none!important}";document.head.append(brandStyle)}
 onSnapshot(doc(db,"publicSite","config"),snapshot=>{const data=snapshot.data()||{};if(data.logoUrl)document.querySelectorAll("img.logo,img.brand-logo,.login-card img,.brand img").forEach(img=>{img.src=data.logoUrl});});

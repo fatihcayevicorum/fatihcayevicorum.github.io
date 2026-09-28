@@ -251,6 +251,10 @@ service cloud.firestore {
       allow read: if hasAnyPanel(['pos', 'reports']);
       allow write: if hasPanel('pos');
     }
+    match /adminInternalConsumptionDrafts/{document} {
+      allow read: if hasAnyPanel(['pos', 'cash']);
+      allow write: if hasPanel('pos');
+    }
     match /adminCashMovements/{document} {
       allow get: if hasAnyPanel(['cash', 'reports'])
         || ((hasPanel('pos') || hasCurrentAccountWriteAccess())

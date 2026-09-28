@@ -1,13 +1,18 @@
 import {stockLinks} from "../assets/js/stock-recipe.js?v=363";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, doc, getFirestore, onSnapshot, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, doc, getFirestore, onSnapshot, runTransaction, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
+import { PENDING_INTERNAL_CONSUMPTION_KEY } from "../assets/js/internal-consumption-guard.js?v=395";
 
 const app=getApps()[0]||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const menuRef=doc(db,"publicMenu","catalog"),settingsRef=doc(db,"adminAppSettings","pos"),stockCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),consumptionCol=collection(db,"adminInternalConsumptions");
-const pendingStorageKey="fatih-cay-evi-internal-consumption-pending-v1";
+const pendingStorageKey=PENDING_INTERNAL_CONSUMPTION_KEY,deviceStorageKey="fatih-cay-evi-internal-consumption-device-v1";
+const deviceId=localStorage.getItem(deviceStorageKey)||crypto.randomUUID();
+localStorage.setItem(deviceStorageKey,deviceId);
+const draftRef=date=>doc(db,"adminInternalConsumptionDrafts",date);
+let draftSyncQueue=Promise.resolve();
 let catalog={categories:[],items:[]},stocks=[],cart=[],category="all",busy=false,businessDate=today();
 const dialog=$("internalConsumptionDialog"),openButton=$("internalConsumptionButton"),closeButton=$("closeInternalConsumption"),search=$("internalSearch"),tabs=$("internalCategoryTabs"),grid=$("internalProductGrid"),empty=$("internalProductEmpty"),items=$("internalCartItems"),cartEmpty=$("internalCartEmpty"),note=$("internalNote"),total=$("internalTotalQuantity"),clear=$("clearInternalCart"),save=$("saveInternalConsumption"),toast=$("toast");
 if(!dialog||!openButton) throw new Error("Dahili Tüketim arayüzü bulunamadı.");
@@ -19,7 +24,7 @@ search.addEventListener("input",renderProducts);note.addEventListener("input",pe
 tabs.addEventListener("click",e=>{const b=e.target.closest("[data-internal-category]");if(!b)return;category=b.dataset.internalCategory;renderProducts()});
 grid.addEventListener("click",e=>{const b=e.target.closest("[data-internal-product]");if(!b||busy)return;const product=availableProducts().find(x=>x.id===b.dataset.internalProduct);if(!product)return;const line=cart.find(x=>x.id===product.id);line?line.quantity++:cart.push({id:product.id,name:product.name,quantity:1});search.value="";persistPending();render();requestAnimationFrame(()=>search.focus({preventScroll:true}))});
 items.addEventListener("click",e=>{const b=e.target.closest("[data-internal-qty]");if(!b||busy)return;const line=cart.find(x=>x.id===b.dataset.internalId);if(!line)return;line.quantity+=Number(b.dataset.internalQty);if(line.quantity<=0)cart=cart.filter(x=>x.id!==line.id);persistPending();render()});
-onAuthStateChanged(auth,async user=>{if(!await hasPanelAccess(user,db,"pos"))return;onSnapshot(settingsRef,s=>{businessDate=String(s.data()?.currentBusinessDate||today());restorePending();render()},error=>{console.warn(error);restorePending();render()});onSnapshot(menuRef,s=>{const d=s.exists()?s.data():{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[]};render()},error=>notify("Menü bilgileri alınamadı."));onSnapshot(stockCol,s=>{stocks=s.docs.map(x=>({id:x.id,...x.data()}));render()},error=>notify("Stok bilgileri alınamadı."))});
+onAuthStateChanged(auth,async user=>{if(!await hasPanelAccess(user,db,"pos"))return;onSnapshot(settingsRef,s=>{businessDate=String(s.data()?.currentBusinessDate||today());restorePending();if(cart.length)syncDraft();render()},error=>{console.warn(error);restorePending();render()});onSnapshot(menuRef,s=>{const d=s.exists()?s.data():{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[]};render()},error=>notify("Menü bilgileri alınamadı."));onSnapshot(stockCol,s=>{stocks=s.docs.map(x=>({id:x.id,...x.data()}));render()},error=>notify("Stok bilgileri alınamadı."))});
 function availableProducts(){return catalog.items.filter(p=>p.available!==false&&stockLinks(p.id,catalog,stocks).length>0).sort((a,b)=>String(a.name).localeCompare(String(b.name),"tr"))}
 function render(){renderProducts();renderCart()}
 function renderProducts(){const all=availableProducts(),q=search.value.trim().toLocaleLowerCase("tr-TR"),cats=catalog.categories.filter(c=>all.some(p=>p.categoryId===c.id));tabs.innerHTML=`<button class="${category==="all"?"active":""}" data-internal-category="all">Tümü</button>`+cats.map(c=>`<button class="${category===c.id?"active":""}" data-internal-category="${esc(c.id)}">${esc(c.name)}</button>`).join("");const filtered=all.filter(p=>(category==="all"||p.categoryId===category)&&(!q||String(p.name).toLocaleLowerCase("tr-TR").includes(q)));empty.hidden=filtered.length>0;grid.innerHTML=filtered.map(p=>`<button type="button" class="product internal-product-button" data-internal-product="${esc(p.id)}"><strong>${esc(p.name)}</strong></button>`).join("")}
@@ -29,6 +34,7 @@ async function saveConsumption(){
   busy=true;renderCart();
   try{
     const submittedCart=cart.map(x=>({...x})),submittedNote=note.value.trim(),ref=doc(consumptionCol),date=businessDate,createdAtMs=Date.now();
+    await draftSyncQueue;
     await runTransaction(db,async tx=>{
       const deductions=[],running=new Map();
       for(const line of submittedCart){
@@ -54,6 +60,7 @@ async function saveConsumption(){
       }
       const savedItems=submittedCart.map(x=>({...x,totalCost:costByItem.get(x.id)||0,unitCost:x.quantity>0?(costByItem.get(x.id)||0)/x.quantity:0})),totalCost=savedItems.reduce((sum,x)=>sum+Number(x.totalCost||0),0);
       tx.set(ref,{businessDate:date,items:savedItems,totalQuantity:submittedCart.reduce((s,x)=>s+x.quantity,0),totalCost,note:submittedNote,createdAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
+      tx.set(draftRef(date),{businessDate:date,devices:{[deviceId]:{items:[],updatedAtMs:createdAtMs}}},{merge:true});
     });
     notify("Dahili tüketim stoktan düşüldü.");dialog.close();cart=[];note.value="";persistPending();render();
   }catch(error){console.error(error);const parts=String(error.message||"").split(":");notify(error.message==="stock-link"?"Seçilen ürünün stok bağlantısı bulunamadı.":parts[0]==="insufficient"?`${parts[1]} stoku yetersiz. Mevcut: ${parts[2]}, gereken: ${parts[3]}.`:"Dahili tüketim kaydedilemedi.")}
@@ -69,9 +76,16 @@ function restorePending(){
 }
 function persistPending(){
   try{
-    if(!cart.length&&!note.value.trim()){localStorage.removeItem(pendingStorageKey);return}
-    localStorage.setItem(pendingStorageKey,JSON.stringify({businessDate,items:cart.map(x=>({id:x.id,name:x.name,quantity:x.quantity})),note:note.value.trim(),updatedAtMs:Date.now()}));
+    if(!cart.length&&!note.value.trim())localStorage.removeItem(pendingStorageKey);
+    else localStorage.setItem(pendingStorageKey,JSON.stringify({businessDate,items:cart.map(x=>({id:x.id,name:x.name,quantity:x.quantity})),note:note.value.trim(),updatedAtMs:Date.now()}));
+    syncDraft();
   }catch(error){console.warn("Bekleyen dahili tüketim listesi saklanamadı.",error);notify("Dahili tüketim listesi cihazda saklanamadı.")}
+}
+function syncDraft(){
+  if(!auth.currentUser)return;
+  const date=businessDate,items=cart.map(x=>({id:x.id,name:x.name,quantity:x.quantity})),updatedAtMs=Date.now();
+  draftSyncQueue=draftSyncQueue.catch(()=>{}).then(()=>setDoc(draftRef(date),{businessDate:date,devices:{[deviceId]:{items,updatedAtMs}}},{merge:true}));
+  draftSyncQueue.catch(error=>{console.error("Dahili tüketim listesi eşitlenemedi.",error);notify("Dahili tüketim listesi eşitlenemedi. Bağlantıyı kontrol edin.")});
 }
 function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}
 function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}

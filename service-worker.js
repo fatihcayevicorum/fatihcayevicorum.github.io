@@ -1,4 +1,4 @@
-/* R394 - Kasa hareketlerinde aciklama sutununa daha fazla alan */
+/* R397 - Müşteri bilgilendirme penceresinde Fatih Çay Evi logosu */
 self.addEventListener("notificationclick",event=>{
   const raw=event.notification?.data||{},link=raw.link||raw.FCM_MSG?.data?.link||raw.FCM_MSG?.fcmOptions?.link||"/taze-dem-paneli/";
   event.notification.close();
@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r394-kasa-aciklama-alani",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r397-musteri-bildirim-logo",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=["./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/admin-push.js","./assets/js/customer-push.js","./assets/js/merchant-push.js","./assets/js/admin-notifications.js","./assets/js/notification-sounds.js",
@@ -41,7 +41,7 @@ const CORE=["./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js
   "./personel-yonetimi/","./personel-yonetimi/index.html","./personel-yonetimi/style.css","./personel-yonetimi/script.js",
   "./veri-yonetimi/index.html","./veri-yonetimi/style.css","./veri-yonetimi/script.js",
   "./kullanici-yonetimi/device-reset.css",
-  "./assets/css/panel-header.css","./assets/css/panel-scroll.css","./assets/css/management-forms.css","./assets/js/panel-scroll.js","./assets/js/management-forms.js","./assets/js/system-confirm.js","./assets/js/system-ui.js","./assets/js/pwa.js","./assets/js/sensitive-access.js",
+  "./assets/css/panel-header.css","./assets/css/panel-scroll.css","./assets/css/management-forms.css","./assets/js/panel-scroll.js","./assets/js/management-forms.js","./assets/js/system-confirm.js","./assets/js/internal-consumption-guard.js","./assets/js/system-ui.js","./assets/js/pwa.js","./assets/js/sensitive-access.js",
   "./menu-yonetimi/","./menu-yonetimi/index.html","./menu-yonetimi/style.css","./menu-yonetimi/script.js",
   "./ana-sayfa-yonetimi/","./ana-sayfa-yonetimi/index.html","./ana-sayfa-yonetimi/style.css","./ana-sayfa-yonetimi/enhancements.css","./ana-sayfa-yonetimi/script.js",
   "./kullanici-yonetimi/","./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",
@@ -59,6 +59,11 @@ self.addEventListener("fetch",event=>{
   if(url.origin!==self.location.origin){
     if(!staticHosts.includes(url.hostname))return;
     event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok||response.type==="opaque"){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response})));
+    return;
+  }
+  if(url.pathname.endsWith("/assets/js/system-ui.js")&&url.searchParams.get("v")!=="395"){
+    const latest=new URL(url);latest.searchParams.set("v","395");
+    event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));
     return;
   }
   if(request.mode==="navigate"){event.respondWith(fetch(request).then(response=>{const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy));return response}).catch(async()=>await matchAppCache(request)||await caches.match("./offline.html")));return}
