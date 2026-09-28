@@ -210,3 +210,10 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
   white-space:normal;
   overflow-wrap:anywhere;
 }
+
+/* R394 - odeme yontemi ve tutari yakinlastir, aciklamaya yer ac */
+@media(min-width:621px){
+  .simple-movement-row{grid-template-columns:minmax(0,1fr) 92px 96px 104px;gap:6px}
+  .simple-payment-method{width:auto;text-align:right}
+  .simple-movement-amount{width:auto;text-align:left}
+}
