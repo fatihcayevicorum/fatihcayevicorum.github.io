@@ -192,3 +192,21 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .calendar-footer small i{color:var(--red)}
 .calendar-footer button{min-height:38px;border-radius:10px;padding:0 12px;font-size:.67rem;font-weight:700}
 @media(max-width:520px){.date-switcher .date-picker-trigger{padding:0 27px 0 12px}.date-switcher .date-picker-trigger>i{right:8px}.calendar-dialog-card{width:min(95vw,410px);padding:15px}.calendar-weekdays,.calendar-days{gap:4px}.calendar-day{min-height:44px;border-radius:9px}.calendar-footer{align-items:stretch;flex-direction:column}.calendar-footer button{width:100%}}
+
+/* R392 - kasa hareketlerinde uzun aciklamalari tum ekranlarda tam goster */
+.simple-movement-copy strong,
+.bank-movement-copy strong{
+  max-width:100%;
+  overflow:visible;
+  text-overflow:clip;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+.simple-movement-copy small,
+.bank-movement-copy small,
+.simple-payment-method{
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
