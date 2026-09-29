@@ -273,3 +273,15 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 #reportDialog .report-toolbar{flex:none;padding:3px 0 10px}
 #reportDialog #reportContent{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 @media(max-width:760px){#reportDialog .report-dialog{height:92dvh}}
+
+/* R410: Ay seçimi ile PDF aynı çizgide; raporun kaydırma denetimi görünür. */
+#reportDialog .report-toolbar label{margin:0}
+#reportDialog .report-scroll-area{display:flex;flex:1;min-height:0;gap:8px}
+#reportDialog #reportContent{flex:1;min-width:0;padding-right:2px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}
+#reportDialog #reportContent::-webkit-scrollbar{display:none}
+#reportDialog .report-scroll-controls{display:flex;flex:none;flex-direction:column;align-items:center;gap:5px;width:24px;padding:2px 0}
+#reportDialog .report-scroll-controls button{display:grid;flex:none;place-items:center;width:24px;height:28px;padding:0;border:1px solid var(--line);border-radius:7px;background:#f2e7dc;color:var(--red);font-size:1.1rem;line-height:1}
+#reportDialog .report-scroll-controls button:disabled{opacity:.35}
+#reportDialog .report-scroll-track{position:relative;flex:1;width:12px;min-height:32px;border-radius:999px;background:#eadbd0;cursor:pointer;touch-action:none}
+#reportDialog .report-scroll-track:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+#reportDialog .report-scroll-thumb{position:absolute;top:0;left:0;width:100%;min-height:24px;border-radius:999px;background:var(--red);box-shadow:0 1px 3px #4e241540;pointer-events:none}
