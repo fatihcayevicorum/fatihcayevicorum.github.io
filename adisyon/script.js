@@ -26,14 +26,13 @@ const includePreviousDebtKeys=new Set();
 let orgProductTab='selected',orgPendingProductId='',orgEditLineId='',orgDraftProducts=new Set(),orgProductDialogKey='';
 let ordersConnectionState='pending',ordersServerConfirmed=false,ordersCacheSeen=false,connectionFailure=false;
 const connectionBars=[$('connectionText'),$('orderConnectionText')];
-function connectionKind(){const type=(navigator.connection||navigator.mozConnection||navigator.webkitConnection)?.type;return type==='cellular'?{name:'Mobil veri',icon:'fa-signal'}:type==='wifi'?{name:'Wi-Fi',icon:'fa-wifi'}:{name:'İnternet',icon:'fa-globe'}}
+function connectionKind(){const type=(navigator.connection||navigator.mozConnection||navigator.webkitConnection)?.type;return type==='cellular'?'fa-signal':type==='wifi'?'fa-wifi':''}
 function renderConnectionStatus(){
   const offline=navigator.onLine===false;
   const state=offline?'offline':connectionFailure?'error':ordersConnectionState;
-  const kind=connectionKind();
-  const label=state==='live'?`${kind.name} • Adisyon verisi canlı`:state==='offline'?'İnternet bağlantısı yok • Veriler güncel olmayabilir':state==='error'?'Adisyon bağlantı hatası • Sayfayı yenileyin':ordersCacheSeen?'Yerel veri gösteriliyor • Sunucu bekleniyor':ordersServerConfirmed?'Sunucuya yeniden bağlanıyor • Veriler güncel olmayabilir':'Adisyon verisi sunucuya bağlanıyor…';
-  const icon=state==='live'?'fa-circle-check':state==='pending'?'fa-spinner fa-spin':'fa-triangle-exclamation';
-  for(const bar of connectionBars){bar.dataset.state=state;const networkIcon=bar.querySelector('.connection-network-icon');networkIcon.hidden=state==='offline';networkIcon.className=`fa-solid ${kind.icon} connection-network-icon`;bar.querySelector('.connection-state-icon').className=`fa-solid ${icon} connection-state-icon`;bar.querySelector('span').textContent=label}
+  const icon=connectionKind();
+  const label=state==='live'?'Bağlı':state==='offline'?'Bağlantı yok':state==='error'?'Bağlantı hatası':'Bağlanıyor';
+  for(const bar of connectionBars){bar.dataset.state=state;const networkIcon=bar.querySelector('.connection-network-icon');networkIcon.className=`fa-solid ${icon} connection-network-icon`;networkIcon.hidden=!icon||state==='offline';bar.querySelector('span').textContent=label}
 }
 window.addEventListener('online',()=>{ordersConnectionState='pending';ordersCacheSeen=false;renderConnectionStatus()});
 window.addEventListener('offline',renderConnectionStatus);

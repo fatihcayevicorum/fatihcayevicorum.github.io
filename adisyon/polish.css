@@ -735,15 +735,15 @@ button:focus:not(:focus-visible) {
 .view-top .connection-status{display:inline-flex;align-items:center;gap:5px;margin:0 2px 0 auto;color:var(--green);font-size:.66rem;font-weight:600}.view-top .connection-status i{font-size:.62rem}
 @media(max-width:700px){.view-top .connection-status{font-size:.6rem}}
 
-/* R412: Adisyon sunucu bağlantısının görünür durumu */
-.connection-status[data-state]{display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:7px 11px;border:1px solid #b7dbc7;border-radius:10px;background:#eaf7ef;color:#236443;font-size:.72rem;font-weight:700;line-height:1.35;text-align:left}
+/* R414: Sabit boyutlu Adisyon bağlantı durumu */
+.connection-status[data-state]{display:inline-flex;align-items:center;justify-content:center;flex:none;width:154px;height:38px;gap:7px;max-width:100%;padding:6px 8px;border:1px solid #b7dbc7;border-radius:10px;background:#eaf7ef;color:#236443;font-size:.72rem;font-weight:700;line-height:1;white-space:nowrap;text-align:center}
 .connection-status[data-state] i{font-size:.77rem;flex:none}
 .connection-status[data-state] .connection-network-icon{font-size:.85rem}
 .connection-status[data-state] .connection-network-icon[hidden]{display:none}
 .connection-status[data-state="pending"]{border-color:#ecd7a9;background:#fff8e9;color:#8b5b11}
 .connection-status[data-state="offline"],.connection-status[data-state="error"]{border-color:#ecc5c5;background:#fff0ef;color:#a52c34}
-.order-connection-status[data-state]{width:fit-content;margin:0 0 9px}
-@media(max-width:700px){.view-top{flex-wrap:wrap}.view-top .connection-status[data-state],.order-connection-status[data-state]{font-size:.66rem;padding:7px 9px}.view-top .connection-status[data-state]{margin-left:0}}
+.order-connection-status[data-state]{margin:0 0 9px}
+@media(max-width:700px){.view-top{flex-wrap:wrap}.view-top .connection-status[data-state],.order-connection-status[data-state]{font-size:.66rem}.view-top .connection-status[data-state]{margin-left:0}}
 
 /* R231 - Yalnız üst kontrol kartlarında dönen çevre çizgisi */
 @property --tea-border-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
