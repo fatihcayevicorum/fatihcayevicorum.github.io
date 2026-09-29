@@ -285,3 +285,23 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 #reportDialog .report-scroll-track{position:relative;flex:1;width:12px;min-height:32px;border-radius:999px;background:#eadbd0;cursor:pointer;touch-action:none}
 #reportDialog .report-scroll-track:focus-visible{outline:2px solid var(--red);outline-offset:3px}
 #reportDialog .report-scroll-thumb{position:absolute;top:0;left:0;width:100%;min-height:24px;border-radius:999px;background:var(--red);box-shadow:0 1px 3px #4e241540;pointer-events:none}
+
+/* R411: Gelir ve giderde hızlı işlemle aynı tek kategori listesi. */
+#movementDialog{max-width:calc(100vw - 20px);max-height:calc(100dvh - 20px);overflow:visible}
+#movementDialog .dialog-card{max-height:calc(100dvh - 20px);overflow-y:auto;overflow-x:hidden}
+.movement-category-field{margin:10px 0}
+.movement-category-field>span{display:block;margin-bottom:5px;font-size:.73rem;font-weight:600}
+.movement-category-button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font-size:.76rem;text-align:left}
+.movement-category-button.is-selected{color:var(--ink);font-weight:700}
+.movement-category-button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.movement-category-button i{color:var(--red)}
+.movement-category-picker{position:absolute;z-index:10;overflow-y:scroll;overscroll-behavior:contain;scrollbar-gutter:stable;border:1px solid var(--line);border-radius:10px;background:var(--paper);box-shadow:0 12px 26px rgba(71,37,31,.2);scrollbar-width:auto;scrollbar-color:#bba89b #f3ece5}
+.movement-category-picker::-webkit-scrollbar{width:8px}
+.movement-category-picker::-webkit-scrollbar-thumb{border-radius:8px;background:#bba89b}
+.movement-category-picker[hidden]{display:none}
+.movement-category-group{padding:9px 12px;background:#f2e7dc;color:var(--red);font-size:.7rem;font-weight:800}
+.movement-category-option{display:block;width:100%;min-height:43px;padding:9px 13px 9px 22px;border:0;border-bottom:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:.73rem;text-align:left}
+.movement-category-option:active{background:#f2e7dc}
+.movement-category-empty{margin:0;padding:14px;color:var(--muted);font-size:.72rem}
+.movement-category-button:focus-visible,.movement-category-option:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+@media(max-width:480px){.movement-category-field{margin:7px 0}.movement-category-button{min-height:42px}.movement-category-option{min-height:42px}}
