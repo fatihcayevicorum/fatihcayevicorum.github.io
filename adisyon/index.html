@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=412"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8"><link rel="stylesheet" href="personnel-mode.css?v=340">
+  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=413"><link rel="stylesheet" href="enhancements.css?v=3"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8"><link rel="stylesheet" href="personnel-mode.css?v=340">
 </head>
 <body>
 <header class="app-header"><div class="header-inner">
@@ -17,7 +17,7 @@
 
 <main>
   <section id="tablesView" class="view">
-    <div class="view-top"><div><h2>Masalar</h2></div><p id="connectionText" class="connection-status" data-state="pending" role="status" aria-live="polite"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Adisyon verisi bağlanıyor…</span></p></div>
+    <div class="view-top"><div><h2>Masalar</h2></div><p id="connectionText" class="connection-status" data-state="pending" role="status" aria-live="polite"><i class="fa-solid fa-globe connection-network-icon" aria-hidden="true"></i><i class="fa-solid fa-spinner fa-spin connection-state-icon" aria-hidden="true"></i><span>Adisyon verisi bağlanıyor…</span></p></div>
     <div class="overview-row" id="posControlPanel">
       <section class="pos-live-overview" aria-label="Açık toplam ve Taze Dem durumu"><article class="open-total-card"><span><i class="fa-solid fa-receipt"></i> Açık Toplam</span><b id="openTotal">₺0</b></article><div id="posTeaCards" class="pos-tea-cards" aria-live="polite"></div><button id="startPosTeaBrew" class="pos-tea-start" type="button"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></button><button id="toggleTeaService" class="pos-tea-start personnel-only" type="button" hidden><i class="fa-solid fa-circle-play"></i><span>Servisi Başlat</span></button></section>
       <div class="quick-actions">
@@ -43,7 +43,7 @@
       <div class="active-table"><span>AKTİF ADİSYON</span><div class="active-title-row"><h2 id="orderTitle">Masa</h2><button id="orderInfoButton" type="button" title="Adisyon bilgileri" aria-label="Adisyon bilgilerini düzenle"><i class="fa-solid fa-gear"></i></button></div><small id="orderOpened">Henüz Ürün eklenmedi</small></div>
       <button id="orderMore" class="secondary"><i class="fa-solid fa-shuffle"></i><span>Taşı / Birleştir</span></button>
     </div>
-    <p id="orderConnectionText" class="connection-status order-connection-status" data-state="pending" role="status" aria-live="polite"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Adisyon verisi bağlanıyor…</span></p>
+    <p id="orderConnectionText" class="connection-status order-connection-status" data-state="pending" role="status" aria-live="polite"><i class="fa-solid fa-globe connection-network-icon" aria-hidden="true"></i><i class="fa-solid fa-spinner fa-spin connection-state-icon" aria-hidden="true"></i><span>Adisyon verisi bağlanıyor…</span></p>
     <div class="pos-layout">
       <section class="products card">
         <div id="orgProductControls" class="org-product-controls" hidden><div class="org-tabs"><button type="button" id="orgSelectedTab" class="active">Seçilenler</button><button type="button" id="orgAllTab">Tüm Ürünler</button></div><div class="org-tools"><button type="button" id="orgSearchToggle" class="secondary" aria-label="Ürün ara" aria-expanded="false"><i class="fa-solid fa-magnifying-glass"></i></button><button type="button" id="orgEditProducts" class="secondary">Düzenle</button></div></div>
@@ -139,7 +139,7 @@
   </form>
 </dialog>
 <div id="toast" class="toast" role="status"></div>
-<script type="module" src="script.js?v=412"></script>
+<script type="module" src="script.js?v=413"></script>
 <script type="module" src="internal-consumption.js?v=395"></script>
 <script type="module" src="quick-cash.js?v=405"></script>
 <script type="module" src="history-modal.js?v=1861"></script>

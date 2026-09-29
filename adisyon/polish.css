@@ -738,6 +738,8 @@ button:focus:not(:focus-visible) {
 /* R412: Adisyon sunucu bağlantısının görünür durumu */
 .connection-status[data-state]{display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:7px 11px;border:1px solid #b7dbc7;border-radius:10px;background:#eaf7ef;color:#236443;font-size:.72rem;font-weight:700;line-height:1.35;text-align:left}
 .connection-status[data-state] i{font-size:.77rem;flex:none}
+.connection-status[data-state] .connection-network-icon{font-size:.85rem}
+.connection-status[data-state] .connection-network-icon[hidden]{display:none}
 .connection-status[data-state="pending"]{border-color:#ecd7a9;background:#fff8e9;color:#8b5b11}
 .connection-status[data-state="offline"],.connection-status[data-state="error"]{border-color:#ecc5c5;background:#fff0ef;color:#a52c34}
 .order-connection-status[data-state]{width:fit-content;margin:0 0 9px}

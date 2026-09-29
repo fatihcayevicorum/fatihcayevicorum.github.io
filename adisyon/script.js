@@ -26,17 +26,18 @@ const includePreviousDebtKeys=new Set();
 let orgProductTab='selected',orgPendingProductId='',orgEditLineId='',orgDraftProducts=new Set(),orgProductDialogKey='';
 let ordersConnectionState='pending',ordersServerConfirmed=false,ordersCacheSeen=false,connectionFailure=false;
 const connectionBars=[$('connectionText'),$('orderConnectionText')];
-function connectionKind(){const type=navigator.connection?.type;return type==='cellular'?'Mobil veri':type==='wifi'?'Wi-Fi':'İnternet'}
+function connectionKind(){const type=(navigator.connection||navigator.mozConnection||navigator.webkitConnection)?.type;return type==='cellular'?{name:'Mobil veri',icon:'fa-signal'}:type==='wifi'?{name:'Wi-Fi',icon:'fa-wifi'}:{name:'İnternet',icon:'fa-globe'}}
 function renderConnectionStatus(){
   const offline=navigator.onLine===false;
   const state=offline?'offline':connectionFailure?'error':ordersConnectionState;
-  const label=state==='live'?`${connectionKind()} • Adisyon verisi canlı`:state==='offline'?'İnternet bağlantısı yok • Veriler güncel olmayabilir':state==='error'?'Adisyon bağlantı hatası • Sayfayı yenileyin':ordersCacheSeen?'Yerel veri gösteriliyor • Sunucu bekleniyor':ordersServerConfirmed?'Sunucuya yeniden bağlanıyor • Veriler güncel olmayabilir':'Adisyon verisi sunucuya bağlanıyor…';
+  const kind=connectionKind();
+  const label=state==='live'?`${kind.name} • Adisyon verisi canlı`:state==='offline'?'İnternet bağlantısı yok • Veriler güncel olmayabilir':state==='error'?'Adisyon bağlantı hatası • Sayfayı yenileyin':ordersCacheSeen?'Yerel veri gösteriliyor • Sunucu bekleniyor':ordersServerConfirmed?'Sunucuya yeniden bağlanıyor • Veriler güncel olmayabilir':'Adisyon verisi sunucuya bağlanıyor…';
   const icon=state==='live'?'fa-circle-check':state==='pending'?'fa-spinner fa-spin':'fa-triangle-exclamation';
-  for(const bar of connectionBars){bar.dataset.state=state;bar.querySelector('i').className=`fa-solid ${icon}`;bar.querySelector('span').textContent=label}
+  for(const bar of connectionBars){bar.dataset.state=state;const networkIcon=bar.querySelector('.connection-network-icon');networkIcon.hidden=state==='offline';networkIcon.className=`fa-solid ${kind.icon} connection-network-icon`;bar.querySelector('.connection-state-icon').className=`fa-solid ${icon} connection-state-icon`;bar.querySelector('span').textContent=label}
 }
 window.addEventListener('online',()=>{ordersConnectionState='pending';ordersCacheSeen=false;renderConnectionStatus()});
 window.addEventListener('offline',renderConnectionStatus);
-navigator.connection?.addEventListener?.('change',renderConnectionStatus);
+(navigator.connection||navigator.mozConnection||navigator.webkitConnection)?.addEventListener?.('change',renderConnectionStatus);
 renderConnectionStatus();
 $('orgSearchToggle').onclick=()=>{const opened=el.orderView.classList.toggle('org-search-open');$('orgSearchToggle').setAttribute('aria-expanded',String(opened));if(opened)requestAnimationFrame(()=>el.productSearch.focus({preventScroll:true}));else{el.productSearch.value='';renderProducts()}};$('orgSelectedTab').onclick=()=>{orgProductTab='selected';renderProducts()};$('orgAllTab').onclick=()=>{orgProductTab='all';renderProducts()};$('orgEditProducts').onclick=openOrgProducts;
 $('orgSummaryButton').onclick=openOrgSummary;$('orgAccountButton').onclick=openOrgAccount;$('orgCancelButton').onclick=cancelOrder;$('orgProductSearch').oninput=renderOrgProductChoices;$('orgSaveProducts').onclick=saveOrgProducts;
