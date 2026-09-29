@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=400">
+  <link rel="stylesheet" href="style.css?v=406">
 </head>
 <body>
   <header class="app-header">
@@ -111,8 +111,9 @@
         </div>
       </section>
       <section class="panel expense-categories-panel">
-        <div class="section-heading"><div><p class="kicker">Kalem kalem</p><h2>Gider Grupları</h2></div><small>Gruba, ardından kategoriye basınca ödemeler açılır</small></div>
-        <div id="expenseCategorySummary" class="expense-category-list"></div>
+        <div class="section-heading"><div><p class="kicker">Gider dağılımı</p><h2 id="expenseChartTitle">Gruplara Göre</h2></div><button id="expenseChartBack" class="expense-chart-back" type="button" hidden><i class="fa-solid fa-arrow-left"></i> Geri</button></div>
+        <div class="expense-distribution-grid"><div id="expenseChartArea" class="expense-chart-area"><div id="expenseChartRing" class="expense-chart-ring" role="img" aria-label="Gider dağılımı"><div class="expense-chart-hole"><small id="expenseChartCenterLabel">Toplam gider</small><strong id="expenseChartTotal">₺0</strong></div></div><p id="expenseChartCaption" class="expense-chart-caption">Seçilen dönem</p></div>
+        <div id="expenseCategorySummary" class="expense-category-list"></div></div>
         <p id="expenseCategoryEmpty" class="empty">Seçilen dönemde gider kaydı bulunmuyor.</p>
       </section>
       <section class="panel personnel-report-panel">
@@ -283,7 +284,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=400"></script>
+  <script type="module" src="script.js?v=406"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>

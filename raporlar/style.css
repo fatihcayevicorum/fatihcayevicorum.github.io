@@ -59,3 +59,26 @@ button,.report-tabs{-webkit-tap-highlight-color:transparent}.report-tabs{display
 /* R400: grup > kategori > ödeme ayrıntısı */
 .expense-detail-back{margin:.25rem 0;padding:.45rem .7rem;border:1px solid var(--line);border-radius:9px;background:#f2e7dc;color:var(--burgundy-800);font:inherit;font-size:.62rem;font-weight:700;cursor:pointer}
 .expense-detail-list .expense-category-card{margin:0}
+
+/* R406: seçilen dönemin gider dağılımı */
+.expense-distribution-grid{display:grid;grid-template-columns:minmax(210px,.72fr) minmax(0,1.28fr);align-items:center;gap:1rem}
+.expense-distribution-grid.is-detail{grid-template-columns:1fr}
+.expense-distribution-grid .expense-category-list{grid-template-columns:1fr;align-content:start}
+.expense-chart-area[hidden],.expense-chart-back[hidden]{display:none}
+.expense-chart-area{text-align:center}
+.expense-chart-ring{display:grid;width:min(100%,215px);aspect-ratio:1;place-items:center;margin:.25rem auto .6rem;border-radius:50%;background:#e9ddd2}
+.expense-chart-hole{display:flex;width:59%;aspect-ratio:1;flex-direction:column;align-items:center;justify-content:center;padding:.25rem;border-radius:50%;background:#fffdf9}
+.expense-chart-hole small{color:var(--muted);font-size:.6rem}
+.expense-chart-hole strong{max-width:100%;color:var(--burgundy-800);font-size:clamp(.85rem,2vw,1.1rem);overflow-wrap:anywhere}
+.expense-chart-caption{margin:0;color:var(--muted);font-size:.56rem}
+.expense-chart-back{min-height:2.1rem;padding:.4rem .7rem;border:1px solid var(--line);border-radius:9px;color:var(--burgundy-800);background:#f2e7dc;font-size:.62rem;font-weight:700;cursor:pointer}
+.expense-chart-row{display:grid;width:100%;min-height:3.3rem;grid-template-columns:.7rem minmax(0,1fr) auto auto;align-items:center;gap:.55rem;padding:.65rem .7rem;border:1px solid var(--line);border-radius:11px;color:var(--ink);background:#fffaf4;font-family:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.expense-chart-row:active{transform:scale(.99)}.expense-chart-row:focus-visible,.expense-chart-back:focus-visible{outline:3px solid rgba(217,170,59,.45);outline-offset:2px}
+.expense-chart-dot{width:.68rem;height:.68rem;border-radius:50%;background:var(--expense-color)}
+.expense-chart-name{min-width:0}.expense-chart-name strong,.expense-chart-name small{display:block}.expense-chart-name strong{color:var(--burgundy-800);font-size:.68rem;overflow-wrap:anywhere}.expense-chart-name small{margin-top:.13rem;color:var(--muted);font-size:.53rem}
+.expense-chart-row>b{color:var(--burgundy-800);font-size:.68rem;white-space:nowrap}.expense-chart-row>i{color:var(--burgundy-700);font-size:.6rem}
+.expense-chart-payment{display:grid;grid-template-columns:2rem minmax(0,1fr) auto;align-items:center;gap:.6rem;padding:.7rem;border:1px solid var(--line);border-radius:11px;background:#fffaf4}
+.expense-chart-payment>i{display:grid;width:2rem;height:2rem;place-items:center;border-radius:9px;color:var(--burgundy-700);background:#f2e7dc}
+.expense-chart-payment span{min-width:0}.expense-chart-payment strong,.expense-chart-payment small{display:block}.expense-chart-payment strong{color:var(--burgundy-800);font-size:.66rem;overflow-wrap:anywhere}.expense-chart-payment small{margin-top:.13rem;color:var(--muted);font-size:.52rem}.expense-chart-payment>b{color:#aa2931;font-size:.68rem;white-space:nowrap}
+@media(max-width:700px){.expense-distribution-grid{grid-template-columns:1fr;gap:.75rem}.expense-chart-ring{width:min(100%,195px)}}
+@media(max-width:390px){.expense-chart-row{gap:.35rem;padding:.58rem}.expense-chart-payment{grid-template-columns:minmax(0,1fr) auto}.expense-chart-payment>i{display:none}}
