@@ -8,17 +8,13 @@ import{getManagementProfile}from"../assets/js/admin-access.js";
 const app=getApps().find(item=>item.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const defaultIncome=["İşletmeye Para Girişi","PET Şişe Dönüşüm İadesi","Diğer Gelir"];
 const defaultExpense=["Toptancı / Ürün Alımı","Faturalar","Kira","Elektrik","Su","İnternet","Demirbaş","Temizlik","Market","Manav","Bakım ve Onarım","Maaş Ödemesi","Diğer Gider"];
-const button=$("quickCashButton"),dialog=$("quickCashDialog"),form=$("quickCashForm"),category=$("quickCashCategory"),categoryButton=$("quickCashCategoryButton"),categoryLabel=$("quickCashCategoryLabel"),categoryPicker=$("quickCashCategoryPicker"),categorySearch=$("quickCashCategorySearch"),categoryList=$("quickCashCategoryList"),amount=$("quickCashAmount"),description=$("quickCashDescription"),save=$("saveQuickCash");
+const button=$("quickCashButton"),dialog=$("quickCashDialog"),form=$("quickCashForm"),category=$("quickCashCategory"),amount=$("quickCashAmount"),description=$("quickCashDescription"),save=$("saveQuickCash");
 let categories={income:defaultIncome,expense:defaultExpense},groups={income:[],expense:[]},activeBusinessDate=today(),busy=false;
 
 button?.addEventListener("click",openQuickCash);
 $("closeQuickCash")?.addEventListener("click",()=>dialog.close());
 $("cancelQuickCash")?.addEventListener("click",()=>dialog.close());
 form?.addEventListener("change",event=>{if(event.target.name==="quickCashType"){renderCategories();syncPersonnelAccounts()}});
-categoryButton?.addEventListener("click",()=>{const open=categoryPicker.hidden;categoryPicker.hidden=!open;categoryButton.setAttribute("aria-expanded",String(open));if(open){categorySearch.value="";renderCategoryPicker();setTimeout(()=>categorySearch.focus(),30)}});
-categorySearch?.addEventListener("input",renderCategoryPicker);
-categoryList?.addEventListener("click",event=>{const chosen=event.target.closest("[data-quick-category]");if(!chosen)return;const type=form.elements.quickCashType.value,item=(categories[type]||[]).find(x=>x.id===chosen.dataset.quickCategory);if(!item)return;category.value=item.id;categoryLabel.textContent=`${groupName(type,item)} / ${item.name}`;categoryButton.classList.add("is-selected");categoryPicker.hidden=true;categoryButton.setAttribute("aria-expanded","false")});
-form?.addEventListener("keydown",event=>{if(event.key==="Escape"&&!categoryPicker.hidden){event.preventDefault();event.stopPropagation();categoryPicker.hidden=true;categoryButton.setAttribute("aria-expanded","false");categoryButton.focus()}});
 form?.addEventListener("submit",saveQuickMovement);
 
 async function openQuickCash(){
@@ -54,9 +50,8 @@ async function loadBusinessDate(){
 
 function activeItems(items,defaults,type){const list=Array.isArray(items)&&items.length?items:defaults.map((name,i)=>({id:`${type}-${i+1}`,name,active:true}));return list.map((x,i)=>typeof x==="string"?{id:`${type}-${i+1}`,name:x,groupId:"",active:true}:{id:String(x.id||`${type}-${i+1}`),name:String(x.name||""),groupId:String(x.groupId||""),active:x.active!==false}).filter(x=>x.active&&x.name)}
 function groupItems(items,type){return[{id:`${type}-legacy`,name:"Diğer",active:true},...(Array.isArray(items)?items:[]).filter(x=>x&&x.id!==`${type}-legacy`).map(x=>({id:String(x.id),name:String(x.name||"Grup"),active:x.active!==false}))]}
-function groupName(type,item){return(groups[type]||[]).find(g=>g.id===(item.groupId||`${type}-legacy`))?.name||"Diğer"}
-function renderCategories(){category.value="";categoryLabel.textContent="Kategori seçin";categoryButton.classList.remove("is-selected");categoryPicker.hidden=true;categoryButton.setAttribute("aria-expanded","false");categorySearch.value="";renderCategoryPicker();renderAccountLabel()}
-function renderCategoryPicker(){const type=form.elements.quickCashType.value||"expense",items=categories[type]||[],query=categorySearch.value.trim().toLocaleLowerCase("tr-TR"),available=groups[type]||[],blocks=[];for(const group of available){if(!group.active)continue;const groupItems=items.filter(item=>(item.groupId||`${type}-legacy`)===group.id&&(!query||`${group.name} ${item.name}`.toLocaleLowerCase("tr-TR").includes(query)));if(!groupItems.length)continue;blocks.push(`<section class="quick-cash-category-group"><h3><i class="fa-solid fa-folder-open"></i>${esc(group.name)}</h3>${groupItems.map(item=>`<button type="button" data-quick-category="${esc(item.id)}" class="quick-cash-category-option"><i class="fa-solid fa-tag"></i><span>${esc(item.name)}</span></button>`).join("")}</section>`)}categoryList.innerHTML=blocks.join("");$("quickCashCategoryEmpty").hidden=blocks.length>0}
+const categoryOrder=new Intl.Collator("tr",{numeric:true,sensitivity:"base"});
+function renderCategories(){const type=form.elements.quickCashType.value||"expense",items=categories[type]||[],available=(groups[type]||[]).filter(g=>g.active).sort((a,b)=>categoryOrder.compare(a.name,b.name));category.innerHTML='<option value="" selected disabled>Kategori seçin</option>'+available.map(group=>{const children=items.filter(item=>(item.groupId||`${type}-legacy`)===group.id).sort((a,b)=>categoryOrder.compare(a.name,b.name));return children.length?`<optgroup label="${esc(group.name)}">${children.map(item=>`<option value="${esc(item.id)}">${esc(item.name)}</option>`).join("")}</optgroup>`:""}).join("");category.value="";renderAccountLabel()}
 
 function renderAccountLabel(){
   const label=$("quickCashCardLabel"),input=$("quickCashCardAccount"),income=form.elements.quickCashType.value==="income";

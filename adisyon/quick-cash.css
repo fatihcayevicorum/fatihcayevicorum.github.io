@@ -48,23 +48,3 @@
   .quick-cash-dialog .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
   .quick-cash-dialog .dialog-actions button{width:100%;min-width:0;min-height:40px;padding:0 10px;font-size:12px}
 }
-
-/* R402: tek alanda grup başlıkları ve alt kategoriler */
-.quick-cash-category-field{position:relative;margin:10px 0}
-.quick-cash-category-field>span{display:block;margin-bottom:5px;font-size:.72rem;font-weight:700}
-.quick-cash-category-button{display:flex;width:100%;min-height:44px;align-items:center;justify-content:space-between;gap:10px;padding:0 13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font:inherit;text-align:left;cursor:pointer}
-.quick-cash-category-button.is-selected{color:var(--ink);font-weight:700}
-.quick-cash-category-button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.quick-cash-category-button i{color:var(--red)}
-.quick-cash-category-picker{margin-top:7px;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fffdf9;box-shadow:0 8px 20px rgba(73,33,30,.09)}
-.quick-cash-category-picker[hidden]{display:none}
-#quickCashCategorySearch{width:100%;height:42px;margin:0 0 7px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:#fff}
-.quick-cash-category-list{max-height:min(35dvh,270px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
-.quick-cash-category-group h3{display:flex;align-items:center;gap:8px;margin:9px 4px 4px;padding:8px 9px;border-radius:9px;background:#f2e7dc;color:var(--red);font-size:.72rem}
-.quick-cash-category-group h3 i{font-size:.78rem}
-.quick-cash-category-option{display:flex;width:100%;min-height:43px;align-items:center;gap:10px;padding:8px 11px 8px 21px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:.72rem;text-align:left;cursor:pointer}
-.quick-cash-category-option i{color:var(--red);opacity:.7}
-.quick-cash-category-option:active{background:#f2e7dc;transform:scale(.99)}
-.quick-cash-category-option:focus-visible,.quick-cash-category-button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
-.quick-cash-category-empty{padding:14px;text-align:center;color:var(--muted);font-size:.7rem}
-@media(max-width:480px){.quick-cash-category-field>span{font-size:11px}.quick-cash-category-button{min-height:40px;font-size:13px}.quick-cash-category-list{max-height:min(31dvh,230px)}.quick-cash-category-option{min-height:42px;font-size:12px}}
