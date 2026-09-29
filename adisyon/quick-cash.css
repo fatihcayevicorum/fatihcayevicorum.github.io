@@ -38,7 +38,9 @@
 .quick-cash-category-button.is-selected{color:var(--ink);font-weight:700}
 .quick-cash-category-button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .quick-cash-category-button i{color:var(--red)}
-.quick-cash-category-picker{position:absolute;z-index:10;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:10px;background:var(--paper);box-shadow:0 12px 26px rgba(71,37,31,.2);scrollbar-width:thin}
+.quick-cash-category-picker{position:absolute;z-index:10;overflow-y:scroll;overscroll-behavior:contain;scrollbar-gutter:stable;border:1px solid var(--line);border-radius:10px;background:var(--paper);box-shadow:0 12px 26px rgba(71,37,31,.2);scrollbar-width:auto;scrollbar-color:#bba89b #f3ece5}
+.quick-cash-category-picker::-webkit-scrollbar{width:8px}
+.quick-cash-category-picker::-webkit-scrollbar-thumb{border-radius:8px;background:#bba89b}
 .quick-cash-category-picker[hidden]{display:none}
 .quick-cash-category-group{padding:9px 12px;background:#f2e7dc;color:var(--red);font-size:.7rem;font-weight:800}
 .quick-cash-category-option{display:block;width:100%;min-height:43px;padding:9px 13px 9px 22px;border:0;border-bottom:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:.73rem;text-align:left;cursor:pointer}
