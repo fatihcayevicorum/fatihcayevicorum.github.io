@@ -82,3 +82,23 @@ button,.report-tabs{-webkit-tap-highlight-color:transparent}.report-tabs{display
 .expense-chart-payment span{min-width:0}.expense-chart-payment strong,.expense-chart-payment small{display:block}.expense-chart-payment strong{color:var(--burgundy-800);font-size:.66rem;overflow-wrap:anywhere}.expense-chart-payment small{margin-top:.13rem;color:var(--muted);font-size:.52rem}.expense-chart-payment>b{color:#aa2931;font-size:.68rem;white-space:nowrap}
 @media(max-width:700px){.expense-distribution-grid{grid-template-columns:1fr;gap:.75rem}.expense-chart-ring{width:min(100%,195px)}}
 @media(max-width:390px){.expense-chart-row{gap:.35rem;padding:.58rem}.expense-chart-payment{grid-template-columns:minmax(0,1fr) auto}.expense-chart-payment>i{display:none}}
+
+/* R408: altı satırlık sabit gider paneli, kalan kayıtlar panel içinde kayar */
+.expense-categories-panel{height:30.75rem;display:flex;flex-direction:column;overflow:hidden}
+.expense-categories-panel>.section-heading{flex:0 0 3rem;min-height:0;align-items:center;overflow:hidden}
+.expense-categories-panel>.section-heading>div{min-width:0}
+.expense-categories-panel>.section-heading h2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.expense-distribution-grid{height:24.7rem;min-height:0;flex:0 0 24.7rem}
+.expense-distribution-grid .expense-category-list{height:24.7rem;min-height:0;grid-auto-rows:3.7rem;gap:.5rem;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(90,16,24,.4) transparent}
+.expense-chart-row,.expense-chart-payment{height:3.7rem;min-height:0;overflow:hidden}
+.expense-chart-name strong,.expense-chart-payment strong,.expense-chart-payment small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.expense-categories-panel>#expenseCategoryEmpty:not([hidden]){position:absolute;left:1rem;right:1rem;top:5rem}
+.expense-categories-panel{position:relative}
+@media(max-width:700px){
+  .expense-categories-panel{height:43.5rem}
+  .expense-categories-panel>.section-heading{flex-direction:row}
+  .expense-distribution-grid{height:37.5rem;flex-basis:37.5rem;grid-template-rows:11.8rem 24.7rem;gap:1rem}
+  .expense-distribution-grid.is-detail{grid-template-rows:24.7rem}
+  .expense-chart-ring{width:min(100%,155px);margin:0 auto .3rem}
+  .expense-chart-caption{font-size:.52rem}
+}

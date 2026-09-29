@@ -19,8 +19,8 @@ el.periodButtons.onclick=e=>{const button=e.target.closest("[data-period]");if(!
 el.applyRange.onclick=()=>{if(!el.startDate.value||!el.endDate.value)return show("Başlangıç ve bitiş tarihini seçin.");if(el.startDate.value>el.endDate.value)return show("Başlangıç tarihi bitişten sonra olamaz.");range={start:el.startDate.value,end:el.endDate.value};render()};
 el.categoryTabs.onclick=e=>{const button=e.target.closest("[data-category]");if(!button)return;category=button.dataset.category;renderProducts()};
 el.reportTabs.onclick=e=>{const button=e.target.closest("[data-report-tab]");if(button)setActiveReportTab(button.dataset.reportTab)};
-el.expenseCategorySummary.onclick=e=>{const group=e.target.closest("[data-expense-category]"),child=e.target.closest("[data-expense-subcategory]");if(group){expenseChartGroupId=group.dataset.expenseCategory;expenseChartCategoryId="";renderExpenseCategories()}else if(child){expenseChartCategoryId=child.dataset.expenseSubcategory;renderExpenseCategories()}};
-el.expenseChartBack.onclick=()=>{if(expenseChartCategoryId)expenseChartCategoryId="";else expenseChartGroupId="";renderExpenseCategories()};
+el.expenseCategorySummary.onclick=e=>{const group=e.target.closest("[data-expense-category]"),child=e.target.closest("[data-expense-subcategory]");if(group){expenseChartGroupId=group.dataset.expenseCategory;expenseChartCategoryId="";renderExpenseCategories();el.expenseCategorySummary.scrollTop=0}else if(child){expenseChartCategoryId=child.dataset.expenseSubcategory;renderExpenseCategories();el.expenseCategorySummary.scrollTop=0}};
+el.expenseChartBack.onclick=()=>{if(expenseChartCategoryId)expenseChartCategoryId="";else expenseChartGroupId="";renderExpenseCategories();el.expenseCategorySummary.scrollTop=0};
 document.querySelectorAll("[data-finance-detail]").forEach(button=>button.onclick=()=>openFinanceDetail(button.dataset.financeDetail));
 el.productSearch.oninput=renderProducts;
 el.stockProductSelect.onchange=renderStockReport;
