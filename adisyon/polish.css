@@ -735,6 +735,14 @@ button:focus:not(:focus-visible) {
 .view-top .connection-status{display:inline-flex;align-items:center;gap:5px;margin:0 2px 0 auto;color:var(--green);font-size:.66rem;font-weight:600}.view-top .connection-status i{font-size:.62rem}
 @media(max-width:700px){.view-top .connection-status{font-size:.6rem}}
 
+/* R412: Adisyon sunucu bağlantısının görünür durumu */
+.connection-status[data-state]{display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:7px 11px;border:1px solid #b7dbc7;border-radius:10px;background:#eaf7ef;color:#236443;font-size:.72rem;font-weight:700;line-height:1.35;text-align:left}
+.connection-status[data-state] i{font-size:.77rem;flex:none}
+.connection-status[data-state="pending"]{border-color:#ecd7a9;background:#fff8e9;color:#8b5b11}
+.connection-status[data-state="offline"],.connection-status[data-state="error"]{border-color:#ecc5c5;background:#fff0ef;color:#a52c34}
+.order-connection-status[data-state]{width:fit-content;margin:0 0 9px}
+@media(max-width:700px){.view-top{flex-wrap:wrap}.view-top .connection-status[data-state],.order-connection-status[data-state]{font-size:.66rem;padding:7px 9px}.view-top .connection-status[data-state]{margin-left:0}}
+
 /* R231 - Yalnız üst kontrol kartlarında dönen çevre çizgisi */
 @property --tea-border-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
 .open-total-card,.pos-tea-start{position:relative;overflow:hidden}.open-total-card{--orbit-color:#65b9dd}.pos-tea-card{--orbit-color:color-mix(in srgb,var(--tea-state,#b9a99e) 78%,#fff)}.pos-tea-start{--orbit-color:#e6b94d}
