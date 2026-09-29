@@ -235,3 +235,32 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 #expenseSettingsDialog.transfer-mode [data-category-form]{grid-template-columns:1fr auto}
 
 @media(min-width:761px){#incomeSettingsDialog .settings-dialog,#expenseSettingsDialog:not(.transfer-mode) .settings-dialog{height:min(88dvh,650px);max-height:650px}#incomeSettingsDialog .category-list,#expenseSettingsDialog:not(.transfer-mode) .category-list{flex:1 1 auto;height:auto;grid-auto-rows:minmax(44px,auto)}}
+
+/* R401: grup ve kategori yönetiminde bütün satırlar erişilebilir kalsın */
+#incomeSettingsDialog .settings-subpanel.category-panel,
+#expenseSettingsDialog:not(.transfer-mode) .settings-subpanel.category-panel{
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+}
+#incomeSettingsDialog .cash-group-list,
+#expenseSettingsDialog:not(.transfer-mode) .cash-group-list{
+  flex:0 0 auto;
+  max-height:none;
+  overflow:visible;
+}
+#incomeSettingsDialog .category-list,
+#expenseSettingsDialog:not(.transfer-mode) .category-list{
+  flex:0 0 auto;
+  height:auto;
+  max-height:none;
+  overflow:visible;
+  grid-auto-rows:minmax(44px,auto);
+}
+#incomeSettingsDialog .settings-done,
+#expenseSettingsDialog:not(.transfer-mode) .settings-done{
+  position:sticky;
+  bottom:0;
+  z-index:1;
+}
