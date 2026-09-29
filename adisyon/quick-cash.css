@@ -32,6 +32,19 @@
 .quick-cash-dialog label small{color:var(--muted);font-weight:500}
 .quick-cash-date{margin:10px 0 0;padding:9px 11px;border-radius:10px;color:var(--muted);background:#f5eee6;font-size:.68rem;text-align:center}
 .quick-cash-dialog .dialog-actions button{min-width:105px}
+.quick-cash-category-field{margin:10px 0}
+.quick-cash-category-field>span{display:block;margin-bottom:5px;font-size:.72rem;font-weight:700}
+.quick-cash-category-button{display:flex;width:100%;min-height:44px;align-items:center;justify-content:space-between;gap:10px;padding:0 13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font:inherit;font-size:.76rem;text-align:left;cursor:pointer}
+.quick-cash-category-button.is-selected{color:var(--ink);font-weight:700}
+.quick-cash-category-button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quick-cash-category-button i{color:var(--red)}
+.quick-cash-category-picker{position:absolute;z-index:10;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:10px;background:var(--paper);box-shadow:0 12px 26px rgba(71,37,31,.2);scrollbar-width:thin}
+.quick-cash-category-picker[hidden]{display:none}
+.quick-cash-category-group{padding:9px 12px;background:#f2e7dc;color:var(--red);font-size:.7rem;font-weight:800}
+.quick-cash-category-option{display:block;width:100%;min-height:43px;padding:9px 13px 9px 22px;border:0;border-bottom:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:.73rem;text-align:left;cursor:pointer}
+.quick-cash-category-option:active{background:#f2e7dc}
+.quick-cash-category-button:focus-visible,.quick-cash-category-option:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+.quick-cash-category-empty{margin:0;padding:14px;color:var(--muted);font-size:.72rem}
 @media(max-width:480px){
   .quick-cash-dialog{width:min(calc(100vw - 32px),360px);max-height:calc(100dvh - 28px)}
   .quick-cash-dialog .dialog-card{max-height:calc(100dvh - 28px);padding:13px;border-radius:16px}
@@ -47,4 +60,8 @@
   .quick-cash-date{margin-top:7px;padding:7px 8px;font-size:10px}
   .quick-cash-dialog .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
   .quick-cash-dialog .dialog-actions button{width:100%;min-width:0;min-height:40px;padding:0 10px;font-size:12px}
+  .quick-cash-category-field{margin:7px 0}
+  .quick-cash-category-field>span{font-size:11px}
+  .quick-cash-category-button{min-height:40px;font-size:13px}
+  .quick-cash-category-option{min-height:42px;font-size:12px}
 }
