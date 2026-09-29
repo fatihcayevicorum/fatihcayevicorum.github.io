@@ -8,14 +8,14 @@ import{getManagementProfile}from"../assets/js/admin-access.js";
 const app=getApps().find(item=>item.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const defaultIncome=["İşletmeye Para Girişi","PET Şişe Dönüşüm İadesi","Diğer Gelir"];
 const defaultExpense=["Toptancı / Ürün Alımı","Faturalar","Kira","Elektrik","Su","İnternet","Demirbaş","Temizlik","Market","Manav","Bakım ve Onarım","Maaş Ödemesi","Diğer Gider"];
-const button=$("quickCashButton"),dialog=$("quickCashDialog"),form=$("quickCashForm"),category=$("quickCashCategory"),amount=$("quickCashAmount"),description=$("quickCashDescription"),save=$("saveQuickCash");
-let categories={income:defaultIncome,expense:defaultExpense},activeBusinessDate=today(),busy=false;
+const button=$("quickCashButton"),dialog=$("quickCashDialog"),form=$("quickCashForm"),category=$("quickCashCategory"),groupSelect=$("quickCashGroup"),amount=$("quickCashAmount"),description=$("quickCashDescription"),save=$("saveQuickCash");
+let categories={income:defaultIncome,expense:defaultExpense},groups={income:[],expense:[]},activeBusinessDate=today(),busy=false;
 
 button?.addEventListener("click",openQuickCash);
 $("closeQuickCash")?.addEventListener("click",()=>dialog.close());
 $("cancelQuickCash")?.addEventListener("click",()=>dialog.close());
 form?.addEventListener("change",event=>{if(event.target.name==="quickCashType"){renderCategories();syncPersonnelAccounts()}});
-form?.addEventListener("submit",saveQuickMovement);
+groupSelect?.addEventListener("change",renderCategories);form?.addEventListener("submit",saveQuickMovement);
 
 async function openQuickCash(){
   const profile=await getManagementProfile(auth.currentUser,db),personnel=profile?.permissions?.includes("personnel");
@@ -40,25 +40,17 @@ function syncPersonnelAccounts(){const personnel=form.dataset.personnel==="true"
 async function loadCategories(){
   try{
     const snapshot=await getDoc(doc(db,"adminCashSettings","config")),data=snapshot.exists()?snapshot.data():{};
-    categories={income:activeNames(data.incomeCategories,defaultIncome),expense:activeNames(data.expenseCategories,defaultExpense)};
-  }catch(error){console.error(error);categories={income:defaultIncome,expense:defaultExpense};toast("Kasa kategorileri alınamadı; varsayılan liste açıldı.")}
+    categories={income:activeItems(data.incomeCategories,defaultIncome,"income"),expense:activeItems(data.expenseCategories,defaultExpense,"expense")};groups={income:groupItems(data.incomeGroups,"income"),expense:groupItems(data.expenseGroups,"expense")};
+  }catch(error){console.error(error);categories={income:activeItems([],defaultIncome,"income"),expense:activeItems([],defaultExpense,"expense")};groups={income:groupItems([],"income"),expense:groupItems([],"expense")};toast("Kasa kategorileri alınamadı; varsayılan liste açıldı.")}
 }
 
 async function loadBusinessDate(){
   try{const snapshot=await getDoc(doc(db,"adminAppSettings","pos")),data=snapshot.exists()?snapshot.data():{};activeBusinessDate=data.currentBusinessDate||today()}catch(error){console.warn(error);activeBusinessDate=today()}
 }
 
-function activeNames(items,defaults){
-  if(!Array.isArray(items)||!items.length)return defaults;
-  const names=items.filter(item=>typeof item==="string"||item?.active!==false).map(item=>typeof item==="string"?item:String(item?.name||"").trim()).filter(Boolean);
-  return names.length?names:defaults;
-}
-
-function renderCategories(){
-  const type=form.elements.quickCashType.value||"expense",items=categories[type]||[];
-  category.innerHTML=items.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("");
-  renderAccountLabel();
-}
+function activeItems(items,defaults,type){const list=Array.isArray(items)&&items.length?items:defaults.map((name,i)=>({id:`${type}-${i+1}`,name,active:true}));return list.map((x,i)=>typeof x==="string"?{id:`${type}-${i+1}`,name:x,groupId:"",active:true}:{id:String(x.id||`${type}-${i+1}`),name:String(x.name||""),groupId:String(x.groupId||""),active:x.active!==false}).filter(x=>x.active&&x.name)}
+function groupItems(items,type){return[{id:`${type}-legacy`,name:"Diğer",active:true},...(Array.isArray(items)?items:[]).filter(x=>x&&x.id!==`${type}-legacy`).map(x=>({id:String(x.id),name:String(x.name||"Grup"),active:x.active!==false}))]}
+function renderCategories(){const type=form.elements.quickCashType.value||"expense",items=categories[type]||[],available=groups[type]||groupItems([],type),previous=groupSelect.value,active=available.filter(g=>g.active&&items.some(x=>(x.groupId||`${type}-legacy`)===g.id));groupSelect.innerHTML=active.map(g=>`<option value="${esc(g.id)}">${esc(g.name)}</option>`).join("");if(active.some(g=>g.id===previous))groupSelect.value=previous;category.innerHTML=items.filter(x=>(x.groupId||`${type}-legacy`)===groupSelect.value).map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");renderAccountLabel()}
 
 function renderAccountLabel(){
   const label=$("quickCashCardLabel"),input=$("quickCashCardAccount"),income=form.elements.quickCashType.value==="income";
@@ -69,16 +61,16 @@ function renderAccountLabel(){
 async function saveQuickMovement(event){
   event.preventDefault();
   if(busy)return;
-  const type=form.elements.quickCashType.value,account=form.elements.quickCashAccount.value,value=Number(amount.value),selectedCategory=category.value,note=description.value.trim();
+  const type=form.elements.quickCashType.value,account=form.elements.quickCashAccount.value,value=Number(amount.value),selectedItem=(categories[type]||[]).find(x=>x.id===category.value),selectedGroup=(groups[type]||[]).find(x=>x.id===groupSelect.value),selectedCategory=selectedItem?.name||"",note=description.value.trim();
   if(form.dataset.personnel==="true"&&type==="expense"&&account!=="cash")return toast("Personel yalnızca nakit gider ekleyebilir.");
   const validAccount=type==="income"?["cash","bank","card"].includes(account):["cash","bank","creditCard"].includes(account);
   if(!["income","expense"].includes(type)||!validAccount)return toast("İşlem türü veya hesap seçimi geçersiz.");
   if(!Number.isFinite(value)||value<=0)return toast("Geçerli bir tutar girin.");
-  if(!selectedCategory)return toast("Bir kategori seçin.");
+  if(!selectedCategory||!selectedGroup||!selectedGroup.active||(selectedItem.groupId||`${type}-legacy`)!==selectedGroup.id)return toast("Grup ve kategori seçin.");
   busy=true;save.disabled=true;save.textContent="Kaydediliyor…";
   const createdAtMs=Date.now();
   try{
-    await setDoc(doc(collection(db,"adminCashMovements")),{type,amount:value,account,fromAccount:"",toAccount:"",category:selectedCategory,description:note||selectedCategory,businessDate:activeBusinessDate,automatic:false,source:"pos-quick-cash",createdAtMs,updatedAtMs:createdAtMs,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),createdBy:auth.currentUser.uid});
+    await setDoc(doc(collection(db,"adminCashMovements")),{type,amount:value,account,fromAccount:"",toAccount:"",category:selectedCategory,categoryId:selectedItem.id,groupId:selectedGroup.id,groupName:selectedGroup.name,description:note||selectedCategory,businessDate:activeBusinessDate,automatic:false,source:"pos-quick-cash",createdAtMs,updatedAtMs:createdAtMs,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),createdBy:auth.currentUser.uid});
     dialog.close();
     toast(`${type==="expense"?"Gider":"Gelir"} kasa bölümüne kaydedildi.`);
   }catch(error){console.error(error);toast("Kasa hareketi kaydedilemedi. Yetki ve bağlantıyı kontrol edin.")}

@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=341">
+  <link rel="stylesheet" href="style.css?v=400">
 </head>
 <body>
   <header class="app-header">
@@ -111,7 +111,7 @@
         </div>
       </section>
       <section class="panel expense-categories-panel">
-        <div class="section-heading"><div><p class="kicker">Kalem kalem</p><h2>Gider Kategorileri</h2></div><small>Kategoriye basınca ödemeler tek tek açılır</small></div>
+        <div class="section-heading"><div><p class="kicker">Kalem kalem</p><h2>Gider Grupları</h2></div><small>Gruba, ardından kategoriye basınca ödemeler açılır</small></div>
         <div id="expenseCategorySummary" class="expense-category-list"></div>
         <p id="expenseCategoryEmpty" class="empty">Seçilen dönemde gider kaydı bulunmuyor.</p>
       </section>
@@ -250,7 +250,7 @@
       <div class="expense-detail-head"><div><p class="kicker">Seçilen dönem</p><h2 id="expenseDetailTitle">Gider Detayı</h2></div><button id="closeExpenseDetail" type="button" aria-label="Kapat">×</button></div>
       <p id="expenseDetailPeriod" class="expense-detail-period"></p>
       <div id="expenseDetailSummary" class="expense-detail-summary"></div>
-      <div class="expense-detail-list-head"><h3>Yapılan Ödemeler</h3><span id="expenseDetailCount">0 İşlem</span></div>
+      <button id="expenseDetailBack" class="expense-detail-back" type="button" hidden><i class="fa-solid fa-arrow-left"></i> Kategorilere Dön</button><div class="expense-detail-list-head"><h3 id="expenseDetailListTitle">Kategoriler</h3><span id="expenseDetailCount">0 İşlem</span></div>
       <div id="expenseDetailList" class="expense-detail-list"></div>
       <p id="expenseDetailEmpty" class="empty">Bu kategoride ödeme bulunmuyor.</p>
       <div class="expense-detail-actions"><button id="closeExpenseDetailBottom" class="primary" type="button">Kapat</button></div>
@@ -283,7 +283,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=381"></script>
+  <script type="module" src="script.js?v=400"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>

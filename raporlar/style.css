@@ -55,3 +55,7 @@ button,.report-tabs{-webkit-tap-highlight-color:transparent}.report-tabs{display
 @media(max-width:800px){.report-tabs{grid-template-columns:1fr 1fr}.personnel-performance-summary,.personnel-performance-stats{grid-template-columns:1fr 1fr}.personnel-performance-card>summary{grid-template-columns:minmax(0,1fr) auto}.personnel-performance-main{padding:.45rem .55rem;border-radius:9px;background:#f7efe7}.personnel-performance-chevron{grid-column:2;grid-row:1}}
 @media(max-width:560px){.personnel-performance-summary,.personnel-performance-stats,.personnel-performance-stats.wage,.personnel-product-list{grid-template-columns:1fr 1fr}.personnel-performance-card>summary{gap:.45rem}.personnel-performance-person{grid-column:1/-1}.personnel-performance-chevron{grid-column:2;grid-row:2}.personnel-action{grid-template-columns:auto minmax(0,1fr)}.personnel-action>b{grid-column:2;text-align:right}}
 @media(max-width:390px){.personnel-performance-summary,.personnel-performance-stats,.personnel-performance-stats.wage,.personnel-product-list{grid-template-columns:1fr}}
+
+/* R400: grup > kategori > ödeme ayrıntısı */
+.expense-detail-back{margin:.25rem 0;padding:.45rem .7rem;border:1px solid var(--line);border-radius:9px;background:#f2e7dc;color:var(--burgundy-800);font:inherit;font-size:.62rem;font-weight:700;cursor:pointer}
+.expense-detail-list .expense-category-card{margin:0}
