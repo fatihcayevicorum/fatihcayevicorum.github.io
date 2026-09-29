@@ -146,16 +146,18 @@ function renderExpenseCategories(){
   el.expenseChartTitle.textContent=child?`${activeGroup.name} / ${child.name} — Ödemeler`:activeGroup?`${activeGroup.name} — Kategoriler`:"Gruplara Göre";
   el.expenseChartCaption.textContent=`${formatDate(range.start)}${range.start===range.end?"":` – ${formatDate(range.end)}`}`;
   el.expenseCategoryEmpty.hidden=parts.length>0||!!child;
-  el.expenseChartArea.hidden=!!child||!parts.length;
-  el.expenseChartArea.parentElement.classList.toggle("is-detail",!!child||!parts.length);
+  el.expenseChartArea.hidden=!!activeGroup||!parts.length;
+  el.expenseChartArea.parentElement.classList.toggle("is-detail",!!activeGroup||!parts.length);
   if(!child&&parts.length){
     const total=parts.reduce((sum,item)=>sum+item.total,0),segments=[];let start=0;
-    parts.forEach((item,index)=>{const end=index===parts.length-1?100:start+(total?item.total/total*100:0);segments.push(`${expenseChartColors[index%expenseChartColors.length]} ${start.toFixed(4)}% ${end.toFixed(4)}%`);start=end});
-    el.expenseChartRing.style.background=total?`conic-gradient(${segments.join(",")})`:"#e9ddd2";
-    el.expenseChartRing.setAttribute("aria-label",`${activeGroup?activeGroup.name:"Gider grupları"} dağılımı: ${parts.map(item=>`${item.name} ${money(item.total)}`).join(", ")}`);
-    el.expenseChartCenterLabel.textContent=activeGroup?"Grup toplamı":"Toplam gider";
-    el.expenseChartTotal.textContent=money(total);
-    el.expenseCategorySummary.innerHTML=parts.map((item,index)=>`<button class="expense-chart-row" type="button" ${activeGroup?`data-expense-subcategory="${esc(item.id)}"`:`data-expense-category="${esc(item.id)}"`} style="--expense-color:${expenseChartColors[index%expenseChartColors.length]}"><span class="expense-chart-dot"></span><span class="expense-chart-name"><strong>${esc(item.name)}</strong><small>${item.rows.length} ödeme · %${new Intl.NumberFormat("tr-TR",{maximumFractionDigits:1}).format(total?item.total/total*100:0)}</small></span><b>${money(item.total)}</b><i class="fa-solid fa-chevron-right"></i></button>`).join("");
+    if(!activeGroup){
+      parts.forEach((item,index)=>{const end=index===parts.length-1?100:start+(total?item.total/total*100:0);segments.push(`${expenseChartColors[index%expenseChartColors.length]} ${start.toFixed(4)}% ${end.toFixed(4)}%`);start=end});
+      el.expenseChartRing.style.background=total?`conic-gradient(${segments.join(",")})`:"#e9ddd2";
+      el.expenseChartRing.setAttribute("aria-label",`Gider grupları dağılımı: ${parts.map(item=>`${item.name} ${money(item.total)}`).join(", ")}`);
+      el.expenseChartCenterLabel.textContent="Toplam gider";
+      el.expenseChartTotal.textContent=money(total);
+    }
+    el.expenseCategorySummary.innerHTML=parts.map((item,index)=>`<button class="expense-chart-row" type="button" ${activeGroup?`data-expense-subcategory="${esc(item.id)}"`:`data-expense-category="${esc(item.id)}"`} style="--expense-color:${expenseChartColors[index%expenseChartColors.length]}"><span class="expense-chart-dot"></span><span class="expense-chart-name"><strong>${esc(item.name)}</strong><small>${item.rows.length} ödeme${activeGroup?"":` · %${new Intl.NumberFormat("tr-TR",{maximumFractionDigits:1}).format(total?item.total/total*100:0)}`}</small></span><b>${money(item.total)}</b><i class="fa-solid fa-chevron-right"></i></button>`).join("");
   }else if(child){
     el.expenseCategorySummary.innerHTML=child.rows.map(row=>`<article class="expense-chart-payment"><i class="fa-solid ${expenseCategoryIcon(row.category)}"></i><span><strong>${esc(row.description||row.category||"Gider")}</strong><small>${formatDate(row.businessDate||dateFromTimestamp(row.createdAt))}${reportTime(row)?` • ${formatTime(reportTime(row))}`:""} · ${expenseAccountLabel(row.account)}</small></span><b>− ${money(row.amount)}</b></article>`).join("");
   }else el.expenseCategorySummary.innerHTML="";
