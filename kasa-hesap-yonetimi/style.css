@@ -264,3 +264,12 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
   bottom:0;
   z-index:1;
 }
+/* R409: Kasa raporunda başlık ve araçlar sabit, yalnızca rapor içeriği kayar. */
+#reportDialog{max-width:calc(100vw - 20px);max-height:calc(100dvh - 20px);overflow:visible}
+#reportDialog .report-dialog{width:min(94vw,720px);height:min(90dvh,850px);max-height:calc(100dvh - 20px);display:flex;flex-direction:column;overflow:hidden}
+#reportDialog .dialog-head{flex:none;min-height:52px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+#reportDialog .dialog-head>div{min-width:0}
+#reportDialog .dialog-head>button{flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0}
+#reportDialog .report-toolbar{flex:none;padding:3px 0 10px}
+#reportDialog #reportContent{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+@media(max-width:760px){#reportDialog .report-dialog{height:92dvh}}

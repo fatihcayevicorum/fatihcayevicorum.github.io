@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=401">
+  <link rel="stylesheet" href="style.css?v=409">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=7">
   <style>
     #transferSettingsDialog .settings-dialog{width:min(850px,calc(100vw - 40px));height:520px;min-height:0;max-height:calc(100dvh - 32px);overflow:auto}
@@ -52,7 +52,7 @@
 
 <dialog id="deleteDialog"><div class="dialog-card confirm-card"><i class="fa-solid fa-trash-can"></i><h2>Hareket silinsin mi?</h2><p>Bu manuel kayıt kasa bakiyelerinden de çıkarılacak.</p><div class="dialog-actions"><button id="cancelDelete" class="soft">Vazgeç</button><button id="confirmDelete" class="danger-button">Sil</button></div></div></dialog>
 
-<dialog id="reportDialog"><div class="dialog-card report-dialog"><div class="dialog-head"><div><p class="kicker">Gizli mali özet</p><h2>Kasa Raporları</h2></div><button type="button" id="closeReport">×</button></div><div class="report-toolbar"><label>Rapor ayı<input id="reportMonth" type="month" min="2026-08"></label><button id="reportPdfButton" type="button"><i class="fa-solid fa-file-pdf"></i> PDF İndir</button></div><div id="reportContent"></div></div></dialog>
+<dialog id="reportDialog"><div class="dialog-card report-dialog"><div class="dialog-head"><div><p class="kicker">Gizli mali özet</p><h2>Kasa Raporları</h2></div><button type="button" id="closeReport" aria-label="Kapat">×</button></div><div class="report-toolbar"><label>Rapor ayı<input id="reportMonth" type="month" min="2026-08"></label><button id="reportPdfButton" type="button"><i class="fa-solid fa-file-pdf"></i> PDF İndir</button></div><div id="reportContent"></div></div></dialog>
 
 <dialog id="settingsDialog" class="cash-settings-modal"><div class="dialog-card settings-dialog settings-menu-dialog"><div class="dialog-head"><div><p class="kicker">Kasa kurulumu</p><h2>Kasa Ayarları</h2></div><button type="button" id="closeSettings" aria-label="Kapat">×</button></div><div id="settingsMenu" class="settings-menu"><button type="button" data-settings-panel="opening"><i class="fa-solid fa-coins"></i><span><b>Başlangıç Bakiyeleri</b><small>Nakit, banka ve kredi kartı açılışı</small></span><i class="fa-solid fa-chevron-right"></i></button><button type="button" data-settings-panel="income"><i class="fa-solid fa-arrow-trend-up"></i><span><b>Gelirler</b><small>Gelir grupları ve kategorileri</small></span><i class="fa-solid fa-chevron-right"></i></button><button type="button" data-settings-panel="expense"><i class="fa-solid fa-arrow-trend-down"></i><span><b>Giderler</b><small>Gider grupları ve kategorileri</small></span><i class="fa-solid fa-chevron-right"></i></button><button type="button" data-settings-panel="transfer"><i class="fa-solid fa-right-left"></i><span><b>Hesap Aktarım Kategorileri</b><small>Aktarım türlerini ekle, sırala ve pasife al</small></span><i class="fa-solid fa-chevron-right"></i></button></div></div></dialog>
 
@@ -69,5 +69,5 @@
 <dialog id="reminderPaidDialog"><div class="dialog-card reminder-paid-dialog"><div class="reminder-paid-icon"><i class="fa-solid fa-check"></i></div><p class="kicker">Ödeme doğrulama</p><h2>Ödeme yapıldı mı?</h2><p id="reminderPaidText">Bu kayıt Ödenenler bölümüne taşınacak.</p><div class="dialog-actions"><button id="cancelReminderPaid" class="soft" type="button">Vazgeç</button><button id="confirmReminderPaid" class="reminder-paid-confirm" type="button"><i class="fa-solid fa-check"></i> Evet, Ödendi</button></div></div></dialog>
 
 <div id="toast" class="toast"></div>
-  <script type="module" src="script.js?v=400"></script><script type="module" src="../assets/js/system-ui.js?v=395"></script>
+  <script type="module" src="script.js?v=409"></script><script type="module" src="../assets/js/system-ui.js?v=395"></script>
 </body></html>
