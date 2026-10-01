@@ -20,8 +20,9 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r415-kucuk-baglanti-yazisi",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
-const CORE=["./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
+const VERSION="fatih-cay-evi-r416-aday";
+const CORE=[
+  "./birikim-hesaplari/","./birikim-hesaplari/index.html","./birikim-hesaplari/style.css","./birikim-hesaplari/script.js","./assets/js/savings.js","./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/admin-push.js","./assets/js/customer-push.js","./assets/js/merchant-push.js","./assets/js/admin-notifications.js","./assets/js/notification-sounds.js",
   "./menu.html","./assets/css/menu.css","./assets/js/menu.js","./yonetici-giris.html","./assets/css/yonetici-giris.css","./assets/js/yonetici-giris.js","./esnaf-giris.html","./assets/css/esnaf-giris.css","./assets/js/esnaf-giris.js",
@@ -61,8 +62,8 @@ self.addEventListener("fetch",event=>{
     event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok||response.type==="opaque"){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response})));
     return;
   }
-  if(url.pathname.endsWith("/assets/js/system-ui.js")&&url.searchParams.get("v")!=="395"){
-    const latest=new URL(url);latest.searchParams.set("v","395");
+  if(url.pathname.endsWith("/assets/js/system-ui.js")&&url.searchParams.get("v")!=="416"){
+    const latest=new URL(url);latest.searchParams.set("v","416");
     event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));
     return;
   }

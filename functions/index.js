@@ -515,3 +515,12 @@ exports.syncRecipeMenuOnWrite=onDocumentWritten({document:"publicMenu/catalog",r
  const recipes=items=>JSON.stringify(items.map(i=>({id:i.id,recipe:i.recipe||[]})));
  if(recipes(before)!==recipes(after))await syncPublicMenuStockAvailability();
 });
+
+// R416 candidate: private savings APIs, server-side PIN grant, atomic ledger.
+const savingsHandlers=require("./savings").buildSavings({db,FieldValue,HttpsError,ownerUid:OWNER_UID,pinHash,safeHashEqual});
+exports.unlockSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.unlock);
+exports.readSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.read);
+exports.manageSavingsAccount=onCall({region:"europe-west1",cors:true},savingsHandlers.account);
+exports.saveSavingsMovement=onCall({region:"europe-west1",cors:true,timeoutSeconds:120},savingsHandlers.movement);
+exports.lockSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.lockSession);
+exports.savingsStatus=onCall({region:"europe-west1",cors:true},savingsHandlers.status);

@@ -6,8 +6,29 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      approve_r416:
+        description: 'R416 aday testi tamamlandı; canlı dağıtıma onay veriyorum'
+        required: true
+        type: boolean
+        default: false
 jobs:
+  savings_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check and test R416 savings
+        working-directory: functions
+        run: |
+          npm run check
+          npm test
   build_and_deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.approve_r416 == true && github.ref == 'refs/heads/main'
+    needs: savings_tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

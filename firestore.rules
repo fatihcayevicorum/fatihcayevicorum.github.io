@@ -48,7 +48,8 @@ service cloud.firestore {
           || get(/databases/$(database)/documents/adminFinanceDays/$(date)).data.locked != true);
     }
     function validFinanceMovement(data) {
-      return data.type in ['income', 'expense', 'transfer']
+      return data.get('source', '') != 'savings'
+        && data.type in ['income', 'expense', 'transfer']
         && data.amount is number
         && data.amount > 0
         && financeDateOpen(data.businessDate)
@@ -275,7 +276,9 @@ service cloud.firestore {
           && validPosInstantMovement(request.resource.data)
           && request.resource.data.amount > 0
           && isPosInstantDocument(document, request.resource.data.account));
-      allow update: if financeDateOpen(resource.data.businessDate)
+      allow update: if resource.data.get('source', '') != 'savings'
+        && request.resource.data.get('source', '') != 'savings'
+        && financeDateOpen(resource.data.businessDate)
         && request.resource.data.businessDate == resource.data.businessDate
         && ((hasPanel('cash') && validFinanceMovement(request.resource.data))
           || ((hasPanel('pos') || hasCurrentAccountWriteAccess())
@@ -288,6 +291,7 @@ service cloud.firestore {
             && request.resource.data.sourceGroup == resource.data.sourceGroup
             && request.resource.data.cashMovementVersion == resource.data.cashMovementVersion));
       allow delete: if hasPanel('cash')
+        && resource.data.get('source', '') != 'savings'
         && financeDateOpen(resource.data.businessDate);
     }
     match /adminFinanceDays/{businessDate} {
@@ -396,8 +400,12 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    match /{document=**} {
-      allow read, write: if isOwner();
+    // Savings collections use callable APIs even for the owner; PIN is server verified.
+    match /{collection}/{document=**} {
+      allow read, write: if isOwner()
+        && !(collection in ['adminCashMovements', 'adminSavingsAccounts',
+          'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
+          'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions']);
     }
   }
 }

@@ -6,6 +6,8 @@ import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),functions=getFunctions(app,"europe-west1"),readSystemBackup=httpsCallable(functions,"readSystemBackup"),$=id=>document.getElementById(id);
+import{savingsApi,savingsError}from"../assets/js/savings.js?v=416";
+
 const CURRENT_ACCOUNT_COLLECTIONS=["adminCurrentAccounts","adminCurrentAccountMovements"];
 const MUTABLE_COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","adminPurchaseOrders","adminCreditCustomers","adminCreditMovements",...CURRENT_ACCOUNT_COLLECTIONS,"merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","adminPersonnel","adminPersonnelAttendance","adminPersonnelPayments"];
 const CREATE_ONLY_COLLECTIONS=["adminFinanceDays"];
@@ -44,6 +46,7 @@ async function createBackup({download=true,reason="manual"}={}){
 
 async function collectAllData(){
   const collections={},documents={};let totalRecords=0;
+  const savingsStatus=await savingsApi("status");if(savingsStatus.hasSavings){const backup=await savingsApi("read",{backup:true});for(const [name,items]of Object.entries(backup.collections)){collections[name]=items.map(x=>{const{id,...data}=x;return{id,data:encode(data)}});totalRecords+=items.length}}
   for(const name of COLLECTIONS){setProgress(`${displayName(name)} yedekleniyor…`);const snap=await getDocs(collection(db,name));collections[name]=snap.docs.map(d=>({id:d.id,data:encode(d.data())}));totalRecords+=snap.size}
   for(const [col,id] of SINGLE_DOCS){const snap=await getDoc(doc(db,col,id));documents[`${col}/${id}`]=snap.exists()?{id,data:encode(snap.data())}:null;if(snap.exists())totalRecords++}
   return{app:"Fatih Çay Evi",type:"full-firestore-backup",backupVersion:4,createdAt:new Date().toISOString(),createdAtMs:Date.now(),totalRecords,collections,documents};
@@ -80,6 +83,7 @@ function prepareCleanup(){
 async function runCleanup(selected){
   if(busy)return;
   try{
+    if(selected.some(x=>["cashAccounts","closings","businessDate"].includes(x))&&(await savingsApi("status")).hasSavings)return toast("Birikim hesapları varken kasa, gün sonu veya işletme tarihi temizlenemez. Birikim mutabakatı korunmalıdır.");
     await createBackup({download:true,reason:"before-cleanup"});
     setBusy(true,"Seçilen veriler temizleniyor…");
     if(selected.includes("sales")){await deleteCollection("adminSales");await deleteCollection("adminOrders")}
@@ -116,6 +120,8 @@ async function restoreBackup(mode){
   if(busy||!pendingRestore)return;
   try{
     const data=pendingRestore;
+    const containsSavings=Object.entries(data.collections||{}).some(([name,items])=>name.startsWith("adminSavings")&&items.length>0)||(data.collections?.adminCashMovements||[]).some(x=>x.data?.source==="savings");
+    if(containsSavings||(await savingsApi("status")).hasSavings)return toast("Birikim içeren sistemin geri yüklenmesi bu aday sürümde desteklenmiyor. Kasa ve birikim kayıtlarının birlikte geri yüklenmesi gerekir; hiçbir veri değiştirilmedi.");
     await createBackup({download:true,reason:"before-restore"});
     setBusy(true,"Yedek geri yükleniyor…");
     if(mode==="replace"){for(const name of MUTABLE_COLLECTIONS)await deleteCollection(name);for(const [col,id] of SINGLE_DOCS)await deleteDoc(doc(db,col,id)).catch(()=>{})}

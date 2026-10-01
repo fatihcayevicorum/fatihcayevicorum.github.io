@@ -1,0 +1,119 @@
+FATİH ÇAY EVİ — R416 ADAY TAM SİSTEM
+Birikim Hesapları — Yerel test ve kurulum raporu
+
+DURUM
+Bu paket R415 üzerine geliştirilmiş ADAY sürümdür. Onaylı ana sürüm R415'tir.
+Üretime dağıtım yapılmadı; canlı Firestore verisine erişilmedi/değiştirilmedi.
+Bu dosya, canlı kabul testlerinin tamamlandığını veya bütün şartların sağlandığını ifade etmez.
+R415 ZIP SHA-256 (önce/sonra aynı):
+0e26d80fb9087cd6b5944c3a75665b6a85dca3bb7582f7cdca5a17c1646cf3dc
+R415'in 130 dosyası pakette korunmuştur; yalnızca aşağıdaki değişiklik listesinde bulunan dosyalar aday kopyada değişmiştir.
+Orijinal ZIP veya inceleme kopyasında commit/değişiklik yoktur; çalışma ayrı r416_aday kopyasındadır.
+Kaynak kurallar dosyasında bağımsız sürüm alanı yoktur ve eski R177 ifadesi bulunur. Güncel referans kullanıcı tarafından onaylı R415 ZIP'idir.
+
+EKLENENLER
+- Yönetim Merkezi'nde yalnızca ana yöneticinin gördüğü Birikim Hesapları.
+- TL, döviz (üç harfli kod), altın/gümüş gram, hisse/fon, vadeli ve diğer yatırım hesabı.
+- Aynı türden birden fazla hesap; benzersiz hesap kimliği ve benzersiz ad.
+- Her hesap sıfır bakiyeyle açılır; varlık türü, kodu ve birimi değişmez.
+- Aktif birikim hesapları mevcut hesap aktarım penceresinde otomatik seçenek olur.
+- Tek kaynak ve tek hedef: nakit/banka TL -> birikim; birikim -> nakit/banka TL.
+- Miktar ve işlem kuru girilir, kaynak çıkışı/hedef girişi/TL tutarı görülerek onaylanır.
+- Hesaba dokununca saatli geçmiş, işlem kuru/kaynağı, işlem kimliği ve eski/iptal kayıtlar görünür.
+- Günlük İşlemler'de Birikim satırları Düzenle / İptal Et ile işlenir. Fiziksel silme yoktur.
+- Düzenleme kaynak, hedef ve işlem yönünü değiştirmez; miktar, kur ve açıklama yeni sürüm kaydıyla değiştirilir.
+- Kapatma/yeniden açma vardır; bakiyesi bulunan hesap kapanabilir ama işlem için önce tekrar açılması gerekir.
+- Manuel değerleme kuru ve zamanı hesapta görünür; 24 saatten eski manuel kur uyarılır.
+- İşlem kuru ve saklı TL tutarı değerleme değişikliklerinden etkilenmez.
+- Raporlar ve İşletme Asistanı'nda ayrı, PIN ile açılan Birikim Değerlemesi özeti.
+- Kasa raporunda yatırma ve TL'ye dönüş ayrı bölümlerdir; gelir/gider/satış toplamlarına eklenmez.
+- Değer farkı mevcut varlıkların ortalama işlem maliyetine göre gerçekleşmemiş değişimdir.
+- Yatırma/bozdurma/iptal aynı Firestore transaction'ında hesap, TL projeksiyonu, çift hareket ve denetim kaydı oluşturur.
+- İstemci işlem anahtarı tekrarlarında mükerrer işlem oluşmaz; aynı anahtar farklı içerikle reddedilir.
+- Mevcut PIN modalının görünümü korunur. Birikim yetkisi sunucuda 10 dakika tutulur; PIN/oturum sonucu tarayıcı depolamasına yazılmaz.
+- 5 yanlış PIN denemesi sonrası 5 dakika kilit. Birikim kilitleme sunucudaki erişimi de kapatır.
+- Birikim para/miktar/kurlarının kalıcı alanları güvenli tamsayıdır. BigInt ara hesaplama kullanılır.
+- TL ve döviz 2, gram/hisse/özel birim 4, kur 6 ondalık. TL tutarına en yakın kuruşa yarım-yukarı yuvarlama uygulanır.
+- Eski kasa kayıtları aynen kalır; eski Number tutarları Birikim bakiye kontrolünde kuruşa dönüştürülür. Yeni Birikim kasa projeksiyonunda amountCents tamsayıdır; TL gösterimi yalnızca arayüzde uyarlanır.
+
+ERİŞİM VE GÜN KURALLARI
+- Varlık bakiyesi, birim/miktar geçmişi ve kur yönetimi ana yönetici + sunucuda geçerli PIN erişimi ister.
+- Mevcut cash/reports yetkilileri Kasa'daki genel TL aktarım satırını görür; bu satırda özel varlık miktarı/hesap adı/işlem kuru bulunmaz. Yeni Birikim satırını yalnızca ana yönetici düzenleyebilir/iptal edebilir.
+- Birikim hesapları ve özel hareketler doğrudan Firestore istemci erişimine kapalıdır; owner genel kuralı da bu yeni koleksiyonlara erişim sağlamaz.
+- Yalnızca Türkiye tarihine göre bugünün açık finans gününde Birikim oluşturma/düzenleme/iptal ve hesap değişiklikleri yapılır. R415'in diğer işlem tarihleri yeniden yazılmamıştır.
+- R415'in bakiye tanımı korunur: bugünün nakit geliri gün kapanışı öncesinde kaynak bakiyeye eklenmez; bankanın mevcut günlük mantığı korunur.
+
+YEDEK VE GERİ DÖNÜŞ
+- Veri ve Yedekleme tam yedeği, Birikim varsa PIN sonrası hesapları, işlemleri, ledger ve audit kayıtlarını da içerir.
+- Birikim sayfasından ayrıca Birikim veri dışa aktarımı yapılabilir. PIN/oturum koleksiyonu yedeğe alınmaz.
+- Eski geri yükleme işlemi Birikim verilerini atomik geri yükleyemediği için mevcut sistemde veya yedekte Birikim varsa geri yükleme başlamadan engellenir. Bu adayın bilinen önemli sınırlamasıdır.
+- Birikim varken kasa/gün sonu/işletme tarihi temizliği başlamadan engellenir; tutarsız kısmi silme yapılmaz.
+- Birikim yokken eski yedekleme/geri yükleme akışı korunur; yeni savingsStatus fonksiyonunun yayınlanmış olması gerekir.
+- Mevcut R415 koleksiyonlarına toplu migration yoktur. Yeni koleksiyonlar ilk işlemde oluşur.
+- Yeni Birikim hareketleri oluştuktan sonra sadece eski R415 koduna dönmek yeterli değildir: yeni amountCents projeksiyonları ve özel hareketler birlikte değerlendirilmelidir. Veri geri dönüşü uzman denetimi olmadan yapılmamalıdır.
+
+TEST ORTAMI VE SONUÇLAR
+Yerel Node.js: v24.19.0; hedef Functions/CI: Node.js 22.
+Firebase Admin ve Functions bağımlılıkları R415 ile aynıdır; yeni harici bağımlılık eklenmedi.
+Çalıştırılan: npm run check; npm test; tüm 54 JS dosyasında node --check; HTML kimlik/bağlantı kontrolleri.
+Son sonuç: 25 test geçti, 0 test başarısız.
+Hesap hassasiyeti, 7 hesap kategorisinde yatırma/bozdurma, owner/PIN erişimi, kilitleme/süre, benzersiz hesaplar,
+idempotensi, yetersiz bakiye, geçersiz kur/miktar, kapalı gün, kaynak/hedef/denetim hata enjeksiyonu,
+düzenleme/ters kayıt, eşzamanlı yatırma/bozdurma ve gerçek Kasa dayTotals toplamları test edildi.
+Transaction testleri bellekte çalışan seri/atomik veritabanı modelidir. Gerçek Firestore emulator/entegrasyon/yük testinin yerine geçmez.
+HTML'de yinelenen kimlik/eksik bağlı yerel dosya saptanmadı. Tüm R415 dosyaları pakette bulunur.
+Özel anahtar/service-account/private-key dosya taramasında eşleşme yoktur. Firebase web ayarları gizli sunucu anahtarı değildir ve sistemin çalışması için korunmuştur.
+Test PIN'i çalışma anında rastgele üretilir; gerçek PIN, müşteri/finans verisi veya ortam sırrı paketlenmedi.
+
+TAMAMLANMAYAN KABUL TESTLERİ / AÇIK SINIRLAMALAR
+- Gerçek Firebase Functions/Firestore Rules emülatör ve staging testleri, rules derleme testi, gerçek eşzamanlılık/yük testi yapılmadı.
+- Canlı GitHub CI çalışması yapılmadı; CI dosyaları eklendi ve aynı backend komutları yerelde geçti.
+- Chromium indirme bu ortamda tamamlanamadı. Görsel tarayıcı/telefon/tablet/PC testi tamamlandı denilmiyor. 44px dokunma ölçüleri ve responsive CSS mevcut; gerçek cihaz kabulü bekliyor.
+- Test ortamına yedek geri yükleme provası yapılmadı; Birikim içeren geri yükleme bu adayda engelleniyor.
+- R415'in bütün işletme akışlarına yönelik uçtan uca regresyon tamamlanmadı; kaynak dosya karşılaştırması ve sınırlı hesap regresyonu yapıldı.
+- Eski kasa işlemleri hâlâ kendi R415 kurallarıyla çalışır. Birikim işlemleri negatif bakiyeyi engeller; eski kasa giderleri için evrensel negatif bakiye yasağı eklenmemiştir.
+- Otomatik kur sağlayıcısı yoktur; sağlayıcı kesintisi senaryosu uygulanmaz. Son manuel kur korunur, kaynağı/zamanı görünür; kur yoksa değer gösterilmez.
+- Borsa/vadeli hesap yalnızca manuel varlık takibidir. Otomatik fiyat, faiz, kupon, temettü, gerçekleşmiş kâr, komisyon, çoklu kaynak/hedef ve birikimden birikime aktarım yoktur.
+- Büyük veri kümesinde tüm kasa geçmişini transaction içinde okuyan kontrol için performans değerlendirmesi gerekir.
+
+CI VE DAĞITIM
+ZIP'i test/aday dalında kullanın; R415 ana referansı koruyun. Ayrı Firebase test projesi kurulmadan üretime yüklemeyin.
+Hosting, Functions ve Firestore kuralları beraber güncellenmelidir; yalnızca sayfaları yüklemek Birikim'i çalıştırmaz.
+Branch push ve pull request test-only workflow çalıştırır. main push testleri çalıştırır, canlı dağıtım yapmaz.
+Canlı dağıtım yalnızca kullanıcı kabulünden sonra main dalındaki workflow_dispatch ile approve_r416=true seçilerek mümkündür.
+Bu açık onay kapısı R416 adayının yanlışlıkla main'e gönderildiğinde üretime dağıtılmasını önler.
+Test ve onay almadan ana sürüm/üretim etiketi oluşturulmadı; hiçbir canlı dağıtım tetiklenmedi.
+
+DEĞİŞEN DOSYALAR
+.github/workflows/firebase-hosting-merge.yml
+assets/js/sensitive-access.js
+assets/js/system-ui.js
+firebase.json
+firestore.rules
+functions/index.js
+functions/package.json
+isletme-asistani/index.html
+isletme-asistani/script.js
+kasa-hesap-yonetimi/index.html
+kasa-hesap-yonetimi/script.js
+raporlar/index.html
+raporlar/script.js
+service-worker.js
+veri-yonetimi/index.html
+veri-yonetimi/script.js
+yonetim-merkezi/index.html
+yonetim-merkezi/script.js
+
+YENİ DOSYALAR
+.github/workflows/savings-tests.yml
+assets/js/savings.js
+birikim-hesaplari/index.html
+birikim-hesaplari/script.js
+birikim-hesaplari/style.css
+functions/savings-core.js
+functions/savings.js
+functions/test/savings.test.js
+docs/R416_ADAY_TEST_VE_KURULUM.txt
+docs/R415_KAYNAK_SHA256.json
+
+Bu rapor ve kaynak manifesti Hosting'de yayınlanmaz. ZIP tam sistem paketidir, yalnızca değişen dosya paketi değildir.
