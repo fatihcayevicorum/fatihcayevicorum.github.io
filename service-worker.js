@@ -20,8 +20,9 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r427-sabit-siparis-karti",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r428-islem-gecmisi",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
+  "./islem-gecmisi/","./islem-gecmisi/index.html","./islem-gecmisi/style.css","./islem-gecmisi/script.js",
   "./birikim-hesaplari/","./birikim-hesaplari/index.html","./birikim-hesaplari/style.css","./birikim-hesaplari/script.js","./assets/js/savings.js","./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/admin-push.js","./assets/js/customer-push.js","./assets/js/merchant-push.js","./assets/js/admin-notifications.js","./assets/js/notification-sounds.js",

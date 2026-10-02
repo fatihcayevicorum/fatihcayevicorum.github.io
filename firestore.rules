@@ -400,13 +400,26 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // R428: cancellation receipt and deletion must commit together.
+    match /adminCancellationEvents/{eventId} {
+      allow create: if hasPanel('pos')
+        && request.resource.data.keys().hasOnly(['action','orderId','title','businessDate','before','createdBy','createdAt'])
+        && request.resource.data.action == 'cancel'
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.orderId is string
+        && request.resource.data.before == get(/databases/$(database)/documents/adminOrders/$(request.resource.data.orderId)).data
+        && !existsAfter(/databases/$(database)/documents/adminOrders/$(request.resource.data.orderId));
+      allow read, update, delete: if false;
+    }
+
     // Savings collections use callable APIs even for the owner; PIN is server verified.
     match /{collection}/{document=**} {
       allow read, write: if isOwner()
         && !(collection in ['adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates']);
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']);
     }
   }
 }

@@ -527,3 +527,11 @@ exports.lockSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.loc
 exports.savingsStatus=onCall({region:"europe-west1",cors:true},savingsHandlers.status);
 exports.refreshSavingsRates=onCall({region:"europe-west1",cors:true,timeoutSeconds:30},async request=>{requireOwner(request);return updateSavingsRates({db,FieldValue})});
 exports.updateSavingsRates=onSchedule({region:"europe-west1",schedule:"every 5 minutes",timeZone:"Europe/Istanbul",timeoutSeconds:30,retryCount:1},async()=>updateSavingsRates({db,FieldValue}));
+
+// R428: append-only history; business records and balances are never changed here.
+const {onDocumentWrittenWithAuthContext}=require("firebase-functions/v2/firestore");
+const operationHistory=require("./operation-history").buildHistory({db,FieldValue,HttpsError,ownerUid:OWNER_UID,pinHash,safeHashEqual});
+exports.captureOperationHistory=onDocumentWrittenWithAuthContext({document:"{source}/{recordId}",region:"europe-west1",retry:true},operationHistory.capture);
+exports.unlockOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.unlock);
+exports.lockOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.lock);
+exports.readOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.read);

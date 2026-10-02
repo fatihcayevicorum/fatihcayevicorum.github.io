@@ -11,6 +11,6 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "check": "node --check index.js && node --check savings.js && node --check savings-core.js && node --check savings-rates.js"
+    "check": "node --check index.js && node --check savings.js && node --check savings-core.js && node --check savings-rates.js && node --check operation-history.js"
   }
 }
