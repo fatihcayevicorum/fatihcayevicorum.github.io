@@ -6,7 +6,7 @@ import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),functions=getFunctions(app,"europe-west1"),readSystemBackup=httpsCallable(functions,"readSystemBackup"),$=id=>document.getElementById(id);
-import{savingsApi,savingsError}from"../assets/js/savings.js?v=416";
+import{savingsApi,savingsError}from"../assets/js/savings.js?v=419";
 
 const CURRENT_ACCOUNT_COLLECTIONS=["adminCurrentAccounts","adminCurrentAccountMovements"];
 const MUTABLE_COLLECTIONS=["adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","adminPurchaseOrders","adminCreditCustomers","adminCreditMovements",...CURRENT_ACCOUNT_COLLECTIONS,"merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","adminPersonnel","adminPersonnelAttendance","adminPersonnelPayments"];

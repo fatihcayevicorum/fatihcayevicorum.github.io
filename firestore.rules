@@ -405,7 +405,8 @@ service cloud.firestore {
       allow read, write: if isOwner()
         && !(collection in ['adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
-          'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions']);
+          'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
+          'adminSavingsRates']);
     }
   }
 }

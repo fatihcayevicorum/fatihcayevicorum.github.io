@@ -1,4 +1,4 @@
-# R417 candidate: restore automatic Firebase deployment on main push.
+# R419 candidate: automatic Firebase deployment on main push after tests.
 # Savings tests must pass; release approval remains a separate user decision.
 
 name: Deploy to Firebase Hosting on merge
@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check and test R416 savings
+      - name: Check and test R419 savings
         working-directory: functions
         run: |
           npm run check

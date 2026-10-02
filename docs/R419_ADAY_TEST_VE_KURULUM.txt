@@ -1,0 +1,39 @@
+FATİH ÇAY EVİ — R419 ADAY TAM SİSTEM
+Birikim Hesapları düzenlemesi
+
+DURUM
+Bu paket kullanıcı testine sunulan aday sürümdür. Onaylı ana referans R415'tir.
+R415 ZIP SHA-256: 0e26d80fb9087cd6b5944c3a75665b6a85dca3bb7582f7cdca5a17c1646cf3dc
+R415 kaynak ZIP'i ve r415_inceleme kopyası değiştirilmemiştir.
+
+R419 DEĞİŞİKLİKLERİ
+- Yönetim Merkezi'ndeki Birikim kartı orta boy modal içinde açılır.
+- Sağ üstte Yatır, Bozdur, Hesap Aç, Yenile ve Kilitle işlemleri bulunur.
+- Birikim ana ekranındaki Kasa ve Hesaplar ve veri indirme butonları kaldırılmıştır.
+- Hesap detayındaki Yatır, Bozdur ve manuel Değerleme Kuru butonları kaldırılmıştır.
+- Özet yalnızca Yatırılan Toplam ve Güncel Yatırım Değeri alanlarını gösterir; güncel değer yüksekse yeşil, düşükse kırmızıdır.
+- Hesap kartı mevcut varlık miktarını ve küçük puntoda otomatik güncel TL karşılığını gösterir.
+- Hesap detayında ortalama maliyet, güncel kur, güncel TL değeri ve tarih sıralı hareketler bulunur.
+- Döviz hesabında Dolar/USD ve Euro/EUR seçenekleri; altında XAU, gümüşte XAG kodu otomatik tanımlanır.
+- Borsa/hisse/fon ve diğer yatırım hesabı oluşturma seçenekleri kaldırılmıştır. Vadeli hesap seçeneği korunmuştur.
+- Yatırma işlemi Nakit, Banka veya POS/Kart hesabından yapılabilir. Bozdurma yalnızca Nakit veya Banka hesabına aktarılır.
+- Varlık miktarı ve gerçek TL işlem tutarı kullanıcı tarafından girilir. Ortalama maliyet gerçek tutardan hesaplanır.
+- Kaynak/hedef bakiyeleri tek transaction içinde güncellenir. Günlük İşlemler'de kalem kalem görünür; gelir, gider, satış ve ciro toplamlarına katılmaz.
+- Kasa ve Hesaplar > Hesaplar Arası Aktarım ekranı eski düzenine döndürülmüştür.
+- Ana kur kaynağı Ahlatcı Döviz'dir. Backend 5 dakikada bir USD, EUR, XAU ve XAG alış/satış fiyatlarını kontrol eder.
+- Ahlatcı erişilemezse USD ve EUR için TCMB resmi XML verisi kullanılır; altın/gümüşte son başarılı Ahlatcı değeri korunur.
+- Son kur kaynağı ve zamanı görünür. Veri eksik/eskiyse “Kur güncel değil” uyarısı gösterilir.
+- R418 servis çalışanı düzeltmesi korunmuştur. main dalına yüklemede testlerden sonra normal otomatik Firebase dağıtımı korunmuştur.
+
+TEST
+- Node.js birim/entegrasyon modeli: 29 test geçti, 0 başarısız.
+- Ahlatcı tablo ayrıştırma, TCMB XML yedeği, POS kaynağı, gerçek TL tutarı, hassasiyet, yetersiz bakiye, idempotensi, transaction geri alma, düzenleme/iptal, kapalı gün ve gelir-giderden ayrı tutma test edildi.
+- functions npm run check başarılıdır.
+- Tarayıcı JavaScript sözdizimi, HTML kimlikleri ve yerel dosya bağlantıları kontrol edilmiştir.
+- Gizli anahtar, PIN, üretim verisi veya servis hesabı dosyası pakete eklenmemiştir.
+
+KABUL SINIRLARI
+- Canlı Ahlatcı sayfa yapısı değişirse ayrıştırma başarısız olabilir; bu durumda TCMB döviz yedeği ve son başarılı metal kuru kullanılır.
+- TCMB'nin anahtarsız resmi XML servisi altın/gümüş sağlamaz. Altın/gümüş için son başarılı Ahlatcı kuru korunur.
+- Gerçek cihaz ve canlı Firebase kabul testi kullanıcı yüklemesinden sonra yapılacaktır.
+- R419 kullanıcı onayına kadar adaydır; ana onaylı sürüm etiketi değildir.

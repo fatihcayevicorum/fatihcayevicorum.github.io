@@ -516,11 +516,14 @@ exports.syncRecipeMenuOnWrite=onDocumentWritten({document:"publicMenu/catalog",r
  if(recipes(before)!==recipes(after))await syncPublicMenuStockAvailability();
 });
 
-// R416 candidate: private savings APIs, server-side PIN grant, atomic ledger.
+// R419 candidate: private savings APIs, server-side PIN grant, atomic ledger and cached market rates.
 const savingsHandlers=require("./savings").buildSavings({db,FieldValue,HttpsError,ownerUid:OWNER_UID,pinHash,safeHashEqual});
+const{updateSavingsRates}=require("./savings-rates");
 exports.unlockSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.unlock);
 exports.readSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.read);
 exports.manageSavingsAccount=onCall({region:"europe-west1",cors:true},savingsHandlers.account);
 exports.saveSavingsMovement=onCall({region:"europe-west1",cors:true,timeoutSeconds:120},savingsHandlers.movement);
 exports.lockSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.lockSession);
 exports.savingsStatus=onCall({region:"europe-west1",cors:true},savingsHandlers.status);
+exports.refreshSavingsRates=onCall({region:"europe-west1",cors:true,timeoutSeconds:30},async request=>{requireOwner(request);return updateSavingsRates({db,FieldValue})});
+exports.updateSavingsRates=onSchedule({region:"europe-west1",schedule:"every 5 minutes",timeZone:"Europe/Istanbul",timeoutSeconds:30,retryCount:1},async()=>updateSavingsRates({db,FieldValue}));

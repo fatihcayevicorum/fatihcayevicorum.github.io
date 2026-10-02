@@ -1,6 +1,6 @@
 "use strict";
 const crypto=require("crypto"),core=require("./savings-core");
-const PRIVATE=["adminSavingsAccounts","adminSavingsOperations","adminSavingsLedger","adminSavingsAudit","adminSavingsNames","adminSavingsControl"];
+const PRIVATE=["adminSavingsAccounts","adminSavingsOperations","adminSavingsLedger","adminSavingsAudit","adminSavingsNames","adminSavingsControl","adminSavingsRates"];
 function buildSavings({db,FieldValue,HttpsError,ownerUid,now=()=>Date.now(),pinHash,safeHashEqual}){
  const error=(code,msg)=>{throw new HttpsError(code,msg)},stamp=()=>({createdAtMs:now(),createdAt:FieldValue.serverTimestamp()}),date=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date(now()));
  const rows=s=>s.docs.map(d=>({id:d.id,...d.data()}));
@@ -22,8 +22,9 @@ function buildSavings({db,FieldValue,HttpsError,ownerUid,now=()=>Date.now(),pinH
   });if(result.error)error(result.error,result.error==="resource-exhausted"?"Çok fazla hatalı deneme; 5 dakika bekleyin.":"PIN yanlış.");return result;
  });
  const read=safe(async request=>db.runTransaction(async tx=>{
-  const accessUntilMs=await session(tx,request);const [accounts,operations]=await Promise.all([tx.get(db.collection("adminSavingsAccounts")),tx.get(db.collection("adminSavingsOperations"))]);
-  const data={accounts:rows(accounts),operations:rows(operations),serverNowMs:now(),accessUntilMs,businessDate:date()};
+  const accessUntilMs=await session(tx,request);const [accounts,operations,ratesSnap]=await Promise.all([tx.get(db.collection("adminSavingsAccounts")),tx.get(db.collection("adminSavingsOperations")),tx.get(db.doc("adminSavingsRates/current"))]);
+  const rates=ratesSnap.data()||{},rateMap=rates.rates||{},accountRows=rows(accounts).map(account=>{const code=account.kind==="gold"?"XAU":account.kind==="silver"?"XAG":account.kind==="currency"?account.symbol:"";const rate=rateMap[code];return rate?{...account,valuationRateMicros:rate.buyMicros,valuationSource:rate.source,valuationAtMs:rate.updatedAtMs}:account});
+  const data={accounts:accountRows,operations:rows(operations),rates:{source:rates.source||"",updatedAtMs:rates.updatedAtMs||0,stale:rates.stale===true,lastError:rates.lastError||""},serverNowMs:now(),accessUntilMs,businessDate:date()};
   if(request.data?.backup===true){data.collections={};for(const col of PRIVATE)data.collections[col]=rows(await tx.get(db.collection(col)));data.cashProjections=rows(await tx.get(db.collection("adminCashMovements").where("source","==","savings")))}
   return data;
  }));
@@ -69,7 +70,7 @@ function buildSavings({db,FieldValue,HttpsError,ownerUid,now=()=>Date.now(),pinH
    for(const side of ["tl","asset"])tx.create(db.doc(`adminSavingsLedger/${key}-reverse-${side}`),{...stamp(),transactionId:key,originalTransactionId:oldRef.id,operationId:oldRef.id,accountId:side==="asset"?accountId:old.tlAccount,side,direction:old.direction==="invest"?(side==="tl"?"in":"out"):(side==="tl"?"out":"in"),amountScaled:side==="asset"?old.quantityUnits:old.amountCents,precision:side==="asset"?a.precision:2,businessDate:input.businessDate,reversal:true});
   }
   if(operation){tx.create(opRef,operation);const investing=term.direction==="invest";
-   tx.create(db.doc(`adminCashMovements/savings-${key}`),{type:"transfer",amountCents:term.amountCents,fromAccount:investing?term.tlAccount:"savings",toAccount:investing?"savings":term.tlAccount,category:investing?"Birikime Yatırma":"Birikim Bozdurma",description:"Birikim hesap aktarımı",businessDate:input.businessDate,source:"savings",automatic:false,transactionId:key,reversed:false,...stamp(),createdBy:request.auth.uid});
+   tx.create(db.doc(`adminCashMovements/savings-${key}`),{type:"transfer",amountCents:term.amountCents,fromAccount:investing?term.tlAccount:"savings",toAccount:investing?"savings":term.tlAccount,category:investing?"Yatırım":"Birikim Bozdurma",description:`${a.name} • ${core.decimal(term.quantityUnits,a.precision)} ${a.unit} • ${term.description}`,businessDate:input.businessDate,source:"savings",automatic:false,transactionId:key,reversed:false,...stamp(),createdBy:request.auth.uid});
    for(const side of ["tl","asset"])tx.create(db.doc(`adminSavingsLedger/${key}-${side}`),{...stamp(),transactionId:key,operationId:key,accountId:side==="asset"?accountId:term.tlAccount,side,direction:investing?(side==="tl"?"out":"in"):(side==="tl"?"in":"out"),amountScaled:side==="asset"?term.quantityUnits:term.amountCents,precision:side==="asset"?a.precision:2,businessDate:input.businessDate});
   }
   tx.update(accountRef,{balanceUnits:a.balanceUnits,costCents:a.costCents,updatedAtMs:now(),updatedBy:request.auth.uid,lastTransactionId:key});tx.create(receiptRef,audit);lockWrite(tx,l);return{operationId:opRef?.id||oldRef.id};

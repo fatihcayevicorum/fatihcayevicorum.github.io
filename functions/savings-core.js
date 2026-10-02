@@ -1,5 +1,5 @@
 "use strict";
-// R416: scaled integers at rest; BigInt intermediates prevent rounding drift.
+// R419: scaled integers at rest; BigInt intermediates prevent rounding drift.
 const MAX=9000000000000;
 function fail(message){const e=new Error(message);e.code="invalid-argument";throw e}
 function integer(value,label="Değer"){if(!Number.isSafeInteger(value)||Math.abs(value)>MAX)fail(`${label} sınır dışında.`);return value}
@@ -16,21 +16,21 @@ function tlFor(units,precision,rate){return roundedRatio(BigInt(integer(units))*
 function removedCost(cost,units,balance){if(units>balance)fail("Birikim bakiyesi yetersiz.");return units===balance?cost:roundedRatio(BigInt(cost)*BigInt(units),BigInt(balance))}
 function normalAccount(input){
  const name=String(input.name||"").trim();if(name.length<2||name.length>60)fail("Hesap adı 2–60 karakter olmalı.");
- const kind=String(input.kind||""),allowed=["tl","currency","gold","silver","equity","term","custom"];if(!allowed.includes(kind))fail("Hesap türü geçersiz.");
+ const kind=String(input.kind||""),allowed=["tl","currency","gold","silver","term"];if(!allowed.includes(kind))fail("Hesap türü geçersiz.");
  const symbol=String(input.symbol||"").trim().toUpperCase();let unit,precision;
  if(["tl","term"].includes(kind)){unit="TL";precision=2}
  else if(kind==="currency"){if(!/^[A-Z]{3}$/.test(symbol)||symbol==="TRY")fail("Döviz için USD gibi üç harfli bir kod girin.");unit=symbol;precision=2}
- else if(["gold","silver"].includes(kind)){unit="gram";precision=4}
- else{unit=String(input.unit||"pay").trim();if(!/^[\p{L}\p{N} _.-]{1,20}$/u.test(unit)||/ons|ounce/i.test(unit))fail("Takip birimi geçersiz.");if(kind==="equity"&&!/^[A-Z0-9._-]{1,20}$/.test(symbol))fail("Hisse veya fon kodu girin.");precision=4}
- return{name,kind,unit,precision,symbol:["currency","equity","custom"].includes(kind)?symbol:"",balanceUnits:0,costCents:0,active:true};
+ else if(kind==="gold"){unit="gram";precision=4}
+ else if(kind==="silver"){unit="gram";precision=4}
+ return{name,kind,unit,precision,symbol:kind==="currency"?symbol:kind==="gold"?"XAU":kind==="silver"?"XAG":"",balanceUnits:0,costCents:0,active:true};
 }
 function terms(account,input){
  if(!["invest","redeem"].includes(input.direction))fail("İşlem türü geçersiz.");
- if(!["cash","bank"].includes(input.tlAccount))fail("TL hesabı nakit veya banka olmalı.");
- const units=scaled(input.quantity,account.precision,"Miktar"),rateMicros=["tl","term"].includes(account.kind)?1000000:scaled(input.rate,6,"İşlem kuru");
- const amountCents=tlFor(units,account.precision,rateMicros);if(amountCents<=0)fail("TL karşılığı en az 0,01 TL olmalı.");
+ const allowed=input.direction==="invest"?["cash","bank","card"]:["cash","bank"];if(!allowed.includes(input.tlAccount))fail(input.direction==="invest"?"Kaynak hesap nakit, banka veya POS olmalı.":"Hedef hesap nakit veya banka olmalı.");
+ const units=scaled(input.quantity,account.precision,"Miktar"),fixed=["tl","term"].includes(account.kind),amountCents=fixed?tlFor(units,account.precision,1000000):scaled(input.amount,2,"Gerçek TL tutarı");if(amountCents<=0)fail("TL karşılığı en az 0,01 TL olmalı.");
+ const rateMicros=fixed?1000000:roundedRatio(BigInt(amountCents)*10n**BigInt(account.precision)*1000000n,BigInt(units)*100n);
  const description=String(input.description||"").trim();if(description.length<2||description.length>240)fail("Açıklama 2–240 karakter olmalı.");
- return{direction:input.direction,tlAccount:input.tlAccount,quantityUnits:units,rateMicros,amountCents,description,rateSource:["tl","term"].includes(account.kind)?"TL / 1:1":"Manuel işlem kuru"};
+ return{direction:input.direction,tlAccount:input.tlAccount,quantityUnits:units,rateMicros,amountCents,description,rateSource:fixed?"TL / 1:1":"Girilen gerçek işlem tutarı"};
 }
 function apply(account,term,reverse=false){
  const a={...account};let cost;
@@ -44,16 +44,16 @@ function legacyCents(v){if(typeof v!=="number"||!Number.isFinite(v))return 0;con
 // Exactly follows R415 accountBalancesForDate: current-day cash income enters only at closing.
 function cashBalances(settings,movements,closings,days,date){
  const start="2026-08-13",configured=settings.financeV3Configured===true&&settings.financeV3StartDate===start;
- const opening={cash:configured?legacyCents(settings.financeV3OpeningCash):0,bank:configured?legacyCents(settings.financeV3OpeningBank):0};
+ const opening={cash:configured?legacyCents(settings.financeV3OpeningCash):0,bank:configured?legacyCents(settings.financeV3OpeningBank):0,card:configured?legacyCents(settings.financeV3OpeningCard):0};
  const locked=new Set(days.filter(x=>x.locked===true).map(x=>x.id));
  const previous=new Date(`${date}T12:00:00Z`);previous.setUTCDate(previous.getUTCDate()-1);const prev=previous.toISOString().slice(0,10);
  const valid=m=>!m.reversed&&m.businessDate>=start&&m.businessDate<=date&&!(m.type==="transfer"&&(m.fromAccount==="personnel"||m.toAccount==="personnel"));
  const manual=movements.filter(valid),auto=[];
- for(const c of closings){if(c.accountingMode==="report-only"||c.cashTransferDisabled===true)continue;for(const [account,key]of[["cash","cashTotal"],["bank","transferTotal"]])if(c[key])auto.push({type:"income",account,amount:c[key],businessDate:c.businessDate})}
+ for(const c of closings){if(c.accountingMode==="report-only"||c.cashTransferDisabled===true)continue;for(const [account,key]of[["cash","cashTotal"],["bank","transferTotal"],["card","cardTotal"]])if(c[key])auto.push({type:"income",account,amount:c[key],businessDate:c.businessDate})}
  const b={...opening};const change=m=>{const n=Number.isSafeInteger(m.amountCents)?integer(m.amountCents):legacyCents(m.amount);if(m.type==="income"&&m.account in b)b[m.account]+=n;if(m.type==="expense"&&m.account in b)b[m.account]-=n;if(m.type==="transfer"){if(m.fromAccount in b)b[m.fromAccount]-=n;if(m.toAccount in b)b[m.toAccount]+=n}};
  for(const m of [...manual,...auto.filter(valid)])if(m.businessDate<=prev&&locked.has(m.businessDate))change(m);
- if(date!==start&&!locked.has(prev)){b.cash=0;b.bank=0}
+ if(date!==start&&!locked.has(prev)){b.cash=0;b.bank=0;b.card=0}
  for(const m of manual.filter(x=>x.businessDate===date))if(m.type!=="income"||m.account==="bank")change(m);
- return{cash:integer(b.cash),bank:integer(b.bank)};
+ return{cash:integer(b.cash),bank:integer(b.bank),card:integer(b.card)};
 }
 module.exports={MAX,integer,scaled,decimal,tlFor,normalAccount,terms,apply,legacyCents,cashBalances};

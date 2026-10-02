@@ -20,7 +20,7 @@ const management=[
   {permission:"reports",name:"Raporlar",description:"Satış ve işletme raporlarını incele",path:"raporlar/?v=200",icon:"fa-chart-column"},
   {permission:"reports",name:"İşletme Asistanı",description:"Satış, maliyet, stok ve çay verilerini karşılaştırmalı analiz et",path:"isletme-asistani/?v=3073",icon:"fa-wand-magic-sparkles"},
   {permission:"cash",name:"Kasa ve Hesaplar",description:"Kasa ile banka hareketlerini takip et",path:"kasa-hesap-yonetimi/?v=202",icon:"fa-vault"},
-  {ownerOnly:true,name:"Birikim Hesapları",description:"Birikimlerini ve yatırım hareketlerini takip et",path:"birikim-hesaplari/?v=416",icon:"fa-piggy-bank"},
+  {ownerOnly:true,name:"Birikim Hesapları",description:"Birikimlerini ve yatırım hareketlerini takip et",path:"birikim-hesaplari/?v=419",icon:"fa-piggy-bank",modal:"savings"},
   {ownerOnly:true,name:"Personel Yönetimi",description:"Çalışma günlerini, hak edişleri ve ödemeleri takip et",path:"personel-yonetimi/",icon:"fa-people-roof"},
   {permission:"home",name:"Ana Sayfa Yönetimi",description:"Duyuru ve kampanya alanlarını düzenle",path:"ana-sayfa-yonetimi/",icon:"fa-house"},
   {ownerOnly:true,name:"Bildirim Merkezi",description:"Yeni yapı için ayrılan yönetim alanı",path:"bildirim-merkezi/",icon:"fa-bell"},
@@ -53,10 +53,13 @@ $("closeStaffSettings").onclick=()=>{if(currentProfile?.permissions?.includes("p
 $("closeApprovedPassword").onclick=()=>{if(currentProfile?.permissions?.includes("personnel"))location.replace("../personel-adisyon/");else $("staffSettingsDialog").close()};
 $("staffSettingsForm").onsubmit=sendSettingsRequest;
 $("approvedPasswordForm").onsubmit=saveApprovedPassword;
+$("managementGrid").addEventListener("click",event=>{const link=event.target.closest('[data-panel-modal="savings"]');if(!link)return;event.preventDefault();openSavingsPanel()});
+window.addEventListener("message",event=>{if(event.origin===location.origin&&event.data?.type==="fatih-savings-close")document.getElementById("savingsPanelDialog")?.close()});
 function card(item){
   if(item.soon)return`<article class="center-card is-soon" aria-disabled="true"><span class="soon-badge">YAKINDA</span><span class="card-icon"><i class="fa-solid ${item.icon}"></i></span><div><strong>${item.name}</strong><small>${item.description}</small></div></article>`;
-  return`<a class="center-card" href="../${item.path}"><i class="fa-solid fa-arrow-right arrow"></i><span class="card-icon"><i class="fa-solid ${item.icon}"></i></span><div><strong>${item.name}</strong><small>${item.description}</small></div></a>`;
+  return`<a class="center-card" href="../${item.path}"${item.modal?` data-panel-modal="${item.modal}"`:""}><i class="fa-solid fa-arrow-right arrow"></i><span class="card-icon"><i class="fa-solid ${item.icon}"></i></span><div><strong>${item.name}</strong><small>${item.description}</small></div></a>`;
 }
+function openSavingsPanel(){let dialog=document.getElementById("savingsPanelDialog");if(!dialog){dialog=document.createElement("dialog");dialog.id="savingsPanelDialog";dialog.className="savings-panel-dialog";dialog.innerHTML='<div class="savings-panel-frame"><button type="button" class="savings-panel-close" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button><iframe title="Birikim Hesapları" src="../birikim-hesaplari/?v=419&embed=1"></iframe></div>';document.body.append(dialog);dialog.querySelector("button").onclick=()=>dialog.close()}dialog.showModal()}
 function renderWelcome(profile){
   const copy=document.querySelector(".brand-copy");
   if(!copy)return;let text=copy.querySelector(".user-welcome");if(!text){text=document.createElement("p");text.className="user-welcome";copy.querySelector(".eyebrow")?.insertAdjacentElement("afterend",text)}
