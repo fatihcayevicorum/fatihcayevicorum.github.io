@@ -23,6 +23,23 @@ function actionOf(before,after,source){
  if(source==="staffUserAudit"&&!/^(create)$/.test(d.type||""))return"update";
  return before?"update":"create";
 }
+function lineKey(item,index){return String(item?.lineId||item?.id||`${item?.name||"urun"}-${index}`)}
+function orderActivities(before,after,action,eventAtMs){
+ const oldItems=Array.isArray(before?.items)?before.items:[],nextItems=Array.isArray(after?.items)?after.items:[],oldMap=new Map(oldItems.map((i,n)=>[lineKey(i,n),i])),nextMap=new Map(nextItems.map((i,n)=>[lineKey(i,n),i])),activities=[];
+ for(const [key,item] of nextMap){const old=oldMap.get(key),to=Number(item.quantity)||0,from=Number(old?.quantity)||0;if(!old&&to>0)activities.push({kind:"product-add",productName:item.name||"Ürün",quantity:to,toQty:to,unitPrice:Number(item.unitPrice)||0,eventAtMs});else if(from!==to)activities.push({kind:"quantity-change",productName:item.name||old?.name||"Ürün",fromQty:from,toQty:to,eventAtMs})}
+ for(const [key,item] of oldMap)if(!nextMap.has(key)&&(Number(item.quantity)||0)>0)activities.push({kind:"product-remove",productName:item.name||"Ürün",quantity:Number(item.quantity)||0,fromQty:Number(item.quantity)||0,toQty:0,eventAtMs});
+ if(!before&&activities.length===0)activities.push({kind:"order-open",eventAtMs});
+ if(action==="delete"&&activities.length===0)activities.push({kind:"order-delete",eventAtMs});
+ return activities;
+}
+function historyMeta(row){
+ const before=row.before||null,after=row.after||null,d=after||before||{},at=row.eventAtMs,orderId=String(d.orderId||row.relatedId||row.recordId||"");let activities=[],groupKey=`${row.source}:${row.recordId}`,visible=true;
+ if(row.source==="adminOrders"){activities=orderActivities(before,after,row.action,at);groupKey=`adisyon:${row.recordId}`;visible=activities.length>0}
+ else if(row.source==="adminSales"){groupKey=`adisyon:${orderId}`;activities=[{kind:row.action==="reopen"?"reopen":"payment",amount:Number(d.paymentAmount??d.baseTotal??d.amount)||0,paymentType:String(d.paymentType||d.settlementType||""),items:Array.isArray(d.items)?d.items:[],eventAtMs:at}]}
+ else if(row.source==="adminCancellationEvents"){groupKey=`adisyon:${orderId}`;activities=[{kind:"cancel",eventAtMs:at}]}
+ else if((row.source==="adminStockItems"||row.source==="adminStockMovements")&&(d.source==="pos"||d.saleId||d.orderId)){visible=false}
+ return{groupKey,activities,historyVisible:visible};
+}
 function makeRecord({source,id,before,after,eventId,time,authId,authType}){
  if(!SOURCES[source])return null;
  const old=clean(before),next=clean(after),keys=[...new Set([...Object.keys(old||{}),...Object.keys(next||{})])];
@@ -33,6 +50,7 @@ function makeRecord({source,id,before,after,eventId,time,authId,authType}){
  const reportedActor=after?(after.actor||after.actorUid||after.reversedBy||after.cancelledBy||after.updatedBy||(!before?after.createdBy:"")||""):"";
  const actorUid=trusted?authId:String(reportedActor),eventAtMs=Date.parse(time);
  const result={source,section:SOURCES[source],recordId:id,eventId,sourcePath:`${source}/${id}`,action:actionOf(before,after,source),eventAtMs:Number.isFinite(eventAtMs)?eventAtMs:Date.now(),actorUid,actorVerified:trusted,actorBasis:trusted?"Oturum kimliği":reportedActor?"İşlem kaydındaki kullanıcı":"Kullanıcı bilgisi yok / sistem işlemi",authType:authType||"unknown",title:String(d.title||d.tableName||d.stockName||d.customerName||d.displayName||d.name||d.description||d.businessName||d.type||id).slice(0,500),businessDate:String(d.businessDate||d.operationDate||""),reason:String(d.reason||d.cancelReason||d.reversalReason||d.correctionReason||d.note||"Belirtilmemiş").slice(0,6000),relatedId:String(d.transactionId||d.orderId||d.reversalOf||d.targetSaleId||d.operationId||""),amount:Number(d.paymentAmount??d.amount??d.baseTotal??d.total)||0,paymentType:String(d.paymentType||d.settlementType||""),before:compact(before),after:compact(after),changes};
+ Object.assign(result,historyMeta(result));
  if(Buffer.byteLength(JSON.stringify(result))>650000){result.changes=changes.map(c=>({...c,before:JSON.stringify(c.before).slice(0,1500),after:JSON.stringify(c.after).slice(0,1500)}));result.truncated=true}
  if(Buffer.byteLength(JSON.stringify(result))>800000){result.changes=result.changes.slice(0,100);result.truncated=true}
  return result;
@@ -47,17 +65,19 @@ function buildHistory({db,FieldValue,HttpsError,ownerUid,pinHash,safeHashEqual,n
  async function status(r){owner(r);const [session,security]=await Promise.all([db.doc(`adminHistorySessions/${r.auth.uid}`).get(),db.doc("adminSecurity/sensitiveAccess").get()]),active=session.exists&&security.exists&&Number(session.data().expiresAtMs)>now()&&session.data().pinVersion===(security.data().updatedAtMs||0);return{unlocked:active,expiresAtMs:active?session.data().expiresAtMs:0}}
  async function capture(event){const source=event.params.source;if(!SOURCES[source]||!event.data)return;const before=event.data.before.exists?event.data.before.data():null,after=event.data.after.exists?event.data.after.data():null;let row=makeRecord({source,id:event.params.recordId,before,after,eventId:event.id,time:event.time,authId:event.authId,authType:event.authType});if(!row)return;
  if(source==="adminSavingsAudit"&&after){const old=clean(after.before||{}),next=clean(after.after||{});row.before=compact(old);row.after=compact(next);row.title=String(next.account?.name||old.account?.name||next.name||old.name||"Birikim işlemi");row.businessDate=String(next.operation?.businessDate||old.operation?.businessDate||"");row.changes=[...new Set([...Object.keys(old),...Object.keys(next)])].filter(field=>!META.has(field)&&JSON.stringify(old[field]??null)!==JSON.stringify(next[field]??null)).map(field=>({field,before:compact(old[field]??null),after:compact(next[field]??null)}))}
- if(source==="adminCancellationEvents"&&after){row={...row,action:"cancel",title:after.title||"Adisyon iptali",recordId:after.orderId,relatedId:after.orderId,before:compact(after.before),after:null,changes:[{field:"status",before:after.before?.status||"open",after:"cancelled"},{field:"items",before:compact(after.before?.items||[]),after:null}],reason:"Adisyon İptal Et işlemi",sourcePath:`adminOrders/${after.orderId}`}}
+ if(source==="adminCancellationEvents"&&after){row={...row,action:"cancel",title:after.title||"Adisyon iptali",recordId:after.orderId,relatedId:after.orderId,before:compact(after.before),after:null,changes:[{field:"status",before:after.before?.status||"open",after:"cancelled"},{field:"items",before:compact(after.before?.items||[]),after:null}],reason:"Adisyon İptal Et işlemi",sourcePath:`adminOrders/${after.orderId}`};Object.assign(row,historyMeta(row))}
 row.actorName=row.actorUid===ownerUid?"Fatih Ali Altınlı":row.actorUid||"Sistem / bilinmiyor";if(row.actorUid&&row.actorUid!==ownerUid){const staff=await db.doc(`staffUsers/${row.actorUid}`).get();row.actorName=staff.data()?.displayName||row.actorName}try{await db.doc(`adminOperationHistory/${eventKey(event.id)}`).create({...row,recordedAt:FieldValue.serverTimestamp()})}catch(e){if(e.code!==6&&e.code!=="already-exists")throw e}}
  async function read(r){const expiresAtMs=await authorize(r),input=r.data||{};
+ if(Array.isArray(input.ids)){const ids=[...new Set(input.ids)].slice(0,100);if(!ids.length||ids.some(id=>!/^[a-f0-9]{64}$/.test(id)))fail("invalid-argument","Kayıt kimliği geçersiz.");const docs=await Promise.all(ids.map(id=>db.doc(`adminOperationHistory/${id}`).get()));return{records:docs.filter(d=>d.exists).map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.eventAtMs-b.eventAtMs),expiresAtMs}}
  if(input.id){if(!/^[a-f0-9]{64}$/.test(input.id))fail("invalid-argument","Kayıt kimliği geçersiz.");const d=await db.doc(`adminOperationHistory/${input.id}`).get();if(!d.exists)fail("not-found","Kayıt bulunamadı.");return{record:{id:d.id,...d.data()},expiresAtMs}}
  const start=String(input.start||""),end=String(input.end||"");if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end))fail("invalid-argument","Tarih aralığı seçin.");const from=Date.parse(`${start}T00:00:00+03:00`),to=Date.parse(`${end}T23:59:59.999+03:00`);if(!Number.isFinite(from)||!Number.isFinite(to)||from>to||to-from>366*86400000)fail("invalid-argument","En fazla bir yıllık geçerli aralık seçin.");
  let q=db.collection("adminOperationHistory").where("eventAtMs",">=",from).where("eventAtMs","<=",to).orderBy("eventAtMs","desc").orderBy("__name__","desc");
  if(input.cursor){if(!Number.isFinite(input.cursor.time)||!/^[a-f0-9]{64}$/.test(input.cursor.id||""))fail("invalid-argument","Sayfa kimliği geçersiz.");q=q.startAfter(input.cursor.time,input.cursor.id)}
  const snap=await q.limit(200).get(),needle=String(input.search||"").slice(0,120).toLocaleLowerCase("tr-TR"),actor=String(input.actor||"").slice(0,100).toLocaleLowerCase("tr-TR");
- const records=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>(!input.section||input.section===d.section)&&(!input.action||input.action===d.action)&&(!actor||`${d.actorName} ${d.actorUid}`.toLocaleLowerCase("tr-TR").includes(actor))&&(!needle||`${d.title} ${d.reason} ${d.recordId} ${d.relatedId}`.toLocaleLowerCase("tr-TR").includes(needle))).map(({before,after,changes,recordedAt,...summary})=>({...summary,amount:Number(summary.amount??after?.paymentAmount??after?.amount??after?.baseTotal??after?.total)||0,paymentType:String(summary.paymentType||after?.paymentType||after?.settlementType||"")})),last=snap.docs.at(-1);
+ const sectionMatch=(wanted,actual)=>!wanted||wanted===actual||(wanted==="Adisyon"&&actual.startsWith("Adisyon"))||(wanted==="Personel"&&actual==="Kullanıcı");
+ const records=snap.docs.map(d=>{const full={id:d.id,...d.data()},meta=historyMeta(full);return{...full,...meta}}).filter(d=>d.historyVisible&&sectionMatch(input.section,d.section)&&(!input.action||input.action===d.action)&&(!actor||`${d.actorName} ${d.actorUid}`.toLocaleLowerCase("tr-TR").includes(actor))&&(!needle||`${d.title} ${d.reason} ${d.recordId} ${d.relatedId} ${(d.activities||[]).map(a=>a.productName).join(" ")}`.toLocaleLowerCase("tr-TR").includes(needle))).map(({before,after,changes,recordedAt,...summary})=>summary),last=snap.docs.at(-1);
  return{records,scanned:snap.size,cursor:snap.size===200?{time:last.data().eventAtMs,id:last.id}:null,expiresAtMs,sections:[...new Set(Object.values(SOURCES))]};
  }
  return{unlock,lock,status,capture,read};
 }
-module.exports={SOURCES,clean,makeRecord,eventKey,buildHistory};
+module.exports={SOURCES,clean,makeRecord,eventKey,buildHistory,historyMeta,orderActivities};
