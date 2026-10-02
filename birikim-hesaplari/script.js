@@ -4,6 +4,7 @@ import{firebaseConfig}from"../assets/js/firebase-config.js";
 import{systemConfirm}from"../assets/js/system-confirm.js?v=395";
 import{savingsOwner,savingsApi,savingsKey,savingsError,savingsMoney,formatScaled,valuationCents,averageCostMicros,savingsTime,escSavings,todaySavings,unlockSavings,openSavingsMovement,savingsSummaryMarkup}from"../assets/js/savings.js?v=420";
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),$=id=>document.getElementById(id),embedded=new URLSearchParams(location.search).get("embed")==="1",kinds={tl:"TL birikim",currency:"Döviz",gold:"Altın",silver:"Gümüş",term:"Vadeli hesap"};
+if(!embedded)location.replace("../yonetim-merkezi/?birikim=1&r=422");
 let state={accounts:[],operations:[],rates:{}},selectedId="",busy=false,expiryTimer,refreshId=0,accountRequestKey=savingsKey();
 if(embedded)document.documentElement.classList.add("is-embedded");
 $("historyMonth").value=todaySavings().slice(0,7);$("historyMonth").onchange=renderHistory;
