@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=310">
+  <link rel="stylesheet" href="style.css?v=420">
 </head>
 <body>
   <header class="app-header">
@@ -66,8 +66,15 @@
     </form>
   </dialog>
 
+  <dialog id="savingsPanelDialog" class="savings-panel-dialog" aria-label="Birikim Hesapları">
+    <div class="savings-panel-frame">
+      <button type="button" class="savings-panel-close" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <iframe title="Birikim Hesapları" data-src="../birikim-hesaplari/?v=420&amp;embed=1"></iframe>
+    </div>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=419"></script>
+  <script type="module" src="script.js?v=420"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
