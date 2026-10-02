@@ -4,15 +4,16 @@ import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
 import{getManagementProfile,isOwner,normalizePhone}from"../assets/js/admin-access.js";
+import{requireServerSensitiveAccess}from"../assets/js/sensitive-access.js";
 
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),submitProfileChange=httpsCallable(functions,"submitOwnStaffProfileChange"),completePasswordChange=httpsCallable(functions,"completeOwnStaffPasswordChange"),$=id=>document.getElementById(id);
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),submitProfileChange=httpsCallable(functions,"submitOwnStaffProfileChange"),completePasswordChange=httpsCallable(functions,"completeOwnStaffPasswordChange"),unlockOperationHistory=httpsCallable(functions,"unlockOperationHistory"),$=id=>document.getElementById(id);
 let currentUser=null,currentProfile=null,currentRequest=null,toastTimer;
 const daily=[
   {permission:"tea",name:"Taze Dem",description:"Demlikleri ve tazelik sürelerini takip et",path:"taze-dem-paneli/",icon:"fa-mug-hot"},
   {permission:"pos",name:"Adisyon",description:"Masaları, siparişleri ve ödemeleri yönet",path:"adisyon/",icon:"fa-receipt"}
 ];
 const management=[
-  {ownerOnly:true,name:"İşlem Geçmişi Merkezi",description:"Silinen, iptal edilen ve değiştirilen işlemleri incele",path:"islem-gecmisi/",icon:"fa-clock-rotate-left"},
+  {ownerOnly:true,sensitiveHistory:true,name:"İşlem Geçmişi Merkezi",description:"Silinen, iptal edilen ve değiştirilen işlemleri incele",path:"islem-gecmisi/",icon:"fa-clock-rotate-left"},
   {permission:"currentAccounts",name:"Cari Hesaplar",description:"Cari müşterileri ve alacak durumlarını yönet",path:"cari-hesaplar/",icon:"fa-address-book"},
   {permission:"menu",name:"Menü Yönetimi",description:"Kategori, ürün ve fiyatları düzenle",path:"menu-yonetimi/",icon:"fa-utensils"},
   {permission:"stock",name:"Stok Takibi",description:"Stok miktarlarını ve hareketlerini izle",path:"stok-yonetimi/",icon:"fa-boxes-stacked"},
@@ -48,6 +49,7 @@ onAuthStateChanged(auth,async user=>{
 });
 
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
+$("managementGrid").addEventListener("click",async event=>{const link=event.target.closest("[data-sensitive-history]");if(!link)return;event.preventDefault();if(link.dataset.busy==="1")return;link.dataset.busy="1";try{const opened=await requireServerSensitiveAccess(data=>unlockOperationHistory(data),{title:"İşlem Geçmişi Merkezi",message:"İşlem kayıtlarını açmak için yönetici PIN’ini girin."});if(opened)location.href=link.href}finally{delete link.dataset.busy}});
 $("staffSettingsButton").onclick=openStaffSettings;
 $("closeStaffSettings").onclick=()=>{if(currentProfile?.permissions?.includes("personnel"))location.replace("../personel-adisyon/");else $("staffSettingsDialog").close()};
 $("closeApprovedPassword").onclick=()=>{if(currentProfile?.permissions?.includes("personnel"))location.replace("../personel-adisyon/");else $("staffSettingsDialog").close()};
@@ -55,7 +57,7 @@ $("staffSettingsForm").onsubmit=sendSettingsRequest;
 $("approvedPasswordForm").onsubmit=saveApprovedPassword;
 function card(item){
   if(item.soon)return`<article class="center-card is-soon" aria-disabled="true"><span class="soon-badge">YAKINDA</span><span class="card-icon"><i class="fa-solid ${item.icon}"></i></span><div><strong>${item.name}</strong><small>${item.description}</small></div></article>`;
-  return`<a class="center-card" href="../${item.path}"><i class="fa-solid fa-arrow-right arrow"></i><span class="card-icon"><i class="fa-solid ${item.icon}"></i></span><div><strong>${item.name}</strong><small>${item.description}</small></div></a>`;
+  return`<a class="center-card" href="../${item.path}"${item.sensitiveHistory?' data-sensitive-history="true"':''}><i class="fa-solid fa-arrow-right arrow"></i><span class="card-icon"><i class="fa-solid ${item.icon}"></i></span><div><strong>${item.name}</strong><small>${item.description}</small></div></a>`;
 }
 function renderWelcome(profile){
   const copy=document.querySelector(".brand-copy");

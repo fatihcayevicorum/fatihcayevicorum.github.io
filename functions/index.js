@@ -534,4 +534,5 @@ const operationHistory=require("./operation-history").buildHistory({db,FieldValu
 exports.captureOperationHistory=onDocumentWrittenWithAuthContext({document:"{source}/{recordId}",region:"europe-west1",retry:true},operationHistory.capture);
 exports.unlockOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.unlock);
 exports.lockOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.lock);
+exports.operationHistoryStatus=onCall({region:"europe-west1",cors:true},operationHistory.status);
 exports.readOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.read);
