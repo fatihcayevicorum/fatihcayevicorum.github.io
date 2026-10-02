@@ -2,14 +2,14 @@ import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/fir
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
 import{systemConfirm}from"../assets/js/system-confirm.js?v=395";
-import{savingsOwner,savingsApi,savingsKey,savingsError,savingsMoney,formatScaled,valuationCents,averageCostMicros,savingsTime,escSavings,todaySavings,unlockSavings,openSavingsMovement,savingsSummaryMarkup}from"../assets/js/savings.js?v=420";
+import{savingsOwner,savingsApi,savingsKey,savingsError,savingsMoney,formatScaled,valuationCents,averageCostMicros,savingsTime,escSavings,todaySavings,unlockSavings,openSavingsMovement,savingsSummaryMarkup}from"../assets/js/savings.js?v=423";
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),$=id=>document.getElementById(id),embedded=new URLSearchParams(location.search).get("embed")==="1",kinds={tl:"TL birikim",currency:"Döviz",gold:"Altın",silver:"Gümüş",term:"Vadeli hesap"};
-if(!embedded)location.replace("../yonetim-merkezi/?birikim=1&r=422");
+if(!embedded)location.replace("../kasa-hesap-yonetimi/?birikim=1&r=423");
 let state={accounts:[],operations:[],rates:{}},selectedId="",busy=false,expiryTimer,refreshId=0,accountRequestKey=savingsKey();
 if(embedded)document.documentElement.classList.add("is-embedded");
 $("historyMonth").value=todaySavings().slice(0,7);$("historyMonth").onchange=renderHistory;
 $("logoutButton").onclick=async()=>{clearData();await signOut(auth);top.location.replace("../yonetici-giris.html")};
-$("lockSavings").onclick=async()=>{try{await savingsApi("lock");clearData();if(embedded)parent.postMessage({type:"fatih-savings-close"},location.origin);else location.replace("../yonetim-merkezi/")}catch(e){pageError(e)}};
+$("lockSavings").onclick=async()=>{try{await savingsApi("lock");clearData();if(embedded)parent.postMessage({type:"fatih-savings-close"},location.origin);else location.replace("../kasa-hesap-yonetimi/")}catch(e){pageError(e)}};
 $("refreshSavings").onclick=()=>refresh(true).catch(pageError);
 $("investSavings").onclick=()=>transfer({direction:"invest"});$("redeemSavings").onclick=()=>transfer({direction:"redeem"});
 $("newAccount").onclick=()=>{if(busy)return;$("accountForm").reset();accountRequestKey=savingsKey();$("accountForm").querySelector(".savings-error").textContent="";accountFields();$("accountDialog").showModal();setTimeout(()=>$("accountForm").elements.name.focus(),60)};
@@ -17,7 +17,7 @@ $("accountForm").elements.kind.onchange=accountFields;$("accountForm").onsubmit=
 $("accountGrid").onclick=e=>{const b=e.target.closest("[data-account]");if(b)showAccount(b.dataset.account)};for(const name of ["allHistory","detailHistory"])$(name).onclick=historyAction;$("detailActions").onclick=detailAction;
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{if(!busy)$(b.dataset.close).close()});document.querySelectorAll("dialog").forEach(d=>d.addEventListener("cancel",e=>{if(busy)e.preventDefault()}));
 onAuthStateChanged(auth,async user=>{if(!user){clearData();top.location.replace("../yonetici-giris.html?next=yonetim-merkezi/");return}if(!savingsOwner()){clearData();top.location.replace("../yonetim-merkezi/");return}try{if(!await unlockSavings()){closePage();return}await refresh(true)}catch(e){pageError(e)}});
-function closePage(){if(embedded)parent.postMessage({type:"fatih-savings-close"},location.origin);else location.replace("../yonetim-merkezi/")}
+function closePage(){if(embedded)parent.postMessage({type:"fatih-savings-close"},location.origin);else location.replace("../kasa-hesap-yonetimi/")}
 function clearData(){refreshId++;clearTimeout(expiryTimer);state={accounts:[],operations:[],rates:{}};$("savingsApp").hidden=true;for(const id of ["accountGrid","allHistory","detailHistory","summary","detailBalance"])$(id).replaceChildren();document.querySelectorAll("dialog[open]").forEach(d=>d.close())}
 function pageError(e){$("savingsPageError").textContent=savingsError(e);if($("savingsApp").hidden){$("savingsApp").hidden=false;$("connection").textContent="Birikim verileri alınamadı. Yenile ile tekrar deneyin."}}
 async function refresh(updateRates=false){const current=++refreshId;$("connection").textContent="Güncelleniyor…";if(updateRates)await savingsApi("rates").catch(()=>{});const data=await savingsApi("read");if(current!==refreshId)return;state=data;$("savingsApp").hidden=false;$("savingsPageError").textContent="";const rate=data.rates||{},warning=rate.stale?" • Kur güncel değil":"";$("connection").textContent=`Kur kaynağı: ${rate.source||"Kur bekleniyor"} • Son güncelleme: ${savingsTime(rate.updatedAtMs)}${warning}`;$("connection").classList.toggle("is-stale",rate.stale===true);render();clearTimeout(expiryTimer);expiryTimer=setTimeout(closePage,Math.max(0,data.accessUntilMs-data.serverNowMs))}

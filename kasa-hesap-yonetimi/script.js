@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/fireba
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, deleteDoc, doc, getFirestore, getDoc, onSnapshot, runTransaction, serverTimestamp, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { ADMIN_UID, firebaseConfig } from "../assets/js/firebase-config.js";
-import { savingsOwner,openSavingsMovement,savingsError } from "../assets/js/savings.js?v=420";
+import { savingsOwner,openSavingsMovement,savingsError } from "../assets/js/savings.js?v=423";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 import { lockSensitiveAccess, requireSensitiveAccess } from "../assets/js/sensitive-access.js";
 import { hasLocalPendingInternalConsumption, hasPendingInternalConsumptionDraft } from "../assets/js/internal-consumption-guard.js?v=395";
@@ -17,6 +17,9 @@ let categoryPanelMode="",pendingCategoryDelete=null,manualMovements=[],closings=
 
 updateClock();setInterval(updateClock,1000);
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
+$("savingsPageLink").onclick=openSavingsPanel;
+document.querySelector("#savingsPanelDialog .savings-panel-close").onclick=()=>$("savingsPanelDialog").close();
+window.addEventListener("message",event=>{if(event.origin===location.origin&&event.data?.type==="fatih-savings-close")$("savingsPanelDialog").close()});
 $("lockButton").onclick=async()=>{lockSensitiveAccess();if(!await unlock())location.replace("../yonetim-merkezi/")};
 $("previousDay").onclick=()=>changeDay(-1);$("nextDay").onclick=()=>changeDay(1);$("datePickerButton").onclick=openDatePicker;$("closeDatePicker").onclick=()=>$("datePickerDialog").close();$("calendarPreviousMonth").onclick=()=>changeCalendarMonth(-1);$("calendarNextMonth").onclick=()=>changeCalendarMonth(1);$("calendarToday").onclick=()=>selectCalendarDate(today());$("calendarDays").onclick=e=>{const day=e.target.closest("[data-calendar-date]");if(day&&!day.disabled)selectCalendarDate(day.dataset.calendarDate)};
 document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openDialog(b.dataset.open));
@@ -36,7 +39,7 @@ onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");return}
   if(!await hasPanelAccess(user,db,"cash")){location.replace("../yonetici-giris.html");return}
   if(!await unlock()){location.replace("../yonetim-merkezi/");return}
-  $("savingsPageLink").hidden=!savingsOwner();document.documentElement.classList.remove("cash-pending");if(started)return;started=true;
+  const owner=savingsOwner();$("savingsPageLink").hidden=!owner;document.documentElement.classList.remove("cash-pending");if(owner&&new URLSearchParams(location.search).get("birikim")==="1"){history.replaceState(null,"",location.pathname);setTimeout(openSavingsPanel,80)}if(started)return;started=true;
   onSnapshot(movementsCol,s=>{manualMovements=s.docs.filter(d=>d.data().reversed!==true).map(d=>({id:d.id,...d.data(),...(d.data().source==="savings"?{amount:d.data().amountCents/100}:{}),automatic:d.data().automatic===true}));render()},loadError);
   onSnapshot(closingsCol,s=>{closings=s.docs.map(d=>({id:d.id,...d.data()}));render()},loadError);
   onSnapshot(salesCol,s=>{sales=s.docs.map(d=>({id:d.id,...d.data()}));render()},loadError);
@@ -48,6 +51,7 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});render();renderSettings();if(!settings.openingConfigured&&!settingsPromptShown){settingsPromptShown=true;setTimeout(openSettings,250)}},loadError);
 });
 async function unlock(){return requireSensitiveAccess({title:"Kasa ve Hesaplar",message:"Kasa defterini açmak için yönetici PIN'ini girin."})}
+function openSavingsPanel(){const dialog=$("savingsPanelDialog");if(!dialog||dialog.open)return;const frame=dialog.querySelector("iframe");if(!frame.getAttribute("src"))frame.src=frame.dataset.src;dialog.showModal()}
 function loadError(error){console.error(error);toast("Kasa kayıtları yüklenemedi. Firebase kurallarını kontrol edin.")}
 
 function normalizeSettings(data){const configured=data.financeV3Configured===true&&data.financeV3StartDate===FINANCE_START_DATE;return{startDate:FINANCE_START_DATE,openingConfigured:configured,openingCash:configured?number(data.financeV3OpeningCash):0,openingBank:configured?number(data.financeV3OpeningBank):0,openingCard:configured?number(data.financeV3OpeningCard):0,openingCardDebt:configured?number(data.financeV3OpeningCardDebt):0,legacyOpeningCash:number(data.legacyOpeningCash??data.openingCash),legacyOpeningBank:number(data.legacyOpeningBank??data.openingBank),legacyOpeningCard:number(data.legacyOpeningCard??data.openingCard),incomeCategories:normalizeCategories(data.incomeCategories,defaultIncome,"income"),expenseCategories:normalizeCategories(data.expenseCategories,defaultExpense,"expense"),incomeGroups:normalizeGroups(data.incomeGroups,"income"),expenseGroups:normalizeGroups(data.expenseGroups,"expense"),transferCategories:normalizeCategories(data.transferCategories,defaultTransfer,"transfer")}}
