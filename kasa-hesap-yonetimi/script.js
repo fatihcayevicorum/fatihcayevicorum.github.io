@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/fireba
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, deleteDoc, doc, getFirestore, getDoc, onSnapshot, runTransaction, serverTimestamp, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { ADMIN_UID, firebaseConfig } from "../assets/js/firebase-config.js";
-import { savingsOwner,openSavingsMovement,savingsError } from "../assets/js/savings.js?v=423";
+import { savingsOwner,unlockSavings,openSavingsMovement,savingsError } from "../assets/js/savings.js?v=423";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 import { lockSensitiveAccess, requireSensitiveAccess } from "../assets/js/sensitive-access.js";
 import { hasLocalPendingInternalConsumption, hasPendingInternalConsumptionDraft } from "../assets/js/internal-consumption-guard.js?v=395";
@@ -51,7 +51,7 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});render();renderSettings();if(!settings.openingConfigured&&!settingsPromptShown){settingsPromptShown=true;setTimeout(openSettings,250)}},loadError);
 });
 async function unlock(){return requireSensitiveAccess({title:"Kasa ve Hesaplar",message:"Kasa defterini açmak için yönetici PIN'ini girin."})}
-function openSavingsPanel(){const dialog=$("savingsPanelDialog");if(!dialog||dialog.open)return;const frame=dialog.querySelector("iframe");if(!frame.getAttribute("src"))frame.src=frame.dataset.src;dialog.showModal()}
+async function openSavingsPanel(){const dialog=$("savingsPanelDialog"),button=$("savingsPageLink");if(!dialog||dialog.open||button.disabled)return;button.disabled=true;try{if(!await unlockSavings())return;const frame=dialog.querySelector("iframe");if(!frame.getAttribute("src"))frame.src=frame.dataset.src;dialog.showModal()}catch(error){toast(savingsError(error))}finally{button.disabled=false}}
 function loadError(error){console.error(error);toast("Kasa kayıtları yüklenemedi. Firebase kurallarını kontrol edin.")}
 
 function normalizeSettings(data){const configured=data.financeV3Configured===true&&data.financeV3StartDate===FINANCE_START_DATE;return{startDate:FINANCE_START_DATE,openingConfigured:configured,openingCash:configured?number(data.financeV3OpeningCash):0,openingBank:configured?number(data.financeV3OpeningBank):0,openingCard:configured?number(data.financeV3OpeningCard):0,openingCardDebt:configured?number(data.financeV3OpeningCardDebt):0,legacyOpeningCash:number(data.legacyOpeningCash??data.openingCash),legacyOpeningBank:number(data.legacyOpeningBank??data.openingBank),legacyOpeningCard:number(data.legacyOpeningCard??data.openingCard),incomeCategories:normalizeCategories(data.incomeCategories,defaultIncome,"income"),expenseCategories:normalizeCategories(data.expenseCategories,defaultExpense,"expense"),incomeGroups:normalizeGroups(data.incomeGroups,"income"),expenseGroups:normalizeGroups(data.expenseGroups,"expense"),transferCategories:normalizeCategories(data.transferCategories,defaultTransfer,"transfer")}}
