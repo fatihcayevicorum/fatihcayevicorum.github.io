@@ -1,6 +1,6 @@
 "use strict";
 const crypto=require("crypto");
-const SOURCES={adminOrders:"Adisyon",adminSales:"Adisyon / Ödeme",adminCashMovements:"Kasa ve Hesaplar",adminCashCounts:"Kasa ve Hesaplar",adminPaymentReminders:"Kasa ve Hesaplar",adminCurrentAccounts:"Cari Hesaplar",adminCurrentAccountMovements:"Cari Hesaplar",adminCreditCustomers:"Cari Hesaplar",adminCreditMovements:"Cari Hesaplar",adminStockItems:"Stok",adminStockMovements:"Stok",adminPurchaseOrders:"Sipariş Listesi",adminPurchaseDrafts:"Sipariş Listesi",adminInternalConsumptions:"Dahili Tüketim",adminInternalConsumptionDrafts:"Dahili Tüketim",adminCancellationEvents:"Adisyon",staffUsers:"Kullanıcı",merchantOrders:"Esnaf",merchantBalanceMovements:"Esnaf",merchantProfiles:"Esnaf",adminPersonnel:"Personel",adminPersonnelAttendance:"Personel",adminPersonnelPayments:"Personel",staffUserAudit:"Kullanıcı",adminSavingsAudit:"Birikim",publicMenu:"Menü",adminAppSettings:"Ayarlar",adminCashSettings:"Kasa ve Hesaplar",adminDailyClosings:"Gün Sonu",adminFinanceDays:"Gün Sonu"};
+const SOURCES={adminOrders:"Adisyon",adminSales:"Adisyon / Ödeme",adminTea:"Taze Dem",adminCashMovements:"Kasa ve Hesaplar",adminCashCounts:"Kasa ve Hesaplar",adminPaymentReminders:"Kasa ve Hesaplar",adminCurrentAccounts:"Cari Hesaplar",adminCurrentAccountMovements:"Cari Hesaplar",adminCreditCustomers:"Cari Hesaplar",adminCreditMovements:"Cari Hesaplar",adminStockItems:"Stok",adminStockMovements:"Stok",adminPurchaseOrders:"Sipariş Listesi",adminPurchaseDrafts:"Sipariş Listesi",adminInternalConsumptions:"Dahili Tüketim",adminInternalConsumptionDrafts:"Dahili Tüketim",adminCancellationEvents:"Adisyon",staffUsers:"Kullanıcı",merchantOrders:"Esnaf",merchantBalanceMovements:"Esnaf",merchantProfiles:"Esnaf",adminPersonnel:"Personel",adminPersonnelAttendance:"Personel",adminPersonnelPayments:"Personel",staffUserAudit:"Kullanıcı",adminSavingsAudit:"Birikim",publicMenu:"Menü",adminAppSettings:"Ayarlar",adminCashSettings:"Kasa ve Hesaplar",adminDailyClosings:"Gün Sonu",adminFinanceDays:"Gün Sonu"};
 const META=new Set(["updatedAt","updatedAtMs","updatedBy","createdAt","createdAtMs","createdBy","lastSeenAt","lastSeenAtMs"]);
 const SECRET=/password|passwd|pin|salt|token|credential|secret|fingerprint|session|device/i;
 function clean(value,depth=0){
@@ -30,14 +30,25 @@ function orderActivities(before,after,action,eventAtMs){
  if(action==="delete"&&activities.length===0)activities.push({kind:"order-delete",eventAtMs});
  return activities;
 }
+function teaActivities(before,after,eventAtMs){
+ const old=before||{},next=after||{},oldBrews=Array.isArray(old.activeBrews)?old.activeBrews:[],nextBrews=Array.isArray(next.activeBrews)?next.activeBrews:[],oldById=new Map(oldBrews.map((brew,index)=>[String(brew?.id||""),{brew,index}])),nextById=new Map(nextBrews.map((brew,index)=>[String(brew?.id||""),{brew,index}])),activities=[];
+ if(typeof old.serviceOpen==="boolean"&&typeof next.serviceOpen==="boolean"&&old.serviceOpen!==next.serviceOpen)activities.push({kind:next.serviceOpen?"tea-service-open":"tea-service-close",title:next.serviceOpen?"Çay servisi açıldı":"Çay servisi kapatıldı",eventAtMs});
+ for(const [id,{brew,index}] of nextById){if(!id)continue;const previous=oldById.get(id);if(!previous)activities.push({kind:"tea-brew-start",title:`Demlik ${index+1} başlatıldı`,brewId:id,brewNumber:index+1,startedAtMs:Number(brew.startedAtMs)||eventAtMs,businessDate:String(brew.businessDate||""),eventAtMs});else if(!Number.isFinite(Number(previous.brew.readyAtMs))&&Number.isFinite(Number(brew.readyAtMs)))activities.push({kind:"tea-brew-ready",title:`Demlik ${index+1} hazır işaretlendi`,brewId:id,brewNumber:index+1,startedAtMs:Number(brew.startedAtMs)||0,readyAtMs:Number(brew.readyAtMs),eventAtMs});}
+ for(const [id,{brew,index}] of oldById){if(!id||nextById.has(id))continue;const finished=(Array.isArray(next.history)?next.history:[]).find(item=>String(item?.id||"")===id)||brew;activities.push({kind:"tea-brew-finish",title:`Demlik ${index+1} bitirildi`,brewId:id,brewNumber:index+1,startedAtMs:Number(brew.startedAtMs)||0,readyAtMs:Number(brew.readyAtMs)||0,finishedAtMs:Number(finished.finishedAtMs)||eventAtMs,businessDate:String(brew.businessDate||""),eventAtMs});}
+ const settings=[["maxActiveBrews","Aynı anda izlenecek demlik sayısı"],["brewingMinutes","Demleme süresi"],["freshnessMinutes","Tazelik süresi"],["customerNotificationsEnabled","Müşteri Taze Dem bildirimi"],["merchantNotificationsEnabled","Esnaf Taze Dem bildirimi"]];
+ for(const [field,label] of settings)if(Object.prototype.hasOwnProperty.call(old,field)&&Object.prototype.hasOwnProperty.call(next,field)&&old[field]!==next[field])activities.push({kind:"tea-setting",title:`${label} değiştirildi`,field,label,before:old[field],after:next[field],eventAtMs});
+ return activities;
+}
 function historyMeta(row){
  const before=row.before||null,after=row.after||null,d=after||before||{},at=row.eventAtMs,orderId=String(d.orderId||row.relatedId||row.recordId||"");let activities=[],groupKey=`${row.source}:${row.recordId}`,visible=true,action=row.action;
  if(row.source==="adminOrders"){activities=orderActivities(before,after,row.action,at);groupKey=`adisyon:${row.recordId}`;visible=activities.length>0}
  else if(row.source==="adminSales"){groupKey=`adisyon:${orderId}`;activities=[{kind:row.action==="reopen"?"reopen":"payment",amount:d.paymentType==="rounding"?(Number(d.roundingDiscount)||0):(Number(d.paymentAmount??d.baseTotal??d.amount)||0),roundingAmount:Number(d.roundingDiscount)||0,paymentType:String(d.paymentType||d.settlementType||""),items:Array.isArray(d.items)?d.items:[],eventAtMs:at}]}
+ else if(row.source==="adminTea"){activities=teaActivities(before,after,at);groupKey=`taze-dem:${row.eventId||at}`;visible=activities.length>0;action="update"}
  else if(row.source==="adminCancellationEvents"){groupKey=`adisyon:${orderId}`;activities=[{kind:"cancel",eventAtMs:at}]}
  else if((row.source==="adminStockItems"||row.source==="adminStockMovements")&&(d.source==="pos"||d.saleId||d.orderId)){visible=false}
  else if(row.source==="adminSavingsAudit"){const oldAccount=before?.account||before||{},nextAccount=after?.account||after||{},oldOperation=before?.operation||null,nextOperation=after?.operation||null;if(oldOperation&&!nextOperation)action="cancel";else if(oldOperation&&nextOperation)action="update";else if(!oldOperation&&nextOperation)action="create";else if(Object.keys(oldAccount).length&&Object.keys(nextAccount).length)action=oldAccount.active===false&&nextAccount.active===true?"reopen":"update";else action="create"}
- return{groupKey,activities,historyVisible:visible,action};
+ const teaTitle=row.source==="adminTea"?(activities[0]?.title||"Taze Dem işlemi"):undefined;
+ return{groupKey,activities,historyVisible:visible,action,...(teaTitle?{title:teaTitle,reason:teaTitle}:{})};
 }
 function makeRecord({source,id,before,after,eventId,time,authId,authType}){
  if(!SOURCES[source])return null;
@@ -79,4 +90,4 @@ row.actorName=row.actorUid===ownerUid?"Fatih Ali Altınlı":row.actorUid||"Siste
  }
  return{unlock,lock,status,capture,read};
 }
-module.exports={SOURCES,clean,makeRecord,eventKey,buildHistory,historyMeta,orderActivities};
+module.exports={SOURCES,clean,makeRecord,eventKey,buildHistory,historyMeta,orderActivities,teaActivities};
