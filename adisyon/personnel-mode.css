@@ -146,7 +146,7 @@ html[data-personnel="true"] .order-toolbar {
 
 html[data-personnel="true"] #backToTables { justify-self: start; }
 html[data-personnel="true"] .active-table { grid-column: 2; justify-self: center; }
-html[data-personnel="true"] #orderMore { grid-column: 3; justify-self: end; }
+html[data-personnel="true"] .order-toolbar-actions { grid-column: 3; justify-self: end; }
 
 /* Personel ekranı normal adisyonun kart ölçülerini korur. */
 html[data-personnel="true"] .overview-row {

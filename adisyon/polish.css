@@ -906,8 +906,11 @@ button:focus:not(:focus-visible) {
   .org-summary-line .org-line-actions button{min-width:27px;min-height:31px;padding:0 4px;font-size:.56rem}
 }
 
-/* R426 - Adisyonda bağlantı durumunu masa ayarının yanına al ve beş sipariş satırını görünür tut. */
-.active-title-row .order-connection-status[data-state]{width:auto;min-width:72px;height:30px;margin:0;padding:0 5px;justify-content:flex-start;font-size:.6rem}
+/* R438 - Adisyon bağlantı simgesi Taşı / Birleştir düğmesinin solunda, yazısız görünür. */
+.order-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px}
+.order-toolbar-actions .order-connection-status[data-state]{width:30px;min-width:30px;height:30px;margin:0;padding:0;justify-content:center}
+.order-toolbar-actions .order-connection-status span{display:none}
+.order-toolbar-actions .order-connection-status i,.order-toolbar-actions .order-connection-status .connection-network-icon{font-size:.82rem}
 .order-dialog:not(.organization-dialog) .order-items{grid-auto-rows:61px;align-content:start;gap:5px;margin-top:7px}
 .order-dialog:not(.organization-dialog) .order-item{height:61px;min-height:61px;max-height:61px;gap:6px;padding:6px 8px;border-radius:10px;overflow:hidden}
 .order-dialog:not(.organization-dialog) .order-item strong{font-size:.72rem;line-height:1.18}
@@ -918,4 +921,4 @@ button:focus:not(:focus-visible) {
 .order-dialog:not(.organization-dialog) .item-side>b{font-size:.7rem}
 .order-dialog:not(.organization-dialog) .gift-toggle{gap:3px;margin-top:3px;padding:3px 5px;border-radius:6px;font-size:.54rem}
 .order-dialog:not(.organization-dialog) .gift-toggle input{width:13px;height:13px}
-@media(max-width:700px){.active-title-row{gap:4px}.active-title-row .order-connection-status[data-state]{min-width:66px;padding:0 3px;font-size:.56rem}.order-dialog:not(.organization-dialog) .order-items{grid-auto-rows:64px}.order-dialog:not(.organization-dialog) .order-item{height:64px;min-height:64px;max-height:64px;padding:7px 8px}}
+@media(max-width:700px){.active-title-row{gap:4px}.order-toolbar-actions{gap:6px}.order-toolbar-actions .order-connection-status[data-state]{width:28px;min-width:28px;height:28px}.order-dialog:not(.organization-dialog) .order-items{grid-auto-rows:64px}.order-dialog:not(.organization-dialog) .order-item{height:64px;min-height:64px;max-height:64px;padding:7px 8px}}
