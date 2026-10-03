@@ -42,13 +42,14 @@ function teaActivities(before,after,eventAtMs){
 function historyMeta(row){
  const before=row.before||null,after=row.after||null,d=after||before||{},at=row.eventAtMs,orderId=String(d.orderId||row.relatedId||row.recordId||"");let activities=[],groupKey=`${row.source}:${row.recordId}`,visible=true,action=row.action;
  if(row.source==="adminOrders"){activities=orderActivities(before,after,row.action,at);groupKey=`adisyon:${row.recordId}`;visible=activities.length>0}
- else if(row.source==="adminSales"){groupKey=`adisyon:${orderId}`;activities=[{kind:row.action==="reopen"?"reopen":"payment",amount:d.paymentType==="rounding"?(Number(d.roundingDiscount)||0):(Number(d.paymentAmount??d.baseTotal??d.amount)||0),roundingAmount:Number(d.roundingDiscount)||0,paymentType:String(d.paymentType||d.settlementType||""),items:Array.isArray(d.items)?d.items:[],eventAtMs:at}]}
+ else if(row.source==="adminSales"){const paymentType=String(d.paymentType||d.settlementType||""),currentAccount=paymentType==="current-account"||d.settlementType==="current-account";groupKey=`adisyon:${orderId}`;activities=[{kind:row.action==="reopen"?"reopen":"payment",amount:paymentType==="rounding"?(Number(d.roundingDiscount)||0):currentAccount?(Number(d.currentAccountAmount??d.baseTotal??d.amount)||0):(Number(d.paymentAmount??d.baseTotal??d.amount)||0),roundingAmount:Number(d.roundingDiscount)||0,paymentType,accountName:String(d.currentAccountName||d.accountName||d.title||"Cari hesap"),items:Array.isArray(d.items)?d.items:[],eventAtMs:at}]}
  else if(row.source==="adminTea"){activities=teaActivities(before,after,at);groupKey=`taze-dem:${row.eventId||at}`;visible=activities.length>0;action="update"}
+ else if(row.source==="adminCurrentAccountMovements"){const name=String(d.accountName||"Cari hesap"),type=String(d.type||"");groupKey=`cari-hareket:${row.recordId}`;if(type==="order")row.title=`${name} cari hesabına aktarıldı`;else if(type==="payment")row.title=`${name} cari tahsilatı`;else if(type==="payment-reversal")row.title=`${name} cari tahsilatı geri alındı`}
  else if(row.source==="adminCancellationEvents"){groupKey=`adisyon:${orderId}`;activities=[{kind:"cancel",eventAtMs:at}]}
  else if((row.source==="adminStockItems"||row.source==="adminStockMovements")&&(d.source==="pos"||d.saleId||d.orderId)){visible=false}
  else if(row.source==="adminSavingsAudit"){const oldAccount=before?.account||before||{},nextAccount=after?.account||after||{},oldOperation=before?.operation||null,nextOperation=after?.operation||null;if(oldOperation&&!nextOperation)action="cancel";else if(oldOperation&&nextOperation)action="update";else if(!oldOperation&&nextOperation)action="create";else if(Object.keys(oldAccount).length&&Object.keys(nextAccount).length)action=oldAccount.active===false&&nextAccount.active===true?"reopen":"update";else action="create"}
  const teaTitle=row.source==="adminTea"?(activities[0]?.title||"Taze Dem işlemi"):undefined;
- return{groupKey,activities,historyVisible:visible,action,...(teaTitle?{title:teaTitle,reason:teaTitle}:{})};
+ return{groupKey,activities,historyVisible:visible,action,...(teaTitle?{title:teaTitle,reason:teaTitle}:{}),...(row.source==="adminCurrentAccountMovements"&&row.title?{title:row.title}:{})};
 }
 function makeRecord({source,id,before,after,eventId,time,authId,authType}){
  if(!SOURCES[source])return null;
