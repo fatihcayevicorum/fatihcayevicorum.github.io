@@ -11,3 +11,15 @@ body{font-family:Poppins,Arial,sans-serif}button,input,select{font:inherit}butto
 /* R441: tarih üstte, sade arama alanı */
 .history-controls{display:grid;gap:0}.date-filter-bar{display:grid;grid-template-columns:repeat(2,minmax(170px,220px));gap:12px;margin:18px 0 4px}.date-filter-bar label,.search-filter-bar label{display:grid;gap:7px;min-width:0;font-size:.69rem;font-weight:700;color:var(--muted)}.date-filter-bar input,.search-filter-bar input{min-width:0;width:100%;height:45px;padding:0 11px;border:1px solid #ddcec1;border-radius:12px;background:#fff;color:var(--ink);font-size:.75rem}.date-filter-bar input:focus,.search-filter-bar input:focus{outline:2px solid #74172222;border-color:#a4525b}.search-filter-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;margin-top:4px}.search-filter-bar .primary{min-width:122px}
 @media(max-width:520px){.date-filter-bar{grid-template-columns:1fr 1fr;gap:8px}.search-filter-bar{grid-template-columns:minmax(0,1fr) auto;gap:8px}.search-filter-bar .primary{min-width:92px;padding-inline:12px}}
+
+/* R442: tarih, arama ve göster aynı sistem şeridinde */
+.top-filter-bar{display:grid;grid-template-columns:minmax(165px,195px) minmax(165px,195px) minmax(240px,1fr) auto;gap:12px;align-items:end;margin:18px 0 4px;padding:14px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,#fffdf9,#faf2e8);box-shadow:0 8px 24px rgba(68,31,25,.06)}
+.top-filter-bar label{display:grid;gap:6px;min-width:0;color:var(--muted);font-size:.69rem;font-weight:800}
+.filter-input{display:flex;align-items:center;gap:8px;height:45px;min-width:0;padding:0 11px;border:1px solid #ddcec1;border-radius:12px;background:#fff;color:var(--wine);transition:border-color .18s,box-shadow .18s}
+.filter-input:focus-within{border-color:#a4525b;box-shadow:0 0 0 3px #74172218}
+.filter-input i{width:15px;flex:0 0 auto;text-align:center}
+.filter-input input{width:100%;min-width:0;height:100%;padding:0;border:0;outline:0;background:transparent;color:var(--ink);font-size:.75rem}
+.filter-input input::-webkit-search-cancel-button{cursor:pointer}
+.top-filter-bar .primary{min-width:122px;height:45px;white-space:nowrap}
+@media(max-width:900px){.top-filter-bar{grid-template-columns:1fr 1fr}.top-search{grid-column:1/-1}.top-filter-bar .primary{grid-column:1/-1}}
+@media(max-width:520px){.top-filter-bar{gap:9px;padding:11px}.top-filter-bar label{font-size:.65rem}.filter-input{padding:0 9px}.top-filter-bar .primary{min-width:0}}
