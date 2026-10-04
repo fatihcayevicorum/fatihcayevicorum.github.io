@@ -56,3 +56,7 @@ h2{font-size:clamp(1.08rem,3vw,1.4rem)}
  .center-card{min-height:7.8rem}
 }
 @media(max-width:520px){.center-card{min-height:7.6rem}.card-grid-daily .center-card{min-height:7rem}}
+
+/* R448 — Bölüm başlıklarında tek satır */
+.section-heading .kicker{margin:0}
+.section-heading{margin-bottom:.65rem}
