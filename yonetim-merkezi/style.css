@@ -29,3 +29,30 @@ h2{margin:0;font-size:clamp(1.12rem,4vw,1.65rem);line-height:1.25}
 @media(min-width:700px){.brand-copy .user-welcome{font-size:.76rem;max-width:18rem}.settings-button{width:3rem;height:3rem}.page-shell{gap:1.5rem;padding:1.8rem 0 2.5rem}.center-section{padding:1.55rem}.card-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.card-grid-daily{grid-template-columns:repeat(2,minmax(0,1fr))}.center-card{min-height:10.4rem;padding:1.2rem}.center-card .card-icon{width:3.1rem;height:3.1rem;font-size:1.2rem}.center-card strong{font-size:.9rem}.center-card small{font-size:.64rem}}
 @media(min-width:1050px){.card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.card-grid-daily{grid-template-columns:repeat(2,minmax(0,1fr))}.center-card{min-height:11rem}}
 @media(max-width:520px){.brand-copy .user-welcome{font-size:.55rem;max-width:8.5rem}.center-card{min-height:8.7rem;padding:.85rem}.center-card strong{font-size:.73rem}}
+
+/* R447 — Alfabetik bölüm grupları ve kompakt yönetim kartları */
+.page-shell{gap:1rem;padding:1.1rem 0 1.5rem}
+.center-section{padding:1rem}
+.section-heading{margin-bottom:.75rem}
+h2{font-size:clamp(1.08rem,3vw,1.4rem)}
+.center-card{min-height:7.4rem;padding:.85rem;gap:.65rem;justify-content:flex-start}
+.center-card .card-icon{width:2.4rem;height:2.4rem;font-size:.98rem}
+.center-card strong{overflow-wrap:anywhere}
+.card-grid-daily .center-card{min-height:7rem}
+@media(min-width:700px){
+ .page-shell{gap:1rem;padding:1.2rem 0 1.75rem}
+ .center-section{padding:1.1rem}
+ .card-grid{gap:.75rem}
+ .center-card{min-height:7.7rem;padding:.9rem}
+ .center-card .card-icon{width:2.5rem;height:2.5rem;font-size:1rem}
+ .center-card strong{font-size:.82rem}
+ .center-card small{font-size:.6rem}
+ .card-grid-daily .center-card{min-height:6rem;flex-direction:row;align-items:center;justify-content:flex-start;gap:1rem;padding:1rem 1.1rem}
+ .card-grid-daily .center-card .card-icon{flex:0 0 auto;width:3rem;height:3rem;font-size:1.15rem}
+ .card-grid-daily .center-card>div{padding-right:.6rem}
+}
+@media(min-width:1050px){
+ .card-grid:not(.card-grid-daily){grid-template-columns:repeat(5,minmax(0,1fr))}
+ .center-card{min-height:7.8rem}
+}
+@media(max-width:520px){.center-card{min-height:7.6rem}.card-grid-daily .center-card{min-height:7rem}}

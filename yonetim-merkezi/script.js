@@ -41,15 +41,18 @@ onAuthStateChanged(auth,async user=>{
   $("staffSettingsButton").hidden=owner;
   if(!owner){watchStaffProfile(user.uid);watchOwnRequest(user.uid)}
   if(personnelSettings){document.querySelector("main").hidden=true;setTimeout(openStaffSettings,80)}
-  const visibleDaily=daily.filter(can),visibleManagement=management.filter(can);
+  const alphabetical=(a,b)=>a.name.localeCompare(b.name,"tr-TR"),visibleDaily=daily.filter(can).sort(alphabetical),visibleManagement=management.filter(item=>!item.ownerOnly&&can(item)).sort(alphabetical),visibleOwner=management.filter(item=>item.ownerOnly&&can(item)).sort(alphabetical);
   $("dailySection").hidden=!visibleDaily.length;
   $("dailyGrid").innerHTML=visibleDaily.map(card).join("");
+  $("managementSection").hidden=!visibleManagement.length;
   $("managementGrid").innerHTML=visibleManagement.map(card).join("");
-  $("emptyState").hidden=visibleManagement.length>0;
+  $("ownerSection").hidden=!visibleOwner.length;
+  $("ownerGrid").innerHTML=visibleOwner.map(card).join("");
+  $("emptyState").hidden=visibleDaily.length+visibleManagement.length+visibleOwner.length>0;
 });
 
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
-$("managementGrid").addEventListener("click",async event=>{const link=event.target.closest("[data-sensitive-history]");if(!link)return;event.preventDefault();if(link.dataset.busy==="1")return;link.dataset.busy="1";try{const opened=await requireServerSensitiveAccess(data=>unlockOperationHistory(data),{title:"İşlem Geçmişi Merkezi",message:"İşlem kayıtlarını açmak için yönetici PIN’ini girin."});if(opened)location.href=link.href}finally{delete link.dataset.busy}});
+$("ownerGrid").addEventListener("click",async event=>{const link=event.target.closest("[data-sensitive-history]");if(!link)return;event.preventDefault();if(link.dataset.busy==="1")return;link.dataset.busy="1";try{const opened=await requireServerSensitiveAccess(data=>unlockOperationHistory(data),{title:"İşlem Geçmişi Merkezi",message:"İşlem kayıtlarını açmak için yönetici PIN’ini girin."});if(opened)location.href=link.href}finally{delete link.dataset.busy}});
 $("staffSettingsButton").onclick=openStaffSettings;
 $("closeStaffSettings").onclick=()=>{if(currentProfile?.permissions?.includes("personnel"))location.replace("../personel-adisyon/");else $("staffSettingsDialog").close()};
 $("closeApprovedPassword").onclick=()=>{if(currentProfile?.permissions?.includes("personnel"))location.replace("../personel-adisyon/");else $("staffSettingsDialog").close()};
