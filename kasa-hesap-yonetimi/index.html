@@ -71,4 +71,6 @@
 <dialog id="savingsPanelDialog" class="savings-panel-dialog" aria-label="Birikim Hesapları"><div class="savings-panel-frame"><button type="button" class="savings-panel-close" aria-label="Kapat">×</button><iframe title="Birikim Hesapları" data-src="../birikim-hesaplari/?v=424&amp;embed=1"></iframe></div></dialog>
 <div id="toast" class="toast"></div>
   <script type="module" src="script.js?v=424"></script><script type="module" src="../assets/js/system-ui.js?v=395"></script>
+
+<dialog id="stockPurchaseEditDialog"><form id="stockPurchaseEditForm" class="dialog-card"><div class="dialog-head"><h2>Stok Alımını Düzelt</h2><button type="button" id="closeStockPurchaseEdit">×</button></div><input type="hidden" id="stockPurchaseCashId"><p class="form-date">Bağlı stok ve kasa kaydı birlikte güncellenecek.</p><label>Doğru toplam alış tutarı<input id="stockPurchaseAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><div class="dialog-actions"><button type="button" class="soft" id="cancelStockPurchaseEdit">Vazgeç</button><button>Düzelt</button></div></form></dialog>
 </body></html>
