@@ -385,7 +385,13 @@ async function checkAdminTeaBrew(brew,position,now,settings={}){
 }
 
 exports.notifyAdminTeaOnStateChange=onDocumentUpdated({document:"adminTea/state",region:"europe-west1"},async event=>{
-  const state=event.data?.after.data()||{},active=Array.isArray(state.activeBrews)?state.activeBrews:[],now=Date.now(),settings=teaNotificationSettings(state);
+  const before=event.data?.before.data()||{},state=event.data?.after.data()||{},active=Array.isArray(state.activeBrews)?state.activeBrews:[],now=Date.now(),settings=teaNotificationSettings(state);
+  // Müşteri Taze Dem yayınları kapatılıp yeniden açıldığında, kapalı dönemde oluşmuş
+  // müşteri olay kilitlerini temizle. Böylece aktif ve hâlâ bildirim penceresindeki
+  // demlikler yeniden değerlendirilir; yönetici/esnaf bildirimlerine dokunulmaz.
+  if(before.customerNotificationsEnabled===false&&state.customerNotificationsEnabled!==false&&active.length){
+    await Promise.allSettled(active.map(brew=>brew?.id?db.doc(`${ADMIN_TEA_EVENT_COLLECTION}/customer-ready-${brew.id}`).delete():Promise.resolve()));
+  }
   const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now,settings)));
   results.forEach((result,index)=>{if(result.status==="rejected")logger.error("Yönetici çay bildirimi gönderilemedi.",{brewId:active[index]?.id||"",position:index+1,error:String(result.reason?.message||result.reason)})})
 });
