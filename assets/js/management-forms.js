@@ -173,22 +173,24 @@
     input.addEventListener("click",()=>open(binding));
     input.addEventListener("keydown",e=>{if(binding.enabled()&&!active&&(e.key==="Enter"||e.key===" ")){e.preventDefault();open(binding)}});
     input.form?.addEventListener("change",sync);
-    input.form?.addEventListener("reset",()=>{close();queueMicrotask(sync)});
+    input.form?.addEventListener("reset",()=>{if(active===binding)close();queueMicrotask(sync)});
     // readonly alanların atlanan yerleşik min/step/required kontrolünü koru.
     input.form?.addEventListener("submit",e=>{
       if(!binding.enabled()||input.disabled)return;
       input.readOnly=false;const valid=input.checkValidity();input.readOnly=true;
-      if(!valid){e.preventDefault();e.stopImmediatePropagation();open(binding);display.textContent="Geçerli tutar girin"}
-      else close();
+      if(!valid){e.preventDefault();e.stopImmediatePropagation();open(binding);display.textContent=binding.options.decimals===0?"Geçerli sayı girin":"Geçerli tutar girin"}
+      else if(active===binding)close();
     },true);
     const dialog=input.closest("dialog");
-    dialog?.addEventListener("close",()=>{close();sync()});
-    if(dialog)new MutationObserver(()=>{sync();if(!dialog.open)close()}).observe(dialog,{attributes:true,attributeFilter:["open"]});
+    dialog?.addEventListener("close",()=>{if(active===binding)close();sync()});
+    if(dialog)new MutationObserver(()=>{sync();if(!dialog.open&&active===binding)close()}).observe(dialog,{attributes:true,attributeFilter:["open"]});
     new MutationObserver(sync).observe(input,{attributes:true,attributeFilter:["disabled"]});
     sync();
   }
   window.FatihCayEviNumberPad=Object.freeze({attach,close});
-  // R454 pilot: Kart/Havale ve diğer sayısal alanlar mevcut davranışı sürdürür.
-  const cash=document.getElementById("paidAmount");
-  if(cash?.form?.id==="checkoutForm")attach(cash,{decimals:2,enabled:()=>cash.form.elements.paymentType.value==="cash"});
+  // R456: Adisyon ödeme, kasa sayımı, hızlı gelir/gider ve masa sayısı.
+  if(document.getElementById("paidAmount")?.form?.id==="checkoutForm"){
+    for(const id of ["paidAmount","cashCountActual","quickCashAmount"])attach(document.getElementById(id),{decimals:2});
+    attach(document.getElementById("tableCountInput"),{decimals:0,maxDigits:2});
+  }
 })();
