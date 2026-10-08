@@ -1,3 +1,5 @@
+if(!window.__fatihManagementFormsLoaded){
+window.__fatihManagementFormsLoaded=true;
 (()=>{
   const path=location.pathname;
   if(path.includes("/esnaf-yonetimi/"))setup({form:"merchantForm",title:"formTitle",triggerText:"Yeni Esnaf",triggerIcon:"fa-user-plus",toolbar:()=>document.querySelector("#merchantList")?.closest(".panel")?.querySelector(".heading"),editSelector:"[data-edit]",removeSection:true});
@@ -145,7 +147,7 @@
     }else if(/^\d$/.test(key)){
       if(replace)next="";
       if(next.includes(".")&&next.split(".")[1].length>=active.options.decimals)return;
-      next=(next==="0"&&!active.options.mask?"":next)+key;
+      next=(next==="0"&&!active.options.mask&&!active.options.preserveLeadingZero?"":next)+key;
     }else return;
     if(next.replace(".","").length>active.options.maxDigits)return;
     replace=false;buffer=next;changed=true;
@@ -191,4 +193,56 @@
     for(const id of ["paidAmount","cashCountActual","quickCashAmount"])attach(document.getElementById(id),{decimals:2});
     attach(document.getElementById("tableCountInput"),{decimals:0,maxDigits:2});
   }
+
+  // R462: Onaylanan yönetim alanlarını aynı ortak tuş takımına bağlar.
+  // Dinamik oluşturulan sipariş satırları MutationObserver ile sonradan da yakalanır.
+  const rules=[];
+  if(path.includes("/kasa-hesap-yonetimi/"))rules.push(["#amount",{decimals:2,maxDigits:10}]);
+  if(path.includes("/personel-yonetimi/"))rules.push(
+    ["#attendanceWageAmount",{decimals:2,maxDigits:10}],
+    ["#paymentAmount",{decimals:2,maxDigits:10}]
+  );
+  if(path.includes("/taze-dem-paneli/"))rules.push(
+    ["#maxActiveBrewsInput",{decimals:0,maxDigits:1}],
+    ["#brewingMinutesInput",{decimals:0,maxDigits:3}],
+    ["#freshnessMinutesInput",{decimals:0,maxDigits:3}]
+  );
+  if(path.includes("/menu-yonetimi/"))rules.push(["#productPrice",{decimals:2,maxDigits:7}]);
+  if(path.includes("/siparis-listesi/"))rules.push(
+    ["#editStockQuantity",{decimals:0,maxDigits:6}],
+    ["#customProductQuantity",{decimals:0,maxDigits:6}],
+    [".target-input",{decimals:0,maxDigits:6}],
+    ["[data-edit-quantity]",{decimals:0,maxDigits:6}],
+    ["[data-receive]",{decimals:0,maxDigits:6}]
+  );
+  if(path.includes("/stok-yonetimi/"))rules.push(
+    ["#packageCount",{decimals:3,maxDigits:9}],
+    ["#entryUnitsPerPackage",{decimals:0,maxDigits:6}],
+    ["#purchaseTotal",{decimals:2,maxDigits:10}],
+    ["#adjustAmount",{decimals:3,maxDigits:9}],
+    ["#defaultUnitsPerPackage",{decimals:0,maxDigits:6}],
+    ["#warningThreshold",{decimals:0,maxDigits:6}],
+    ["#editUnitsPerPackage",{decimals:0,maxDigits:6}],
+    ["#editWarningThreshold",{decimals:0,maxDigits:6}]
+  );
+  if(path.includes("/kullanici-yonetimi/"))rules.push(
+    ["#currentPin",{decimals:0,maxDigits:6,mask:true}],
+    ["#newPin",{decimals:0,maxDigits:6,mask:true}],
+    ["#newPinAgain",{decimals:0,maxDigits:6,mask:true}]
+  );
+  if(/\/yonetici-giris\.html$/.test(path))rules.push(
+    ["#login",{decimals:0,maxDigits:11,preserveLeadingZero:true}]
+  );
+  function scanRequested(root=document){
+    for(const [selector,options] of rules){
+      if(root.nodeType===1&&root.matches(selector))attach(root,options);
+      root.querySelectorAll?.(selector).forEach(input=>attach(input,options));
+    }
+  }
+  if(rules.length){
+    scanRequested();
+    new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>scanRequested(node))))
+      .observe(document.body,{childList:true,subtree:true});
+  }
 })();
+}
