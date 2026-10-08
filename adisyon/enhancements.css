@@ -1167,3 +1167,9 @@
     font-size: .69rem !important;
   }
 }
+
+/* R455: Tutar boşken de ödeme penceresi ve işlem düğmeleri yerini korur. */
+#checkoutDialog #changeText{height:44px;box-sizing:border-box;overflow-y:auto}
+#checkoutDialog #paymentConfirmText{display:grid!important;height:220px;box-sizing:border-box;grid-template-rows:minmax(0,1fr)}
+#checkoutDialog #paymentConfirmText[hidden]{visibility:hidden;pointer-events:none}
+#checkoutDialog .payment-confirm-info{min-height:0;overflow-y:auto;overscroll-behavior:contain}

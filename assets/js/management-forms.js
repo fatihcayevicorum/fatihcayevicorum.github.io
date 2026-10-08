@@ -29,6 +29,11 @@
 (()=>{
   const bindings=new WeakMap();
   let panel,display,active=null,buffer="",replace=true,changed=false,owner=null;
+  let repeatDelay=null,repeatTimer=null,heldPointer=null;
+  function stopRepeat(){
+    clearTimeout(repeatDelay);clearInterval(repeatTimer);
+    repeatDelay=null;repeatTimer=null;heldPointer=null;
+  }
   function ensurePanel(){
     if(panel)return;
     const style=document.createElement("style");
@@ -57,8 +62,26 @@
       panel.lastElementChild.append(button);
     }
     // Alan odağını korur; klavye tuşları formu göndermez.
-    panel.addEventListener("pointerdown",e=>e.preventDefault());
-    panel.addEventListener("click",e=>{const button=e.target.closest("button[data-key]");if(button){e.preventDefault();e.stopPropagation();press(button.dataset.key)}});
+    panel.addEventListener("pointerdown",e=>{
+      e.preventDefault();
+      if(e.button!==0||!e.isPrimary)return;
+      stopRepeat();
+      const button=e.target.closest('button[data-key="back"]');
+      if(!button)return;
+      heldPointer=e.pointerId;button.setPointerCapture(e.pointerId);press("back");
+      repeatDelay=setTimeout(()=>{repeatTimer=setInterval(()=>press("back"),85)},400);
+    });
+    panel.addEventListener("click",e=>{const button=e.target.closest("button[data-key]");if(button){e.preventDefault();e.stopPropagation();if(button.dataset.key==="back"&&e.detail>0)return;press(button.dataset.key)}});
+    panel.addEventListener("contextmenu",e=>e.preventDefault());
+    panel.addEventListener("lostpointercapture",stopRepeat);
+    document.addEventListener("pointermove",e=>{
+      if(e.pointerId!==heldPointer)return;
+      const rect=panel.querySelector('[data-key="back"]').getBoundingClientRect();
+      if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)stopRepeat();
+    },true);
+    for(const event of ["pointerup","pointercancel"])document.addEventListener(event,e=>{if(e.pointerId===heldPointer)stopRepeat()},true);
+    window.addEventListener("blur",stopRepeat);
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)stopRepeat()});
     document.addEventListener("pointerdown",e=>{if(active&&!panel.contains(e.target)&&e.target!==active.input)close()},true);
     document.addEventListener("focusin",e=>{if(active&&e.target!==active.input&&!panel.contains(e.target))close()});
     document.addEventListener("keydown",e=>{
@@ -105,6 +128,7 @@
     paint();if(panel.showPopover)panel.showPopover();position();
   }
   function close(){
+    stopRepeat();
     if(!active)return;
     const previous=active;active=null;
     if(panel.matches('[popover]')&&panel.matches(':popover-open'))panel.hidePopover();
@@ -118,7 +142,7 @@
     if(key==="done"){close();return}
     let next=buffer;
     if(key==="clear")next="";
-    else if(key==="back")next=replace?"":next.slice(0,-1);
+    else if(key==="back")next=next.slice(0,-1);
     else if(key===","){
       if(active.options.decimals===0)return;
       if(replace)next="0.";else if(!next.includes("."))next=(next||"0")+".";
