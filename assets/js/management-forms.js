@@ -40,8 +40,6 @@
     style.textContent=`
       #fceNumberPad{position:fixed;inset:auto;margin:0;box-sizing:border-box;width:244px;max-width:calc(100vw - 16px);padding:10px;border:1px solid #d9b7a6;border-radius:14px;background:#fffaf4;color:#302522;box-shadow:0 8px 28px #30252240;z-index:2147483646;font-family:Poppins,Arial,sans-serif;overflow:auto;overscroll-behavior:contain}
       #fceNumberPad[hidden]{display:none!important}#fceNumberPad::backdrop{display:none}
-      #fceNumberPad .fce-pad-title{font-size:10px;font-weight:700;color:#7d1b24;margin:0 0 5px}
-      #fceNumberPad output{display:block;text-align:right;background:#fff;border:1px solid #ead9d0;border-radius:8px;padding:5px 9px;margin-bottom:7px;font-size:21px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:30px;box-sizing:border-box}
       #fceNumberPad .fce-pad-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
       #fceNumberPad button{box-sizing:border-box;display:block;width:100%;height:44px;min-height:44px;padding:0;border:1px solid #e6d6cd;border-radius:9px;background:#fff;color:#302522;font:600 19px Poppins,Arial,sans-serif;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
       #fceNumberPad button:active{background:#f6e6d7;transform:scale(.97)}#fceNumberPad button:focus-visible{outline:2px solid #b7791f;outline-offset:1px}
@@ -53,8 +51,8 @@
     panel=document.createElement("div");panel.id="fceNumberPad";panel.hidden=true;
     panel.setAttribute("role","group");panel.setAttribute("aria-label","Fatih Çay Evi Tuş Takımı");
     if(typeof panel.showPopover==="function")panel.setAttribute("popover","manual");
-    panel.innerHTML='<p class="fce-pad-title">Fatih Çay Evi Tuş Takımı</p><output aria-live="polite"></output><div class="fce-pad-keys"></div>';
-    display=panel.querySelector("output");
+    panel.innerHTML='<div class="fce-pad-keys"></div>';
+    display=null;
     for(const key of ["1","2","3","4","5","6","7","8","9",",","0","back","clear","done"]){
       const button=document.createElement("button");button.type="button";button.dataset.key=key;
       button.textContent=({back:"⌫",clear:"Temizle",done:"Tamam"})[key]||key;
@@ -94,9 +92,7 @@
     document.addEventListener("scroll",position,true);window.addEventListener("resize",position);
     window.visualViewport?.addEventListener("resize",position);window.visualViewport?.addEventListener("scroll",position);
   }
-  function paint(){
-    display.textContent=active?.options.mask?"•".repeat(buffer.length):(buffer||"0").replace(".",",");
-  }
+  function paint(){}
   function position(){
     if(!active)return;
     const input=active.input;
@@ -132,7 +128,7 @@
     if(!active)return;
     const previous=active;active=null;
     if(panel.matches('[popover]')&&panel.matches(':popover-open'))panel.hidePopover();
-    panel.hidden=true;display.textContent="";buffer="";previous.input.setAttribute("aria-expanded","false");
+    panel.hidden=true;buffer="";previous.input.setAttribute("aria-expanded","false");
     if(changed)previous.input.dispatchEvent(new Event("change",{bubbles:true}));
     owner=null;
   }
@@ -180,7 +176,7 @@
     input.form?.addEventListener("submit",e=>{
       if(!binding.enabled()||input.disabled)return;
       input.readOnly=false;const valid=input.checkValidity();input.readOnly=true;
-      if(!valid){e.preventDefault();e.stopImmediatePropagation();open(binding);display.textContent=binding.options.decimals===0?"Geçerli sayı girin":"Geçerli tutar girin"}
+      if(!valid){e.preventDefault();e.stopImmediatePropagation();open(binding)}
       else if(active===binding)close();
     },true);
     const dialog=input.closest("dialog");
