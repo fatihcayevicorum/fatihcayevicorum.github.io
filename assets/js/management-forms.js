@@ -29,6 +29,7 @@ window.__fatihManagementFormsLoaded=true;
 
 // R454 — Ortak sayısal giriş. Yalnız açıkça bağlanan alanlarda kullanılır.
 (()=>{
+  const path=location.pathname;
   const bindings=new WeakMap();
   let panel,display,active=null,buffer="",replace=true,changed=false,owner=null;
   let repeatDelay=null,repeatTimer=null,heldPointer=null;
@@ -194,7 +195,7 @@ window.__fatihManagementFormsLoaded=true;
     attach(document.getElementById("tableCountInput"),{decimals:0,maxDigits:2});
   }
 
-  // R462: Onaylanan yönetim alanlarını aynı ortak tuş takımına bağlar.
+  // R463: Onaylanan yönetim alanlarını aynı ortak tuş takımına bağlar.
   // Dinamik oluşturulan sipariş satırları MutationObserver ile sonradan da yakalanır.
   const rules=[];
   if(path.includes("/kasa-hesap-yonetimi/"))rules.push(["#amount",{decimals:2,maxDigits:10}]);
