@@ -16,6 +16,7 @@ $("closeUserDialog").onclick=()=>$("userDialog").close();
 $("closeOwnerDialog").onclick=()=>$("ownerDialog").close();
 $("closePinDialog").onclick=()=>$("pinDialog").close();
 $("ownerSetupButton").onclick=()=>{$("ownerForm").reset();message("ownerMessage","");$("ownerDialog").showModal()};
+for(const id of ["currentPin","newPin","newPinAgain"])window.FatihCayEviNumberPad?.attach($(id),{decimals:0,maxDigits:6,mask:true});
 $("ownerPinButton").onclick=()=>{$("pinForm").reset();message("pinMessage","");$("pinDialog").showModal()};
 $("ownerDevicesButton").onclick=()=>openDeviceReset(ADMIN_UID,"Ana yönetici",$("ownerDevicesButton"));
 $("searchInput").oninput=render;
