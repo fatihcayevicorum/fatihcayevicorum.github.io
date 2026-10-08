@@ -132,7 +132,7 @@
     if(!active)return;
     const previous=active;active=null;
     if(panel.matches('[popover]')&&panel.matches(':popover-open'))panel.hidePopover();
-    panel.hidden=true;previous.input.setAttribute("aria-expanded","false");
+    panel.hidden=true;display.textContent="";buffer="";previous.input.setAttribute("aria-expanded","false");
     if(changed)previous.input.dispatchEvent(new Event("change",{bubbles:true}));
     owner=null;
   }
@@ -149,13 +149,15 @@
     }else if(/^\d$/.test(key)){
       if(replace)next="";
       if(next.includes(".")&&next.split(".")[1].length>=active.options.decimals)return;
-      next=(next==="0"?"":next)+key;
+      next=(next==="0"&&!active.options.mask?"":next)+key;
     }else return;
     if(next.replace(".","").length>active.options.maxDigits)return;
     replace=false;buffer=next;changed=true;
     // number input virgül/son noktayı tutmaz; gösterim virgüllü, değer sayısaldır.
     active.input.value=next.endsWith(".")?next.slice(0,-1):next;
-    active.input.dispatchEvent(new Event("input",{bubbles:true}));paint();position();
+    const editing=active;
+    editing.input.dispatchEvent(new Event("input",{bubbles:true}));
+    if(active===editing){paint();position()}
   }
   function attach(input,options={}){
     if(!input||bindings.has(input))return;
