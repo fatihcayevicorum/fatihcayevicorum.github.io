@@ -195,7 +195,7 @@ window.__fatihManagementFormsLoaded=true;
     attach(document.getElementById("tableCountInput"),{decimals:0,maxDigits:2});
   }
 
-  // R463: Onaylanan yönetim alanlarını aynı ortak tuş takımına bağlar.
+  // R464: Onaylanan yönetim alanlarını aynı ortak tuş takımına bağlar.
   // Dinamik oluşturulan sipariş satırları MutationObserver ile sonradan da yakalanır.
   const rules=[];
   if(path.includes("/kasa-hesap-yonetimi/"))rules.push(["#amount",{decimals:2,maxDigits:10}]);
@@ -208,7 +208,14 @@ window.__fatihManagementFormsLoaded=true;
     ["#brewingMinutesInput",{decimals:0,maxDigits:3}],
     ["#freshnessMinutesInput",{decimals:0,maxDigits:3}]
   );
-  if(path.includes("/menu-yonetimi/"))rules.push(["#productPrice",{decimals:2,maxDigits:7}]);
+  if(path.includes("/menu-yonetimi/"))rules.push(
+    ["#categoryOrder,#productOrder",{decimals:0,maxDigits:3}],
+    ["#productPrice,#bundleFixedPrice",{decimals:2,maxDigits:7}],
+    ["#bundleTriggerQuantity,#bundleRewardQuantity",{decimals:0,maxDigits:2}],
+    ["#costPrice,#costGrams,#costUsed,#costYield",{decimals:6,maxDigits:12}],
+    [".recipe-row input[type='number']",{decimals:6,maxDigits:12}],
+    [".cost-factor input[type='number']",{decimals:6,maxDigits:12}]
+  );
   if(path.includes("/siparis-listesi/"))rules.push(
     ["#editStockQuantity",{decimals:0,maxDigits:6}],
     ["#customProductQuantity",{decimals:0,maxDigits:6}],
