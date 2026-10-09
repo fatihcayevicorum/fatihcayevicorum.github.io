@@ -195,9 +195,13 @@ window.__fatihManagementFormsLoaded=true;
     attach(document.getElementById("tableCountInput"),{decimals:0,maxDigits:2});
   }
 
-  // R465: Onaylanan yönetim alanlarını aynı ortak tuş takımına bağlar.
+  // R466: Onaylanan yönetim alanlarını aynı ortak tuş takımına bağlar.
   // Dinamik oluşturulan sipariş satırları MutationObserver ile sonradan da yakalanır.
   const rules=[];
+  if(path.includes("/adisyon/"))rules.push(
+    ["#orgQuantityInput",{decimals:0,maxDigits:4}],
+    ["#orgAllPercent,[data-org-percent]",{decimals:2,maxDigits:5}]
+  );
   if(path.includes("/kasa-hesap-yonetimi/"))rules.push(["#amount",{decimals:2,maxDigits:10}]);
   if(path.includes("/personel-yonetimi/"))rules.push(
     ["#attendanceWageAmount",{decimals:2,maxDigits:10}],
