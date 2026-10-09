@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r464-menu-sayisal-tus-takimi",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r465-birikim-tus-takimi",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./islem-gecmisi/","./islem-gecmisi/index.html","./islem-gecmisi/style.css","./islem-gecmisi/script.js",
   "./birikim-hesaplari/","./birikim-hesaplari/index.html","./birikim-hesaplari/style.css","./birikim-hesaplari/script.js","./assets/js/savings.js","./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
@@ -63,8 +63,8 @@ self.addEventListener("fetch",event=>{
     event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok||response.type==="opaque"){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response})));
     return;
   }
-  if(url.pathname.endsWith("/assets/js/system-ui.js")&&url.searchParams.get("v")!=="464"){
-    const latest=new URL(url);latest.searchParams.set("v","464");
+  if(url.pathname.endsWith("/assets/js/system-ui.js")&&url.searchParams.get("v")!=="465"){
+    const latest=new URL(url);latest.searchParams.set("v","465");
     event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));
     return;
   }
