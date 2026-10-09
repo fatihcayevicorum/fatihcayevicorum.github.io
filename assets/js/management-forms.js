@@ -224,6 +224,10 @@ window.__fatihManagementFormsLoaded=true;
     [".savings-modal input[name='quantity']",{decimals:4,maxDigits:13}],
     [".savings-modal input[name='amount']",{decimals:2,maxDigits:13}]
   );
+  if(path.includes("/cari-hesaplar/"))rules.push(
+    ["#receivePaymentAmount",{decimals:2,maxDigits:10}],
+    ["#paymentEditAmount",{decimals:2,maxDigits:10}]
+  );
   if(path.includes("/siparis-listesi/"))rules.push(
     ["#editStockQuantity",{decimals:0,maxDigits:6}],
     ["#customProductQuantity",{decimals:0,maxDigits:6}],
