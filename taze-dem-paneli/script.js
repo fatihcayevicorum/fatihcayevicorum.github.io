@@ -5,11 +5,15 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
+    collection,
     doc,
-    getFirestore,
+    initializeFirestore,
     onSnapshot,
+    persistentLocalCache,
+    persistentMultipleTabManager,
     runTransaction,
-    serverTimestamp
+    serverTimestamp,
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
@@ -18,10 +22,16 @@ const DEFAULT_TEA_SETTINGS = { maxActiveBrews: 3, brewingMinutes: 20, freshnessM
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const database = getFirestore(app);
+const database = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
 const adminStateReference = doc(database, "adminTea", "state");
 const publicStatusReference = doc(database, "publicTea", "status");
 const posSettingsReference = doc(database, "adminAppSettings", "pos");
+const offlineOperationsCollection = collection(database, "adminOfflineOperations");
+const OFFLINE_DEVICE_KEY = "fatih-pos-offline-device-id";
+const offlineDeviceId = getOfflineDeviceId();
 
 const elements = {
     currentDate: document.getElementById("currentDate"),
@@ -61,6 +71,9 @@ let unsubscribeSettings = null;
 let toastTimeout = null;
 let isBusy = false;
 let currentBusinessDate = getDateKey(Date.now());
+let connectionMode = "pending";
+let hasPendingWrites = false;
+let syncError = false;
 
 elements.startButton.disabled = true;
 elements.startButton.addEventListener("click", startNewBrew);
@@ -105,6 +118,11 @@ if (typeof ResizeObserver === "function") {
     panelSizeObserver.observe(elements.activePanel);
 }
 window.addEventListener("resize", syncHistoryPanelHeight);
+window.addEventListener("online", () => {
+    syncError = false;
+    updateConnectionState();
+});
+window.addEventListener("offline", updateConnectionState);
 
 function createEmptyState() {
     return { activeBrews: [], history: [], serviceOpen: true, todayCountResetAtMs: 0, ...DEFAULT_TEA_SETTINGS };
@@ -113,7 +131,7 @@ function createEmptyState() {
 function subscribeToAdminState() {
     if (unsubscribeState) unsubscribeState();
 
-    unsubscribeState = onSnapshot(adminStateReference, (snapshot) => {
+    unsubscribeState = onSnapshot(adminStateReference, { includeMetadataChanges: true }, (snapshot) => {
         const data = snapshot.exists() ? snapshot.data() : createEmptyState();
         appState = {
             activeBrews: Array.isArray(data.activeBrews) ? data.activeBrews : [],
@@ -122,12 +140,16 @@ function subscribeToAdminState() {
             todayCountResetAtMs: Number(data.todayCountResetAtMs) || 0,
             ...normalizeTeaSettings(data)
         };
-        setConnectionState(true);
+        connectionMode = snapshot.metadata.fromCache ? "cache" : "live";
+        hasPendingWrites = snapshot.metadata.hasPendingWrites;
+        syncError = false;
+        updateConnectionState();
         render();
     }, (error) => {
         console.error(error);
-        setConnectionState(false);
-        showToast("Canlı bağlantı kurulamadı. Firebase kurallarını kontrol edin.");
+        syncError = true;
+        updateConnectionState();
+        showToast("Canlı bağlantı kurulamadı. Yerel çalışma devam ediyor.");
     });
 }
 
@@ -143,12 +165,73 @@ function subscribeToBusinessDay() {
     });
 }
 
+function isLocalWorkingMode() {
+    return navigator.onLine === false || connectionMode !== "live" || syncError;
+}
+
+function getOfflineDeviceId() {
+    let value = localStorage.getItem(OFFLINE_DEVICE_KEY);
+    if (!value) {
+        value = window.crypto?.randomUUID?.() || `device-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem(OFFLINE_DEVICE_KEY, value);
+    }
+    return value;
+}
+
+function publicTeaPayload(state) {
+    return {
+        activeBrews: state.activeBrews,
+        ...teaSettingsPayload(state),
+        serviceOpen: state.serviceOpen,
+        orderingOpen: state.serviceOpen,
+        updatedAt: serverTimestamp()
+    };
+}
+
+function queueTeaState(state, operationType, brewId = "") {
+    const normalized = normalizeState(state);
+    const operationId = createId();
+    const batch = writeBatch(database);
+    batch.set(adminStateReference, { ...normalized, updatedAt: serverTimestamp() });
+    batch.set(publicStatusReference, publicTeaPayload(normalized));
+    batch.set(doc(offlineOperationsCollection, operationId), {
+        operationType,
+        deviceId: offlineDeviceId,
+        businessDate: currentBusinessDate,
+        brewId,
+        createdAtMs: Date.now(),
+        createdAt: serverTimestamp(),
+        createdBy: auth.currentUser.uid
+    });
+    appState = normalized;
+    hasPendingWrites = true;
+    updateConnectionState();
+    render();
+    batch.commit().catch((error) => {
+        console.error(error);
+        syncError = true;
+        updateConnectionState();
+        showToast("Taze Dem işlemi cihazda bekliyor; bağlantı gelince yeniden denenecek.");
+    });
+}
+
 async function startNewBrew() {
     if (isBusy) return;
     setBusy(true);
 
     try {
         let newBrewNumber = 1;
+
+        if (isLocalWorkingMode()) {
+            const state = normalizeState(appState);
+            if (state.activeBrews.length >= state.maxActiveBrews) throw new Error("max-active-brews");
+            const brew = { id: createId(), startedAtMs: Date.now(), businessDate: currentBusinessDate };
+            state.activeBrews.push(brew);
+            newBrewNumber = state.activeBrews.length;
+            queueTeaState(state, "tea-start", brew.id);
+            showToast(`Demlik ${newBrewNumber} cihazda başlatıldı; bağlantı gelince aktarılacak.`);
+            return;
+        }
 
         await runTransaction(database, async (transaction) => {
             const snapshot = await transaction.get(adminStateReference);
@@ -219,6 +302,16 @@ async function markBrewReady(brewId) {
 
     try {
         let readyNumber = 1;
+        if (isLocalWorkingMode()) {
+            const state = normalizeState(appState);
+            const brewIndex = state.activeBrews.findIndex((brew) => brew.id === brewId);
+            if (brewIndex < 0) throw new Error("brew-not-found");
+            readyNumber = brewIndex + 1;
+            if (!Number.isFinite(Number(state.activeBrews[brewIndex].readyAtMs))) state.activeBrews[brewIndex].readyAtMs = Date.now();
+            queueTeaState(state, "tea-ready", brewId);
+            showToast(`Demlik ${readyNumber} cihazda hazır işaretlendi; bağlantı gelince aktarılacak.`);
+            return;
+        }
         await runTransaction(database, async (transaction) => {
             const snapshot = await transaction.get(adminStateReference);
             const state = normalizeState(snapshot.exists() ? snapshot.data() : createEmptyState());
@@ -253,6 +346,14 @@ async function toggleTeaService() {
 
     try {
         let serviceOpen = true;
+        if (isLocalWorkingMode()) {
+            const state = normalizeState(appState);
+            state.serviceOpen = !state.serviceOpen;
+            serviceOpen = state.serviceOpen;
+            queueTeaState(state, "tea-service");
+            showToast(serviceOpen ? "Çay servisi cihazda açıldı; bağlantı gelince aktarılacak." : "Çay servisi cihazda kapatıldı; bağlantı gelince aktarılacak.");
+            return;
+        }
         await runTransaction(database, async (transaction) => {
             const snapshot = await transaction.get(adminStateReference);
             const state = normalizeState(snapshot.exists() ? snapshot.data() : createEmptyState());
@@ -289,6 +390,21 @@ async function finishBrew(brewId) {
 
     try {
         let finishedNumber = 1;
+
+        if (isLocalWorkingMode()) {
+            const state = normalizeState(appState);
+            const brewIndex = state.activeBrews.findIndex((brew) => brew.id === brewId);
+            if (brewIndex < 0) throw new Error("brew-not-found");
+            finishedNumber = brewIndex + 1;
+            const [finishedBrew] = state.activeBrews.splice(brewIndex, 1);
+            state.history.unshift({ ...finishedBrew, finishedAtMs: Date.now() });
+            state.history = state.history.slice(0, 200);
+            queueTeaState(state, "tea-finish", brewId);
+            pendingFinishId = null;
+            if (elements.finishDialog.open) elements.finishDialog.close();
+            showToast(`Demlik ${finishedNumber} cihazda bitirildi; bağlantı gelince aktarılacak.`);
+            return;
+        }
 
         await runTransaction(database, async (transaction) => {
             const snapshot = await transaction.get(adminStateReference);
@@ -634,11 +750,18 @@ function setBusy(busy) {
     render();
 }
 
-function setConnectionState(connected) {
-    elements.saveStatus.classList.toggle("is-error", !connected);
-    elements.saveStatus.innerHTML = connected
-        ? '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Canlı bağlantı'
-        : '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Bağlantı yok';
+function updateConnectionState() {
+    const offline = navigator.onLine === false || connectionMode !== "live";
+    elements.saveStatus.classList.toggle("is-error", offline || syncError);
+    if (syncError) {
+        elements.saveStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Senkronizasyon Hatası';
+    } else if (offline) {
+        elements.saveStatus.innerHTML = '<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Çevrim Dışı • Yerel Çalışma';
+    } else if (hasPendingWrites) {
+        elements.saveStatus.innerHTML = '<i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Senkronize Ediliyor';
+    } else {
+        elements.saveStatus.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Güncel';
+    }
 }
 
 function showToast(message) {
