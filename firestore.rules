@@ -413,6 +413,20 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
+    // R467: Cihaz çevrim dışıyken sıraya alınan Adisyon işlemlerinin
+    // Firebase'e ulaşıp ulaşmadığını istemci yazma meta verisiyle izler.
+    match /adminOfflineOperations/{operationId} {
+      allow read: if hasPanel('pos');
+      allow create: if hasPanel('pos')
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.deviceId is string
+        && request.resource.data.deviceId.size() > 0
+        && request.resource.data.operationType in ['checkout', 'cancel-order']
+        && request.resource.data.businessDate is string
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
     // Savings collections use callable APIs even for the owner; PIN is server verified.
     match /{collection}/{document=**} {
       allow read, write: if isOwner()
