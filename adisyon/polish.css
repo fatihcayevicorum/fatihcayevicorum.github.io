@@ -741,7 +741,9 @@ button:focus:not(:focus-visible) {
 .connection-status[data-state] .connection-network-icon{font-size:.69rem}
 .connection-status[data-state] .connection-network-icon[hidden]{display:none}
 .connection-status[data-state="pending"]{color:#8b5b11}
+.connection-status[data-state="syncing"]{color:#23608f}
 .connection-status[data-state="offline"],.connection-status[data-state="error"]{color:#a52c34}
+.view-top .connection-status[data-state]{width:auto;min-width:126px}
 .order-connection-status[data-state]{margin:0 0 9px}
 @media(max-width:700px){.view-top{flex-wrap:wrap}.view-top .connection-status[data-state],.order-connection-status[data-state]{font-size:.66rem}.view-top .connection-status[data-state]{margin-left:0}}
 
