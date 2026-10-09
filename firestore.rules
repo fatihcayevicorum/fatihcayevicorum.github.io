@@ -413,15 +413,17 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
-    // R467: Cihaz çevrim dışıyken sıraya alınan Adisyon işlemlerinin
+    // R469: Cihaz çevrim dışıyken sıraya alınan Adisyon ve Taze Dem işlemlerinin
     // Firebase'e ulaşıp ulaşmadığını istemci yazma meta verisiyle izler.
     match /adminOfflineOperations/{operationId} {
-      allow read: if hasPanel('pos');
-      allow create: if hasPanel('pos')
+      allow read: if hasAnyPanel(['pos', 'tea']);
+      allow create: if hasAnyPanel(['pos', 'tea'])
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.deviceId is string
         && request.resource.data.deviceId.size() > 0
-        && request.resource.data.operationType in ['checkout', 'cancel-order']
+        && request.resource.data.operationType in [
+          'checkout', 'cancel-order', 'tea-start', 'tea-ready', 'tea-finish', 'tea-service'
+        ]
         && request.resource.data.businessDate is string
         && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
