@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=471">
+  <link rel="stylesheet" href="style.css?v=472">
 <link rel="stylesheet" href="../birikim-hesaplari/style.css?v=419"></head>
 <body>
   <header class="app-header">
@@ -114,9 +114,11 @@
       </section>
 
       <section class="panel hourly-chart-panel">
-        <div class="section-heading"><div><p class="kicker">Saatlere göre dağılım</p><h2>Ürün Yoğunluğu</h2></div><small>Bir saate basarak ürünleri görün</small></div>
-        <div class="hourly-table-head"><span>Saat</span><span>Yoğunluk</span><span>Ürün</span><span>Çay</span><span>Tutar</span></div>
-        <div id="hourlyRows" class="hourly-rows"></div>
+        <div class="section-heading"><div><p class="kicker">00.00 – 24.00</p><h2>24 Saatlik Ürün Yoğunluğu</h2></div><small>Dik sütuna basarak ayrıntıyı açın</small></div>
+        <div class="hourly-chart-scroll">
+          <div id="hourlyRows" class="hourly-bars" role="list" aria-label="24 saatlik ürün yoğunluğu"></div>
+        </div>
+        <div class="hourly-chart-legend"><span><i></i> Ürün adedi</span><small>Sütun yüksekliği o saatte eklenen ürün sayısını gösterir</small></div>
         <p id="hourlyEmpty" class="empty">Seçilen dönemde saatlik satış verisi bulunmuyor.</p>
       </section>
 
@@ -324,7 +326,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=471"></script>
+  <script type="module" src="script.js?v=472"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
