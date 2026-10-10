@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=472">
+  <link rel="stylesheet" href="style.css?v=473">
 <link rel="stylesheet" href="../birikim-hesaplari/style.css?v=419"></head>
 <body>
   <header class="app-header">
@@ -109,6 +109,7 @@
           <article><i class="fa-solid fa-mug-hot"></i><span>Yoğun Saatte Ürün</span><strong id="hourlyPeakItems">0</strong><small>Adisyona eklenen adet</small></article>
           <article><i class="fa-solid fa-turkish-lira-sign"></i><span>Yoğun Saatte Tutar</span><strong id="hourlyPeakRevenue">₺0</strong><small>Ürünlerin satış tutarı</small></article>
           <article><i class="fa-solid fa-glass-water"></i><span>Yoğun Saatte Çay</span><strong id="hourlyPeakTea">0</strong><small>Çay ürünü adedi</small></article>
+          <article><i class="fa-solid fa-kitchen-set"></i><span>Yoğun Saatte Demlenen</span><strong id="hourlyPeakBrews">0</strong><small>Başlatılan demlik</small></article>
         </div>
         <p id="hourlyLegacyNote" class="hourly-note" hidden><i class="fa-solid fa-circle-info"></i> R471 öncesi kayıtlarda mevcut ürün ekleme saati; bu bilgi yoksa adisyonun kapanma saati kullanılır.</p>
       </section>
@@ -118,9 +119,11 @@
         <div class="hourly-chart-scroll">
           <div id="hourlyRows" class="hourly-bars" role="list" aria-label="24 saatlik ürün yoğunluğu"></div>
         </div>
-        <div class="hourly-chart-legend"><span><i></i> Ürün adedi</span><small>Sütun yüksekliği o saatte eklenen ürün sayısını gösterir</small></div>
+        <div class="hourly-chart-legend"><span><i></i> Ürün adedi</span><span class="brew-legend">D = Demlenen çay</span><small>Sütun yüksekliği o saatte eklenen ürün sayısını gösterir</small></div>
         <p id="hourlyEmpty" class="empty">Seçilen dönemde saatlik satış verisi bulunmuyor.</p>
       </section>
+
+      <section id="hourlySelectedSummary" class="hourly-selected-summary" aria-label="Seçilen saat özeti"></section>
 
       <section class="hourly-lower-grid">
         <article class="panel hourly-products-panel">
@@ -326,7 +329,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=472"></script>
+  <script type="module" src="script.js?v=473"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
