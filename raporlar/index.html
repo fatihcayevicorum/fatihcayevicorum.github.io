@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=408">
+  <link rel="stylesheet" href="style.css?v=471">
 <link rel="stylesheet" href="../birikim-hesaplari/style.css?v=419"></head>
 <body>
   <header class="app-header">
@@ -59,6 +59,7 @@
 
     <nav id="reportTabs" class="report-tabs" aria-label="Rapor bölümleri" role="tablist">
       <button class="active" type="button" role="tab" aria-selected="true" data-report-tab="sales"><i class="fa-solid fa-chart-line"></i><span>Satışlar</span><small>Ürün ve ödeme dağılımı</small></button>
+      <button type="button" role="tab" aria-selected="false" data-report-tab="hourly"><i class="fa-solid fa-clock"></i><span>Saatlik Analiz</span><small>Yoğun saatler ve ürünler</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="expenses"><i class="fa-solid fa-receipt"></i><span>Giderler</span><small>Kategori ve ödeme türü</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="stock"><i class="fa-solid fa-boxes-stacked"></i><span>Stok Raporu</span><small>Alım, satış ve tüketim</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="currentAccounts"><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span><small>Borç ve tahsilat detayları</small></button>
@@ -98,6 +99,45 @@
       <div class="section-heading"><div><p class="kicker">Kategori özeti</p><h2>Kategorilere Göre Dağılım</h2></div></div>
       <div id="categoryReport" class="category-report"></div>
     </section>
+    </section>
+
+    <section id="reportPanelHourly" class="report-tab-panel" data-report-panel="hourly" hidden>
+      <section class="panel hourly-summary-panel">
+        <div class="section-heading"><div><p class="kicker">Ürünün adisyona eklenme saati</p><h2>Saatlik Satış Analizi</h2></div><small>Ödeme saati ayrıca gösterilir</small></div>
+        <div class="hourly-summary-grid">
+          <article><i class="fa-solid fa-fire"></i><span>En Yoğun Saat</span><strong id="hourlyPeakHour">—</strong><small id="hourlyPeakDetail">Satış bulunmuyor</small></article>
+          <article><i class="fa-solid fa-mug-hot"></i><span>Yoğun Saatte Ürün</span><strong id="hourlyPeakItems">0</strong><small>Adisyona eklenen adet</small></article>
+          <article><i class="fa-solid fa-turkish-lira-sign"></i><span>Yoğun Saatte Tutar</span><strong id="hourlyPeakRevenue">₺0</strong><small>Ürünlerin satış tutarı</small></article>
+          <article><i class="fa-solid fa-glass-water"></i><span>Yoğun Saatte Çay</span><strong id="hourlyPeakTea">0</strong><small>Çay ürünü adedi</small></article>
+        </div>
+        <p id="hourlyLegacyNote" class="hourly-note" hidden><i class="fa-solid fa-circle-info"></i> R471 öncesi kayıtlarda mevcut ürün ekleme saati; bu bilgi yoksa adisyonun kapanma saati kullanılır.</p>
+      </section>
+
+      <section class="panel hourly-chart-panel">
+        <div class="section-heading"><div><p class="kicker">Saatlere göre dağılım</p><h2>Ürün Yoğunluğu</h2></div><small>Bir saate basarak ürünleri görün</small></div>
+        <div class="hourly-table-head"><span>Saat</span><span>Yoğunluk</span><span>Ürün</span><span>Çay</span><span>Tutar</span></div>
+        <div id="hourlyRows" class="hourly-rows"></div>
+        <p id="hourlyEmpty" class="empty">Seçilen dönemde saatlik satış verisi bulunmuyor.</p>
+      </section>
+
+      <section class="hourly-lower-grid">
+        <article class="panel hourly-products-panel">
+          <div class="section-heading"><div><p class="kicker" id="hourlyProductsKicker">Saat ayrıntısı</p><h2 id="hourlyProductsTitle">Yoğun Saatte Satılanlar</h2></div></div>
+          <div id="hourlyProductList" class="hourly-product-list"></div>
+          <p id="hourlyProductEmpty" class="empty">Gösterilecek ürün bulunmuyor.</p>
+        </article>
+        <article class="panel hourly-payments-panel">
+          <div class="section-heading"><div><p class="kicker">Paranın alındığı saat</p><h2>Ödeme Yoğunluğu</h2></div></div>
+          <div id="hourlyPaymentList" class="hourly-payment-list"></div>
+          <p id="hourlyPaymentEmpty" class="empty">Seçilen dönemde ödeme bulunmuyor.</p>
+        </article>
+      </section>
+
+      <section class="panel hourly-days-panel">
+        <div class="section-heading"><div><p class="kicker">Gün karşılaştırması</p><h2>Günlere Göre Yoğunluk</h2></div><small>Seçilen tarih aralığı</small></div>
+        <div id="hourlyDayList" class="hourly-day-list"></div>
+        <p id="hourlyDayEmpty" class="empty">Karşılaştırılacak gün bulunmuyor.</p>
+      </section>
     </section>
 
     <section id="reportPanelExpenses" class="report-tab-panel" data-report-panel="expenses" hidden>
@@ -284,7 +324,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=419"></script>
+  <script type="module" src="script.js?v=471"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
