@@ -1,9 +1,9 @@
 import {setupCostGroups} from "./cost-groups.js?v=364";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, doc, getFirestore, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, doc, getFirestore, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
-import { runTransaction } from "../assets/js/offline-firestore.js";
+import { runTransaction, setDoc } from "../assets/js/offline-firestore.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 import { systemConfirm } from "../assets/js/system-confirm.js";
 

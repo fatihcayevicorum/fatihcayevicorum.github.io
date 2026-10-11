@@ -1,5 +1,7 @@
 import {
+    addDoc as addServerDoc,
     collection,
+    deleteDoc as deleteServerDoc,
     doc,
     getDoc,
     getDocFromCache,
@@ -7,8 +9,10 @@ import {
     limit,
     query,
     runTransaction as runServerTransaction,
+    setDoc as setServerDoc,
+    updateDoc as updateServerDoc,
     where,
-    writeBatch
+    writeBatch as serverWriteBatch
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const OFFLINE_EVENT = "fatih-cay-evi-offline-write";
@@ -16,6 +20,43 @@ const WARM_KEY = "fatih-cay-evi-offline-warm-r475";
 
 export function isOfflineMode() {
     return navigator.onLine === false;
+}
+
+function settleWrite(promise) {
+    if (!isOfflineMode()) return promise;
+    promise.catch(error => window.dispatchEvent(new CustomEvent(`${OFFLINE_EVENT}-failed`, { detail: error })));
+    window.dispatchEvent(new CustomEvent(OFFLINE_EVENT));
+    return Promise.resolve();
+}
+
+export function setDoc(...args) {
+    return settleWrite(setServerDoc(...args));
+}
+
+export function updateDoc(...args) {
+    return settleWrite(updateServerDoc(...args));
+}
+
+export function deleteDoc(...args) {
+    return settleWrite(deleteServerDoc(...args));
+}
+
+export function addDoc(reference, data) {
+    if (!isOfflineMode()) return addServerDoc(reference, data);
+    const documentReference = doc(reference);
+    settleWrite(setServerDoc(documentReference, data));
+    return Promise.resolve(documentReference);
+}
+
+export function writeBatch(database) {
+    const batch = serverWriteBatch(database);
+    const wrapper = {
+        set: (...args) => { batch.set(...args); return wrapper; },
+        update: (...args) => { batch.update(...args); return wrapper; },
+        delete: (...args) => { batch.delete(...args); return wrapper; },
+        commit: () => settleWrite(batch.commit())
+    };
+    return wrapper;
 }
 
 export async function runOfflineTransaction(database, updateFunction, options) {
@@ -41,7 +82,6 @@ export async function runOfflineTransaction(database, updateFunction, options) {
 
     const result = await updateFunction(transaction);
     await batch.commit();
-    window.dispatchEvent(new CustomEvent(OFFLINE_EVENT));
     return result;
 }
 

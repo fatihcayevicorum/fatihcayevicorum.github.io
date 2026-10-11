@@ -1,9 +1,10 @@
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,deleteDoc,doc,getDoc,getFirestore,onSnapshot,serverTimestamp,setDoc,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getDoc,getFirestore,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 import{PERMISSION_DEFINITIONS,profileHasPermission}from"../assets/js/admin-access.js";
+import{deleteDoc,setDoc,writeBatch}from"../assets/js/offline-firestore.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
 const personnelCol=collection(db,"adminPersonnel"),staffUsersCol=collection(db,"staffUsers"),attendanceCol=collection(db,"adminPersonnelAttendance"),paymentsCol=collection(db,"adminPersonnelPayments"),cashMovementsCol=collection(db,"adminCashMovements"),financeDaysCol=collection(db,"adminFinanceDays");

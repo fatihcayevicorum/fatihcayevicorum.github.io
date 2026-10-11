@@ -1,9 +1,9 @@
 import{initializeApp,deleteApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{createUserWithEmailAndPassword,getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,doc,getFirestore,increment,limit,onSnapshot,orderBy,query,serverTimestamp,setDoc,updateDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getFirestore,increment,limit,onSnapshot,orderBy,query,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
-import{runTransaction}from"../assets/js/offline-firestore.js";
+import{runTransaction,setDoc,updateDoc}from"../assets/js/offline-firestore.js";
 import{hasPanelAccess}from"../assets/js/admin-access.js";
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),deleteMerchantUser=httpsCallable(functions,"deleteMerchantUser"),clearLoginDevices=httpsCallable(functions,"clearLoginDevices"),$=id=>document.getElementById(id);
 let merchants=[],orders=[],movements=[],currentBusinessDate=today(),currentBusinessDayStartedAtMs=startOfBusinessDateMs(currentBusinessDate),busy=false,pendingDelivery="",pendingCancelOrder="",pendingDeleteMerchant="",pendingDeviceReset=null,summaryMerchantId="",toastTimer,focusOrderId=new URLSearchParams(location.search).get("order")||"";

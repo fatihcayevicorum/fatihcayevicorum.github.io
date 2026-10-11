@@ -1,9 +1,10 @@
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,doc,getDoc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getDoc,getFirestore,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{lockSensitiveAccess,requireSensitiveAccess}from"../assets/js/sensitive-access.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
 import{getManagementProfile}from"../assets/js/admin-access.js";
+import{setDoc}from"../assets/js/offline-firestore.js";
 
 const app=getApps().find(item=>item.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const defaultIncome=["İşletmeye Para Girişi","PET Şişe Dönüşüm İadesi","Diğer Gelir"];

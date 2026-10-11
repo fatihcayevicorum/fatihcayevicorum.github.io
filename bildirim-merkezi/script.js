@@ -1,10 +1,11 @@
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{addDoc,collection,doc,getDoc,getFirestore,onSnapshot,query,serverTimestamp,setDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getDoc,getFirestore,onSnapshot,query,serverTimestamp,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
 import{ADMIN_UID,firebaseConfig}from"../assets/js/firebase-config.js";
 import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,registerAdminTeaPushDevice}from"../assets/js/admin-push.js?v=388";
 import{systemConfirm}from"../assets/js/system-confirm.js";
+import{addDoc,setDoc}from"../assets/js/offline-firestore.js";
 import{getNotificationSound,isNotificationSoundMuted,playNotificationSound,resetNotificationSound,saveNotificationSound,setNotificationSoundMuted}from"../assets/js/notification-sounds.js?v=271";
 
 const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),sendCustomerBroadcast=httpsCallable(functions,"sendCustomerBroadcast"),resolveStaffProfileChange=httpsCallable(functions,"resolveStaffProfileChange"),byId=id=>document.getElementById(id);

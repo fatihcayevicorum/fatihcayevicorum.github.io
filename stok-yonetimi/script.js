@@ -1,8 +1,8 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,doc,getDocs,getFirestore,limit,onSnapshot,orderBy,query,serverTimestamp,setDoc,updateDoc,where,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getDocs,getFirestore,limit,onSnapshot,orderBy,query,serverTimestamp,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
-import{runTransaction}from"../assets/js/offline-firestore.js";
+import{isOfflineMode,runTransaction,setDoc,updateDoc,writeBatch}from"../assets/js/offline-firestore.js";
 import{hasPanelAccess}from"../assets/js/admin-access.js";
 import{systemConfirm}from"../assets/js/system-confirm.js";
 
@@ -14,6 +14,7 @@ Object.assign(el,{stockCapital:$("stockCapital"),estimatedSalesValue:$("estimate
 Object.assign(el,{cameraSettingsButton:$("cameraSettingsButton"),cameraDeviceRow:$("cameraDeviceRow"),cameraDeviceSelect:$("cameraDeviceSelect")});
 Object.assign(el,{stockCountButton:$("stockCountButton"),stockCountDialog:$("stockCountDialog"),stockCountProgress:$("stockCountProgress"),stockCountCategory:$("stockCountCategory"),stockCountStep:$("stockCountStep"),stockCountEntry:$("stockCountEntry"),stockCountCategoryName:$("stockCountCategoryName"),stockCountProductName:$("stockCountProductName"),stockCountSystemQuantity:$("stockCountSystemQuantity"),stockCountAmount:$("stockCountAmount"),addStockCountAmount:$("addStockCountAmount"),stockCountRunningTotal:$("stockCountRunningTotal"),stockCountExpression:$("stockCountExpression"),undoStockCountAmount:$("undoStockCountAmount"),nextStockCountProduct:$("nextStockCountProduct"),stockCountSummary:$("stockCountSummary"),stockCountSummaryList:$("stockCountSummaryList"),restartStockCount:$("restartStockCount"),stockCountPdfButton:$("stockCountPdfButton")});
 let stocks=[],movements=[],catalog={categories:[],items:[]},userNames=new Map(),busy=false,toastTimer,cameraStream=null,scanFrame=0,cameraSession=0,pendingBarcode="",barcodeMode="add",cameraFacing="environment",cameraDeviceId="",stockFilter="all",historyStockId="",historyMovements=[],pendingDeleteStockId="",stockCountItems=[],stockCountIndex=0,stockCountParts=[],stockCountResults=[];
+let stockConnectionFromCache=true,stockWritesPending=false;
 
 el.manageProductsButton.onclick=()=>{resetProductForm();renderProductManager();el.productsDialog.showModal()};
 el.productForm.onsubmit=addTrackedProduct;
@@ -63,14 +64,17 @@ document.addEventListener("click",()=>{el.cameraDeviceRow.hidden=true});
 el.barcodeDialog.addEventListener("close",stopCamera);
 el.logoutButton.onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 updateClock();setInterval(updateClock,1000);
+window.addEventListener("online",renderConnectionState);
+window.addEventListener("offline",renderConnectionState);
 
 onAuthStateChanged(auth,async user=>{if(!user){location.replace("../yonetici-giris.html?next=stok-yonetimi/");return}if(!await hasPanelAccess(user,db,"stock")){location.replace("../yonetici-giris.html");return}userNames.set(user.uid,"Siz");loadUserNames();subscribe()});
 function subscribe(){
-  onSnapshot(stocksCol,s=>{stocks=s.docs.map(d=>normalizeStock(d.id,d.data()));connected();renderAll()},fail);
+  onSnapshot(stocksCol,{includeMetadataChanges:true},s=>{stocks=s.docs.map(d=>normalizeStock(d.id,d.data()));connected(s);renderAll()},fail);
   onSnapshot(query(movesCol,orderBy("createdAt","desc"),limit(80)),s=>{movements=s.docs.map(d=>({id:d.id,...d.data()}));renderMovements();repairReversedStockExpenses(movements)},fail);
   onSnapshot(menuRef,s=>{const d=s.data()||{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[]};renderProductManager();renderLinkStatus();renderStockValues(stocks.filter(x=>x.active))},fail);
 }
-function connected(){el.saveStatus.innerHTML='<i class="fa-solid fa-circle-check"></i> Canlı bağlantı';el.saveStatus.classList.remove("is-error")}
+function connected(snapshot){stockConnectionFromCache=!!snapshot?.metadata?.fromCache;stockWritesPending=!!snapshot?.metadata?.hasPendingWrites;renderConnectionState()}
+function renderConnectionState(){const offline=isOfflineMode();if(offline){el.saveStatus.innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> Çevrim dışı • işlemler bekliyor';el.saveStatus.classList.add("is-error");return}if(stockWritesPending){el.saveStatus.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> İşlemler aktarılıyor';el.saveStatus.classList.add("is-error");return}if(stockConnectionFromCache){el.saveStatus.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> Bağlanıyor';el.saveStatus.classList.add("is-error");return}el.saveStatus.innerHTML='<i class="fa-solid fa-circle-check"></i> Canlı bağlantı';el.saveStatus.classList.remove("is-error")}
 function fail(error){console.error(error);el.saveStatus.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Bağlantı hatası';el.saveStatus.classList.add("is-error");show("Stok verileri alınamadı.")}
 
 function renderAll(){const active=stocks.filter(x=>x.active),tracked=active.filter(x=>x.stockTrackingEnabled);el.itemCount.textContent=active.length;el.totalUnits.textContent=formatNumber(tracked.reduce((sum,x)=>sum+x.quantity,0));el.criticalCount.textContent=tracked.filter(x=>x.quantity>0&&x.quantity<=x.warningThreshold).length;el.emptyCount.textContent=tracked.filter(x=>x.quantity<=0).length;renderStockValues(active);renderStocks();renderProductManager();renderLinkStatus()}
