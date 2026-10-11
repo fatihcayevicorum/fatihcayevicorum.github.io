@@ -24,6 +24,8 @@ let recipeStocks=[], recipeDraft=[], stocksReady=false;
 let isBusy = false;
 let unsubscribeCatalog = null;
 let toastTimer = null;
+let menuConnectionFromCache = true;
+let menuWritesPending = false;
 
 elements.categoryForm.addEventListener("submit", addCategory);
 elements.productForm.addEventListener("submit", saveProduct);
@@ -58,10 +60,10 @@ onAuthStateChanged(auth, async (user) => {
 
 function subscribeCatalog() {
     if (unsubscribeCatalog) unsubscribeCatalog();
-    unsubscribeCatalog = onSnapshot(catalogReference, (snapshot) => {
+    unsubscribeCatalog = onSnapshot(catalogReference, { includeMetadataChanges:true }, (snapshot) => {
         const data = snapshot.exists() ? snapshot.data() : {};
         catalog = normalizeCatalog(data);
-        setConnection(true);
+        setConnection(true, snapshot);
         render();
     }, (error) => {
         console.error(error);
@@ -280,7 +282,10 @@ function resetProductForm() { recipeDraft=[];renderRecipe(); elements.productFor
 function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0, customerVisible:x.customerVisible!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false, posVisible:x.posVisible!==false, costMode:["auto","recipe","estimate","combined"].includes(x.costMode)?x.costMode:"auto", recipe:Array.isArray(x.recipe)?x.recipe.map(r=>({stockItemId:String(r.stockItemId||""),amount:Number(r.amount)})):[], ...(typeof x.stockAvailable==="boolean"?{stockAvailable:x.stockAvailable}:{}) })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), bundleRules: (Array.isArray(data.bundleRules) ? data.bundleRules : []).map((x)=>({ id:String(x.id), name:String(x.name||"Bağlı ürün kuralı"), triggerProductId:String(x.triggerProductId), triggerQuantity:clampQuantity(x.triggerQuantity), rewardProductId:String(x.rewardProductId), rewardQuantity:clampQuantity(x.rewardQuantity), priceMode:["free","regular","fixed"].includes(x.priceMode)?x.priceMode:"free", fixedPrice:Math.max(0,Number(x.fixedPrice)||0), startDate:String(x.startDate||""), endDate:String(x.endDate||""), active:x.active!==false })) }; }
 function validateImport(data) { if (!data || !Array.isArray(data.categories) || !Array.isArray(data.items) || !data.categories.length || !data.items.length) throw new Error("invalid-menu-file"); const normalized = normalizeCatalog(data); const categoryIds = new Set(normalized.categories.map((category) => category.id)); const uniqueCategoryIds = new Set(); const uniqueItemIds = new Set(); for (const category of normalized.categories) { if (!category.id || !category.name.trim() || uniqueCategoryIds.has(category.id)) throw new Error("invalid-category"); uniqueCategoryIds.add(category.id); } for (const item of normalized.items) { if (!item.id || !item.name.trim() || !categoryIds.has(item.categoryId) || uniqueItemIds.has(item.id) || !Number.isFinite(item.price)) throw new Error("invalid-item"); uniqueItemIds.add(item.id); } return normalized; }
 function setBusy(value) { isBusy = value; elements.saveProductButton.disabled = value; elements.saveBundleButton.disabled = value; elements.setupCoffeeWater.disabled = value; }
-function setConnection(connected) { elements.saveStatus.classList.toggle("is-error", !connected); elements.saveStatus.innerHTML = connected ? '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Canlı bağlantı' : '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Bağlantı yok'; }
+function setConnection(connected, snapshot) { if (!connected) { elements.saveStatus.classList.add("is-error"); elements.saveStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Bağlantı yok'; return; } if (snapshot) { menuConnectionFromCache = snapshot.metadata.fromCache; menuWritesPending = snapshot.metadata.hasPendingWrites; } renderConnectionState(); }
+function renderConnectionState() { const offline = navigator.onLine === false; elements.saveStatus.classList.toggle("is-error", offline || menuWritesPending || menuConnectionFromCache); elements.saveStatus.innerHTML = offline ? `<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Çevrim dışı${menuWritesPending ? " • işlemler bekliyor" : " • kayıtlı veriler"}` : menuWritesPending ? '<i class="fa-solid fa-rotate fa-spin" aria-hidden="true"></i> İşlemler aktarılıyor' : menuConnectionFromCache ? '<i class="fa-solid fa-cloud" aria-hidden="true"></i> Bağlanıyor' : '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Canlı bağlantı'; }
+window.addEventListener("online", renderConnectionState);
+window.addEventListener("offline", renderConnectionState);
 function showToast(message) { clearTimeout(toastTimer); elements.toast.textContent = message; elements.toast.classList.add("show"); toastTimer = setTimeout(() => elements.toast.classList.remove("show"), 2800); }
 function formatPrice(value) { return new Intl.NumberFormat("tr-TR", { style:"currency", currency:"TRY", minimumFractionDigits:value%1?2:0 }).format(value); }
 function createId(prefix) { return `${prefix}-${window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`; }

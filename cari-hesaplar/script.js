@@ -8,13 +8,13 @@ import{hasPanelAccess}from"../assets/js/admin-access.js";
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const accountsCol=collection(db,"adminCurrentAccounts"),movementsCol=collection(db,"adminCurrentAccountMovements"),salesCol=collection(db,"adminSales"),stocksCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),cashMovesCol=collection(db,"adminCashMovements"),closingsCol=collection(db,"adminDailyClosings"),settingsRef=doc(db,"adminAppSettings","pos");
 const START_DATE="2026-08-27",CASH_MOVE_VERSION="r178-unified-income";
-let accounts=[],movements=[],activeAccountId="",activeMovementId="",pendingStatusId="",toastTimer,busy=false,unsubscribeMovements=null,businessDate=today(),businessDayStartedAtMs=startOfBusinessDateMs(businessDate);
+let accounts=[],movements=[],activeAccountId="",activeMovementId="",pendingStatusId="",toastTimer,busy=false,unsubscribeMovements=null,businessDate=today(),businessDayStartedAtMs=startOfBusinessDateMs(businessDate),accountConnectionFromCache=true,accountWritesPending=false;
 
 onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=cari-hesaplar/");return}
   if(!await hasPanelAccess(user,db,"currentAccounts")){location.replace("../yonetici-giris.html");return}
   onSnapshot(settingsRef,snap=>{const data=snap.data()||{};businessDate=String(data.currentBusinessDate||today());businessDayStartedAtMs=number(data.currentBusinessDayStartedAtMs)||startOfBusinessDateMs(businessDate)},error=>console.warn("İş günü bilgisi alınamadı.",error));
-  onSnapshot(query(accountsCol,orderBy("name")),snap=>{accounts=snap.docs.map(d=>normalizeAccount(d.id,d.data()));connected();render();refreshOpenDetail()},fail);
+  onSnapshot(query(accountsCol,orderBy("name")),{includeMetadataChanges:true},snap=>{accounts=snap.docs.map(d=>normalizeAccount(d.id,d.data()));connected(snap);render();refreshOpenDetail()},fail);
 });
 
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
@@ -54,9 +54,12 @@ $("confirmPaymentCancel").onclick=cancelPayment;
 $("closeOrderCancel").onclick=()=>$("orderCancelDialog").close();
 $("confirmOrderCancel").onclick=cancelCurrentAccountOrder;
 document.addEventListener("click",e=>{const menu=document.querySelector(".panel-menu");if(menu?.open&&!menu.contains(e.target))menu.removeAttribute("open")});
+window.addEventListener("online",renderConnectionState);
+window.addEventListener("offline",renderConnectionState);
 
 function normalizeAccount(id,data){return{id,name:String(data.name||"İsimsiz Cari"),phone:String(data.phone||""),note:String(data.note||""),balance:Math.max(0,number(data.balance)),active:data.active!==false,startDate:String(data.startDate||START_DATE),createdAtMs:number(data.createdAtMs),updatedAtMs:number(data.updatedAtMs)}}
-function connected(){$("connection").innerHTML='<i class="fa-solid fa-circle-check"></i> Canlı bağlantı';$("connection").classList.remove("is-error")}
+function connected(snapshot){accountConnectionFromCache=snapshot.metadata.fromCache;accountWritesPending=snapshot.metadata.hasPendingWrites;renderConnectionState()}
+function renderConnectionState(){const target=$("connection"),offline=navigator.onLine===false;if(offline){target.innerHTML=`<i class="fa-solid fa-cloud-arrow-up"></i> Çevrim dışı${accountWritesPending?" • işlemler bekliyor":" • kayıtlı veriler"}`;target.classList.add("is-error");return}if(accountWritesPending){target.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> İşlemler aktarılıyor';target.classList.add("is-error");return}if(accountConnectionFromCache){target.innerHTML='<i class="fa-solid fa-cloud"></i> Bağlanıyor';target.classList.add("is-error");return}target.innerHTML='<i class="fa-solid fa-circle-check"></i> Canlı bağlantı';target.classList.remove("is-error")}
 function fail(error){console.error(error);$("connection").innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Bağlantı hatası';$("connection").classList.add("is-error");toast("Cari hesap verileri alınamadı.")}
 function render(){const search=$("searchInput").value.trim().toLocaleLowerCase("tr-TR"),filter=$("statusFilter").value;const shown=accounts.filter(x=>(filter==="all"||filter==="active"&&x.active||filter==="passive"&&!x.active)&&`${x.name} ${x.phone}`.toLocaleLowerCase("tr-TR").includes(search));$("totalReceivable").textContent=money(accounts.reduce((sum,x)=>sum+x.balance,0));$("activeCount").textContent=accounts.filter(x=>x.active).length;$("passiveCount").textContent=accounts.filter(x=>!x.active).length;$("emptyState").hidden=shown.length>0;$("emptyState").textContent=accounts.length?"Aramanıza uygun cari bulunamadı.":"Henüz cari hesap oluşturulmadı.";$("accountList").innerHTML=shown.map(accountCard).join("")}
 function accountCard(x){return`<article class="account-card${x.active?"":" is-passive"}" data-account="${esc(x.id)}"><span class="account-icon"><i class="fa-solid fa-user"></i></span><span class="account-copy"><strong>${esc(x.name)}</strong><small>${x.phone?esc(formatPhone(x.phone)):"Telefon eklenmemiş"} • ${x.active?"Aktif":"Pasif"}</small></span><span class="account-balance"><b>${money(x.balance)}</b><small>Cari borcu</small></span></article>`}
