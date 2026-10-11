@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r477-cevrimdisi-durum-gostergeleri",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r478-ortak-baglanti-ve-cevrimdisi",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./islem-gecmisi/","./islem-gecmisi/index.html","./islem-gecmisi/style.css","./islem-gecmisi/script.js",
   "./birikim-hesaplari/","./birikim-hesaplari/index.html","./birikim-hesaplari/style.css","./birikim-hesaplari/script.js","./assets/js/savings.js","./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
@@ -43,7 +43,7 @@ const CORE=[
   "./personel-yonetimi/","./personel-yonetimi/index.html","./personel-yonetimi/style.css","./personel-yonetimi/script.js",
   "./veri-yonetimi/index.html","./veri-yonetimi/style.css","./veri-yonetimi/script.js",
   "./kullanici-yonetimi/device-reset.css",
-  "./assets/css/panel-header.css","./assets/css/panel-scroll.css","./assets/css/management-forms.css","./assets/js/panel-scroll.js","./assets/js/management-forms.js","./assets/js/system-confirm.js","./assets/js/internal-consumption-guard.js","./assets/js/system-ui.js","./assets/js/pwa.js","./assets/js/sensitive-access.js","./assets/js/offline-firestore.js",
+  "./assets/css/panel-header.css","./assets/css/panel-scroll.css","./assets/css/management-forms.css","./assets/js/panel-scroll.js","./assets/js/management-forms.js","./assets/js/system-confirm.js","./assets/js/internal-consumption-guard.js","./assets/js/system-ui.js","./assets/js/connection-status.js","./assets/js/pwa.js","./assets/js/sensitive-access.js","./assets/js/offline-firestore.js",
   "./menu-yonetimi/","./menu-yonetimi/index.html","./menu-yonetimi/style.css","./menu-yonetimi/script.js",
   "./ana-sayfa-yonetimi/","./ana-sayfa-yonetimi/index.html","./ana-sayfa-yonetimi/style.css","./ana-sayfa-yonetimi/enhancements.css","./ana-sayfa-yonetimi/script.js",
   "./kullanici-yonetimi/","./kullanici-yonetimi/index.html","./kullanici-yonetimi/style.css","./kullanici-yonetimi/script.js",

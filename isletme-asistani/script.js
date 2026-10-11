@@ -2,8 +2,9 @@ import {campaignGiftCosts,productMaterialCost,normalizedStockCost} from "./campa
 import {estimatedCostFor} from "../assets/js/estimated-cost.js?v=364";
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,doc,getFirestore,onSnapshot,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getFirestore,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
+import{setDoc}from"../assets/js/offline-firestore.js";
 import{hasPanelAccess}from"../assets/js/admin-access.js";
 
 const app=getApps().find(x=>x.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);

@@ -16,16 +16,24 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const OFFLINE_EVENT = "fatih-cay-evi-offline-write";
-const WARM_KEY = "fatih-cay-evi-offline-warm-r475";
+const OFFLINE_SETTLED_EVENT = `${OFFLINE_EVENT}-settled`;
+const WARM_KEY = "fatih-cay-evi-offline-warm-r478";
 
 export function isOfflineMode() {
     return navigator.onLine === false;
 }
 
 function settleWrite(promise) {
-    if (!isOfflineMode()) return promise;
-    promise.catch(error => window.dispatchEvent(new CustomEvent(`${OFFLINE_EVENT}-failed`, { detail: error })));
     window.dispatchEvent(new CustomEvent(OFFLINE_EVENT));
+    const trackedPromise = Promise.resolve(promise).then(result => {
+        window.dispatchEvent(new CustomEvent(OFFLINE_SETTLED_EVENT));
+        return result;
+    }).catch(error => {
+        window.dispatchEvent(new CustomEvent(`${OFFLINE_EVENT}-failed`, { detail: error }));
+        throw error;
+    });
+    if (!isOfflineMode()) return trackedPromise;
+    trackedPromise.catch(() => {});
     return Promise.resolve();
 }
 
@@ -112,6 +120,13 @@ export async function warmOfflineWorkspace(database) {
         getDocs(query(collection(database, "adminCashMovements"), where("businessDate", "==", businessDate), limit(1000))),
         getDocs(query(collection(database, "adminSales"), where("businessDate", "==", businessDate), limit(1000))),
         getDocs(query(collection(database, "adminStockMovements"), where("operationDate", "==", businessDate), limit(1000)))
+        ,getDocs(query(collection(database, "merchantProfiles"), limit(1000)))
+        ,getDocs(query(collection(database, "merchantOrders"), limit(300)))
+        ,getDocs(query(collection(database, "merchantBalanceMovements"), limit(1000)))
+        ,getDocs(query(collection(database, "adminPersonnel"), limit(300)))
+        ,getDocs(query(collection(database, "adminPersonnelAttendance"), limit(1000)))
+        ,getDocs(query(collection(database, "adminPersonnelPayments"), limit(1000)))
+        ,getDocs(query(collection(database, "staffUsers"), limit(300)))
     ];
 
     await Promise.allSettled([...documentReads, ...collectionReads]);
