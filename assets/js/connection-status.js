@@ -22,8 +22,20 @@ function installStyles() {
     const style = document.createElement("style");
     style.textContent = `
         #connection,#saveStatus,#connectionText,#orderConnectionText{display:none!important}
-        .global-connection-status{display:inline-flex;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;font:700 12px/1 Poppins,sans-serif;box-shadow:none;cursor:default}
+        .app-header .header-inner{position:relative}
+        .app-header .live-time{position:absolute!important;top:50%;left:50%;z-index:2;display:grid!important;justify-items:center!important;order:initial!important;transform:translate(-50%,-50%);line-height:1.12;text-align:center;white-space:nowrap;pointer-events:none}
+        .app-header .live-time strong{font-size:1.28rem!important;line-height:1!important}
+        .app-header .live-time span{margin-top:.22rem!important;font-size:.62rem!important;line-height:1!important}
+        .global-connection-status{display:inline-flex;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;font:700 12px/1 Poppins,sans-serif;box-shadow:none;cursor:default;order:2}
         .global-connection-status span{display:none}.global-connection-status i{font-size:15px}.global-connection-status.is-checking{color:#f2ddd0}.global-connection-status.is-syncing{color:#ffd36a}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ffb8b2;background:transparent}
+        .app-header .panel-menu,.app-header .management-center-link,.app-header a[href*="yonetim-merkezi"]{order:3}
+        .app-header .logout-button{order:4}
+        .app-header .merchant-panel-link{width:2.55rem!important;min-width:2.55rem!important;height:2.55rem!important;padding:0!important}
+        .app-header .merchant-panel-link span{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+        .app-header .preview{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:2.55rem!important;min-width:2.55rem!important;height:2.55rem!important;padding:0!important}
+        #costGroupsButton{color:#fff!important}
+        @media(min-width:901px){.app-header .live-time strong{font-size:1.48rem!important}.app-header .live-time span{font-size:.68rem!important}.app-header .merchant-panel-link,.app-header .preview{width:3rem!important;min-width:3rem!important;height:3rem!important}}
+        @media(max-width:620px){.app-header .live-time strong{font-size:1rem!important}.app-header .live-time span{font-size:.52rem!important}.global-connection-status{width:28px;min-width:28px;height:28px}.global-connection-status i{font-size:13px}}
     `;
     document.head.appendChild(style);
 }
@@ -82,19 +94,28 @@ function createStatus() {
         liveTime.className = "live-time";
         liveTime.innerHTML = '<strong id="globalCurrentTime">--:--</strong><span id="globalCurrentDate">--/--/--</span>';
         headerActions.prepend(liveTime);
-        const updateClock = () => {
-            const now = new Date();
-            liveTime.querySelector("strong").textContent = now.toLocaleTimeString("tr-TR", { timeZone:"Europe/Istanbul", hour:"2-digit", minute:"2-digit" });
-            liveTime.querySelector("span").textContent = now.toLocaleDateString("tr-TR", { timeZone:"Europe/Istanbul" });
-        };
-        updateClock();
-        window.setInterval(updateClock, 1000);
     }
+    const clock = liveTime.querySelector("strong");
+    const date = liveTime.querySelector("span");
+    const updateClock = () => {
+        const now = new Date();
+        const timeText = now.toLocaleTimeString("tr-TR", { timeZone:"Europe/Istanbul", hour:"2-digit", minute:"2-digit" });
+        const dateText = new Intl.DateTimeFormat("en-GB", { timeZone:"Europe/Istanbul", day:"2-digit", month:"2-digit", year:"numeric" }).format(now);
+        if (clock && clock.textContent !== timeText) clock.textContent = timeText;
+        if (date && date.textContent !== dateText) date.textContent = dateText;
+    };
+    updateClock();
+    const clockObserver = new MutationObserver(updateClock);
+    if (clock) clockObserver.observe(clock, { childList:true, characterData:true, subtree:true });
+    if (date) clockObserver.observe(date, { childList:true, characterData:true, subtree:true });
+    window.setInterval(updateClock, 1000);
     statusButton = document.createElement("span");
     statusButton.id = "globalConnectionStatus";
     statusButton.setAttribute("role", "status");
     statusButton.setAttribute("aria-live", "polite");
-    liveTime.before(statusButton);
+    const managementControl = headerActions.querySelector(".panel-menu,.management-center-link,a[href*='yonetim-merkezi']");
+    const logoutControl = headerActions.querySelector(".logout-button");
+    headerActions.insertBefore(statusButton, managementControl || logoutControl || null);
     render();
 }
 
