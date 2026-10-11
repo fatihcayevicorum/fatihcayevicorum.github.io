@@ -24,7 +24,7 @@ function installStyles() {
         #connection,#saveStatus,#connectionText,#orderConnectionText{display:none!important}
         .app-header .header-inner{position:relative}
         .app-header .live-time{position:absolute!important;top:50%;left:50%;z-index:2;display:grid!important;justify-items:center!important;order:initial!important;transform:translate(-50%,-50%);line-height:1.12;text-align:center;white-space:nowrap;pointer-events:none}
-        .app-header .live-time strong{font-size:1.28rem!important;line-height:1!important}
+        .app-header .live-time strong{font-size:1.4rem!important;line-height:1!important}
         .app-header .live-time span{margin-top:.22rem!important;font-size:.62rem!important;line-height:1!important}
         .global-connection-status{display:inline-flex;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;font:700 12px/1 Poppins,sans-serif;box-shadow:none;cursor:default;order:2}
         .global-connection-status span{display:none}.global-connection-status i{font-size:15px}.global-connection-status.is-checking{color:#f2ddd0}.global-connection-status.is-syncing{color:#ffd36a}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ffb8b2;background:transparent}
@@ -34,8 +34,8 @@ function installStyles() {
         .app-header .merchant-panel-link span{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
         .app-header .preview{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:2.55rem!important;min-width:2.55rem!important;height:2.55rem!important;padding:0!important}
         #costGroupsButton{color:#fff!important}
-        @media(min-width:901px){.app-header .live-time strong{font-size:1.48rem!important}.app-header .live-time span{font-size:.68rem!important}.app-header .merchant-panel-link,.app-header .preview{width:3rem!important;min-width:3rem!important;height:3rem!important}}
-        @media(max-width:620px){.app-header .live-time strong{font-size:1rem!important}.app-header .live-time span{font-size:.52rem!important}.global-connection-status{width:28px;min-width:28px;height:28px}.global-connection-status i{font-size:13px}}
+        @media(min-width:901px){.app-header .live-time strong{font-size:1.62rem!important}.app-header .live-time span{font-size:.68rem!important}.app-header .merchant-panel-link,.app-header .preview{width:3rem!important;min-width:3rem!important;height:3rem!important}}
+        @media(max-width:620px){.app-header .live-time strong{font-size:1.08rem!important}.app-header .live-time span{font-size:.52rem!important}.global-connection-status{width:28px;min-width:28px;height:28px}.global-connection-status i{font-size:13px}}
     `;
     document.head.appendChild(style);
 }
