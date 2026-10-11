@@ -22,9 +22,8 @@ function installStyles() {
     const style = document.createElement("style");
     style.textContent = `
         #connection,#saveStatus,#connectionText,#orderConnectionText{display:none!important}
-        .global-connection-status{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 12px;border:1px solid rgba(89,16,24,.18);border-radius:13px;background:rgba(255,255,255,.72);color:#355f42;font:700 12px/1 Poppins,sans-serif;white-space:nowrap;box-shadow:0 5px 14px rgba(62,24,28,.07);cursor:default}
-        .global-connection-status i{font-size:16px}.global-connection-status.is-checking{color:#7d685b}.global-connection-status.is-syncing{color:#a46508;background:#fff6df}.global-connection-status.is-offline,.global-connection-status.is-error{color:#a42a31;background:#fff0ee;border-color:rgba(164,42,49,.22)}
-        @media(max-width:720px){.global-connection-status{width:42px;min-width:42px;padding:0}.global-connection-status span{display:none}}
+        .global-connection-status{display:inline-flex;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;font:700 12px/1 Poppins,sans-serif;box-shadow:none;cursor:default}
+        .global-connection-status span{display:none}.global-connection-status i{font-size:15px}.global-connection-status.is-checking{color:#f2ddd0}.global-connection-status.is-syncing{color:#ffd36a}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ffb8b2;background:transparent}
     `;
     document.head.appendChild(style);
 }
