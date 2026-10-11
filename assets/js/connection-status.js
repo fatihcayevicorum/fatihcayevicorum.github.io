@@ -21,7 +21,7 @@ let unsubscribeConnection;
 function installStyles() {
     const style = document.createElement("style");
     style.textContent = `
-        #connection,#saveStatus{display:none!important}
+        #connection,#saveStatus,#connectionText,#orderConnectionText{display:none!important}
         .global-connection-status{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 12px;border:1px solid rgba(89,16,24,.18);border-radius:13px;background:rgba(255,255,255,.72);color:#355f42;font:700 12px/1 Poppins,sans-serif;white-space:nowrap;box-shadow:0 5px 14px rgba(62,24,28,.07);cursor:default}
         .global-connection-status i{font-size:16px}.global-connection-status.is-checking{color:#7d685b}.global-connection-status.is-syncing{color:#a46508;background:#fff6df}.global-connection-status.is-offline,.global-connection-status.is-error{color:#a42a31;background:#fff0ee;border-color:rgba(164,42,49,.22)}
         @media(max-width:720px){.global-connection-status{width:42px;min-width:42px;padding:0}.global-connection-status span{display:none}}
@@ -75,8 +75,22 @@ function render() {
 
 function createStatus() {
     installStyles();
-    const liveTime = document.querySelector(".header-actions .live-time");
-    if (!liveTime) return;
+    const headerActions = document.querySelector(".header-actions");
+    if (!headerActions) return;
+    let liveTime = headerActions.querySelector(".live-time");
+    if (!liveTime) {
+        liveTime = document.createElement("div");
+        liveTime.className = "live-time";
+        liveTime.innerHTML = '<strong id="globalCurrentTime">--:--</strong><span id="globalCurrentDate">--/--/--</span>';
+        headerActions.prepend(liveTime);
+        const updateClock = () => {
+            const now = new Date();
+            liveTime.querySelector("strong").textContent = now.toLocaleTimeString("tr-TR", { timeZone:"Europe/Istanbul", hour:"2-digit", minute:"2-digit" });
+            liveTime.querySelector("span").textContent = now.toLocaleDateString("tr-TR", { timeZone:"Europe/Istanbul" });
+        };
+        updateClock();
+        window.setInterval(updateClock, 1000);
+    }
     statusButton = document.createElement("span");
     statusButton.id = "globalConnectionStatus";
     statusButton.setAttribute("role", "status");
