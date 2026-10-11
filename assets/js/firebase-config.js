@@ -1,3 +1,6 @@
+import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
 export const firebaseConfig = {
     apiKey: "AIzaSyA9FqCksDbPCkhzDZXrhobHYYgEcpu_RYU",
     authDomain: "fatihcayevi.firebaseapp.com",
@@ -10,3 +13,17 @@ export const firebaseConfig = {
 export const ADMIN_UID = "obuZLQXuPAWsHE20bZxcAxCNsO02";
 export const FIREBASE_SDK_VERSION = "12.16.0";
 export const FCM_VAPID_KEY = "BLqkxUJgBG0Y0uZdP9Yb1QAMzTDIB41jLyU0f3ZRMwwWIv_7xMyQpTB4whS37ds2kp9MULX3fsk_kSH56paDsU0";
+
+export const firebaseApp = getApps().find(app => app.name === "[DEFAULT]") || initializeApp(firebaseConfig);
+
+let offlineFirestore;
+try {
+    offlineFirestore = initializeFirestore(firebaseApp, {
+        experimentalAutoDetectLongPolling: true,
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    });
+} catch (error) {
+    offlineFirestore = getFirestore(firebaseApp);
+}
+
+export const firestoreDb = offlineFirestore;

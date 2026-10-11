@@ -1,8 +1,9 @@
 import {saleStockReturns} from "../assets/js/stock-recipe.js?v=363";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, doc, getFirestore, increment, onSnapshot, query, where, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, doc, getFirestore, increment, onSnapshot, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
+import { runTransaction } from "../assets/js/offline-firestore.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 import { requireSensitiveAccess } from "../assets/js/sensitive-access.js";
 

@@ -1,7 +1,8 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{addDoc,collection,doc,getDoc,getDocs,getFirestore,increment,onSnapshot,orderBy,query,runTransaction,serverTimestamp,updateDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{addDoc,collection,doc,getDoc,getDocs,getFirestore,increment,onSnapshot,orderBy,query,serverTimestamp,updateDoc,where}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
+import{runTransaction}from"../assets/js/offline-firestore.js";
 import{hasPanelAccess}from"../assets/js/admin-access.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);

@@ -7,25 +7,20 @@ import {
 import {
     collection,
     doc,
-    initializeFirestore,
+    getFirestore,
     onSnapshot,
-    persistentLocalCache,
-    persistentMultipleTabManager,
-    runTransaction,
     serverTimestamp,
     writeBatch
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
+import { runTransaction } from "../assets/js/offline-firestore.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 
 const DEFAULT_TEA_SETTINGS = { maxActiveBrews: 3, brewingMinutes: 20, freshnessMinutes: 60, customerNotificationsEnabled: true, merchantNotificationsEnabled: true };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const database = initializeFirestore(app, {
-    experimentalAutoDetectLongPolling: true,
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-});
+const database = getFirestore(app);
 const adminStateReference = doc(database, "adminTea", "state");
 const publicStatusReference = doc(database, "publicTea", "status");
 const posSettingsReference = doc(database, "adminAppSettings", "pos");

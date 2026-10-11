@@ -2,14 +2,15 @@ import {stockLinks,stockRequirements,saleStockReturns} from "../assets/js/stock-
 async function toggleTeaService(){if(teaBusy)return;teaBusy=true;try{let open=false;if(isLocalWorkingMode()){const state=normalizePosTeaState(teaState);state.serviceOpen=!state.serviceOpen;open=state.serviceOpen;queuePosTeaState(state,'tea-service');show(open?'Çay servisi cihazda açıldı; bağlantı gelince aktarılacak.':'Çay servisi cihazda kapatıldı; bağlantı gelince aktarılacak.');return}await runTransaction(db,async tx=>{const snap=await tx.get(teaStateRef),state=normalizePosTeaState(snap.exists()?snap.data():{});state.serviceOpen=!state.serviceOpen;open=state.serviceOpen;tx.set(teaStateRef,{...state,updatedAt:serverTimestamp()});tx.set(publicTeaRef,teaPublicPayload(state))});show(open?'Çay servisi başlatıldı.':'Çay servisi kapatıldı.')}catch(error){console.error(error);show('Çay servisi değiştirilemedi.')}finally{teaBusy=false;renderPosTeaCards()}}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, increment, initializeFirestore, onSnapshot, persistentLocalCache, persistentMultipleTabManager, query, runTransaction, serverTimestamp, setDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, getFirestore, increment, onSnapshot, query, serverTimestamp, setDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
+import { runTransaction } from "../assets/js/offline-firestore.js";
 import { getManagementProfile, hasPanelAccess } from "../assets/js/admin-access.js";
 import { requireSensitiveAccess } from "../assets/js/sensitive-access.js";
 import { systemConfirm } from "../assets/js/system-confirm.js";
 import { hasLocalPendingInternalConsumption, hasPendingInternalConsumptionDraft } from "../assets/js/internal-consumption-guard.js?v=395";
 
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=initializeFirestore(app,{experimentalAutoDetectLongPolling:true,localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const menuRef=doc(db,"publicMenu","catalog"),settingsRef=doc(db,"adminAppSettings","pos"),teaStateRef=doc(db,"adminTea","state"),publicTeaRef=doc(db,"publicTea","status");
 const ordersCol=collection(db,"adminOrders"),salesCol=collection(db,"adminSales"),closingsCol=collection(db,"adminDailyClosings"),stockCol=collection(db,"adminStockItems"),stockMovesCol=collection(db,"adminStockMovements"),cashMovesCol=collection(db,"adminCashMovements"),financeDaysCol=collection(db,"adminFinanceDays"),cashSettingsRef=doc(db,"adminCashSettings","config"),currentAccountsCol=collection(db,"adminCurrentAccounts"),currentAccountMovesCol=collection(db,"adminCurrentAccountMovements");
 const offlineOperationsCol=collection(db,"adminOfflineOperations");

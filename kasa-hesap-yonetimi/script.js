@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, deleteDoc, doc, getFirestore, getDoc, getDocs, query, where, onSnapshot, runTransaction, serverTimestamp, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, deleteDoc, doc, getFirestore, getDoc, getDocs, query, where, onSnapshot, serverTimestamp, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { ADMIN_UID, firebaseConfig } from "../assets/js/firebase-config.js";
+import { runTransaction } from "../assets/js/offline-firestore.js";
 import { savingsOwner,unlockSavings,openSavingsMovement,savingsError } from "../assets/js/savings.js?v=423";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
 import { systemConfirm } from "../assets/js/system-confirm.js";

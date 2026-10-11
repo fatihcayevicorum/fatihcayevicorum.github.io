@@ -1,7 +1,8 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{collection,doc,getDocs,getFirestore,limit,onSnapshot,orderBy,query,runTransaction,serverTimestamp,setDoc,updateDoc,where,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{collection,doc,getDocs,getFirestore,limit,onSnapshot,orderBy,query,serverTimestamp,setDoc,updateDoc,where,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
+import{runTransaction}from"../assets/js/offline-firestore.js";
 import{hasPanelAccess}from"../assets/js/admin-access.js";
 import{systemConfirm}from"../assets/js/system-confirm.js";
 
