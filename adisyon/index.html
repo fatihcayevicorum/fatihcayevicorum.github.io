@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=467"><link rel="stylesheet" href="enhancements.css?v=455"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=8"><link rel="stylesheet" href="personnel-mode.css?v=438">
+  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=483"><link rel="stylesheet" href="enhancements.css?v=455"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=9"><link rel="stylesheet" href="personnel-mode.css?v=438">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -34,7 +34,7 @@
         <button id="personnelSettingsButton" class="secondary icon-action personnel-only" type="button" title="Kullanıcı Ayarlarım" aria-label="Kullanıcı Ayarlarım" hidden><i class="fa-solid fa-gear"></i></button>
       </div>
     </div>
-    <div class="control-panel-divider"><button id="togglePosControlPanel" type="button" aria-label="Kontrol panelini kapat" aria-expanded="true"><i class="fa-solid fa-chevron-up"></i></button></div>
+    <div class="control-panel-divider"><button id="togglePosControlPanel" type="button" aria-label="Kontrol panelini kapat" aria-expanded="true"><span>İşlemler</span><i class="fa-solid fa-chevron-up"></i></button></div>
     <div id="tableGrid" class="table-grid"></div>
   </section>
 
@@ -53,7 +53,7 @@
       </section>
       <section class="order card">
         <div id="orgBottomActions" class="org-bottom-actions" hidden><button id="orgSummaryButton" type="button" class="secondary org-summary-button"><i class="fa-solid fa-list-check"></i> Eklenen Ürünler <b id="orgItemCount">0</b></button><button id="orgAccountButton" type="button" class="secondary org-summary-button"><i class="fa-solid fa-receipt"></i> Hesap Özeti</button><button id="orgCancelButton" type="button" class="danger org-summary-button">İptal Et</button></div>
-        <div class="order-title"><h3>Siparişler</h3><span>Her ekleme ayrı satırdır</span></div>
+        <button id="orderDetailsToggle" class="order-title" type="button" aria-expanded="true"><h3>Siparişler</h3><span class="order-title-note">Her ekleme ayrı satırdır</span><span class="order-mobile-meta"><b id="orderItemCount">0</b> ürün <i class="fa-solid fa-chevron-up"></i></span></button>
         <section id="currentAccountBar" class="current-account-bar" hidden>
           <div><span><i class="fa-solid fa-address-book"></i> Bağlı Cari</span><strong id="currentAccountName">—</strong></div>
           <div class="current-account-debt"><span>Önceki Cari Borcu</span><strong id="currentAccountPreviousDebt">₺0</strong></div>
@@ -140,7 +140,7 @@
 </dialog>
 <div id="toast" class="toast" role="status"></div>
 <script src="../assets/js/management-forms.js?v=458"></script>
-<script type="module" src="script.js?v=471"></script>
+<script type="module" src="script.js?v=483"></script>
 <script type="module" src="internal-consumption.js?v=460"></script>
 <script type="module" src="quick-cash.js?v=405"></script>
 <script type="module" src="history-modal.js?v=1861"></script>
