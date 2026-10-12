@@ -1,3 +1,33 @@
+// R488 — Telefon ve tablette yalnız doğrudan dokunulan giriş alanı odaklanır.
+// Pencere açılışındaki programlı focus çağrıları sistem klavyesini kendiliğinden açmaz.
+(()=>{
+  if(window.__fatihTouchFocusPolicyInstalled)return;
+  window.__fatihTouchFocusPolicyInstalled=true;
+  const touchDevice=(navigator.maxTouchPoints||0)>0&&(matchMedia("(pointer: coarse)").matches||matchMedia("(any-pointer: coarse)").matches||"ontouchstart" in window);
+  if(!touchDevice)return;
+  const editable=element=>element instanceof HTMLElement&&(element.matches("input:not([type='hidden']),textarea,select,[contenteditable='true']")||element.isContentEditable);
+  let touchedField=null,touchAllowanceUntil=0;
+  const rememberTouch=event=>{
+    const direct=event.target instanceof Element?event.target.closest("input:not([type='hidden']),textarea,select,[contenteditable='true']"):null;
+    const label=!direct&&event.target instanceof Element?event.target.closest("label"):null;
+    touchedField=direct||(editable(label?.control)?label.control:null);
+    touchAllowanceUntil=performance.now()+900;
+  };
+  const touchAllowed=element=>editable(element)&&element===touchedField&&performance.now()<=touchAllowanceUntil;
+  document.addEventListener("pointerdown",rememberTouch,true);
+  document.addEventListener("touchstart",rememberTouch,{capture:true,passive:true});
+  const originalFocus=HTMLElement.prototype.focus;
+  HTMLElement.prototype.focus=function(...args){
+    if(editable(this)&&!touchAllowed(this))return;
+    return originalFocus.apply(this,args);
+  };
+  document.addEventListener("focusin",event=>{
+    const target=event.target;
+    if(!editable(target)||touchAllowed(target))return;
+    queueMicrotask(()=>{if(document.activeElement===target)target.blur()});
+  },true);
+})();
+
 if(!window.__fatihManagementFormsLoaded){
 window.__fatihManagementFormsLoaded=true;
 (()=>{
