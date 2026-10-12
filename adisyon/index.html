@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=493"><link rel="stylesheet" href="enhancements.css?v=455"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
+  <link rel="stylesheet" href="style.css?v=281"><link rel="stylesheet" href="polish.css?v=494"><link rel="stylesheet" href="enhancements.css?v=455"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -94,8 +94,9 @@
   <label id="paidAmountLabel">Alınan Tutar<input id="paidAmount" type="number" inputmode="decimal" min="0.01" step="0.01" autocomplete="off" required></label>
   <div id="changeText" class="notice">Alınan Nakit tutarını girin.</div>
   <div class="payment-confirm-wrap"><div id="paymentConfirmText" class="payment-confirm" hidden></div><label class="merchant-marka-toggle"><input id="merchantMarka" type="checkbox"><span>Esnaf Marka</span></label></div>
-  <div class="dialog-actions"><button type="button" class="secondary" data-close="checkoutDialog">Vazgeç</button><button id="confirmCheckout" class="primary">Ödemeyi Onayla</button></div>
+  <div class="dialog-actions checkout-actions"><button type="button" class="secondary" data-close="checkoutDialog">Vazgeç</button><button type="button" id="printAccount" class="secondary receipt-preview-button"><i class="fa-solid fa-print"></i> Hesap Yazdır</button><button id="confirmCheckout" class="primary">Ödemeyi Onayla</button></div>
 </form></dialog>
+<dialog id="receiptDialog" class="receipt-dialog"><section class="dialog-card receipt-dialog-card" aria-labelledby="receiptDialogTitle"><div class="dialog-head"><div><p class="receipt-kicker">Yazdırma önizlemesi</p><h2 id="receiptDialogTitle">Hesap Bilgi Fişi</h2></div><button type="button" data-close="receiptDialog" aria-label="Kapat">×</button></div><div class="receipt-scroll"><article id="receiptPreview" class="receipt-paper"></article></div><div class="dialog-actions receipt-actions"><button type="button" class="secondary" data-close="receiptDialog">Kapat</button><button type="button" id="printReceipt" class="primary"><i class="fa-solid fa-print"></i> Yazdır</button></div></section></dialog>
 <dialog id="currentAccountTransferDialog"><div class="dialog-card confirm-card current-transfer-confirm"><div class="confirm-icon"><i class="fa-solid fa-address-book"></i></div><h2>Cari hesaba aktarılsın mı?</h2><p id="currentAccountTransferText"></p><div id="currentAccountTransferSummary" class="current-transfer-summary"></div><div class="dialog-actions"><button type="button" class="secondary" data-close="currentAccountTransferDialog">Vazgeç</button><button type="button" id="confirmCurrentAccountTransfer" class="primary">Cari Hesaba Aktar</button></div></div></dialog>
 <dialog id="cancelDialog"><div class="dialog-card confirm-card"><div class="confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h2>Adisyon İptal Edilsin mi?</h2><p id="cancelMessage"></p><div class="dialog-actions"><button type="button" class="secondary" data-close="cancelDialog">Vazgeç</button><button type="button" id="confirmCancel" class="danger">Adisyonu İptal Et</button></div></div></dialog>
 <dialog id="roundDialog"><div class="dialog-card confirm-card compact-confirm"><div class="confirm-icon round-icon"><i class="fa-solid fa-scale-balanced"></i></div><h2>Hesap Sıfırlansın mı?</h2><p id="roundMessage"></p><div class="dialog-actions"><button type="button" class="secondary" data-close="roundDialog">Vazgeç</button><button type="button" id="confirmRound" class="primary">Yuvarlama Uygula</button></div></div></dialog>
@@ -140,7 +141,7 @@
 </dialog>
 <div id="toast" class="toast" role="status"></div>
 <script src="../assets/js/management-forms.js?v=488"></script>
-<script type="module" src="script.js?v=492"></script>
+<script type="module" src="script.js?v=494"></script>
 <script type="module" src="internal-consumption.js?v=460"></script>
 <script type="module" src="quick-cash.js?v=405"></script>
 <script type="module" src="history-modal.js?v=1861"></script>

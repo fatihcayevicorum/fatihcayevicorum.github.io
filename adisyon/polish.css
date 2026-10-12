@@ -1150,3 +1150,46 @@ button:focus:not(:focus-visible) {
     margin:0;
   }
 }
+
+/* R494 - Hesap bilgi fişi önizlemesi */
+.checkout-actions{align-items:stretch;flex-wrap:wrap}
+.checkout-actions>button{min-height:44px}
+.receipt-preview-button{color:var(--red)}
+.receipt-dialog-card{width:min(94vw,560px);max-height:94vh;display:flex;flex-direction:column;overflow:hidden}
+.receipt-kicker{margin:0 0 2px;color:var(--red);font-size:.62rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.receipt-scroll{min-height:0;overflow:auto;padding:10px;border-radius:12px;background:#e9dfd5;overscroll-behavior:contain}
+.receipt-paper{width:min(100%,360px);min-height:480px;margin:auto;padding:24px 20px;color:#171717;background:#fff;box-shadow:0 5px 18px #46342a29;font-family:Arial,sans-serif;font-size:12px;line-height:1.35}
+.receipt-head{text-align:center;padding-bottom:10px;border-bottom:1px dashed #222}
+.receipt-head h3{margin:0;font-size:19px;letter-spacing:.04em}
+.receipt-head p{margin:4px 0 0;font-size:12px;font-weight:700}
+.receipt-meta{padding:9px 0;border-bottom:1px dashed #222}
+.receipt-meta div,.receipt-totals div{display:flex;justify-content:space-between;gap:12px;padding:2px 0}
+.receipt-meta span{color:#444}
+.receipt-meta b{text-align:right}
+.receipt-product-head,.receipt-product-row{display:grid;grid-template-columns:36px minmax(0,1fr) 30px 68px;gap:5px;align-items:start}
+.receipt-product-head{padding:9px 0 5px;border-bottom:1px solid #222;font-size:9px;font-weight:700;text-transform:uppercase}
+.receipt-product-head span:nth-child(3),.receipt-product-row>b{text-align:center}
+.receipt-product-head span:last-child,.receipt-product-row>strong{text-align:right}
+.receipt-product-row{padding:6px 0;border-bottom:1px dotted #aaa}
+.receipt-product-row time{font-size:10px}
+.receipt-product-name{min-width:0;overflow-wrap:anywhere}
+.receipt-product-name small{display:block;font-size:9px;font-weight:700}
+.receipt-totals{padding:9px 0;border-bottom:1px dashed #222}
+.receipt-total-final{font-size:15px}
+.receipt-footer{padding:12px 0 0;color:#171717;font-size:12px;text-align:center}
+.receipt-footer p{margin:0 0 6px;font-weight:700}
+.receipt-footer small{font-size:10px}
+.receipt-actions{flex:none}
+@media(max-width:700px){
+  .checkout-actions{display:grid;grid-template-columns:1fr 1fr}
+  .checkout-actions>button:first-child{grid-column:1/-1;grid-row:2}
+  .checkout-actions>button{padding-inline:10px}
+  .receipt-dialog-card{width:min(96vw,560px);max-height:96vh;padding:14px}
+  .receipt-scroll{padding:7px}
+  .receipt-paper{padding:20px 14px}
+}
+@media(max-width:390px){
+  .checkout-actions{grid-template-columns:1fr}
+  .checkout-actions>button:first-child{grid-column:auto;grid-row:3}
+  .receipt-product-head,.receipt-product-row{grid-template-columns:34px minmax(0,1fr) 27px 62px;gap:4px}
+}
