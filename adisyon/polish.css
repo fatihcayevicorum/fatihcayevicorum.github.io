@@ -1152,8 +1152,10 @@ button:focus:not(:focus-visible) {
 }
 
 /* R494 - Hesap bilgi fişi önizlemesi */
-.checkout-actions{align-items:stretch;flex-wrap:wrap}
-.checkout-actions>button{min-height:44px}
+.checkout-actions{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.08fr) minmax(0,1.25fr);align-items:stretch;gap:7px}
+.checkout-actions>button{min-width:0;min-height:44px;padding-inline:7px;font-size:.64rem;white-space:nowrap}
+.checkout-actions .receipt-preview-button i{margin-right:2px}
+.payment-confirm-products{height:100%;max-height:none;overflow-y:auto;overscroll-behavior:contain;padding-bottom:32px}
 .receipt-preview-button{color:var(--red)}
 .receipt-dialog-card{width:min(94vw,560px);max-height:94vh;display:flex;flex-direction:column;overflow:hidden}
 .receipt-kicker{margin:0 0 2px;color:var(--red);font-size:.62rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
@@ -1181,15 +1183,15 @@ button:focus:not(:focus-visible) {
 .receipt-footer small{font-size:10px}
 .receipt-actions{flex:none}
 @media(max-width:700px){
-  .checkout-actions{display:grid;grid-template-columns:1fr 1fr}
-  .checkout-actions>button:first-child{grid-column:1/-1;grid-row:2}
-  .checkout-actions>button{padding-inline:10px}
+  .checkout-actions{grid-template-columns:minmax(0,.68fr) minmax(0,1.08fr) minmax(0,1.24fr);gap:5px}
+  .checkout-actions>button{padding-inline:4px;font-size:.58rem}
   .receipt-dialog-card{width:min(96vw,560px);max-height:96vh;padding:14px}
   .receipt-scroll{padding:7px}
   .receipt-paper{padding:20px 14px}
 }
 @media(max-width:390px){
-  .checkout-actions{grid-template-columns:1fr}
-  .checkout-actions>button:first-child{grid-column:auto;grid-row:3}
+  .checkout-actions{grid-template-columns:minmax(0,.65fr) minmax(0,1.08fr) minmax(0,1.27fr);gap:4px}
+  .checkout-actions>button{min-height:42px;padding-inline:2px;font-size:.54rem}
+  .checkout-actions .receipt-preview-button i{display:none}
   .receipt-product-head,.receipt-product-row{grid-template-columns:34px minmax(0,1fr) 27px 62px;gap:4px}
 }
