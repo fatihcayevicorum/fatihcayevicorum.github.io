@@ -35,7 +35,7 @@ function installStyles() {
         .app-header .preview{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:2.55rem!important;min-width:2.55rem!important;height:2.55rem!important;padding:0!important}
         #costGroupsButton{color:#fff!important}
         @media(min-width:901px){.app-header .live-time strong{font-size:1.62rem!important}.app-header .live-time span{font-size:.68rem!important}.app-header .merchant-panel-link,.app-header .preview{width:3rem!important;min-width:3rem!important;height:3rem!important}}
-        @media(max-width:620px){.app-header .live-time strong{font-size:1.08rem!important}.app-header .live-time span{font-size:.52rem!important}.global-connection-status{width:28px;min-width:28px;height:28px}.global-connection-status i{font-size:13px}}
+        @media(max-width:720px){.app-header .live-time{display:none!important}.global-connection-status{width:28px;min-width:28px;height:28px}.global-connection-status i{font-size:13px}}
     `;
     document.head.appendChild(style);
 }
