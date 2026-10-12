@@ -101,6 +101,21 @@ function installGlobalInteractionStyle(){
     dialog[open]{
       overscroll-behavior:contain;
     }
+    @media(max-width:720px){
+      dialog[open]:has(> .dialog-card){
+        box-sizing:border-box!important;
+        width:100%!important;
+        max-width:100%!important;
+        margin-inline:auto!important;
+        padding-inline:9px!important;
+        overflow:visible!important;
+      }
+      dialog[open]:has(> .dialog-card) > .dialog-card{
+        box-sizing:border-box!important;
+        max-width:100%!important;
+        margin-inline:auto!important;
+      }
+    }
   `;
   document.head.append(style);
 }
