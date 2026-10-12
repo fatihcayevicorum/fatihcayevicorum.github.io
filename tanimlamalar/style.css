@@ -4,7 +4,7 @@ button,input,textarea{font:inherit}
 button{-webkit-tap-highlight-color:transparent}
 .definitions-shell{width:min(calc(100% - 28px),1100px);margin:auto}
 .definitions-section{min-height:260px}
-.definitions-grid{max-width:520px}
+.definitions-grid{width:100%}
 .definition-card{width:100%;font-family:inherit;text-align:left;cursor:pointer}
 .definition-card:disabled{cursor:wait;opacity:.58}
 .definition-card .card-copy{display:block}
