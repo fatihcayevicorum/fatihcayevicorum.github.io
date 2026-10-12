@@ -759,7 +759,7 @@ button:focus:not(:focus-visible) {
 .pos-tea-card:not(.is-empty).pos-tea-card::before{padding:3px;filter:drop-shadow(0 0 3px var(--tea-state,#159553));background:conic-gradient(from var(--tea-border-angle),transparent 0deg 235deg,color-mix(in srgb,var(--tea-state,#159553) 55%,#fff) 278deg,var(--orbit-color) 318deg,#fff 338deg,transparent 360deg)}
 /* R381: Toplu organizasyon görünümü; normal adisyon etkilenmez. */
 .org-toggle{display:flex;align-items:center;gap:12px;padding:11px;background:#f9f0e7;border:1px solid var(--line);border-radius:12px}.org-toggle input{width:20px;height:20px;accent-color:var(--red)}.org-toggle span{display:grid;gap:3px}.org-toggle small{font-weight:400;color:var(--muted)}
-.org-product-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.org-tabs{display:flex;gap:5px}.org-tabs button,.org-choice{border-radius:11px;background:#f1e6dc;color:var(--ink);padding:9px 12px}.org-tabs button.active,.org-choice.active{background:var(--red);color:#fff}.org-product-controls .secondary{min-height:38px}
+.org-product-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.org-tabs{display:flex;gap:5px}.org-tabs button,.org-choice{border-radius:11px;background:#f1e6dc;color:var(--ink);padding:9px 12px}.org-tabs button.active,.org-choice.active{background:var(--red);color:#fff}.org-product-controls .secondary{min-height:38px}.org-tab-mobile,.org-edit-icon,.org-choice-price,.org-choice-check{display:none}.org-product-search-wrap{position:relative}.org-product-search-wrap>i{position:absolute;left:13px;top:50%;z-index:1;transform:translateY(-50%);color:var(--muted)}.org-product-search-wrap input{width:100%;padding-left:38px}
 .organization-mode .pos-layout{grid-template-columns:minmax(0,1fr)}.organization-mode .products{display:flex;flex-direction:column;min-height:0}.organization-mode .product-grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));align-content:start;max-height:none;flex:1}.organization-mode .product{min-height:78px}.organization-mode .order{display:block;min-height:0;padding:10px 16px}.organization-mode .order>.order-title,.organization-mode .order>#currentAccountBar,.organization-mode .order>#orderItems,.organization-mode .order>#orderEmpty,.organization-mode .order>.order-bottom{display:none!important}.org-summary-button{display:flex;align-items:center;gap:10px;width:100%;justify-content:center;min-height:46px}.org-summary-button b{border-radius:999px;background:#fff;padding:2px 8px;color:var(--red)}
 .org-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:50vh;overflow:auto;margin-top:12px}.org-choice{text-align:left;display:flex;justify-content:space-between;align-items:center;gap:8px}.org-choice small{font-size:.64rem}.org-quick-qty{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.org-quick-qty button{height:48px;border-radius:10px;background:#f1e6dc;color:var(--red);font-size:1rem}.org-summary-card{width:min(96vw,740px)}.org-summary-items{display:grid;gap:7px;max-height:39vh;overflow:auto}.org-summary-line{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px 10px;padding:9px 11px;border:1px solid var(--line);border-radius:11px;background:#fff}.org-summary-line strong{font-size:.8rem}.org-summary-line small{display:block;font-size:.65rem;color:var(--muted)}.org-summary-line>b{font-size:.8rem;color:var(--red)}.org-line-actions{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end}.org-line-actions button{min-width:36px;min-height:34px;padding:0 9px;border-radius:8px;background:#f1e6dc;color:var(--ink);font-size:.72rem}.org-line-actions .danger{background:#f9e7e7;color:var(--red)}.org-summary-totals{margin:12px 0;padding:10px;border-radius:11px;background:#f7efe7}.org-summary-totals>div{display:flex;justify-content:space-between;gap:10px;font-size:.78rem}.org-summary-totals .net{border-top:1px solid var(--line);padding-top:7px;margin-top:7px;color:var(--red);font-size:1rem}.org-discount-controls{padding:10px;border:1px solid var(--line);border-radius:11px}.org-discount-controls label{margin:5px 0}.org-discount-controls button{min-height:38px}.org-actions{flex-wrap:wrap}.org-actions button{flex:1;white-space:nowrap}
 @media(max-width:700px){.organization-mode .pos-layout{height:auto;min-height:0}.organization-mode .products{min-height:55vh}.organization-mode .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:55vh}.organization-mode .order{min-height:0}.org-choices{grid-template-columns:1fr}.org-actions button{flex-basis:100%}.org-summary-card{max-height:92vh}}
@@ -836,6 +836,53 @@ button:focus:not(:focus-visible) {
   .org-summary-items,.org-account-items{grid-template-columns:1fr}
   .org-product-controls{align-items:flex-start}
   .org-tabs button{padding:8px}
+}
+
+/* R487 - Yalnız telefon görünümünde toplu organizasyon ürün seçimi. */
+@media(max-width:720px){
+  .order-dialog.organization-dialog .org-product-controls{display:grid;grid-template-columns:minmax(0,1fr) 40px;align-items:stretch;gap:6px;margin-bottom:6px}
+  .order-dialog.organization-dialog .org-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .order-dialog.organization-dialog .org-tabs button{min-width:0;min-height:40px;padding:5px 7px;font-size:.63rem;line-height:1.15}
+  .order-dialog.organization-dialog .org-tab-desktop{display:none}
+  .order-dialog.organization-dialog .org-tab-mobile{display:inline}
+  .order-dialog.organization-dialog #orgSearchToggle{display:none}
+  .order-dialog.organization-dialog #orgEditProducts{display:grid;width:40px;min-width:40px;min-height:40px;place-items:center;padding:0}
+  .order-dialog.organization-dialog #orgEditProducts span{display:none}
+  .order-dialog.organization-dialog .org-edit-icon{display:inline-block;font-size:.88rem}
+  .order-dialog.organization-dialog .organization-mode:not(.org-search-open) .pos-search-row,
+  .order-dialog.organization-dialog .organization-mode .pos-search-row{display:grid;grid-template-columns:minmax(0,1fr);margin-bottom:0}
+  .order-dialog.organization-dialog .product-search{height:40px}
+  .order-dialog.organization-dialog .category-tabs{padding:6px 0;scrollbar-width:none}
+  .order-dialog.organization-dialog .category-tabs::-webkit-scrollbar{display:none}
+  .order-dialog.organization-dialog .category-tabs button{padding:7px 10px;font-size:.61rem}
+  .order-dialog.organization-dialog .product-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:76px;align-content:start;gap:6px;margin-top:6px;max-height:none;min-height:0;overflow-y:auto}
+  .order-dialog.organization-dialog .category-tabs:not([hidden])+.product-grid{margin-top:0}
+  .order-dialog.organization-dialog .product{display:flex;height:76px;min-height:76px;flex-direction:column;align-items:flex-start;justify-content:center;padding:7px;border-radius:10px}
+  .order-dialog.organization-dialog .product strong{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;font-size:.65rem;line-height:1.18}
+  .order-dialog.organization-dialog .product span{display:block;margin-top:4px;color:var(--red);font-size:.62rem}
+  .organization-mode #productEmpty{padding:14px 8px}
+  .organization-mode #productEmpty>span:first-child{display:block}
+  .org-empty-actions{display:flex;justify-content:center;gap:6px;margin-top:10px}
+  .org-empty-actions button{min-height:36px;padding:0 10px;border-radius:9px;background:#f1e6dc;color:var(--red);font-size:.6rem}
+  .org-empty-actions button:first-child{color:#fff;background:var(--red)}
+
+  #orgProductsDialog{width:100vw;max-width:100vw}
+  #orgProductsDialog .org-products-card{display:flex;width:calc(100vw - 18px);height:min(90dvh,720px);max-height:90dvh;flex-direction:column;padding:12px;border-radius:18px;overflow:hidden}
+  #orgProductsDialog .dialog-head{flex:none;margin-bottom:8px}
+  #orgProductsDialog .dialog-head h2{font-size:1rem}
+  #orgProductsDialog .notice{flex:none;margin:0 0 8px;padding:8px 9px;font-size:.62rem}
+  #orgProductsDialog .org-product-search-wrap{flex:none}
+  #orgProductsDialog #orgProductSearch{height:40px;font-size:.72rem}
+  #orgProductsDialog .org-choices{display:grid;min-height:0;flex:1;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:82px;gap:6px;max-height:none;margin-top:8px;overflow-y:auto}
+  #orgProductsDialog .org-choice{position:relative;display:flex;min-width:0;height:82px;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;padding:7px;border:1px solid var(--line);border-radius:10px;background:#fffaf4;text-align:left}
+  #orgProductsDialog .org-choice.active{border:2px solid var(--red);color:var(--ink);background:#fff3f1}
+  #orgProductsDialog .org-choice-name{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;font-size:.63rem;font-weight:800;line-height:1.18}
+  #orgProductsDialog .org-choice-price{display:block;color:var(--red);font-size:.61rem}
+  #orgProductsDialog .org-choice-meta{display:none}
+  #orgProductsDialog .org-choice-check{display:none}
+  #orgProductsDialog .org-choice.active .org-choice-check{position:absolute;top:5px;right:5px;display:grid;width:17px;height:17px;place-items:center;border-radius:50%;color:#fff;background:var(--red);font-size:.48rem}
+  #orgProductsDialog .dialog-actions{flex:none;display:grid;grid-template-columns:1fr 1.35fr;gap:7px;margin-top:9px;padding-top:8px;border-top:1px solid var(--line);background:var(--paper)}
+  #orgProductsDialog .dialog-actions button{min-width:0;min-height:42px;padding:0 8px;font-size:.68rem}
 }
 
 /* R384: organizasyon akışı aynı adisyon penceresinde sabit ölçülü üç görünüm. */
