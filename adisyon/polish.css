@@ -866,8 +866,8 @@ button:focus:not(:focus-visible) {
   .org-empty-actions button{min-height:36px;padding:0 10px;border-radius:9px;background:#f1e6dc;color:var(--red);font-size:.6rem}
   .org-empty-actions button:first-child{color:#fff;background:var(--red)}
 
-  #orgProductsDialog{width:100vw;max-width:100vw}
-  #orgProductsDialog .org-products-card{display:flex;width:calc(100vw - 18px);height:min(90dvh,720px);max-height:90dvh;flex-direction:column;padding:12px;border-radius:18px;overflow:hidden}
+  #orgProductsDialog{width:100%;max-width:100%;overflow:visible}
+  #orgProductsDialog .org-products-card{display:flex;width:calc(100vw - 18px);height:min(90dvh,720px);max-height:90dvh;flex-direction:column;margin-inline:auto;padding:12px;border-radius:18px;overflow:hidden}
   #orgProductsDialog .dialog-head{flex:none;margin-bottom:8px}
   #orgProductsDialog .dialog-head h2{font-size:1rem}
   #orgProductsDialog .notice{flex:none;margin:0 0 8px;padding:8px 9px;font-size:.62rem}
