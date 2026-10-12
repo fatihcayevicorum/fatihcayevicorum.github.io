@@ -1083,3 +1083,70 @@ button:focus:not(:focus-visible) {
   .order-dialog:not(.organization-dialog) .mobile-order-details-open .current-account-bar{flex:none}
   .order-dialog:not(.organization-dialog) .mobile-order-details-open .order-bottom{flex:none}
 }
+
+/* R493 - Telefonda sipariş satırları daha kompakt ve taşmasızdır. */
+@media(max-width:720px){
+  .order-dialog:not(.organization-dialog) .order-items{
+    grid-auto-rows:54px;
+    gap:4px;
+  }
+  .order-dialog:not(.organization-dialog) .order-item{
+    position:relative;
+    height:54px;
+    min-height:54px;
+    max-height:54px;
+    grid-template-columns:minmax(0,1fr) auto auto;
+    gap:4px;
+    padding:5px 6px;
+    border-radius:9px;
+  }
+  .order-dialog:not(.organization-dialog) .order-item strong{
+    display:-webkit-box;
+    overflow:hidden;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    line-clamp:2;
+    font-size:.66rem;
+    line-height:1.12;
+  }
+  .order-dialog:not(.organization-dialog) .order-item small{
+    display:block;
+    margin-top:2px;
+    font-size:.5rem;
+    line-height:1.05;
+  }
+  .order-dialog:not(.organization-dialog) .qty{gap:2px}
+  .order-dialog:not(.organization-dialog) .qty button{
+    width:26px;
+    height:26px;
+    border-radius:7px;
+    font-size:.7rem;
+  }
+  .order-dialog:not(.organization-dialog) .qty b{
+    min-width:16px;
+    font-size:.64rem;
+  }
+  .order-dialog:not(.organization-dialog) .item-side{
+    display:block;
+    grid-column:auto;
+    text-align:center;
+  }
+  .order-dialog:not(.organization-dialog) .item-side>b{display:none}
+  .order-dialog:not(.organization-dialog) .gift-toggle{
+    display:inline-flex;
+    min-width:0;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    margin:0;
+    padding:3px 4px;
+    border-radius:6px;
+    font-size:.47rem;
+    white-space:nowrap;
+  }
+  .order-dialog:not(.organization-dialog) .gift-toggle input{
+    width:11px;
+    height:11px;
+    margin:0;
+  }
+}
