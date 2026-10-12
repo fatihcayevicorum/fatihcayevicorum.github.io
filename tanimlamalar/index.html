@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=499">
+  <link rel="stylesheet" href="style.css?v=500">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -47,6 +47,11 @@
           <span class="card-icon"><i class="fa-solid fa-receipt"></i></span>
           <span class="card-copy"><strong>Adisyon Fişi Ayarları</strong><small>Hesap fişindeki logo, işletme bilgileri, saatler ve mesajları düzenle</small></span>
         </button>
+        <button id="teaSettingsCard" class="center-card definition-card" type="button" disabled>
+          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
+          <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
+          <span class="card-copy"><strong>Taze Dem Ayarları</strong><small>Demlik sayısını, demlenme süresini ve tazelik süresini düzenle</small></span>
+        </button>
       </div>
     </section>
   </main>
@@ -73,6 +78,26 @@
 
       <p id="formMessage" class="form-message" role="alert"></p>
       <div class="dialog-actions"><button id="cancelSystemInfo" class="secondary-button" type="button">Vazgeç</button><button id="saveSystemInfo" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="teaSettingsDialog" class="settings-dialog tea-definition-dialog">
+    <form id="teaSettingsForm">
+      <button id="closeTeaSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div class="dialog-heading">
+        <div class="dialog-icon"><i class="fa-solid fa-mug-hot"></i></div>
+        <div><p class="dialog-kicker">Tanımlamalar</p><h2>Taze Dem Ayarları</h2></div>
+      </div>
+      <p class="tea-settings-copy">Taze Dem ekranının kullandığı demlik kapasitesini ve sayaç sürelerini belirleyin.</p>
+
+      <div class="tea-definition-fields">
+        <label><span>Demlik Sayısı</span><div class="tea-number-input"><input id="teaMaxActiveBrews" type="number" inputmode="numeric" min="1" max="8" required><b>Adet</b></div><small>En az 1, en fazla 8 demlik</small></label>
+        <label><span>Demlenme Süresi</span><div class="tea-number-input"><input id="teaBrewingMinutes" type="number" inputmode="numeric" min="1" max="120" required><b>Dakika</b></div><small>En az 1, en fazla 120 dakika</small></label>
+        <label><span>Tazelik Süresi</span><div class="tea-number-input"><input id="teaFreshnessMinutes" type="number" inputmode="numeric" min="1" max="240" required><b>Dakika</b></div><small>En az 1, en fazla 240 dakika</small></label>
+      </div>
+
+      <p id="teaFormMessage" class="form-message" role="alert"></p>
+      <div class="dialog-actions"><button id="cancelTeaSettings" class="secondary-button" type="button">Vazgeç</button><button id="saveTeaSettings" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
     </form>
   </dialog>
 
@@ -127,7 +152,7 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=499"></script>
+  <script type="module" src="script.js?v=500"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

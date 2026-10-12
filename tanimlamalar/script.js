@@ -4,20 +4,23 @@ import{doc,getFirestore,onSnapshot,serverTimestamp,setDoc}from"https://www.gstat
 import{getDownloadURL,getStorage,ref,uploadBytes}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
 import{isOwner}from"../assets/js/admin-access.js";
+import{runTransaction}from"../assets/js/offline-firestore.js";
 
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),configRef=doc(db,"publicSite","config"),$=id=>document.getElementById(id);
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),configRef=doc(db,"publicSite","config"),teaStateRef=doc(db,"adminTea","state"),publicTeaRef=doc(db,"publicTea","status"),$=id=>document.getElementById(id);
 const defaults={businessName:"Fatih Çay Evi",address:"Ulukavak Mah. Osmancık Cad. No:285, Çorum/Merkez",phone:"0554 118 08 06",instagramUrl:"https://www.instagram.com/fatihcayevicorum/",logoUrl:"../assets/images/logo.png"};
 const receiptDefaults={paperWidthMm:80,showLogo:true,showBusinessName:true,showAddress:true,showPhone:true,showInstagram:true,showDate:true,showTime:true,showItemTimes:true,topMessage:"",bottomMessage:"Afiyet olsun, yine bekleriz."};
-let config={},loaded=false,saving=false,receiptSaving=false,previewObjectUrl="",toastTimer;
+let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSaving=false,teaSaving=false,previewObjectUrl="",toastTimer;
 
 onAuthStateChanged(auth,user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
   if(!isOwner(user)){location.replace("../yonetim-merkezi/");return}
   onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>{console.error(error);setPageStatus("Bilgiler yüklenemedi","error")});
+  onSnapshot(teaStateRef,snapshot=>{teaState=snapshot.data()||{};teaLoaded=true;renderPageState()},error=>{console.error(error);setPageStatus("Taze Dem ayarları yüklenemedi","error")});
 });
 
 $("systemInfoCard").onclick=openSystemInfo;
 $("receiptSettingsCard").onclick=openReceiptSettings;
+$("teaSettingsCard").onclick=openTeaSettings;
 $("closeSystemInfo").onclick=closeSystemInfo;
 $("cancelSystemInfo").onclick=closeSystemInfo;
 $("logoFile").onchange=previewSelectedLogo;
@@ -26,13 +29,17 @@ $("closeReceiptSettings").onclick=closeReceiptSettings;
 $("cancelReceiptSettings").onclick=closeReceiptSettings;
 $("receiptSettingsForm").onsubmit=saveReceiptSettings;
 $("receiptSettingsForm").addEventListener("input",renderReceiptSettingsPreview);
+$("closeTeaSettings").onclick=closeTeaSettings;
+$("cancelTeaSettings").onclick=closeTeaSettings;
+$("teaSettingsForm").onsubmit=saveTeaSettings;
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 
 function renderPageState(){
-  $("systemInfoCard").disabled=false;
-  $("receiptSettingsCard").disabled=false;
+  $("systemInfoCard").disabled=!loaded;
+  $("receiptSettingsCard").disabled=!loaded;
+  $("teaSettingsCard").disabled=!teaLoaded;
   document.querySelector(".eyebrow").textContent=config.businessName||defaults.businessName;
-  setPageStatus("Güncel","ready");
+  setPageStatus(loaded&&teaLoaded?"Güncel":"Bağlanıyor",loaded&&teaLoaded?"ready":"");
 }
 function openSystemInfo(){
   if(!loaded)return;
@@ -104,6 +111,23 @@ async function saveReceiptSettings(event){
   finally{receiptSaving=false;setReceiptBusy(false)}
 }
 function setReceiptBusy(value){$("saveReceiptSettings").disabled=value;$("cancelReceiptSettings").disabled=value;$("closeReceiptSettings").disabled=value;$("saveReceiptSettings").innerHTML=value?'<i class="fa-solid fa-spinner fa-spin"></i> Kaydediliyor':'<i class="fa-solid fa-floppy-disk"></i> Kaydet'}
+function teaInteger(value,min,max,fallback){const number=Math.floor(Number(value));return Number.isFinite(number)?Math.min(max,Math.max(min,number)):fallback}
+function normalizedTeaSettings(value={}){return{maxActiveBrews:teaInteger(value.maxActiveBrews,1,8,3),brewingMinutes:teaInteger(value.brewingMinutes,1,120,20),freshnessMinutes:teaInteger(value.freshnessMinutes,1,240,60)}}
+function openTeaSettings(){
+  if(!teaLoaded)return;const settings=normalizedTeaSettings(teaState);$("teaMaxActiveBrews").value=settings.maxActiveBrews;$("teaBrewingMinutes").value=settings.brewingMinutes;$("teaFreshnessMinutes").value=settings.freshnessMinutes;$("teaFormMessage").textContent="";$("teaSettingsDialog").showModal();setTimeout(()=>{$("teaMaxActiveBrews").focus();$("teaMaxActiveBrews").select()},60)
+}
+function closeTeaSettings(){if(!teaSaving)$("teaSettingsDialog").close()}
+function teaValue(id,min,max,label){const value=Number($(id).value);if(!Number.isInteger(value)||value<min||value>max){$("teaFormMessage").textContent=`${label} ${min} ile ${max} arasında tam sayı olmalı.`;$(id).focus();return null}return value}
+async function saveTeaSettings(event){
+  event.preventDefault();if(teaSaving)return;const maxActiveBrews=teaValue("teaMaxActiveBrews",1,8,"Demlik sayısı");if(maxActiveBrews===null)return;const brewingMinutes=teaValue("teaBrewingMinutes",1,120,"Demlenme süresi");if(brewingMinutes===null)return;const freshnessMinutes=teaValue("teaFreshnessMinutes",1,240,"Tazelik süresi");if(freshnessMinutes===null)return;const next={maxActiveBrews,brewingMinutes,freshnessMinutes};
+  teaSaving=true;setTeaBusy(true);$("teaFormMessage").textContent="";
+  try{
+    await runTransaction(db,async transaction=>{const snapshot=await transaction.get(teaStateRef),current=snapshot.exists()?snapshot.data():{},activeBrews=Array.isArray(current.activeBrews)?current.activeBrews:[];if(next.maxActiveBrews<activeBrews.length)throw new Error("active-capacity");const metadata={teaSettingsVersion:"r500",updatedAtMs:Date.now(),updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid};transaction.set(teaStateRef,{...next,...metadata},{merge:true});transaction.set(publicTeaRef,{...next,teaSettingsVersion:"r500",updatedAt:serverTimestamp()},{merge:true})});
+    teaState={...teaState,...next};$("teaSettingsDialog").close();toast("Taze Dem ayarları kaydedildi. Tüm ekranlar güncellendi.")
+  }catch(error){console.error(error);$("teaFormMessage").textContent=error.message==="active-capacity"?"Aktif demlik sayısı yeni kapasiteden fazla. Önce fazla demlikleri bitirin.":"Taze Dem ayarları kaydedilemedi. Değerleriniz ekranda korunuyor."}
+  finally{teaSaving=false;setTeaBusy(false)}
+}
+function setTeaBusy(value){$("saveTeaSettings").disabled=value;$("cancelTeaSettings").disabled=value;$("closeTeaSettings").disabled=value;$("saveTeaSettings").innerHTML=value?'<i class="fa-solid fa-spinner fa-spin"></i> Kaydediliyor':'<i class="fa-solid fa-floppy-disk"></i> Kaydet'}
 function instagramAccount(value=""){try{const url=new URL(value);return url.pathname.split("/").filter(Boolean)[0]||""}catch{return String(value).replace(/^@/,"").replace(/^https?:\/\/[^/]+\//,"").split("/")[0]}}
 function formatPhone(value=""){let digits=String(value).replace(/\D/g,"");if(digits.length===12&&digits.startsWith("90"))digits=`0${digits.slice(2)}`;if(digits.length===10)digits=`0${digits}`;return digits.length===11&&digits.startsWith("0")?`${digits.slice(0,4)} ${digits.slice(4,7)} ${digits.slice(7,9)} ${digits.slice(9)}`:""}
 function storageMessage(error){const code=String(error?.code||"");if(code.includes("unauthorized"))return"Logo veya bilgiler kaydedilemedi. Yetkinizi kontrol edin.";if(code.includes("storage"))return"Logo yüklenemedi. İnternet bağlantısını kontrol edin.";return"Bilgiler kaydedilemedi. Girdiğiniz bilgiler ekranda korunuyor."}

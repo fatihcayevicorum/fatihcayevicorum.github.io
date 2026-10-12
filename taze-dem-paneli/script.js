@@ -51,13 +51,7 @@ const elements = {
     logoutButton: document.getElementById("logoutButton"),
     toast: document.getElementById("toast")
 };
-Object.assign(elements, {
-    settingsButton: document.getElementById("teaSettingsButton"), settingsDialog: document.getElementById("teaSettingsDialog"),
-    settingsForm: document.getElementById("teaSettingsForm"), cancelSettings: document.getElementById("cancelTeaSettings"),
-    saveSettings: document.getElementById("saveTeaSettings"), settingsMessage: document.getElementById("teaSettingsMessage"),
-    maxActiveInput: document.getElementById("maxActiveBrewsInput"), brewingInput: document.getElementById("brewingMinutesInput"),
-    freshnessInput: document.getElementById("freshnessMinutesInput"), brewDurationNote: document.getElementById("brewDurationNote")
-});
+Object.assign(elements, { brewDurationNote: document.getElementById("brewDurationNote") });
 
 let appState = createEmptyState();
 let pendingFinishId = null;
@@ -82,9 +76,6 @@ elements.logoutButton.addEventListener("click", async () => {
     await signOut(auth);
     window.location.replace("../yonetici-giris.html");
 });
-elements.settingsButton.addEventListener("click", openTeaSettings);
-elements.cancelSettings.addEventListener("click", () => elements.settingsDialog.close());
-elements.settingsForm.addEventListener("submit", saveTeaSettings);
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -659,36 +650,6 @@ function teaSettingsPayload(state = appState) { const s = normalizeTeaSettings(s
 function clampInteger(value, min, max, fallback) { const n = Math.floor(Number(value)); return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback; }
 function brewingDurationMs() { return appState.brewingMinutes * 60 * 1000; }
 function freshnessDurationMs() { return appState.freshnessMinutes * 60 * 1000; }
-function openTeaSettings() {
-    elements.maxActiveInput.value = appState.maxActiveBrews;
-    elements.brewingInput.value = appState.brewingMinutes;
-    elements.freshnessInput.value = appState.freshnessMinutes;
-    elements.settingsMessage.textContent = "";
-    elements.settingsDialog.showModal();
-    setTimeout(() => { elements.maxActiveInput.focus(); elements.maxActiveInput.select(); }, 50);
-}
-async function saveTeaSettings(event) {
-    event.preventDefault(); if (isBusy) return;
-    const next = {
-        maxActiveBrews: clampInteger(elements.maxActiveInput.value, 1, 8, DEFAULT_TEA_SETTINGS.maxActiveBrews),
-        brewingMinutes: clampInteger(elements.brewingInput.value, 1, 120, DEFAULT_TEA_SETTINGS.brewingMinutes),
-        freshnessMinutes: clampInteger(elements.freshnessInput.value, 1, 240, DEFAULT_TEA_SETTINGS.freshnessMinutes)
-    };
-    if (next.maxActiveBrews < appState.activeBrews.length) { elements.settingsMessage.textContent = `Şu anda ${appState.activeBrews.length} aktif Demlik var. Önce fazla demlikleri bitirin.`; return; }
-    setBusy(true); elements.saveSettings.disabled = true; elements.settingsMessage.textContent = "";
-    try {
-        await runTransaction(database, async transaction => {
-            const snapshot = await transaction.get(adminStateReference), state = normalizeState(snapshot.exists() ? snapshot.data() : createEmptyState());
-            if (next.maxActiveBrews < state.activeBrews.length) throw new Error("active-capacity");
-            Object.assign(state, next);
-            transaction.set(adminStateReference, { ...state, teaSettingsVersion: "r390", updatedAt: serverTimestamp() });
-            transaction.set(publicStatusReference, { activeBrews: state.activeBrews, serviceOpen: state.serviceOpen, orderingOpen: state.serviceOpen, ...teaSettingsPayload(state), updatedAt: serverTimestamp() });
-        });
-        elements.settingsDialog.close(); showToast("Taze Dem ayarları kaydedildi. Tüm ekranlar güncellendi.");
-    } catch (error) { console.error(error); elements.settingsMessage.textContent = error.message === "active-capacity" ? "Aktif Demlik sayısı yeni kapasiteden fazla." : "Ayarlar kaydedilemedi. Bağlantıyı kontrol edin."; }
-    finally { setBusy(false); elements.saveSettings.disabled = false; }
-}
-
 function formatDuration(milliseconds, includeHours = false) {
     const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
     const hours = Math.floor(totalSeconds / 3600);

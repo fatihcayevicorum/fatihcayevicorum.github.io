@@ -40,6 +40,16 @@ button{-webkit-tap-highlight-color:transparent}
 .primary-button{color:#fff;background:linear-gradient(145deg,var(--wine-dark),var(--wine))}
 .secondary-button{color:var(--ink);background:#eee3d8}
 .primary-button:disabled,.secondary-button:disabled{cursor:not-allowed;opacity:.55}
+.tea-definition-dialog{width:min(760px,calc(100% - 24px));max-height:calc(100dvh - 24px)}
+.tea-definition-dialog form{gap:16px}
+.tea-settings-copy{margin:0;color:var(--muted);font-size:.66rem;line-height:1.55}
+.tea-definition-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tea-definition-fields>label{display:grid;align-content:start;gap:7px;margin:0;padding:14px;border:1px solid var(--line);border-radius:15px;background:#fffaf3;color:var(--ink);font-size:.68rem;font-weight:800}
+.tea-definition-fields>label>small{color:var(--muted);font-size:.54rem;font-weight:500;line-height:1.4}
+.tea-number-input{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.tea-number-input:focus-within{border-color:#b86d73;box-shadow:0 0 0 3px rgba(116,23,34,.08)}
+.tea-number-input input{width:100%;min-width:0;height:48px;padding:0 10px;border:0!important;border-radius:0!important;box-shadow:none!important;color:var(--ink);background:#fff;font-size:.88rem;font-weight:800;outline:0}
+.tea-number-input b{display:grid;align-self:stretch;place-items:center;padding:0 9px;color:var(--wine);background:#f5ece3;font-size:.56rem;white-space:nowrap}
 .receipt-settings-dialog{width:min(960px,calc(100% - 24px));max-height:calc(100dvh - 24px)}
 .receipt-settings-dialog form{gap:16px}
 .receipt-settings-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;min-height:0}
@@ -89,6 +99,8 @@ button{-webkit-tap-highlight-color:transparent}
   .logo-field img{width:88px;height:88px}
   .dialog-actions{display:grid;grid-template-columns:1fr 1fr}
   .receipt-settings-dialog form{padding:18px 14px}
+  .tea-definition-dialog form{padding:18px 14px}
+  .tea-definition-fields{grid-template-columns:1fr}
   .receipt-settings-layout{grid-template-columns:1fr}
   .receipt-settings-preview{position:static}
   .settings-receipt-scroll{max-height:none}

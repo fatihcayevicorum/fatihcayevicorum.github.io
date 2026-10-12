@@ -15,7 +15,7 @@
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=390">
+    <link rel="stylesheet" href="style.css?v=500">
     <link rel="stylesheet" href="../assets/css/panel-header.css?v=7">
     <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
     <script type="module" src="../assets/js/connection-status.js?v=481"></script>
@@ -68,9 +68,6 @@
                         <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
                         Canlı bağlantı kuruluyor
                     </span>
-                    <button class="tea-settings-button" id="teaSettingsButton" type="button" title="Taze Dem ayarları" aria-label="Taze Dem ayarlarını aç">
-                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
-                    </button>
                 </div>
             </div>
 
@@ -168,37 +165,9 @@
         </form>
     </dialog>
 
-    <dialog class="confirm-dialog tea-settings-dialog" id="teaSettingsDialog">
-        <form id="teaSettingsForm">
-            <div class="dialog-icon" aria-hidden="true"><i class="fa-solid fa-gear"></i></div>
-            <h2>Taze Dem Ayarları</h2>
-            <p>Demlik kapasitesini ve sayaç sürelerini buradan değiştirebilirsiniz.</p>
-            <div class="tea-settings-fields">
-                <label>
-                    <span>Demlik sayısı</span>
-                    <input id="maxActiveBrewsInput" type="number" inputmode="numeric" min="1" max="8" required>
-                    <small>En az 1, en fazla 8</small>
-                </label>
-                <label>
-                    <span>Demleme süresi</span>
-                    <div class="minute-input"><input id="brewingMinutesInput" type="number" inputmode="numeric" min="1" max="120" required><b>Dakika</b></div>
-                </label>
-                <label>
-                    <span>Tazelik süresi</span>
-                    <div class="minute-input"><input id="freshnessMinutesInput" type="number" inputmode="numeric" min="1" max="240" required><b>Dakika</b></div>
-                </label>
-            </div>
-            <p class="settings-message" id="teaSettingsMessage" aria-live="polite"></p>
-            <div class="dialog-actions">
-                <button class="secondary-button" id="cancelTeaSettings" type="button">Vazgeç</button>
-                <button class="danger-button" id="saveTeaSettings" type="submit">Ayarları Kaydet</button>
-            </div>
-        </form>
-    </dialog>
-
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="script.js?v=469"></script>
+    <script type="module" src="script.js?v=500"></script>
     
     <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
