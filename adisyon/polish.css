@@ -958,14 +958,15 @@ button:focus:not(:focus-visible) {
 
   .order-dialog:not(.organization-dialog){width:100vw;max-height:100dvh;border-radius:0}
   .order-dialog:not(.organization-dialog) .view{display:flex;height:100dvh;max-height:100dvh;flex-direction:column;padding:7px;border-radius:0;overflow:hidden}
-  .order-dialog:not(.organization-dialog) .order-toolbar{position:static;min-height:48px;flex:none;gap:6px;margin:0 0 6px;padding:3px 0}
+  .order-dialog:not(.organization-dialog) .order-toolbar{position:static;display:grid;min-height:64px;flex:none;grid-template-columns:38px minmax(0,1fr) 38px;align-items:center;gap:7px;margin:0 0 6px;padding:3px 0}
   .order-dialog:not(.organization-dialog) .back-button{width:38px;min-height:38px}
-  .order-dialog:not(.organization-dialog) .active-table{min-width:0;flex:1;text-align:left}
-  .order-dialog:not(.organization-dialog) .active-table>span{font-size:.51rem}
-  .order-dialog:not(.organization-dialog) .active-table h2{font-size:.94rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .order-dialog:not(.organization-dialog) .active-table small{font-size:.55rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .order-dialog:not(.organization-dialog) .active-table{min-width:0;text-align:center}
+  .order-dialog:not(.organization-dialog) .active-table>span{font-size:.54rem}
+  .order-dialog:not(.organization-dialog) .active-title-row{justify-content:center}
+  .order-dialog:not(.organization-dialog) .active-table h2{font-size:1.08rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .order-dialog:not(.organization-dialog) .active-table small{font-size:.57rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .order-dialog:not(.organization-dialog) #orderInfoButton{width:27px;height:27px}
-  .order-dialog:not(.organization-dialog) .order-toolbar-actions{gap:4px}
+  .order-dialog:not(.organization-dialog) .order-toolbar-actions{width:38px;gap:0}
   .order-dialog:not(.organization-dialog) #orderMore{width:38px;min-width:38px;min-height:38px;padding:0}
   .order-dialog:not(.organization-dialog) #orderMore span{display:none}
   .order-dialog:not(.organization-dialog) .pos-layout{display:grid;min-height:0;height:auto;flex:1;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:7px;overflow:hidden}
