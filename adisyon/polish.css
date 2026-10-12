@@ -930,7 +930,7 @@ button:focus:not(:focus-visible) {
 .order-title-note{color:var(--muted);font-size:.62rem;font-weight:400}
 .order-mobile-meta{display:none}
 .control-panel-divider button span{display:none}
-@media(max-width:620px){
+@media(max-width:720px){
   .overview-row{grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;max-height:520px;margin-top:8px}
   .overview-row .open-total-card{grid-column:1/4;grid-row:1;min-height:58px;padding:7px 10px}
   .overview-row #startPosTeaBrew{grid-column:4/7;grid-row:1;width:100%!important;min-width:0;min-height:58px;flex-direction:row;font-size:.64rem}
