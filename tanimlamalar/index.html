@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Tanımlamalar | Fatih Çay Evi</title>
+  <meta name="theme-color" content="#5a1018">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
+  <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
+  <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
+  <link rel="stylesheet" href="style.css?v=496">
+  <script type="module" src="../assets/js/connection-status.js?v=481"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="../assets/images/logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu">
+        <div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Tanımlamalar</h1></div>
+      </div>
+      <div class="header-actions">
+        <div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
+        <a class="management-center-link" href="../yonetim-merkezi/" title="Yönetim Merkezi" aria-label="Yönetim Merkezine git"><i class="fa-solid fa-grip"></i><span>Yönetim Merkezi</span></a>
+        <button class="logout-button" id="logoutButton" type="button" title="Güvenli Çıkış" aria-label="Güvenli Çıkış"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-shell definitions-shell">
+    <section class="center-section definitions-section">
+      <div class="section-heading">
+        <div><p class="kicker">Temel ayarlar</p><h2>Tanımlamalar</h2></div>
+        <span id="pageStatus" class="page-status">Bağlanıyor</span>
+      </div>
+      <div class="card-grid definitions-grid">
+        <button id="systemInfoCard" class="center-card definition-card" type="button" disabled>
+          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
+          <span class="card-icon"><i class="fa-solid fa-building"></i></span>
+          <span class="card-copy"><strong>Sistem Bilgileri</strong><small>İşletme adı, logo, adres, telefon ve Instagram bilgilerini düzenle</small></span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="systemInfoDialog" class="settings-dialog system-info-dialog">
+    <form id="systemInfoForm">
+      <button id="closeSystemInfo" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div class="dialog-heading">
+        <div class="dialog-icon"><i class="fa-solid fa-building"></i></div>
+        <div><p class="dialog-kicker">Tanımlamalar</p><h2>Sistem Bilgileri</h2></div>
+      </div>
+
+      <section class="logo-field">
+        <img id="logoPreview" src="../assets/images/logo.png" alt="Mevcut işletme logosu">
+        <div><strong>İşletme Logosu</strong><small id="logoFileName">Mevcut logo kullanılacak.</small><label class="logo-select">Yeni Logo Seç<input id="logoFile" type="file" accept="image/*"></label></div>
+      </section>
+
+      <div class="system-fields">
+        <label>İşletme Adı<input id="businessName" maxlength="80" autocomplete="organization" required></label>
+        <label>Telefon<input id="phone" maxlength="20" inputmode="tel" autocomplete="tel" required></label>
+        <label class="full-field">Adres<textarea id="address" maxlength="240" rows="3" autocomplete="street-address" required></textarea></label>
+        <label class="full-field">Instagram Hesabı<div class="instagram-input"><span>@</span><input id="instagram" maxlength="30" autocomplete="off" required></div></label>
+      </div>
+
+      <p id="formMessage" class="form-message" role="alert"></p>
+      <div class="dialog-actions"><button id="cancelSystemInfo" class="secondary-button" type="button">Vazgeç</button><button id="saveSystemInfo" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="script.js?v=496"></script>
+  <script type="module" src="../assets/js/system-ui.js?v=496"></script>
+</body>
+</html>

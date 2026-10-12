@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r495-odeme-duzeni",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r496-tanimlamalar-sistem-bilgileri",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./islem-gecmisi/","./islem-gecmisi/index.html","./islem-gecmisi/style.css","./islem-gecmisi/script.js",
   "./birikim-hesaplari/","./birikim-hesaplari/index.html","./birikim-hesaplari/style.css","./birikim-hesaplari/script.js","./assets/js/savings.js","./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
@@ -29,6 +29,7 @@ const CORE=[
   "./menu.html","./assets/css/menu.css","./assets/js/menu.js","./yonetici-giris.html","./assets/css/yonetici-giris.css","./assets/js/yonetici-giris.js","./esnaf-giris.html","./assets/css/esnaf-giris.css","./assets/js/esnaf-giris.js",
   "./assets/js/firebase-config.js","./assets/js/admin-access.js","./assets/js/device-access.js","./taze-dem-paneli/","./taze-dem-paneli/index.html",
   "./yonetim-merkezi/","./yonetim-merkezi/index.html","./yonetim-merkezi/style.css","./yonetim-merkezi/script.js",
+  "./tanimlamalar/","./tanimlamalar/index.html","./tanimlamalar/style.css","./tanimlamalar/script.js",
   "./bildirim-merkezi/","./bildirim-merkezi/index.html","./bildirim-merkezi/style.css","./bildirim-merkezi/script.js",
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
   "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js","./adisyon/enhancements.css","./adisyon/internal-consumption.js","./adisyon/polish.css","./adisyon/quick-cash.css","./adisyon/quick-cash.js","./adisyon/personnel-mode.css","./adisyon/personnel-mode.js","./adisyon/history-modal.css","./adisyon/history-modal.js","./adisyon-gecmisi/","./adisyon-gecmisi/index.html","./adisyon-gecmisi/style.css","./adisyon-gecmisi/script.js",

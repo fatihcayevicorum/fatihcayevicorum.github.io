@@ -1,0 +1,58 @@
+:root{--wine:#741722;--wine-dark:#4c0d14;--gold:#e3b84c;--cream:#f8f1e7;--paper:#fffdf9;--ink:#271d1f;--muted:#77686a;--line:#eadfd3}
+*{box-sizing:border-box}
+button,input,textarea{font:inherit}
+button{-webkit-tap-highlight-color:transparent}
+.definitions-shell{width:min(calc(100% - 28px),1100px);margin:auto}
+.definitions-section{min-height:260px}
+.definitions-grid{max-width:520px}
+.definition-card{width:100%;font-family:inherit;text-align:left;cursor:pointer}
+.definition-card:disabled{cursor:wait;opacity:.58}
+.definition-card .card-copy{display:block}
+.page-status{padding:.38rem .62rem;border-radius:999px;color:#755e5f;background:#f2e8df;font-size:.58rem;font-weight:700}
+.page-status.is-ready{color:#1d7047;background:#e9f6ee}
+.page-status.is-error{color:#9b252d;background:#fdebed}
+.system-info-dialog{width:min(660px,calc(100% - 24px));max-height:calc(100dvh - 24px)}
+.system-info-dialog form{gap:16px}
+.dialog-heading{display:flex;align-items:center;gap:12px;padding-right:38px}
+.dialog-heading .dialog-icon{margin:0;flex:0 0 auto}
+.dialog-kicker{margin:0 0 2px;color:var(--wine);font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.logo-field{display:grid;grid-template-columns:112px minmax(0,1fr);align-items:center;gap:16px;padding:14px;border:1px solid var(--line);border-radius:17px;background:#fffaf3}
+.logo-field img{width:112px;height:112px;border:1px solid #eadfd3;border-radius:16px;object-fit:contain;background:#fff}
+.logo-field strong,.logo-field small{display:block}
+.logo-field strong{font-size:.82rem}
+.logo-field small{margin:4px 0 10px;color:var(--muted);font-size:.62rem;overflow-wrap:anywhere}
+.logo-select{display:inline-flex!important;align-items:center;justify-content:center;min-height:40px;margin:0!important;padding:0 12px;border-radius:11px;color:#fff;background:linear-gradient(145deg,var(--wine-dark),var(--wine));font-size:.67rem!important;font-weight:800;cursor:pointer}
+.logo-select input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.system-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.system-fields label{display:grid;gap:6px;margin:0;color:var(--ink);font-size:.7rem;font-weight:700}
+.system-fields input,.system-fields textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:#fff;padding:11px;outline:0}
+.system-fields input{height:46px}
+.system-fields textarea{min-height:88px;resize:vertical}
+.system-fields input:focus,.system-fields textarea:focus{border-color:#b86d73;box-shadow:0 0 0 3px rgba(116,23,34,.08)}
+.full-field{grid-column:1/-1}
+.instagram-input{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.instagram-input:focus-within{border-color:#b86d73;box-shadow:0 0 0 3px rgba(116,23,34,.08)}
+.instagram-input span{display:grid;height:100%;place-items:center;color:var(--wine);background:#f5ece3;font-weight:800}
+.instagram-input input{border:0;border-radius:0;box-shadow:none!important}
+.form-message{min-height:18px;margin:0;color:#a3222c;font-size:.67rem;font-weight:600}
+.dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:0}
+.primary-button,.secondary-button{min-height:44px;padding:0 16px;border:0;border-radius:12px;font-weight:800;cursor:pointer}
+.primary-button{color:#fff;background:linear-gradient(145deg,var(--wine-dark),var(--wine))}
+.secondary-button{color:var(--ink);background:#eee3d8}
+.primary-button:disabled,.secondary-button:disabled{cursor:not-allowed;opacity:.55}
+@media(max-width:650px){
+  .definitions-shell{width:min(calc(100% - 18px),1100px);padding-top:.75rem}
+  .definitions-section{padding:1rem}
+  .definitions-grid{grid-template-columns:1fr}
+  .system-info-dialog form{padding:18px 14px}
+  .system-fields{grid-template-columns:1fr}
+  .full-field{grid-column:auto}
+  .logo-field{grid-template-columns:88px minmax(0,1fr);gap:12px;padding:11px}
+  .logo-field img{width:88px;height:88px}
+  .dialog-actions{display:grid;grid-template-columns:1fr 1fr}
+}
+@media(max-width:380px){
+  .logo-field{grid-template-columns:74px minmax(0,1fr)}
+  .logo-field img{width:74px;height:74px}
+  .logo-select{padding:0 8px;font-size:.59rem!important}
+}
