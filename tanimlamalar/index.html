@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=497">
+  <link rel="stylesheet" href="style.css?v=498">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -41,6 +41,11 @@
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
           <span class="card-icon"><i class="fa-solid fa-building"></i></span>
           <span class="card-copy"><strong>Sistem Bilgileri</strong><small>İşletme adı, logo, adres, telefon ve Instagram bilgilerini düzenle</small></span>
+        </button>
+        <button id="receiptSettingsCard" class="center-card definition-card" type="button" disabled>
+          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
+          <span class="card-icon"><i class="fa-solid fa-receipt"></i></span>
+          <span class="card-copy"><strong>Adisyon Fişi Ayarları</strong><small>Hesap fişindeki logo, işletme bilgileri, saatler ve mesajları düzenle</small></span>
         </button>
       </div>
     </section>
@@ -71,8 +76,57 @@
     </form>
   </dialog>
 
+  <dialog id="receiptSettingsDialog" class="settings-dialog receipt-settings-dialog">
+    <form id="receiptSettingsForm">
+      <button id="closeReceiptSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div class="dialog-heading">
+        <div class="dialog-icon"><i class="fa-solid fa-receipt"></i></div>
+        <div><p class="dialog-kicker">Tanımlamalar</p><h2>Adisyon Fişi Ayarları</h2></div>
+      </div>
+
+      <div class="receipt-settings-layout">
+        <div class="receipt-options">
+          <fieldset class="setting-group">
+            <legend>Logo</legend>
+            <label class="setting-toggle"><span><b>Logoyu Göster</b><small>Sistem Bilgileri bölümündeki logo kullanılır.</small></span><input id="receiptShowLogo" type="checkbox"><i aria-hidden="true"></i></label>
+          </fieldset>
+
+          <fieldset class="setting-group">
+            <legend>İşletme Bilgileri</legend>
+            <label class="setting-toggle"><span>İşletme adını göster</span><input id="receiptShowBusinessName" type="checkbox"><i aria-hidden="true"></i></label>
+            <label class="setting-toggle"><span>Adresi göster</span><input id="receiptShowAddress" type="checkbox"><i aria-hidden="true"></i></label>
+            <label class="setting-toggle"><span>Telefonu göster</span><input id="receiptShowPhone" type="checkbox"><i aria-hidden="true"></i></label>
+            <label class="setting-toggle"><span>Instagram hesabını göster</span><input id="receiptShowInstagram" type="checkbox"><i aria-hidden="true"></i></label>
+          </fieldset>
+
+          <fieldset class="setting-group">
+            <legend>Fiş Bilgileri</legend>
+            <label class="setting-toggle"><span>Tarihi göster</span><input id="receiptShowDate" type="checkbox"><i aria-hidden="true"></i></label>
+            <label class="setting-toggle"><span>Fiş saatini göster</span><input id="receiptShowTime" type="checkbox"><i aria-hidden="true"></i></label>
+            <label class="setting-toggle"><span>Ürün eklenme saatlerini göster</span><input id="receiptShowItemTimes" type="checkbox"><i aria-hidden="true"></i></label>
+          </fieldset>
+
+          <fieldset class="setting-group receipt-message-fields">
+            <legend>Fiş Metinleri</legend>
+            <label>Üst Mesaj<textarea id="receiptTopMessage" maxlength="160" rows="2" placeholder="Örnek: Bizi tercih ettiğiniz için teşekkür ederiz."></textarea></label>
+            <label>Alt Mesaj<textarea id="receiptBottomMessage" maxlength="160" rows="2"></textarea></label>
+            <small>“Mali belge yerine geçmez.” ibaresi fişte her zaman korunur.</small>
+          </fieldset>
+        </div>
+
+        <section class="receipt-settings-preview" aria-labelledby="receiptPreviewHeading">
+          <div class="preview-heading"><div><p>Canlı görünüm</p><h3 id="receiptPreviewHeading">Fiş Önizleme</h3></div><span>80 mm</span></div>
+          <div class="settings-receipt-scroll"><article id="settingsReceiptPreview" class="settings-receipt-paper"></article></div>
+        </section>
+      </div>
+
+      <p id="receiptFormMessage" class="form-message" role="alert"></p>
+      <div class="dialog-actions"><button id="cancelReceiptSettings" class="secondary-button" type="button">Vazgeç</button><button id="saveReceiptSettings" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
+    </form>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=496"></script>
+  <script type="module" src="script.js?v=498"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>
