@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=502">
+  <link rel="stylesheet" href="style.css?v=511">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -50,6 +50,11 @@
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
           <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
           <span class="card-copy"><strong>Taze Dem Ayarları</strong><small>Demlik sayısını, demlenme süresini ve tazelik süresini düzenle</small></span>
+        </button>
+        <button id="applicationSoundsCard" class="center-card definition-card" type="button" disabled>
+          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
+          <span class="card-icon"><i class="fa-solid fa-volume-high"></i></span>
+          <span class="card-copy"><strong>Uygulama Sesleri</strong><small>Ses seçimi, ses testi ve sessize alma ayarlarını düzenle</small></span>
         </button>
       </div>
     </section>
@@ -150,8 +155,36 @@
     </form>
   </dialog>
 
+  <dialog id="applicationSoundsDialog" class="settings-dialog application-sounds-dialog">
+    <form id="applicationSoundsForm">
+      <button id="closeApplicationSounds" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-volume-high"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Uygulama Sesleri</h2></div></div>
+      <p class="dialog-copy">Ses seçimleri bu cihazda geçerlidir ve anında kaydedilir. Mevcut seçilmiş sesler korunur.</p>
+      <div class="sound-settings">
+<div class="sound-setting" data-sound-setting="tea-ready">
+            <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Demlik hazır sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+          </div>
+<div class="sound-setting" data-sound-setting="tea-expired">
+            <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Dem eskidi / süre doldu sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+          </div>
+<div class="sound-setting" data-sound-setting="merchant-order">
+          <div class="sound-setting-copy"><i class="fa-solid fa-bell"></i><span><strong>Esnaf çay siparişi sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+          <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+        </div>
+<div class="sound-setting" data-sound-setting="in-app-notification">
+          <div class="sound-setting-copy"><i class="fa-solid fa-bell"></i><span><strong>Uygulama içi bildirim sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
+          <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+        </div>
+      </div>
+      <p class="dialog-copy">Uygulama içi bildirim sesi; sipariş listesi, kritik stok, tükenen ürün, aylık stok sayımı, ödeme günü ve geciken ödeme hatırlatmalarında kullanılır.</p>
+      <div class="dialog-actions"><button id="doneApplicationSounds" class="primary-button" type="button">Tamam</button></div>
+    </form>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=502"></script>
+  <script type="module" src="script.js?v=511"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

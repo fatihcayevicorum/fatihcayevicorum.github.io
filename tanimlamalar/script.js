@@ -1,3 +1,4 @@
+import{getNotificationSound,isNotificationSoundMuted,playNotificationSound,resetNotificationSound,saveNotificationSound,setNotificationSoundMuted}from"../assets/js/notification-sounds.js?v=511";
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{doc,getFirestore,onSnapshot,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -14,6 +15,7 @@ let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSavin
 onAuthStateChanged(auth,user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
   if(!isOwner(user)){location.replace("../yonetim-merkezi/");return}
+  $("applicationSoundsCard").disabled=false;
   onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>console.error(error));
   onSnapshot(teaStateRef,snapshot=>{teaState=snapshot.data()||{};teaLoaded=true;renderPageState()},error=>console.error(error));
 });
@@ -135,3 +137,20 @@ function setFormBusy(value){$("saveSystemInfo").disabled=value;$("cancelSystemIn
 function clearPreviewObjectUrl(){if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl=""}}
 function toast(value){clearTimeout(toastTimer);$("toast").textContent=value;$("toast").classList.add("show");toastTimer=setTimeout(()=>$('toast').classList.remove("show"),3000)}
 function tick(){const d=new Date;$("currentTime").textContent=d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});$("currentDate").textContent=d.toLocaleDateString("tr-TR")}tick();setInterval(tick,1000);
+
+$("applicationSoundsCard").onclick=()=>{if(!auth.currentUser||!isOwner(auth.currentUser))return;$("applicationSoundsDialog").showModal()};
+$("closeApplicationSounds").onclick=()=>$("applicationSoundsDialog").close();
+$("doneApplicationSounds").onclick=()=>$("applicationSoundsDialog").close();
+$("applicationSoundsForm").onsubmit=event=>event.preventDefault();
+setupSoundSettings();
+function setupSoundSettings(){
+  document.querySelectorAll("[data-sound-setting]").forEach(card=>{
+    const type=card.dataset.soundSetting,file=card.querySelector("[data-sound-file]"),test=card.querySelector("[data-sound-test]"),mute=card.querySelector("[data-sound-mute]"),reset=card.querySelector("[data-sound-reset]");
+    const render=async()=>{const saved=await getNotificationSound(type).catch(()=>null),muted=isNotificationSoundMuted(type),status=card.querySelector("[data-sound-status]");status.textContent=muted?"Sessiz":saved?.name?`Özel ses: ${saved.name}`:"Varsayılan ses";card.classList.toggle("is-muted",muted);mute.innerHTML=muted?'<i class="fa-solid fa-volume-high"></i> Sesi Aç':'<i class="fa-solid fa-volume-xmark"></i> Sessize Al'};
+    file.onchange=async()=>{const selected=file.files?.[0];if(!selected)return;try{await saveNotificationSound(type,selected);toast("Uygulama içi bildirim sesi kaydedildi.");await render();await playNotificationSound(type,{force:true})}catch(error){toast(error.message==="file-too-large"?"Ses dosyası en fazla 5 MB olabilir.":"Lütfen geçerli bir ses dosyası seçin.")}finally{file.value=""}};
+    test.onclick=()=>playNotificationSound(type,{force:true}).then(played=>{if(!played)toast("Ses çalınamadı. Tablet sesini kontrol edin.")});
+    mute.onclick=async()=>{setNotificationSoundMuted(type,!isNotificationSoundMuted(type));await render();toast(isNotificationSoundMuted(type)?"Bu bildirim sesi sessize alındı.":"Bu bildirim sesi açıldı.")};
+    reset.onclick=async()=>{await resetNotificationSound(type);await render();toast("Varsayılan bildirim sesine dönüldü.")};
+    render()
+  })
+}
