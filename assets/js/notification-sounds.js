@@ -1,5 +1,5 @@
 const DATABASE_NAME="fatihNotificationSounds",STORE_NAME="sounds",DATABASE_VERSION=1;
-export const SOUND_TYPES={merchantOrder:"merchant-order",teaReady:"tea-ready",teaExpired:"tea-expired"};
+export const SOUND_TYPES={merchantOrder:"merchant-order",teaReady:"tea-ready",teaExpired:"tea-expired",inAppNotification:"in-app-notification"};
 const MUTE_PREFIX="fatihNotificationSoundMuted:";
 
 function database(){
