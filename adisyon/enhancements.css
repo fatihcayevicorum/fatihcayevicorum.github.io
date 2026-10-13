@@ -1178,6 +1178,7 @@
 @media (min-width: 761px) {
   .internal-products .product-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-auto-rows: max-content !important;
     gap: 6px !important;
     align-content: start;
     overflow-y: auto;
@@ -1190,6 +1191,7 @@
     min-width: 0;
     min-height: 0 !important;
     aspect-ratio: 1 / 1;
+    align-self: start;
     display: flex;
     align-items: center;
     justify-content: flex-start;
