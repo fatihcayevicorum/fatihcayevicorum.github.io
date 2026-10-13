@@ -244,18 +244,18 @@ async function sendCustomerPush(message,preference){
     const response=await getMessaging().sendEachForMulticast({
       tokens,data:{title:message.title||"Fatih Çay Evi",body:String(message.body||""),type:message.type,tag:message.tag,link:message.link||SITE_URL},
       webpush:{
-        headers:{Urgency:"high"},
-        notification:{
-          title:message.title||"Fatih Çay Evi",body:String(message.body||""),
-          icon:`${SITE_URL}/assets/icons/icon-192.png`,badge:`${SITE_URL}/assets/icons/notification-badge-96.png`,
-          tag:message.tag||message.type||"fatih-customer",renotify:true
-        },
+        headers:{Urgency:"high",TTL:"180"},
         fcmOptions:{link:message.link||SITE_URL}
       }
     });
     result.successCount+=response.successCount;result.failureCount+=response.failureCount;
     const invalid=[];response.responses.forEach((item,index)=>{const code=item.error?.code||"";if(!item.success&&(code.includes("registration-token-not-registered")||code.includes("invalid-registration-token")))invalid.push(part[index][1].ref.delete())});
     await Promise.allSettled(invalid)
+  }
+  if(result.successCount<1){
+    const error=new Error(result.deviceCount?"Bildirim hiçbir müşteri cihazına teslim edilemedi.":"Taze Dem bildirimi açık müşteri cihazı bulunamadı.");
+    error.deliveryResult=result;
+    throw error
   }
   return result
 }
@@ -343,7 +343,7 @@ async function notifyCustomerTeaReady(brew,position,now=Date.now(),settings={}){
   try{
     const result=await sendCustomerPush({title:"Taze Dem Hazır",body:`Demlik ${Math.max(1,position)} servise hazır. Taze çayınızı bekletmeyin.`,type:"customer-tea-ready",tag:`customer-tea-ready-${brew.id}`,link:`${SITE_URL}/#taze-dem`},"tea");
     await eventRef.set({status:"sent",leaseUntilMs:0,...result,sentAtMs:Date.now(),sentAt:FieldValue.serverTimestamp()},{merge:true})
-  }catch(error){await eventRef.set({status:"error",leaseUntilMs:0,error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});throw error}
+  }catch(error){await eventRef.set({status:"error",leaseUntilMs:0,...(error.deliveryResult||{}),error:String(error.message||error),updatedAtMs:Date.now()},{merge:true});throw error}
 }
 
 async function notifyMerchantTeaReady(brew,position,now=Date.now(),settings={}){
