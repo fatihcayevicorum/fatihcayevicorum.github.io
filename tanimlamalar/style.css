@@ -91,7 +91,7 @@ button{-webkit-tap-highlight-color:transparent}
 @media(max-width:650px){
   .definitions-shell{width:min(calc(100% - 18px),1100px);padding-top:.75rem}
   .definitions-section{padding:1rem}
-  .definitions-grid{grid-template-columns:1fr}
+  .definitions-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .system-info-dialog form{padding:18px 14px}
   .system-fields{grid-template-columns:1fr}
   .full-field{grid-column:auto}
