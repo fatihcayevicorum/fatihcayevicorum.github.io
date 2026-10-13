@@ -7,6 +7,7 @@ const WRITE_EVENT = "fatih-cay-evi-offline-write";
 const WRITE_DONE_EVENT = `${WRITE_EVENT}-settled`;
 const WRITE_FAILED_EVENT = `${WRITE_EVENT}-failed`;
 const PENDING_KEY = "fatih-cay-evi-pending-writes";
+const MOTION_CYCLE_MS = 4000;
 
 const state = {
     serverReady: false,
@@ -18,6 +19,10 @@ const state = {
 
 let statusButton;
 let unsubscribeConnection;
+let motionStartedAt = 0;
+let motionActive = false;
+let visualClassName = "";
+let settleVisualTimer = 0;
 
 function installStyles() {
     const style = document.createElement("style");
@@ -28,9 +33,9 @@ function installStyles() {
         .app-header .live-time strong{font-size:1.4rem!important;line-height:1!important}
         .app-header .live-time span{margin-top:.22rem!important;font-size:.62rem!important;line-height:1!important}
         .global-connection-status{display:inline-flex;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;font:700 12px/1 Poppins,sans-serif;box-shadow:none;cursor:default;order:2}
-        @keyframes connection-status-rotate{to{transform:rotate(360deg)}}
+        @keyframes connection-status-rotate-pause{0%{transform:rotate(0)}75%,100%{transform:rotate(360deg)}}
         @keyframes connection-status-blink{0%,100%{opacity:1}50%{opacity:.28}}
-        .global-connection-status span{display:none}.global-connection-status i{font-size:15px;transform-origin:center}.global-connection-status.is-ready{color:#75e3a3}.global-connection-status.is-checking{color:#75e3a3}.global-connection-status.is-syncing{color:#ffb347}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ff827a;background:transparent}.global-connection-status.is-checking i{animation:connection-status-rotate 3.2s linear infinite}.global-connection-status.is-syncing i{animation:connection-status-rotate 2.8s linear infinite}.global-connection-status.is-offline i,.global-connection-status.is-error i{animation:connection-status-rotate 3.4s linear infinite,connection-status-blink 1.5s ease-in-out infinite}
+        .global-connection-status span{display:none}.global-connection-status i{font-size:15px;transform-origin:center}.global-connection-status.is-ready{color:#75e3a3}.global-connection-status.is-checking{color:#75e3a3}.global-connection-status.is-syncing{color:#ffb347}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ff827a;background:transparent}.global-connection-status.is-checking i,.global-connection-status.is-syncing i{animation:connection-status-rotate-pause 4s linear infinite}.global-connection-status.is-offline i,.global-connection-status.is-error i{animation:connection-status-rotate-pause 4s linear infinite,connection-status-blink 1.5s ease-in-out infinite}
         .app-header .panel-menu,.app-header .management-center-link,.app-header a[href*="yonetim-merkezi"]{order:3}
         .app-header .logout-button{order:4}
         .app-header .merchant-panel-link{width:2.55rem!important;min-width:2.55rem!important;height:2.55rem!important;padding:0!important}
@@ -47,7 +52,7 @@ function connectedIcon() {
     return "fa-wifi";
 }
 
-function render() {
+function render(forceReady = false) {
     if (!statusButton) return;
     const offline = navigator.onLine === false;
     let className = "is-ready", icon = connectedIcon(), text = "Bağlı", title = "İnternet ve sistem bağlantısı hazır";
@@ -72,10 +77,29 @@ function render() {
         text = state.warming ? "Yükleniyor" : "Bağlanıyor";
         title = state.warming ? "Sistem verileri hazırlanıyor" : "Sistem bağlantısı kontrol ediliyor";
     }
+    const moving = className !== "is-ready";
+    if (moving) {
+        window.clearTimeout(settleVisualTimer);
+        settleVisualTimer = 0;
+        if (!motionActive) motionStartedAt = Date.now();
+        motionActive = true;
+    } else if (motionActive && !forceReady) {
+        if (!settleVisualTimer) {
+            const elapsed = Math.max(0, Date.now() - motionStartedAt) % MOTION_CYCLE_MS;
+            const remaining = Math.max(40, MOTION_CYCLE_MS - elapsed);
+            settleVisualTimer = window.setTimeout(() => { settleVisualTimer = 0;render(true); }, remaining);
+        }
+        return;
+    } else {
+        window.clearTimeout(settleVisualTimer);
+        settleVisualTimer = 0;
+        motionActive = false;
+    }
     statusButton.className = `global-connection-status ${className}`.trim();
     statusButton.innerHTML = `<i class="fa-solid ${icon}" aria-hidden="true"></i><span>${text}</span>`;
     statusButton.title = title;
     statusButton.setAttribute("aria-label", text);
+    visualClassName = className;
 }
 
 function createStatus() {
