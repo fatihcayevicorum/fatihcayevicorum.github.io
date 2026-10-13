@@ -140,6 +140,7 @@ const SITE_URL="https://fatihcayevi.com.tr";
 const TEA_BREWING_MS=20*60*1000;
 const TEA_FRESHNESS_MS=60*60*1000;
 const TEA_NOTIFICATION_WINDOW_MS=3*60*1000;
+const CUSTOMER_TEA_NOTIFICATION_WINDOW_MS=10*60*1000;
 
 async function activeAdminTeaDevices(){
   const snap=await db.collection(ADMIN_TEA_DEVICE_COLLECTION).where("active","==",true).get();
@@ -240,17 +241,25 @@ async function sendCustomerPush(message,preference){
   documents.forEach(item=>unique.set(item.data().token,item));
   const entries=[...unique.entries()],result={deviceCount:entries.length,successCount:0,failureCount:0};
   for(let offset=0;offset<entries.length;offset+=500){
-    const part=entries.slice(offset,offset+500),tokens=part.map(([token])=>token);
-    const response=await getMessaging().sendEachForMulticast({
-      tokens,data:{title:message.title||"Fatih Çay Evi",body:String(message.body||""),type:message.type,tag:message.tag,link:message.link||SITE_URL},
-      webpush:{
-        headers:{Urgency:"high",TTL:"180"},
-        fcmOptions:{link:message.link||SITE_URL}
-      }
-    });
-    result.successCount+=response.successCount;result.failureCount+=response.failureCount;
-    const invalid=[];response.responses.forEach((item,index)=>{const code=item.error?.code||"";if(!item.success&&(code.includes("registration-token-not-registered")||code.includes("invalid-registration-token")))invalid.push(part[index][1].ref.delete())});
-    await Promise.allSettled(invalid)
+    let pending=entries.slice(offset,offset+500);
+    for(let attempt=0;attempt<3&&pending.length;attempt++){
+      const tokens=pending.map(([token])=>token),response=await getMessaging().sendEachForMulticast({
+        tokens,data:{title:message.title||"Fatih Çay Evi",body:String(message.body||""),type:message.type,tag:message.tag,link:message.link||SITE_URL},
+        webpush:{
+          headers:{Urgency:"high",TTL:"600"},
+          fcmOptions:{link:message.link||SITE_URL}
+        }
+      }),retry=[],invalid=[];
+      response.responses.forEach((item,index)=>{
+        const entry=pending[index],code=item.error?.code||"";
+        if(item.success){result.successCount++;return}
+        if(code.includes("registration-token-not-registered")||code.includes("invalid-registration-token")){result.failureCount++;invalid.push(entry[1].ref.delete());return}
+        if(attempt<2)retry.push(entry);else result.failureCount++
+      });
+      await Promise.allSettled(invalid);
+      pending=retry;
+      if(pending.length&&attempt<2)await new Promise(resolve=>setTimeout(resolve,350*(attempt+1)))
+    }
   }
   if(result.successCount<1){
     const error=new Error(result.deviceCount?"Bildirim hiçbir müşteri cihazına teslim edilemedi.":"Taze Dem bildirimi açık müşteri cihazı bulunamadı.");
@@ -338,7 +347,7 @@ async function notifyAdminTeaReady(brew,position,now=Date.now(),settings={}){
 async function notifyCustomerTeaReady(brew,position,now=Date.now(),settings={}){
   if(settings.serviceOpen===false||settings.customerNotificationsEnabled===false)return;
   const readyAt=teaReadyAt(brew,settings.brewingMs);
-  if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt||now-readyAt>TEA_NOTIFICATION_WINDOW_MS)return;
+  if(!brew?.id||!Number.isFinite(readyAt)||now<readyAt||now-readyAt>CUSTOMER_TEA_NOTIFICATION_WINDOW_MS)return;
   const eventRef=await claimAdminTeaEvent(`customer-ready-${brew.id}`,"customer-tea-ready",brew.id);if(!eventRef)return;
   try{
     const result=await sendCustomerPush({title:"Taze Dem Hazır",body:`Demlik ${Math.max(1,position)} servise hazır. Taze çayınızı bekletmeyin.`,type:"customer-tea-ready",tag:`customer-tea-ready-${brew.id}`,link:`${SITE_URL}/#taze-dem`},"tea");
