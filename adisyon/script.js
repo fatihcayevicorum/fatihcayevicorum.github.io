@@ -214,7 +214,7 @@ async function checkoutOffline(order,{paymentType,entered,includeOld}){
   const remainingBefore=orderTotal(order),oldDebtBefore=account?Math.max(0,Number(account.balance)||0):0,totalDue=remainingBefore+oldDebtBefore;
   const oldPayment=Math.min(entered,oldDebtBefore),currentPayment=Math.min(Math.max(0,entered-oldPayment),remainingBefore),totalApplied=oldPayment+currentPayment,tipAmount=paymentType==='cash'?Math.max(0,entered-totalDue):0;
   if(totalApplied<=0)throw new Error('no-payment');
-  const remainingAfter=Math.max(0,remainingBefore-currentPayment),fullyPaid=remainingAfter<.001&&currentPayment>0,operationId=newId(),paidAtMs=Date.now(),uid=auth.currentUser.uid;
+  const remainingAfter=Math.max(0,remainingBefore-currentPayment),fullyPaid=remainingAfter<.001&&currentPayment>0,closeAfterOldPayment=oldPayment>0&&currentPayment<=0&&!(order.items||[]).length,operationId=newId(),paidAtMs=Date.now(),uid=auth.currentUser.uid;
   const paymentAccount=paymentType==='transfer'?'bank':paymentType==='card'?'card':'cash',displayTitle=order.organizationMode?(order.customTitle||order.title):currentAccountNameFor(order)||order.customTitle||order.title;
   const batch=writeBatch(db),orderRef=doc(ordersCol,order.id),saleRef=doc(salesCol,`offline-sale-${operationId}`),deductions=fullyPaid?stockRequirements(order.items,catalog,stocks):[];
   if(fullyPaid){
@@ -240,15 +240,16 @@ async function checkoutOffline(order,{paymentType,entered,includeOld}){
       batch.delete(orderRef)
     }
   }
+  if(closeAfterOldPayment)batch.delete(orderRef);
   const cashAmount=paymentType==='cash'?oldPayment+currentPayment+tipAmount:oldPayment+currentPayment;
   bumpCashMovement(batch,{scope:'adisyon',account:paymentAccount,amount:cashAmount,date:order.businessDate||businessDate,start:businessDayStartedAtMs});
   batch.set(doc(offlineOperationsCol,operationId),{operationType:'checkout',deviceId:offlineDeviceId,orderId:order.id,slotKey:order.slotKey,businessDate:order.businessDate||businessDate,paymentType,amount:totalApplied,createdAtMs:paidAtMs,createdAt:serverTimestamp(),createdBy:uid});
   const commit=batch.commit();acceptLocalWrite(commit);
   if(account&&oldPayment>0)account.balance=Math.max(0,oldDebtBefore-oldPayment);
-  if(fullyPaid)orders=orders.filter(item=>item.id!==order.id);else if(currentPayment>0)orders=orders.map(item=>item.id===order.id?{...item,payments:[...(item.payments||[]),{id:`offline-payment-${operationId}`,type:paymentType,amount:currentPayment,cashAmount:paymentType==='cash'?currentPayment+tipAmount:0,transferAmount:paymentType==='transfer'?currentPayment:0,cardAmount:paymentType==='card'?currentPayment:0,tipAmount,received:entered,paidAtMs,offlineOperationId:operationId}]}:item);
+  if(fullyPaid||closeAfterOldPayment)orders=orders.filter(item=>item.id!==order.id);else if(currentPayment>0)orders=orders.map(item=>item.id===order.id?{...item,payments:[...(item.payments||[]),{id:`offline-payment-${operationId}`,type:paymentType,amount:currentPayment,cashAmount:paymentType==='cash'?currentPayment+tipAmount:0,transferAmount:paymentType==='transfer'?currentPayment:0,cardAmount:paymentType==='card'?currentPayment:0,tipAmount,received:entered,paidAtMs,offlineOperationId:operationId}]}:item);
   el.checkoutDialog.close();includePreviousDebtKeys.delete(selectedKey);
-  if(fullyPaid)showTables();else renderOrder();
-  show(fullyPaid?'Hesap cihazda kapatıldı; bağlantı gelince güvenli şekilde aktarılacak.':`${money(totalApplied)} ödeme cihazda kaydedildi; bağlantı gelince aktarılacak.`)
+  if(fullyPaid||closeAfterOldPayment)showTables();else renderOrder();
+  show(closeAfterOldPayment?`${money(oldPayment)} önceki cari borcundan tahsil edildi; masa cihazda kapatıldı.`:fullyPaid?'Hesap cihazda kapatıldı; bağlantı gelince güvenli şekilde aktarılacak.':`${money(totalApplied)} ödeme cihazda kaydedildi; bağlantı gelince aktarılacak.`)
 }
 async function checkout(e){
   e.preventDefault();
@@ -263,7 +264,7 @@ async function checkout(e){
   if(isLocalWorkingMode()){busy=true;try{await checkoutOffline(o,{paymentType,entered,includeOld})}catch(err){console.error(err);show(err.message==='account-missing'?'Bağlı cari hesap yerel kayıtta bulunamadı.':String(err.message||'').startsWith('stock-insufficient:')?`${String(err.message).split(':').slice(1).join(':')} stoku yetersiz. Stok miktarını kontrol edin.`:'Ödeme cihazda kaydedilemedi.')}finally{busy=false}return}
   busy=true;
   try{
-    let fullyPaid=false,totalApplied=0,oldPayment=0,currentPayment=0,tipAmount=0;
+    let fullyPaid=false,closeAfterOldPayment=false,totalApplied=0,oldPayment=0,currentPayment=0,tipAmount=0;
     await runTransaction(db,async tx=>{
       const orderRef=doc(ordersCol,o.id),freshSnap=await tx.get(orderRef);
       if(!freshSnap.exists())throw new Error('missing');
@@ -289,7 +290,7 @@ async function checkout(e){
         tx.set(collectionSaleRef,{recordType:'current-account-payment',currentAccountMovementId:movementRef.id,currentAccountId:fresh.currentAccountId,orderId:fresh.id,slotKey:fresh.slotKey,paymentScope:'previous-current-debt',title:`Cari Tahsilatı • ${currentAccountNameFor(fresh)||accountSnap.data().name||''}`,amount:oldPayment,paymentAmount:oldPayment,cashAmount:paymentType==='cash'?oldPayment:0,transferAmount:paymentType==='transfer'?oldPayment:0,cardAmount:paymentType==='card'?oldPayment:0,paymentType,businessDate:fresh.businessDate||businessDate,createdAtMs:paidAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid,...markInstantCashMovement('adisyon',fresh.businessDate||businessDate)});
         bumpCashMovement(tx,{scope:'adisyon',account:paymentAccount,amount:oldPayment,date:fresh.businessDate||businessDate});
       }
-      if(currentPayment<=0)return;
+      if(currentPayment<=0){if(oldPayment>0&&!(fresh.items||[]).length){tx.delete(orderRef);closeAfterOldPayment=true}return}
       const payment={id:newId(),type:paymentType,amount:currentPayment,cashAmount:paymentType==='cash'?currentPayment+tipAmount:0,transferAmount:paymentType==='transfer'?currentPayment:0,cardAmount:paymentType==='card'?currentPayment:0,tipAmount,received:entered,paidAtMs};
       if(!fullyPaid){
         tx.update(orderRef,{payments:[...(fresh.payments||[]),payment],updatedAt:serverTimestamp()});
@@ -308,7 +309,7 @@ async function checkout(e){
       tx.delete(orderRef);
     });
     el.checkoutDialog.close();
-    if(fullyPaid){includePreviousDebtKeys.delete(selectedKey);showTables();show(tipAmount?`Hesap kapandı. ${money(tipAmount)} bahşiş kaydedildi.`:'Hesap tamamen ödendi ve Adisyon kapandı.')}
+    if(fullyPaid||closeAfterOldPayment){includePreviousDebtKeys.delete(selectedKey);showTables();show(closeAfterOldPayment?`${money(oldPayment)} önceki cari borcundan tahsil edildi ve masa kapatıldı.`:tipAmount?`Hesap kapandı. ${money(tipAmount)} bahşiş kaydedildi.`:'Hesap tamamen ödendi ve Adisyon kapandı.')}
     else{if(oldPayment>0&&currentPayment<=0)includePreviousDebtKeys.delete(selectedKey);renderOrder();show(currentPayment>0?`${money(totalApplied)} ödeme alındı. Kalan hesap masada duruyor.`:`${money(oldPayment)} önceki cari borcundan tahsil edildi.`)}
   }catch(err){console.error(err);show(err.message==='account-missing'?'Bağlı cari hesap bulunamadı.':String(err.message||'').startsWith('stock-insufficient:')?`${String(err.message).split(':').slice(1).join(':')} stoku yetersiz. Stok miktarını kontrol edin.`:'Ödeme kaydedilemedi. Bağlantıyı kontrol edin.')}
   finally{busy=false}
