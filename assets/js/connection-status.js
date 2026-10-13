@@ -11,6 +11,7 @@ const PENDING_KEY = "fatih-cay-evi-pending-writes";
 const state = {
     serverReady: false,
     checking: true,
+    warming: true,
     syncing: sessionStorage.getItem(PENDING_KEY) === "1",
     failed: false
 };
@@ -27,7 +28,7 @@ function installStyles() {
         .app-header .live-time strong{font-size:1.4rem!important;line-height:1!important}
         .app-header .live-time span{margin-top:.22rem!important;font-size:.62rem!important;line-height:1!important}
         .global-connection-status{display:inline-flex;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;font:700 12px/1 Poppins,sans-serif;box-shadow:none;cursor:default;order:2}
-        .global-connection-status span{display:none}.global-connection-status i{font-size:15px}.global-connection-status.is-checking{color:#f2ddd0}.global-connection-status.is-syncing{color:#ffd36a}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ffb8b2;background:transparent}
+        .global-connection-status span{display:none}.global-connection-status i{font-size:15px;transform-origin:center}.global-connection-status.is-checking{color:#f2ddd0}.global-connection-status.is-syncing{color:#ffd36a}.global-connection-status.is-checking i,.global-connection-status.is-syncing i{animation-duration:1.15s}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ffb8b2;background:transparent}
         .app-header .panel-menu,.app-header .management-center-link,.app-header a[href*="yonetim-merkezi"]{order:3}
         .app-header .logout-button{order:4}
         .app-header .merchant-panel-link{width:2.55rem!important;min-width:2.55rem!important;height:2.55rem!important;padding:0!important}
@@ -64,7 +65,7 @@ function render() {
         title = state.syncing ? "Kayıt cihazda bekliyor; internet gelince aktarılacak" : "İnternet bağlantısı yok; kayıtlı veriler kullanılıyor";
     } else if (state.syncing) {
         className = "is-syncing";
-        icon = "fa-rotate fa-spin";
+        icon = `${connectedIcon()} fa-spin`;
         text = "Aktarılıyor";
         title = "Bekleyen işlemler sisteme aktarılıyor";
     } else if (state.failed) {
@@ -72,11 +73,11 @@ function render() {
         icon = "fa-triangle-exclamation";
         text = "Bağlantı sorunu";
         title = "İnternet açık ancak sistem bağlantısı henüz kurulamadı";
-    } else if (state.checking || !state.serverReady) {
+    } else if (state.checking || state.warming || !state.serverReady) {
         className = "is-checking";
-        icon = "fa-circle-notch fa-spin";
-        text = "Bağlanıyor";
-        title = "Sistem bağlantısı kontrol ediliyor";
+        icon = `${connectedIcon()} fa-spin`;
+        text = state.warming ? "Yükleniyor" : "Bağlanıyor";
+        title = state.warming ? "Sistem verileri hazırlanıyor" : "Sistem bağlantısı kontrol ediliyor";
     }
     statusButton.className = `global-connection-status ${className}`.trim();
     statusButton.innerHTML = `<i class="fa-solid ${icon}" aria-hidden="true"></i><span>${text}</span>`;
@@ -149,6 +150,25 @@ function watchConnectionDocument() {
     });
 }
 
+function refreshConnectionCheck() {
+    if (!getAuth(firebaseApp).currentUser || navigator.onLine === false) return;
+    state.checking = true;
+    state.failed = false;
+    render();
+    watchConnectionDocument();
+}
+
+async function warmWorkspace() {
+    state.warming = true;
+    render();
+    await Promise.allSettled([
+        warmOfflineWorkspace(firestoreDb),
+        new Promise(resolve => window.setTimeout(resolve, 850))
+    ]);
+    state.warming = false;
+    render();
+}
+
 function markWritePending() {
     state.syncing = true;
     sessionStorage.setItem(PENDING_KEY, "1");
@@ -161,10 +181,7 @@ function markWriteSettled() {
 }
 
 window.addEventListener("online", () => {
-    state.checking = true;
-    state.failed = false;
-    render();
-    watchConnectionDocument();
+    refreshConnectionCheck();
     settlePendingWrites();
 });
 window.addEventListener("offline", () => { state.serverReady = false; render(); });
@@ -172,12 +189,14 @@ window.addEventListener(WRITE_EVENT, markWritePending);
 window.addEventListener(WRITE_DONE_EVENT, markWriteSettled);
 window.addEventListener(WRITE_FAILED_EVENT, () => { state.failed = navigator.onLine !== false; render(); });
 
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshConnectionCheck(); });
+window.addEventListener("pageshow", event => { if (event.persisted) refreshConnectionCheck(); });
 const networkConnection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-networkConnection?.addEventListener?.("change", render);
+networkConnection?.addEventListener?.("change", refreshConnectionCheck);
 
 createStatus();
 onAuthStateChanged(getAuth(firebaseApp), user => {
     if (!user) return;
     watchConnectionDocument();
-    warmOfflineWorkspace(firestoreDb).catch(error => console.warn("Çevrimdışı çalışma alanı hazırlanamadı.", error));
+    warmWorkspace().catch(error => console.warn("Çevrimdışı çalışma alanı hazırlanamadı.", error));
 });
