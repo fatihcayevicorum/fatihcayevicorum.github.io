@@ -14,8 +14,8 @@ let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSavin
 onAuthStateChanged(auth,user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
   if(!isOwner(user)){location.replace("../yonetim-merkezi/");return}
-  onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>{console.error(error);setPageStatus("Bilgiler yüklenemedi","error")});
-  onSnapshot(teaStateRef,snapshot=>{teaState=snapshot.data()||{};teaLoaded=true;renderPageState()},error=>{console.error(error);setPageStatus("Taze Dem ayarları yüklenemedi","error")});
+  onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>console.error(error));
+  onSnapshot(teaStateRef,snapshot=>{teaState=snapshot.data()||{};teaLoaded=true;renderPageState()},error=>console.error(error));
 });
 
 $("systemInfoCard").onclick=openSystemInfo;
@@ -39,7 +39,6 @@ function renderPageState(){
   $("receiptSettingsCard").disabled=!loaded;
   $("teaSettingsCard").disabled=!teaLoaded;
   document.querySelector(".eyebrow").textContent=config.businessName||defaults.businessName;
-  setPageStatus(loaded&&teaLoaded?"Güncel":"Bağlanıyor",loaded&&teaLoaded?"ready":"");
 }
 function openSystemInfo(){
   if(!loaded)return;
@@ -133,7 +132,6 @@ function formatPhone(value=""){let digits=String(value).replace(/\D/g,"");if(dig
 function storageMessage(error){const code=String(error?.code||"");if(code.includes("unauthorized"))return"Logo veya bilgiler kaydedilemedi. Yetkinizi kontrol edin.";if(code.includes("storage"))return"Logo yüklenemedi. İnternet bağlantısını kontrol edin.";return"Bilgiler kaydedilemedi. Girdiğiniz bilgiler ekranda korunuyor."}
 function formError(value){$("formMessage").textContent=value}
 function setFormBusy(value){$("saveSystemInfo").disabled=value;$("cancelSystemInfo").disabled=value;$("closeSystemInfo").disabled=value;$("saveSystemInfo").innerHTML=value?'<i class="fa-solid fa-spinner fa-spin"></i> Kaydediliyor':'<i class="fa-solid fa-floppy-disk"></i> Kaydet'}
-function setPageStatus(value,state=""){const element=$("pageStatus");element.textContent=value;element.className=`page-status${state?` is-${state}`:""}`}
 function clearPreviewObjectUrl(){if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl=""}}
 function toast(value){clearTimeout(toastTimer);$("toast").textContent=value;$("toast").classList.add("show");toastTimer=setTimeout(()=>$('toast').classList.remove("show"),3000)}
 function tick(){const d=new Date;$("currentTime").textContent=d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});$("currentDate").textContent=d.toLocaleDateString("tr-TR")}tick();setInterval(tick,1000);
