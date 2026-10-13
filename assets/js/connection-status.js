@@ -28,7 +28,9 @@ function installStyles() {
         .app-header .live-time strong{font-size:1.4rem!important;line-height:1!important}
         .app-header .live-time span{margin-top:.22rem!important;font-size:.62rem!important;line-height:1!important}
         .global-connection-status{display:inline-flex;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;font:700 12px/1 Poppins,sans-serif;box-shadow:none;cursor:default;order:2}
-        .global-connection-status span{display:none}.global-connection-status i{font-size:15px;transform-origin:center}.global-connection-status.is-checking{color:#f2ddd0}.global-connection-status.is-syncing{color:#ffd36a}.global-connection-status.is-checking i,.global-connection-status.is-syncing i{animation-duration:1.15s}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ffb8b2;background:transparent}
+        @keyframes connection-status-rotate{to{transform:rotate(360deg)}}
+        @keyframes connection-status-blink{0%,100%{opacity:1}50%{opacity:.28}}
+        .global-connection-status span{display:none}.global-connection-status i{font-size:15px;transform-origin:center}.global-connection-status.is-ready{color:#75e3a3}.global-connection-status.is-checking{color:#75e3a3}.global-connection-status.is-syncing{color:#ffb347}.global-connection-status.is-offline,.global-connection-status.is-error{color:#ff827a;background:transparent}.global-connection-status.is-checking i{animation:connection-status-rotate 3.2s linear infinite}.global-connection-status.is-syncing i{animation:connection-status-rotate 2.8s linear infinite}.global-connection-status.is-offline i,.global-connection-status.is-error i{animation:connection-status-rotate 3.4s linear infinite,connection-status-blink 1.5s ease-in-out infinite}
         .app-header .panel-menu,.app-header .management-center-link,.app-header a[href*="yonetim-merkezi"]{order:3}
         .app-header .logout-button{order:4}
         .app-header .merchant-panel-link{width:2.55rem!important;min-width:2.55rem!important;height:2.55rem!important;padding:0!important}
@@ -41,41 +43,32 @@ function installStyles() {
     document.head.appendChild(style);
 }
 
-function connectionKind() {
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    const type = String(connection?.type || "").toLowerCase();
-    if (type === "wifi") return "wifi";
-    if (type === "cellular" || /(^|-)2g|3g|4g|5g/.test(String(connection?.effectiveType || "").toLowerCase())) return "cellular";
-    return "generic";
-}
-
 function connectedIcon() {
-    const kind = connectionKind();
-    return kind === "wifi" ? "fa-wifi" : kind === "cellular" ? "fa-signal" : "fa-cloud";
+    return "fa-wifi";
 }
 
 function render() {
     if (!statusButton) return;
     const offline = navigator.onLine === false;
-    let className = "", icon = connectedIcon(), text = "Bağlı", title = "İnternet ve sistem bağlantısı hazır";
+    let className = "is-ready", icon = connectedIcon(), text = "Bağlı", title = "İnternet ve sistem bağlantısı hazır";
     if (offline) {
         className = "is-offline";
-        icon = "fa-cloud-arrow-up";
+        icon = connectedIcon();
         text = state.syncing ? "Çevrim dışı • işlem bekliyor" : "Çevrim dışı";
         title = state.syncing ? "Kayıt cihazda bekliyor; internet gelince aktarılacak" : "İnternet bağlantısı yok; kayıtlı veriler kullanılıyor";
     } else if (state.syncing) {
         className = "is-syncing";
-        icon = `${connectedIcon()} fa-spin`;
+        icon = connectedIcon();
         text = "Aktarılıyor";
         title = "Bekleyen işlemler sisteme aktarılıyor";
     } else if (state.failed) {
         className = "is-error";
-        icon = "fa-triangle-exclamation";
+        icon = connectedIcon();
         text = "Bağlantı sorunu";
         title = "İnternet açık ancak sistem bağlantısı henüz kurulamadı";
     } else if (state.checking || state.warming || !state.serverReady) {
         className = "is-checking";
-        icon = `${connectedIcon()} fa-spin`;
+        icon = connectedIcon();
         text = state.warming ? "Yükleniyor" : "Bağlanıyor";
         title = state.warming ? "Sistem verileri hazırlanıyor" : "Sistem bağlantısı kontrol ediliyor";
     }
@@ -126,9 +119,13 @@ async function settlePendingWrites() {
     try {
         await waitForPendingWrites(firestoreDb);
         state.syncing = false;
+        state.failed = false;
         sessionStorage.removeItem(PENDING_KEY);
     } catch (error) {
         console.warn("Bekleyen çevrimdışı işlemler henüz aktarılamadı.", error);
+        state.syncing = false;
+        state.failed = navigator.onLine !== false;
+        sessionStorage.removeItem(PENDING_KEY);
     }
     render();
 }
@@ -171,6 +168,7 @@ async function warmWorkspace() {
 
 function markWritePending() {
     state.syncing = true;
+    state.failed = false;
     sessionStorage.setItem(PENDING_KEY, "1");
     render();
 }
@@ -187,7 +185,7 @@ window.addEventListener("online", () => {
 window.addEventListener("offline", () => { state.serverReady = false; render(); });
 window.addEventListener(WRITE_EVENT, markWritePending);
 window.addEventListener(WRITE_DONE_EVENT, markWriteSettled);
-window.addEventListener(WRITE_FAILED_EVENT, () => { state.failed = navigator.onLine !== false; render(); });
+window.addEventListener(WRITE_FAILED_EVENT, () => { state.syncing = false;state.failed = navigator.onLine !== false;sessionStorage.removeItem(PENDING_KEY);render(); });
 
 document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshConnectionCheck(); });
 window.addEventListener("pageshow", event => { if (event.persisted) refreshConnectionCheck(); });
