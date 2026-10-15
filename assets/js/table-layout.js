@@ -17,14 +17,14 @@ export const DEFAULT_REGION={id:'salon',name:'Salon'};
 export const MAX_TABLES=50;
 const copy=value=>JSON.parse(JSON.stringify(value));
 export function normalizeTableLayout(data={}){
-  const regions=(Array.isArray(data.tableRegions)?data.tableRegions:[]).filter((r,i,a)=>r&&typeof r.id==='string'&&r.id&&a.findIndex(x=>x?.id===r.id)===i).map(r=>({id:r.id,name:String(r.name||'Bölge').slice(0,40),emptyColor:regionColor(r.emptyColor).id,tableIcon:REGION_ICONS.some(i=>i.id===r.tableIcon)?r.tableIcon:'chair'}));
+  const regions=(Array.isArray(data.tableRegions)?data.tableRegions:[]).filter((r,i,a)=>r&&typeof r.id==='string'&&r.id&&a.findIndex(x=>x?.id===r.id)===i).map(r=>({id:r.id,name:String(r.name||'Bölge').slice(0,40),emptyColor:regionColor(r.emptyColor).id,tableIcon:REGION_ICONS.some(i=>i.id===r.tableIcon)?r.tableIcon:'chair',nextTableNumber:Math.max(1,Math.floor(Number(r.nextTableNumber)||1))}));
   if(!regions.length)regions.push({...DEFAULT_REGION,emptyColor:'default',tableIcon:'chair'});
   const fallback=regions.find(r=>r.id==='salon')?.id||regions[0].id;
   const legacyCount=Math.min(50,Math.max(1,Math.floor(Number(data.tableCount)||15)));
   const slots=Array.isArray(data.tableSlots)?data.tableSlots:Array.from({length:legacyCount},(_,i)=>({key:`table-${i+1}`}));
-  const tables=slots.filter((t,i,a)=>t&&/^table-[1-9]\d*$/.test(t.key)&&a.findIndex(x=>x?.key===t.key)===i).map(t=>({key:t.key,name:String(t.name||'').slice(0,60),active:t.active!==false,regionId:regions.some(r=>r.id===t.regionId)?t.regionId:fallback}));
+  const tables=slots.filter((t,i,a)=>t&&/^table-[1-9]\d*$/.test(t.key)&&a.findIndex(x=>x?.key===t.key)===i).map(t=>({key:t.key,name:String(t.name||'').slice(0,60),active:t.active!==false,regionNumber:Math.max(0,Math.floor(Number(t.regionNumber)||0)),regionId:regions.some(r=>r.id===t.regionId)?t.regionId:fallback}));
   const highWater=Math.max(0,Math.floor(Number(data.tableNextNumber)||0)-1,Number(data.tableCount)||0,...tables.map(t=>Number(t.key.slice(6))));
-  return{enabled:data.regionSystemEnabled===true,regions,tables,nextNumber:highWater+1};
+  return numberRegionTables({enabled:data.regionSystemEnabled===true,regions,tables,nextNumber:highWater+1});
 }
 export function cloneTableLayout(layout){return copy(layout)}
 export function tableLayoutSignature(layout){return JSON.stringify(layout)}
@@ -52,10 +52,10 @@ export function resizeTableLayout(layout,counts,orders=[]){
   if(total<1||total>MAX_TABLES)throw new Error(`Toplam masa sayısı 1–${MAX_TABLES} arasında olmalı.`);
   // Önce azalt; diğer bölgelere eklenen masalar hiçbir zaman eski kimliği kullanmaz.
   for(const {id,count} of targets){const tables=next.tables.filter(t=>id===null||t.regionId===id),remove=new Set(tables.slice(count).map(t=>t.key));next.tables=next.tables.filter(t=>!remove.has(t.key))}
-  for(const {id,count} of targets){let size=next.tables.filter(t=>id===null||t.regionId===id).length;while(size++<count)next.tables.push({key:`table-${next.nextNumber++}`,name:'',active:true,regionId:id||next.regions.find(r=>r.id==='salon')?.id||next.regions[0].id})}
+  for(const {id,count} of targets){let size=next.tables.filter(t=>id===null||t.regionId===id).length;while(size++<count)appendRegionTable(next,id||next.regions.find(r=>r.id==='salon')?.id||next.regions[0].id)}
   validateTableLayout(next,orders);return next;
 }
-export function tableLayoutPayload(layout){return{regionSystemEnabled:layout.enabled,tableRegions:layout.regions.map(r=>({id:r.id,name:r.name.trim(),emptyColor:regionColor(r.emptyColor).id,tableIcon:REGION_ICONS.some(i=>i.id===r.tableIcon)?r.tableIcon:'chair'})),tableSlots:layout.tables.map(t=>({...t,name:t.name.trim()})),tableNextNumber:layout.nextNumber,tableCount:layout.tables.length}}
+export function tableLayoutPayload(layout){return{regionSystemEnabled:layout.enabled,tableRegions:layout.regions.map(r=>({id:r.id,name:r.name.trim(),emptyColor:regionColor(r.emptyColor).id,tableIcon:REGION_ICONS.some(i=>i.id===r.tableIcon)?r.tableIcon:'chair',nextTableNumber:r.nextTableNumber})),tableSlots:layout.tables.map(t=>({...t,name:t.name.trim()})),tableNextNumber:layout.nextNumber,tableCount:layout.tables.length}}
 // Sadece ayar belgesine yaz; adisyon, ödeme ve geçmiş kayıtlarını değiştirme.
 export async function persistTableLayout({db,ref,current,next,orders,runTransaction,serverTimestamp,extra={}}){
   validateTableLayout(next,orders);
@@ -66,3 +66,16 @@ export async function persistTableLayout({db,ref,current,next,orders,runTransact
     tx.set(ref,{...tableLayoutPayload(next),...extra,updatedAt:serverTimestamp()},{merge:true});
   });
 }
+
+// R523: bölge numarası kalıcıdır; silme/sıralama diğer masaları yeniden numaralandırmaz.
+export function numberRegionTables(layout){
+ for(const region of layout.regions){const used=new Set();for(const table of layout.tables.filter(t=>t.regionId===region.id)){let n=Number(table.regionNumber);if(!Number.isInteger(n)||n<1||used.has(n)){n=1;while(used.has(n))n++}table.regionNumber=n;used.add(n)}region.nextTableNumber=Math.max(Number(region.nextTableNumber)||1,...[...used].map(n=>n+1))}
+ return layout;
+}
+export function automaticTableTitle(layout,key){const table=layout.tables.find(t=>t.key===key),region=layout.regions.find(r=>r.id===table?.regionId);return table&&region?`${region.name.trim()} ${table.regionNumber}`:''}
+export function appendRegionTable(layout,regionId){
+ if(layout.tables.length>=MAX_TABLES)throw new Error(`En fazla ${MAX_TABLES} masa tanımlanabilir.`);
+ const region=layout.regions.find(r=>r.id===regionId);if(!region)throw new Error('Bölge bulunamadı.');
+ numberRegionTables(layout);const table={key:`table-${layout.nextNumber++}`,name:'',active:true,regionId,regionNumber:region.nextTableNumber++};layout.tables.push(table);return table;
+}
+export function transferRegionTables(layout,fromId,toId){const region=layout.regions.find(r=>r.id===toId);if(!region)throw new Error('Hedef bölge bulunamadı.');numberRegionTables(layout);for(const table of layout.tables.filter(t=>t.regionId===fromId)){table.regionId=toId;table.regionNumber=region.nextTableNumber++}}
