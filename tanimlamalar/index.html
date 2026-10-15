@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=511">
+  <link rel="stylesheet" href="style.css?v=520">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -50,6 +50,11 @@
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
           <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
           <span class="card-copy"><strong>Taze Dem Ayarları</strong><small>Demlik sayısını, demlenme süresini ve tazelik süresini düzenle</small></span>
+        </button>
+        <button id="cashSettingsCard" class="center-card definition-card" type="button" disabled>
+          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
+          <span class="card-icon"><i class="fa-solid fa-coins"></i></span>
+          <span class="card-copy"><strong>Kasa Ayarları</strong><small>Başlangıç bakiyelerini, gelir, gider ve hesap aktarım kategorilerini düzenle</small></span>
         </button>
         <button id="applicationSoundsCard" class="center-card definition-card" type="button" disabled>
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
@@ -183,8 +188,12 @@
     </form>
   </dialog>
 
+  <dialog id="cashSettingsDialog" class="cash-settings-host" aria-label="Kasa Ayarları">
+    <iframe id="cashSettingsFrame" title="Kasa Ayarları" data-src="../kasa-hesap-yonetimi/?tanimlamalar=1"></iframe>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=511"></script>
+  <script type="module" src="script.js?v=520"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

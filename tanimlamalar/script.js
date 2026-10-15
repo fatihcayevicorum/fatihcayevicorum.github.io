@@ -16,6 +16,8 @@ onAuthStateChanged(auth,user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
   if(!isOwner(user)){location.replace("../yonetim-merkezi/");return}
   $("applicationSoundsCard").disabled=false;
+  $("cashSettingsCard").disabled=false;
+  if(new URLSearchParams(location.search).get("kasa")==="1"){history.replaceState(null,"",location.pathname);$("cashSettingsCard").click()}
   onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>console.error(error));
   onSnapshot(teaStateRef,snapshot=>{teaState=snapshot.data()||{};teaLoaded=true;renderPageState()},error=>console.error(error));
 });
@@ -154,3 +156,15 @@ function setupSoundSettings(){
     render()
   })
 }
+
+// R520: aynı kasa ayarları ve aynı veri erişimi; ikinci finans uygulaması oluşturma.
+$("cashSettingsCard").onclick=()=>{
+  const dialog=$("cashSettingsDialog"),frame=$("cashSettingsFrame");
+  if(!frame.getAttribute("src"))frame.src=frame.dataset.src;
+  dialog.showModal();
+};
+window.addEventListener("message",event=>{
+  if(event.origin!==location.origin||event.source!==$("cashSettingsFrame").contentWindow)return;
+  if(event.data?.type==="fatih-cash-settings-close")$("cashSettingsDialog").close();
+});
+$("cashSettingsDialog").addEventListener("close",()=>{$("cashSettingsFrame").removeAttribute("src")});
