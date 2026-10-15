@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=523">
+  <link rel="stylesheet" href="style.css?v=529">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -51,7 +51,7 @@
           <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
           <span class="card-copy"><strong>Taze Dem Ayarları</strong><small>Demlik sayısını, demlenme süresini ve tazelik süresini düzenle</small></span>
         </button>
-        <a href="../menu-yonetimi/" class="center-card definition-card" id="productPriceSettingsCard"><i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i><span class="card-icon"><i class="fa-solid fa-tags"></i></span><span class="card-copy"><strong>Ürün ve Fiyat Ayarları</strong><small>Ürünleri, kategorileri, fiyatları ve fiyat geçmişini yönet</small></span></a>
+        <button type="button" class="center-card definition-card" id="productPriceSettingsCard" aria-haspopup="dialog"><i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i><span class="card-icon"><i class="fa-solid fa-tags"></i></span><span class="card-copy"><strong>Ürün ve Fiyat Ayarları</strong><small>Ürünleri, kategorileri, fiyatları ve fiyat geçmişini yönet</small></span></button>
         <button id="cashSettingsCard" class="center-card definition-card" type="button" disabled>
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
           <span class="card-icon"><i class="fa-solid fa-coins"></i></span>
@@ -218,12 +218,13 @@
     </form>
   </dialog>
 
+  <dialog id="productPriceSettingsDialog" class="product-settings-host" aria-labelledby="productSettingsHeading"><div class="product-settings-host-heading"><h2 id="productSettingsHeading">Ürün ve Fiyat Ayarları</h2><button id="closeProductSettings" type="button" aria-label="Ürün ve Fiyat Ayarlarını kapat">×</button></div><iframe id="productSettingsFrame" title="Ürün ve Fiyat Ayarları" data-src="../menu-yonetimi/?tanimlamalar=1"></iframe></dialog>
   <dialog id="cashSettingsDialog" class="cash-settings-host" aria-label="Kasa Ayarları">
     <iframe id="cashSettingsFrame" title="Kasa Ayarları" data-src="../kasa-hesap-yonetimi/?tanimlamalar=1"></iframe>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=526"></script>
+  <script type="module" src="script.js?v=529"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>
