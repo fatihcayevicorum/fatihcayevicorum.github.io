@@ -80,3 +80,13 @@ html[data-current-account-transfer="false"] #tableCurrentAccountField,html[data-
 /* R522: yalnızca boş kartlar; dolu/cari/organizasyon renkleri aynen kalır. */
 .table-card.empty-table.has-region-style,.move-table.empty-table.has-region-style{background:linear-gradient(145deg,var(--region-start),var(--region-end));border-color:var(--region-end)}
 .table-open>.region-bench-icon{width:1.4rem;height:1.4rem;opacity:.88}.move-table>.region-bench-icon{width:1.3rem;height:1.3rem}
+
+/* R525 — küçük bölge sekmeleri, yalnızca diğer açık bölgelerde aralıklı uyarı. */
+.control-panel-divider:has(+.table-region-tabs:not([hidden])){margin-bottom:4px}
+.table-region-tabs{gap:5px;margin:0 0 7px}
+.table-region-tabs button{min-height:32px;padding:5px 10px;border-radius:9px;font-size:.68rem}
+.table-region-tabs button[data-table-region="all"]{padding-inline:9px;font-size:.65rem}
+.table-region-tabs button.needs-attention{animation:occupied-region-hint 12s ease-in-out infinite}
+@keyframes occupied-region-hint{0%,9%,100%{background:#fffaf4;color:#7d1b24;border-color:#eadfd2;box-shadow:none}4%{background:#af2733;color:#fff;border-color:#af2733;box-shadow:0 0 0 2px #af273320}}
+@media(max-width:550px){.table-region-tabs button{min-height:32px;padding:5px 9px;font-size:.65rem}.table-region-tabs button[data-table-region="all"]{padding-inline:8px;font-size:.63rem}}
+@media(prefers-reduced-motion:reduce){.table-region-tabs button.needs-attention{animation:none;border-color:#af2733;box-shadow:inset 0 -2px #af2733}}
