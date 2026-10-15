@@ -95,3 +95,25 @@ footer { padding:1rem; color:rgba(255,255,255,.7); background:var(--burgundy-950
 
 /* R527: seçim karttan bağımsız, kartın gövdesi ürün fiyat penceresini açar. */
 .price-product-card{padding:0;gap:0;position:relative;justify-content:flex-start}.price-dialog-card .price-select{height:36px;min-height:36px;padding:0 10px;cursor:pointer}.price-product-card .price-card-open{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:7px;padding:10px;border-radius:0 0 12px 12px;background:transparent;color:#302725;text-align:left;cursor:pointer;font:inherit;overflow:hidden}.price-card-open strong{max-width:100%;font-size:.8rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price-card-open b{font-size:1.15rem;color:#7d1b24;line-height:1.2}.price-card-open small{max-width:100%;font-size:.6rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price-card-open:active{background:#f7eee8}.price-card-open:focus-visible{outline:2px solid #7d1b24;outline-offset:-3px}.product-price-history{margin-top:18px;padding-top:12px;border-top:1px solid #eadfd2}.product-price-history h3{font-size:.9rem}.product-price-history p{font-size:.75rem;line-height:1.6}.product-settings-actions .secondary-button{min-height:42px}
+
+/* R528: özet kartından ürün listesi, düğmeden toplu işlem. */
+#costGroupsButton{color:#721722;background:#fff;border:1px solid #d8c8c4;font:700 .67rem Poppins,sans-serif;padding:.55rem .8rem;border-radius:11px;cursor:pointer;min-height:42px}#costGroupsButton i{color:inherit}
+.stats .product-summary-card{min-width:0;padding:.72rem;border:1px solid var(--line);border-radius:13px;background:linear-gradient(180deg,#fff,#fff8ec);text-align:left;font:inherit;cursor:pointer;color:var(--ink)}.stats .product-summary-card:active{background:#f3e8df}.stats .product-summary-card:focus-visible{outline:2px solid #721722;outline-offset:2px}
+.product-list-dialog{width:min(1100px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border:0;padding:0;border-radius:18px;background:#fffaf4;overflow:auto}.product-list-dialog .product-list-panel{margin:0;box-shadow:none}.product-list-dialog .product-search{margin:0 0 12px;max-width:100%}
+#bulkPriceDialog{border:0;padding:0;border-radius:18px;background:#fffaf4;max-width:calc(100vw - 24px)}#bulkPriceDialog .bulk-price-tools{position:static;grid-template-columns:minmax(0,1fr) 100px;align-items:center}#bulkPriceDialog .bulk-price-tools button{grid-column:1/-1}#bulkSelectedSummary{font-size:.8rem;color:#766c68}
+@media(max-width:620px){
+ .category-item,.product-item{grid-template-columns:minmax(0,1fr);align-items:start;gap:10px;padding:12px}
+ .category-item .item-actions,.product-item .item-actions{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;width:100%;gap:6px;padding-top:8px;border-top:1px solid var(--line)}
+ .category-item .icon-button,.product-item .icon-button{width:38px;height:38px;min-width:38px;min-height:38px;flex:0 0 38px}
+ .category-copy,.product-copy{min-width:0}.category-copy strong,.product-copy strong{overflow-wrap:anywhere}.category-copy .visibility-badge{max-width:100%;width:fit-content;white-space:normal}
+ .summary-panel>.section-heading,.category-panel>.section-heading{flex-wrap:wrap;gap:12px}
+ .product-settings-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.product-settings-actions button{width:100%;padding:10px 6px;font-size:.65rem}
+ .category-panel .management-heading-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+ .product-list-dialog .section-heading{flex-wrap:nowrap}.product-list-dialog .product-search{width:100%}
+ .product-list-dialog .product-list-panel{padding:14px}.stats .product-summary-card{padding:.6rem}
+}
+@media(max-width:360px){.price-product-card .price-card-open{gap:3px;padding:6px}.price-card-open strong{font-size:.7rem;line-height:16px}.price-card-open b{font-size:1rem;line-height:20px}.price-card-open small{font-size:.53rem;line-height:11px}}
+
+body.definitions-product-settings{background:#fffaf4}.definitions-product-settings>header,.definitions-product-settings>footer{display:none!important}.definitions-product-settings .page-shell{max-width:none;margin:0;padding:12px}.definitions-product-settings .summary-panel{margin-top:0}
+
+.definitions-product-settings #adminNotificationBell,.definitions-product-settings #adminNotificationPanel{display:none!important}

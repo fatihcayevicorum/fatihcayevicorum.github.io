@@ -48,11 +48,11 @@ window.setInterval(updateClock, 1000);
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        window.location.replace("../yonetici-giris.html?next=menu-yonetimi/");
+        if(document.body.classList.contains("definitions-product-settings")){window.parent.postMessage({type:"fatih-product-settings-close"},location.origin);return}window.location.replace("../yonetici-giris.html?next=menu-yonetimi/");
         return;
     }
     if (!await hasPanelAccess(user, database, "menu")) {
-        window.location.replace("../yonetici-giris.html");
+        if(document.body.classList.contains("definitions-product-settings")){window.parent.postMessage({type:"fatih-product-settings-close"},location.origin);return}window.location.replace("../yonetici-giris.html");
         return;
     }
     subscribeCatalog();
@@ -329,10 +329,18 @@ $price("cancelPricePreview").onclick=()=>$price("pricePreviewDialog").close();
 $price("confirmPricePreview").onclick=async()=>{
  if(isBusy)return;const stale=pricePreview.some(p=>!catalog.items.some(n=>n.id===p.id&&n.price===p.oldPrice));if(stale)return showToast('Fiyatlar başka bir işlemde değişti. Önizlemeyi yeniden oluşturun.');
  $price("confirmPricePreview").disabled=true;const next={...catalog,items:catalog.items.map(p=>{const change=pricePreview.find(c=>c.id===p.id);return change?{...p,price:change.newPrice}:p})};
- if(await persistCatalog(next,'Fiyatlar ve fiyat geçmişleri kaydedildi.')){$price("pricePreviewDialog").close();if($price("singlePriceDialog").open){const p=catalog.items.find(p=>p.id===$price("singlePriceId").value);if(p){$price("singlePriceOld").textContent='Güncel fiyat: '+formatPrice(p.price);$price("singlePriceValue").value=pricePreview.find(change=>change.id===p.id)?.newPrice??p.price}}pricePreview=[];renderPriceCards()}
+ if(await persistCatalog(next,'Fiyatlar ve fiyat geçmişleri kaydedildi.')){$price("pricePreviewDialog").close();$price("bulkPriceDialog").close();if($price("singlePriceDialog").open){const p=catalog.items.find(p=>p.id===$price("singlePriceId").value);if(p){$price("singlePriceOld").textContent='Güncel fiyat: '+formatPrice(p.price);$price("singlePriceValue").value=pricePreview.find(change=>change.id===p.id)?.newPrice??p.price}}pricePreview=[];renderPriceCards()}
  $price("confirmPricePreview").disabled=false;
 };
 function openPriceHistory(id){priceHistoryUnsubscribe?.();$price("priceHistoryRows").textContent='Yükleniyor…';priceHistoryUnsubscribe=onSnapshot(query(collection(database,'adminProductPriceHistory'),where('productId','==',id)),snap=>{const entries=snap.docs.map(d=>d.data()).sort((a,b)=>b.changedAtMs-a.changedAtMs);$price("priceHistoryRows").innerHTML=entries.map(e=>`<p>${new Date(e.changedAtMs).toLocaleString('tr-TR')} — ${formatPrice(e.oldPrice)} → <b>${formatPrice(e.newPrice)}</b></p>`).join('')||'<p>Kayıtlı fiyat değişikliği yok.</p>'},()=>{$price("priceHistoryRows").textContent='Fiyat geçmişi yüklenemedi.'})}
 $price("singlePriceDialog").addEventListener('close',()=>{priceHistoryUnsubscribe?.();priceHistoryUnsubscribe=null});
 
 $price("selectCategoryPrices").onclick=()=>{const category=$price("priceCategory").value;if(category==='all')return showToast('Önce bir kategori seçin.');priceSelection=new Set(catalog.items.filter(p=>!p.archived&&p.categoryId===category).map(p=>p.id));renderPriceCards()};
+
+// R528: listeler ve toplu işlem yalnız istenince açılır.
+$price("openProductList").onclick=()=>$price("productListDialog").showModal();
+$price("closeProductList").onclick=()=>$price("productListDialog").close();
+$price("openBulkPrices").onclick=()=>{if(!priceSelection.size)return showToast('Önce ürün seçin.');$price("bulkSelectedSummary").textContent=priceSelection.size+' seçili ürün güncellenecek.';$price("bulkPriceDialog").showModal()};
+$price("closeBulkPrices").onclick=()=>$price("bulkPriceDialog").close();
+
+if(document.body.classList.contains("definitions-product-settings"))document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!document.querySelector("dialog[open]")){event.preventDefault();window.parent.postMessage({type:"fatih-product-settings-close"},location.origin)}});
