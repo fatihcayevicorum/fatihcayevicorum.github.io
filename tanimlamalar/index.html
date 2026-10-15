@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=529">
+  <link rel="stylesheet" href="style.css?v=533">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -197,6 +197,7 @@
   <dialog id="tableRegionSettingsDialog" class="settings-dialog table-region-dialog">
     <form id="tableRegionSettingsForm">
       <button id="closeTableRegionSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <div id="tableRegionSettingsScroll" class="table-region-scroll">
       <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-table-cells-large"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Masa ve Bölge Ayarları</h2></div></div>
       <label class="setting-toggle"><span>Bölge Sistemi</span><input id="regionSystemEnabled" type="checkbox"><i aria-hidden="true"></i></label>
       <p class="dialog-copy">Kapalıyken masalar tek listede gösterilir. Bölge ve masa bağlantıları korunur. Bölge kartından Masa Ekle ile veya Adisyon → Masa Ayarı bölümünden masa sayılarını değiştirebilirsiniz.</p>
@@ -214,6 +215,7 @@
         <h4>Bu Bölgenin Masaları</h4><p class="dialog-copy">Masa adları bölgeye göre otomatik verilir. Yeni masalar sıradaki numarayla eklenir; mevcut numaralar değişmez. Açık adisyon bulunan masalar korunur.</p><button id="addRegionTable" class="primary-button add-region-table" type="button"><i class="fa-solid fa-plus"></i> Masa Ekle</button><div id="regionTableList" class="region-table-list"></div><p id="regionTablesEmpty" class="dialog-copy" hidden>Bu bölgede masa yok. Masa Ekle butonunu kullanabilirsiniz.</p>
       </section>
       <p id="tableRegionMessage" class="form-message" role="alert"></p>
+      </div>
       <div class="dialog-actions"><button id="cancelTableRegionSettings" class="secondary-button" type="button">Vazgeç</button><button id="saveTableRegionSettings" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
     </form>
   </dialog>
@@ -224,7 +226,7 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=529"></script>
+  <script type="module" src="script.js?v=533"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

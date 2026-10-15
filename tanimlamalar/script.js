@@ -251,7 +251,7 @@ $("tableRegionSettingsForm").onsubmit=async event=>{
     await persistTableLayout({db,ref:posLayoutRef,current:layoutBase,next:layoutDraft,orders:layoutOrders,runTransaction,serverTimestamp});
     // Kaydet bölge kartlarına döner; pencere açık ve sonraki kayda hazır kalır.
     tableLayout=normalizeTableLayout(tableLayoutPayload(layoutDraft));layoutBase=cloneTableLayout(tableLayout);layoutDraft=cloneTableLayout(tableLayout);
-    editingRegionId="";renderTableRegionDraft();$("tableRegionSettingsForm").scrollTop=0;toast("Masa ve bölge ayarları kaydedildi.");
+    editingRegionId="";renderTableRegionDraft();$("tableRegionSettingsScroll").scrollTop=0;toast("Masa ve bölge ayarları kaydedildi.");
   }catch(error){console.error(error);layoutMessage(error.message||"Ayarlar kaydedilemedi.")}
   finally{layoutSaving=false;$("tableRegionSettingsForm").inert=false;$("saveTableRegionSettings").disabled=false}
 };
