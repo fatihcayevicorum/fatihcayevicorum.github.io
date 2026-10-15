@@ -308,3 +308,8 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .savings-cash-link{display:grid;place-items:center;min-width:44px;min-height:44px;border-radius:11px}
 .savings-panel-dialog{width:min(1040px,calc(100vw - 40px));height:min(760px,calc(100dvh - 40px));max-width:none;max-height:none;padding:0;border:1px solid #d9c7ba;border-radius:24px;background:#f4eadf;box-shadow:0 24px 80px rgba(39,15,12,.35);overflow:hidden}.savings-panel-dialog::backdrop{background:rgba(42,19,16,.56);backdrop-filter:blur(3px)}.savings-panel-frame{position:relative;width:100%;height:100%;padding:10px;box-sizing:border-box}.savings-panel-frame iframe{display:block;width:100%;height:100%;border:0;border-radius:17px;background:#fffaf4}.savings-panel-close{position:absolute;z-index:4;top:20px;right:20px;display:grid;width:38px;height:38px;place-items:center;padding:0;border:0;border-radius:10px;background:transparent;color:#806f68;font:400 1.65rem/1 Poppins,sans-serif;box-shadow:none}.savings-panel-close:hover,.savings-panel-close:focus-visible{background:#f0e5da;color:#7d1b24;outline:none}
 @media(max-width:700px){.savings-panel-dialog{width:calc(100vw - 12px);height:calc(100dvh - 12px);border-radius:18px}.savings-panel-frame{padding:6px}.savings-panel-frame iframe{border-radius:13px}.savings-panel-close{top:14px;right:14px}}
+
+/* R520: Tanımlamalar içindeki ayar pencereleri; kasa görünümünü değiştirme. */
+.definitions-settings-mode body{background:transparent}
+.definitions-settings-mode body>header,.definitions-settings-mode body>footer,.definitions-settings-mode #app{display:none!important}
+.definitions-settings-mode dialog::backdrop{background:transparent}

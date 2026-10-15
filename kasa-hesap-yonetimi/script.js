@@ -11,6 +11,13 @@ import { hasLocalPendingInternalConsumption, hasPendingInternalConsumptionDraft 
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const movementsCol=collection(db,"adminCashMovements"),stockMovesCol=collection(db,"adminStockMovements"),stockItemsCol=collection(db,"adminStockItems"),closingsCol=collection(db,"adminDailyClosings"),salesCol=collection(db,"adminSales"),staffUsersCol=collection(db,"staffUsers"),remindersCol=collection(db,"adminPaymentReminders"),settingsRef=doc(db,"adminCashSettings","config"),financeDaysCol=collection(db,"adminFinanceDays"),currentAccountsCol=collection(db,"adminCurrentAccounts"),currentAccountMovementsCol=collection(db,"adminCurrentAccountMovements");
+const definitionsSettingsMode=window.parent!==window&&new URLSearchParams(location.search).get("tanimlamalar")==="1";
+if(definitionsSettingsMode){
+  document.documentElement.classList.add("definitions-settings-mode");
+  document.querySelectorAll("dialog").forEach(dialog=>dialog.addEventListener("close",()=>setTimeout(()=>{
+    if(!document.querySelector("dialog[open]"))window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);
+  },0)));
+}
 const HISTORY_START_DATE="2026-08-01",FINANCE_START_DATE="2026-08-13";
 const defaultIncome=["İşletmeye Para Girişi","PET Şişe Dönüşüm İadesi","Diğer Gelir"];
 const defaultExpense=["Toptancı / Ürün Alımı","Faturalar","Kira","Elektrik","Su","İnternet","Demirbaş","Temizlik","Market","Manav","Bakım ve Onarım","Maaş Ödemesi","Diğer Gider"];
@@ -31,7 +38,7 @@ $("closeFinanceDayButton").onclick=openFinanceClose;$("cancelFinanceClose").oncl
 $("closeFinanceDayEndWarning").onclick=()=>$("financeDayEndWarningDialog").close();$("goToAdisyonFromFinanceWarning").onclick=()=>location.href="../adisyon/";
 $("reportButton").onclick=openReport;$("closeReport").onclick=()=>$("reportDialog").close();$("reportMonth").onchange=()=>{renderReport();$("reportContent").scrollTop=0;requestAnimationFrame(updateReportScroll)};$("reportPdfButton").onclick=printReport;
 $("reportContent").addEventListener("scroll",updateReportScroll,{passive:true});$("reportScrollUp").onclick=()=>scrollReport(-260);$("reportScrollDown").onclick=()=>scrollReport(260);$("reportScrollTrack").addEventListener("pointerdown",startReportScrollDrag);$("reportScrollTrack").addEventListener("pointermove",moveReportScrollDrag);$("reportScrollTrack").addEventListener("pointerup",stopReportScrollDrag);$("reportScrollTrack").addEventListener("pointercancel",stopReportScrollDrag);$("reportScrollTrack").addEventListener("keydown",reportScrollKey);window.addEventListener("resize",updateReportScroll);
-$("settingsButton").onclick=openSettings;$("closeSettings").onclick=()=>$("settingsDialog").close();$("openingForm").onsubmit=saveOpeningBalances;$("settingsMenu").onclick=e=>{const button=e.target.closest("[data-settings-panel]");if(button)openSettingsPanel(button.dataset.settingsPanel)};document.querySelectorAll("[data-settings-back]").forEach(button=>button.onclick=returnToSettings);
+$("closeSettings").onclick=()=>$("settingsDialog").close();$("openingForm").onsubmit=saveOpeningBalances;$("settingsMenu").onclick=e=>{const button=e.target.closest("[data-settings-panel]");if(button)openSettingsPanel(button.dataset.settingsPanel)};document.querySelectorAll("[data-settings-back]").forEach(button=>button.onclick=returnToSettings);
 document.querySelectorAll("[data-category-form]").forEach(form=>form.onsubmit=addCategory);document.querySelectorAll("[data-group-form]").forEach(form=>form.onsubmit=addGroup);for(const type of ["income","expense"]){$(type+"GroupList").onclick=groupAction;$(type+"GroupList").onchange=groupChange;$(type+"CategoryList").addEventListener("change",categoryGroupChange)}$("movementCategoryButton").onclick=()=>$("movementCategoryPicker").hidden?openMovementCategoryPicker():closeMovementCategoryPicker();$("movementCategoryPicker").onclick=selectMovementCategory;document.addEventListener("pointerdown",e=>{if(!$("movementCategoryPicker").hidden&&!$("movementCategoryPicker").contains(e.target)&&!$("movementCategoryButton").contains(e.target))closeMovementCategoryPicker()});$("movementDialog").addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("movementCategoryPicker").hidden){e.preventDefault();e.stopPropagation();closeMovementCategoryPicker();$("movementCategoryButton").focus()}});$("movementDialog").addEventListener("close",closeMovementCategoryPicker);$("movementForm").addEventListener("scroll",()=>{if(!$("movementCategoryPicker").hidden)positionMovementCategoryPicker()});window.addEventListener("resize",()=>{if(!$("movementCategoryPicker").hidden)positionMovementCategoryPicker()});$("cancelCategoryDelete").onclick=()=>{$("categoryDeleteDialog").close();pendingCategoryDelete=null};$("confirmCategoryDelete").onclick=confirmCategoryDelete;$("incomeCategoryList").onclick=categoryAction;$("expenseCategoryList").onclick=categoryAction;$("transferCategoryList").onclick=categoryAction;
 [$("incomeCategoryList"),$("expenseCategoryList"),$("transferCategoryList")].forEach(list=>list.addEventListener("keydown",categoryListKeys));
 $("remindersButton").onclick=()=>{$("reminderDueDate").value=today();renderReminders();$("remindersDialog").showModal()};$("reminderForm").onsubmit=saveReminder;$("reminderList").onclick=reminderAction;$("paidReminderList").onclick=reminderAction;document.querySelectorAll("[data-close-dialog]").forEach(button=>button.onclick=()=>$(button.dataset.closeDialog).close());
@@ -39,10 +46,20 @@ $("cancelReminderPaid").onclick=closeReminderPaidConfirm;$("confirmReminderPaid"
 document.addEventListener("click",e=>{const menu=document.querySelector(".panel-menu");if(menu?.open&&!menu.contains(e.target))menu.removeAttribute("open")});
 
 onAuthStateChanged(auth,async user=>{
-  if(!user){location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");return}
-  if(!await hasPanelAccess(user,db,"cash")){location.replace("../yonetici-giris.html");return}
-  if(!await unlock()){location.replace("../yonetim-merkezi/");return}
+  if(!user){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");return}
+  if(!await hasPanelAccess(user,db,"cash")){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetici-giris.html");return}
+  if(!await unlock()){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetim-merkezi/");return}
   const owner=savingsOwner();$("savingsPageLink").hidden=!owner;document.documentElement.classList.remove("cash-pending");if(owner&&new URLSearchParams(location.search).get("birikim")==="1"){history.replaceState(null,"",location.pathname);setTimeout(openSavingsPanel,80)}if(started)return;started=true;
+  if(definitionsSettingsMode){
+    // Geçmiş kategori/grup silme korumaları için hareketleri de önce yükle.
+    onSnapshot(movementsCol,s=>{
+      manualMovements=s.docs.filter(d=>d.data().reversed!==true).map(d=>({id:d.id,...d.data()}));
+      if(settingsPromptShown)return;
+      settingsPromptShown=true;
+      onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});renderSettings();if(categoryPanelMode==="transfer")renderCategoryList("transfer");if(!document.querySelector("dialog[open]"))openSettings()},loadError);
+    },loadError);
+    return;
+  }
   onSnapshot(movementsCol,s=>{manualMovements=s.docs.filter(d=>d.data().reversed!==true).map(d=>({id:d.id,...d.data(),...(d.data().source==="savings"?{amount:d.data().amountCents/100}:{}),automatic:d.data().automatic===true}));render()},loadError);
   onSnapshot(closingsCol,s=>{closings=s.docs.map(d=>({id:d.id,...d.data()}));render()},loadError);
   onSnapshot(salesCol,s=>{sales=s.docs.map(d=>({id:d.id,...d.data()}));render()},loadError);
@@ -51,7 +68,7 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(currentAccountsCol,s=>{currentAccounts=s.docs.map(d=>({id:d.id,...d.data()}));render()},loadError);
   onSnapshot(currentAccountMovementsCol,s=>{currentAccountMovements=s.docs.map(d=>({id:d.id,...d.data()}));render()},loadError);
   onSnapshot(remindersCol,s=>{reminders=s.docs.map(d=>({id:d.id,...d.data()}));renderReminders();renderReminderBadge()},loadError);
-  onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});render();renderSettings();if(!settings.openingConfigured&&!settingsPromptShown){settingsPromptShown=true;setTimeout(openSettings,250)}},loadError);
+  onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});render();renderSettings();if(!settings.openingConfigured&&!settingsPromptShown){settingsPromptShown=true;setTimeout(()=>location.href="../tanimlamalar/?kasa=1",250)}},loadError);
 });
 async function unlock(){return requireSensitiveAccess({title:"Kasa ve Hesaplar",message:"Kasa defterini açmak için yönetici PIN'ini girin."})}
 async function openSavingsPanel(){const dialog=$("savingsPanelDialog"),button=$("savingsPageLink");if(!dialog||dialog.open||button.disabled)return;button.disabled=true;try{if(!await unlockSavings())return;const frame=dialog.querySelector("iframe");if(!frame.getAttribute("src"))frame.src=frame.dataset.src;dialog.showModal()}catch(error){toast(savingsError(error))}finally{button.disabled=false}}
