@@ -230,6 +230,7 @@ window.__fatihManagementFormsLoaded=true;
   const rules=[];
   if(path.includes("/adisyon/"))rules.push(
     ["#orgQuantityInput",{decimals:0,maxDigits:4}],
+    ["[data-region-count]",{decimals:0,maxDigits:2}],
     ["#orgAllPercent,[data-org-percent]",{decimals:2,maxDigits:5}]
   );
   if(path.includes("/kasa-hesap-yonetimi/"))rules.push(["#amount",{decimals:2,maxDigits:10}]);
