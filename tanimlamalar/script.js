@@ -210,7 +210,6 @@ function renderTableRegionDraft(){
   $("regionTableList").innerHTML=tables.map((t,i)=>`<div class="region-table-row auto-table-row ${t.active?'':'is-passive'}"><div class="auto-table-name"><strong>${text(automaticTableTitle(layoutDraft,t.key))}</strong>${open.has(t.key)?'<small>Açık adisyon</small>':''}</div><label class="table-active-field"><input type="checkbox" data-layout-table-active="${text(t.key)}" ${t.active?'checked':''} ${open.has(t.key)?'disabled':''}> Aktif</label>${layoutActions('table',t.key,i,tables.length,open.has(t.key)||layoutDraft.tables.length===1)}</div>`).join("");
 
 }
-$("backToRegionCards").onclick=()=>{editingRegionId="";layoutMessage("");renderTableRegionDraft()};
 $("regionDetailName").oninput=event=>{const region=layoutDraft.regions.find(r=>r.id===editingRegionId);if(region){region.name=event.target.value;$("regionDetailTitle").textContent=region.name+" Ayarları"}};
 
 $("tableRegionSettingsForm").addEventListener("input",event=>{
