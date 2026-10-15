@@ -117,3 +117,64 @@ footer { padding:1rem; color:rgba(255,255,255,.7); background:var(--burgundy-950
 body.definitions-product-settings{background:#fffaf4}.definitions-product-settings>header,.definitions-product-settings>footer{display:none!important}.definitions-product-settings .page-shell{max-width:none;margin:0;padding:12px}.definitions-product-settings .summary-panel{margin-top:0}
 
 .definitions-product-settings #adminNotificationBell,.definitions-product-settings #adminNotificationPanel{display:none!important}
+
+/* R537: Tanımlamalar içindeki Ürün/Fiyat pencerelerinde ortak işlem dili. */
+.definitions-product-settings .primary-button{
+  display:inline-flex;
+  min-height:44px;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:0 15px;
+  border:0;
+  border-radius:12px;
+  color:#fff;
+  background:linear-gradient(135deg,#8f2028,#65151c);
+  font:800 .72rem Poppins,sans-serif;
+}
+.definitions-product-settings .secondary-button{
+  display:inline-flex;
+  min-height:44px;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:0 15px;
+  border:0;
+  border-radius:12px;
+  color:#302725;
+  background:#eee2d6;
+  font:800 .72rem Poppins,sans-serif;
+}
+.definitions-product-settings :is(
+  #closeCostGroups,
+  #closeProductList,
+  #closePriceSettings,
+  #closeBulkPrices
+){
+  display:grid;
+  width:38px;
+  height:38px;
+  min-width:38px;
+  min-height:38px;
+  place-items:center;
+  padding:0;
+  border:0!important;
+  border-radius:0!important;
+  color:#766c68!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font:400 1.55rem/1 Poppins,sans-serif!important;
+}
+.definitions-product-settings .management-dialog-heading,
+.definitions-product-settings .section-heading{font-family:Poppins,sans-serif}
+.definitions-product-settings .form-actions,
+.definitions-product-settings .cost-actions{align-items:center;justify-content:flex-end;gap:9px}
+
+@media(max-width:620px){
+  .definitions-product-settings .form-actions,
+  .definitions-product-settings .cost-actions{display:flex;justify-content:flex-end}
+  .definitions-product-settings .form-actions .primary-button,
+  .definitions-product-settings .form-actions .secondary-button,
+  .definitions-product-settings .cost-actions .primary-button,
+  .definitions-product-settings .cost-actions .secondary-button{width:auto;min-width:0;padding-inline:13px}
+}

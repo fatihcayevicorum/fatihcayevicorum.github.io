@@ -313,3 +313,112 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .definitions-settings-mode body{background:transparent}
 .definitions-settings-mode body>header,.definitions-settings-mode body>footer,.definitions-settings-mode #app{display:none!important}
 .definitions-settings-mode dialog::backdrop{background:transparent}
+
+/* R537: Tanımlamalar içindeki Kasa Ayarları tek, doğal akışlı bir pencere. */
+.definitions-settings-mode .cash-settings-modal .settings-dialog{
+  display:block;
+  width:min(850px,calc(100vw - 24px));
+  height:auto!important;
+  max-height:calc(100dvh - 24px)!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+.definitions-settings-mode .settings-menu-dialog{min-height:0}
+.definitions-settings-mode .settings-dialog>.dialog-head{
+  min-height:44px;
+  margin:0 0 12px;
+  padding:0;
+  border:0;
+}
+.definitions-settings-mode .settings-dialog>.dialog-head>button{
+  display:grid;
+  width:38px;
+  height:38px;
+  min-width:38px;
+  min-height:38px;
+  place-items:center;
+  padding:0;
+  border:0!important;
+  border-radius:0;
+  color:var(--muted);
+  background:transparent!important;
+  box-shadow:none;
+  font:400 1.55rem/1 Poppins,sans-serif;
+}
+.definitions-settings-mode .settings-section,
+.definitions-settings-mode .settings-subpanel{
+  display:block!important;
+  min-height:0;
+  margin:0!important;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  overflow:visible!important;
+}
+.definitions-settings-mode .settings-subpanel.category-panel{display:block!important}
+.definitions-settings-mode .settings-subpanel .cash-group-list{
+  max-height:none;
+  overflow:visible;
+}
+.definitions-settings-mode .settings-subpanel .category-list,
+.definitions-settings-mode #incomeSettingsDialog .category-list,
+.definitions-settings-mode #expenseSettingsDialog .category-list,
+.definitions-settings-mode #transferSettingsDialog .category-list{
+  display:grid;
+  height:auto;
+  max-height:none;
+  overflow:visible;
+}
+.definitions-settings-mode .settings-done{
+  position:static!important;
+  width:auto;
+  margin:0;
+}
+.definitions-settings-mode .settings-end-actions,
+.definitions-settings-mode .settings-form-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:9px;
+  margin-top:12px;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.definitions-settings-mode .settings-save,
+.definitions-settings-mode .category-add button,
+.definitions-settings-mode .dialog-actions button:not(.soft){
+  display:inline-flex;
+  width:auto;
+  min-width:0;
+  min-height:44px;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:0 15px;
+  border:0;
+  border-radius:12px;
+  color:#fff;
+  background:linear-gradient(135deg,#8f2028,#65151c);
+  font:800 .72rem Poppins,sans-serif;
+}
+.definitions-settings-mode .soft{
+  min-height:44px;
+  padding:0 15px;
+  border:0!important;
+  border-radius:12px;
+  color:var(--ink)!important;
+  background:#eee2d6!important;
+  font:800 .72rem Poppins,sans-serif;
+}
+
+@media(max-width:760px){
+  .definitions-settings-mode .cash-settings-modal .settings-dialog{
+    width:calc(100vw - 12px);
+    max-height:calc(100dvh - 12px)!important;
+    padding:15px;
+  }
+  .definitions-settings-mode .settings-end-actions,
+  .definitions-settings-mode .settings-form-actions{justify-content:flex-end}
+}

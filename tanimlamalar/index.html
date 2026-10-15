@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=536">
+  <link rel="stylesheet" href="style.css?v=537">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -73,7 +73,7 @@
 
   <dialog id="systemInfoDialog" class="settings-dialog system-info-dialog">
     <form id="systemInfoForm">
-      <button id="closeSystemInfo" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <button id="closeSystemInfo" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
       <div class="dialog-heading">
         <div class="dialog-icon"><i class="fa-solid fa-building"></i></div>
         <div><p class="dialog-kicker">Tanımlamalar</p><h2>Sistem Bilgileri</h2></div>
@@ -98,7 +98,7 @@
 
   <dialog id="teaSettingsDialog" class="settings-dialog tea-definition-dialog">
     <form id="teaSettingsForm">
-      <button id="closeTeaSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <button id="closeTeaSettings" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
       <div class="dialog-heading">
         <div class="dialog-icon"><i class="fa-solid fa-mug-hot"></i></div>
         <div><p class="dialog-kicker">Tanımlamalar</p><h2>Taze Dem Ayarları</h2></div>
@@ -118,7 +118,7 @@
 
   <dialog id="receiptSettingsDialog" class="settings-dialog receipt-settings-dialog">
     <form id="receiptSettingsForm">
-      <button id="closeReceiptSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <button id="closeReceiptSettings" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
       <div class="dialog-heading">
         <div class="dialog-icon"><i class="fa-solid fa-receipt"></i></div>
         <div><p class="dialog-kicker">Tanımlamalar</p><h2>Adisyon Fişi Ayarları</h2></div>
@@ -168,25 +168,25 @@
 
   <dialog id="applicationSoundsDialog" class="settings-dialog application-sounds-dialog">
     <form id="applicationSoundsForm">
-      <button id="closeApplicationSounds" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <button id="closeApplicationSounds" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
       <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-volume-high"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Uygulama Sesleri</h2></div></div>
       <p class="dialog-copy">Ses seçimleri bu cihazda geçerlidir ve anında kaydedilir. Mevcut seçilmiş sesler korunur.</p>
       <div class="sound-settings">
 <div class="sound-setting" data-sound-setting="tea-ready">
             <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Demlik hazır sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
-            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+            <div class="sound-setting-actions"><label class="sound-primary-action"><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button class="sound-primary-action" type="button" data-sound-test>Sesi Dene</button><button class="sound-secondary-action" type="button" data-sound-mute>Sessize Al</button><button class="sound-secondary-action" type="button" data-sound-reset>Varsayılana Dön</button></div>
           </div>
 <div class="sound-setting" data-sound-setting="tea-expired">
             <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Dem eskidi / süre doldu sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
-            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+            <div class="sound-setting-actions"><label class="sound-primary-action"><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button class="sound-primary-action" type="button" data-sound-test>Sesi Dene</button><button class="sound-secondary-action" type="button" data-sound-mute>Sessize Al</button><button class="sound-secondary-action" type="button" data-sound-reset>Varsayılana Dön</button></div>
           </div>
 <div class="sound-setting" data-sound-setting="merchant-order">
           <div class="sound-setting-copy"><i class="fa-solid fa-bell"></i><span><strong>Esnaf çay siparişi sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
-          <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+          <div class="sound-setting-actions"><label class="sound-primary-action"><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button class="sound-primary-action" type="button" data-sound-test>Sesi Dene</button><button class="sound-secondary-action" type="button" data-sound-mute>Sessize Al</button><button class="sound-secondary-action" type="button" data-sound-reset>Varsayılana Dön</button></div>
         </div>
 <div class="sound-setting" data-sound-setting="in-app-notification">
           <div class="sound-setting-copy"><i class="fa-solid fa-bell"></i><span><strong>Uygulama içi bildirim sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
-          <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
+          <div class="sound-setting-actions"><label class="sound-primary-action"><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button class="sound-primary-action" type="button" data-sound-test>Sesi Dene</button><button class="sound-secondary-action" type="button" data-sound-mute>Sessize Al</button><button class="sound-secondary-action" type="button" data-sound-reset>Varsayılana Dön</button></div>
         </div>
       </div>
       <p class="dialog-copy">Uygulama içi bildirim sesi; sipariş listesi, kritik stok, tükenen ürün, aylık stok sayımı, ödeme günü ve geciken ödeme hatırlatmalarında kullanılır.</p>
@@ -196,7 +196,7 @@
 
   <dialog id="tableRegionSettingsDialog" class="settings-dialog table-region-dialog">
     <form id="tableRegionSettingsForm">
-      <button id="closeTableRegionSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+      <button id="closeTableRegionSettings" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
       <div id="tableRegionSettingsScroll" class="table-region-scroll">
       <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-table-cells-large"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Masa ve Bölge Ayarları</h2></div></div>
       <label class="setting-toggle"><span>Bölge Sistemi</span><input id="regionSystemEnabled" type="checkbox"><i aria-hidden="true"></i></label>
@@ -219,13 +219,13 @@
     </form>
   </dialog>
 
-  <dialog id="productPriceSettingsDialog" class="product-settings-host" aria-labelledby="productSettingsHeading"><div class="product-settings-host-heading"><h2 id="productSettingsHeading">Ürün ve Fiyat Ayarları</h2><button id="closeProductSettings" type="button" aria-label="Ürün ve Fiyat Ayarlarını kapat">×</button></div><iframe id="productSettingsFrame" title="Ürün ve Fiyat Ayarları" data-src="../menu-yonetimi/?tanimlamalar=1"></iframe></dialog>
+  <dialog id="productPriceSettingsDialog" class="product-settings-host" aria-labelledby="productSettingsHeading"><div class="product-settings-host-heading"><h2 id="productSettingsHeading">Ürün ve Fiyat Ayarları</h2><button id="closeProductSettings" class="definition-close-button" type="button" aria-label="Ürün ve Fiyat Ayarlarını kapat">×</button></div><iframe id="productSettingsFrame" title="Ürün ve Fiyat Ayarları" data-src="../menu-yonetimi/?tanimlamalar=1&amp;v=537"></iframe></dialog>
   <dialog id="cashSettingsDialog" class="cash-settings-host" aria-label="Kasa Ayarları">
-    <iframe id="cashSettingsFrame" title="Kasa Ayarları" data-src="../kasa-hesap-yonetimi/?tanimlamalar=1"></iframe>
+    <iframe id="cashSettingsFrame" title="Kasa Ayarları" data-src="../kasa-hesap-yonetimi/?tanimlamalar=1&amp;v=537"></iframe>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=536"></script>
+  <script type="module" src="script.js?v=537"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

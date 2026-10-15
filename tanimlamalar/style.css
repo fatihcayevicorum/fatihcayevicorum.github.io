@@ -142,3 +142,96 @@ button{-webkit-tap-highlight-color:transparent}
 .table-region-dialog .table-region-scroll>.layout-setting-section{padding:14px 0 0;border:0;border-radius:0;background:transparent}
 .table-region-dialog .dialog-actions{min-height:66px;margin:-1px 0 0;padding:10px 14px;border:1px solid var(--line);border-radius:0 0 16px 16px;background:var(--paper);box-shadow:none}
 @media(max-width:650px){.table-region-dialog .table-region-scroll{padding:12px}.table-region-dialog .table-region-scroll>.layout-setting-section{padding-top:12px}.table-region-dialog .dialog-actions{min-height:64px;padding:9px 10px}}
+
+/* R537 — Tanımlamalar genelinde Adisyon ile aynı işlem dili. */
+.definition-close-button{
+  display:grid;
+  width:38px;
+  height:38px;
+  min-width:38px;
+  min-height:38px;
+  place-items:center;
+  padding:0;
+  border:0!important;
+  border-radius:0!important;
+  color:var(--muted)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  font:400 1.55rem/1 Poppins,sans-serif!important;
+  cursor:pointer;
+}
+.dialog-close.definition-close-button{right:14px;top:14px;z-index:4}
+.definition-close-button:hover,.definition-close-button:focus-visible{color:var(--wine)!important;background:transparent!important}
+
+.primary-button,.secondary-button{
+  display:inline-flex;
+  min-height:44px;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:0 15px;
+  border:0;
+  border-radius:12px;
+  font:800 .72rem Poppins,sans-serif;
+}
+.primary-button{color:#fff;background:linear-gradient(135deg,#8f2028,#65151c)}
+.secondary-button{color:var(--ink);background:#eee2d6}
+.dialog-actions{display:flex;grid-template-columns:none;align-items:center;justify-content:flex-end;gap:9px}
+
+.sound-setting-actions .sound-primary-action,
+.sound-setting-actions .sound-secondary-action{
+  display:flex;
+  min-width:0;
+  min-height:42px;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  margin:0;
+  padding:0 10px;
+  border:0;
+  border-radius:12px;
+  font:800 .62rem Poppins,sans-serif;
+}
+.sound-setting-actions .sound-primary-action{color:#fff;background:linear-gradient(135deg,#8f2028,#65151c)}
+.sound-setting-actions .sound-secondary-action{color:var(--ink);background:#eee2d6}
+
+/* Masa ve Bölge Ayarları tek pencere gibi görünür; yalnızca içerik kayar. */
+.table-region-dialog form{gap:12px}
+.table-region-dialog .table-region-scroll{
+  padding:0 3px 0 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.table-region-dialog .table-region-scroll>.layout-setting-section{
+  padding:10px 0 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.table-region-dialog .dialog-actions{
+  min-height:0;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.table-region-dialog .dialog-actions button{min-width:0;min-height:44px}
+
+.product-settings-host-heading{
+  padding:12px 18px 8px;
+  border-bottom:0;
+  background:#fffaf4;
+}
+.product-settings-host-heading .definition-close-button{position:static}
+
+@media(max-width:650px){
+  .dialog-actions{display:flex;grid-template-columns:none;justify-content:flex-end}
+  .dialog-actions .primary-button,.dialog-actions .secondary-button{width:auto;min-width:0;padding-inline:13px}
+  .table-region-dialog .table-region-scroll{padding:0 2px 0 0}
+  .table-region-dialog .table-region-scroll>.layout-setting-section{padding-top:8px}
+  .table-region-dialog .dialog-actions{min-height:0;padding:0}
+  .product-settings-host-heading{padding:9px 12px 6px}
+}
