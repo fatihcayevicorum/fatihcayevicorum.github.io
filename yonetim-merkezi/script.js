@@ -15,14 +15,13 @@ const daily=[
 const management=[
   {ownerOnly:true,sensitiveHistory:true,name:"İşlem Geçmişi Merkezi",description:"Silinen, iptal edilen ve değiştirilen işlemleri incele",path:"islem-gecmisi/",icon:"fa-clock-rotate-left"},
   {permission:"currentAccounts",name:"Cari Hesaplar",description:"Cari müşterileri ve alacak durumlarını yönet",path:"cari-hesaplar/",icon:"fa-address-book"},
-  {permission:"menu",name:"Menü Yönetimi",description:"Kategori, ürün ve fiyatları düzenle",path:"menu-yonetimi/",icon:"fa-utensils"},
   {permission:"stock",name:"Stok Takibi",description:"Stok miktarlarını ve hareketlerini izle",path:"stok-yonetimi/",icon:"fa-boxes-stacked"},
   {permission:"stock",name:"Sipariş Listesi",description:"Stok siparişlerini hazırla ve teslimatları takip et",path:"siparis-listesi/",icon:"fa-clipboard-list"},
   {permission:"merchant",name:"Esnaf Yönetimi",description:"Esnaf müşterileri ve çay siparişlerini yönet",path:"esnaf-yonetimi/",icon:"fa-store"},
   {permission:"reports",name:"Raporlar",description:"Satış ve işletme raporlarını incele",path:"raporlar/?v=200",icon:"fa-chart-column"},
   {permission:"reports",name:"İşletme Asistanı",description:"Satış, maliyet, stok ve çay verilerini karşılaştırmalı analiz et",path:"isletme-asistani/?v=3073",icon:"fa-wand-magic-sparkles"},
   {permission:"cash",name:"Kasa ve Hesaplar",description:"Kasa ile banka hareketlerini takip et",path:"kasa-hesap-yonetimi/?v=202",icon:"fa-vault"},
-  {ownerOnly:true,name:"Tanımlamalar",description:"Temel sistem ve işletme bilgilerini yönet",path:"tanimlamalar/",icon:"fa-sliders"},
+  {ownerOnly:true,permission:"menu",name:"Tanımlamalar",description:"Temel sistem ve işletme bilgilerini yönet",path:"tanimlamalar/",icon:"fa-sliders"},
   {ownerOnly:true,name:"Personel Yönetimi",description:"Çalışma günlerini, hak edişleri ve ödemeleri takip et",path:"personel-yonetimi/",icon:"fa-people-roof"},
   {permission:"home",name:"Ana Sayfa Yönetimi",description:"Duyuru ve kampanya alanlarını düzenle",path:"ana-sayfa-yonetimi/",icon:"fa-house"},
   {ownerOnly:true,name:"Bildirim Merkezi",description:"Yeni yapı için ayrılan yönetim alanı",path:"bildirim-merkezi/",icon:"fa-bell"},
@@ -38,7 +37,7 @@ onAuthStateChanged(auth,async user=>{
   if(profile.permissions?.includes("personnel")&&!personnelSettings){location.replace("../personel-adisyon/");return}
   currentUser=user;currentProfile=profile;
   renderWelcome(profile);
-  const owner=isOwner(user),can=item=>item.soon||owner||(!item.ownerOnly&&profile.permissions.includes(item.permission));
+  const owner=isOwner(user),can=item=>item.soon||owner||((!item.ownerOnly||item.name==="Tanımlamalar")&&profile.permissions.includes(item.permission));
   $("staffSettingsButton").hidden=owner;
   if(!owner){watchStaffProfile(user.uid);watchOwnRequest(user.uid)}
   if(personnelSettings){document.querySelector("main").hidden=true;setTimeout(openStaffSettings,80)}

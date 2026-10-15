@@ -17,7 +17,7 @@ import {
 
 const OFFLINE_EVENT = "fatih-cay-evi-offline-write";
 const OFFLINE_SETTLED_EVENT = `${OFFLINE_EVENT}-settled`;
-const WARM_KEY = "fatih-cay-evi-offline-warm-r478";
+const WARM_KEY = "fatih-cay-evi-offline-warm-r526";
 
 export function isOfflineMode() {
     return navigator.onLine === false;
@@ -111,6 +111,8 @@ export async function warmOfflineWorkspace(database) {
     ].map(([name, id]) => getDoc(doc(database, name, id)));
 
     const collectionReads = [
+        getDocs(collection(database, "adminCurrentAccountMovements")),
+        getDocs(collection(database, "adminProductPriceHistory")),
         getDocs(query(collection(database, "adminOrders"), where("status", "==", "open"), limit(100))),
         getDocs(query(collection(database, "adminStockItems"), limit(1000))),
         getDocs(query(collection(database, "adminCurrentAccounts"), limit(1000))),

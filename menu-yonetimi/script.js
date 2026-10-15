@@ -1,7 +1,8 @@
+import {checkedPrice,bulkPricePreview,mergeCatalogChanges} from "../assets/js/product-pricing.js?v=526";
 import {setupCostGroups} from "./cost-groups.js?v=364";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, doc, getFirestore, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { collection, doc, getFirestore, onSnapshot,query,where,orderBy,serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { firebaseConfig } from "../assets/js/firebase-config.js";
 import { runTransaction, setDoc } from "../assets/js/offline-firestore.js";
 import { hasPanelAccess } from "../assets/js/admin-access.js";
@@ -22,6 +23,7 @@ const elements = {
 let catalog = { categories: [], items: [], bundleRules: [] };
 let recipeStocks=[], recipeDraft=[], stocksReady=false;
 let isBusy = false;
+let editingCategoryId="",priceSelection=new Set(),pricePreview=[],priceHistoryUnsubscribe=null;
 let unsubscribeCatalog = null;
 let toastTimer = null;
 let menuConnectionFromCache = true;
@@ -64,7 +66,7 @@ function subscribeCatalog() {
         const data = snapshot.exists() ? snapshot.data() : {};
         catalog = normalizeCatalog(data);
         setConnection(true, snapshot);
-        render();
+        render();if(document.getElementById("priceSettingsDialog").open)renderPriceCards();
     }, (error) => {
         console.error(error);
         setConnection(false);
@@ -76,10 +78,11 @@ async function addCategory(event) {
     event.preventDefault();
     const name = elements.categoryName.value.trim();
     if (!name || isBusy) return;
-    if (catalog.categories.some((category) => category.name.toLocaleLowerCase("tr-TR") === name.toLocaleLowerCase("tr-TR"))) { showToast("Bu kategori zaten var."); return; }
-    const categories = [...catalog.categories, { id: createId("category"), name, order: Number(elements.categoryOrder.value) || 0, customerVisible: elements.categoryCustomerVisible.checked }];
+    if (catalog.categories.some((category) => category.id!==editingCategoryId&&category.name.toLocaleLowerCase("tr-TR") === name.toLocaleLowerCase("tr-TR"))) { showToast("Bu kategori zaten var."); return; }
+    const entry={id:editingCategoryId||createId("category"),name,order:Number(elements.categoryOrder.value)||0,customerVisible:elements.categoryCustomerVisible.checked};
+    const categories=editingCategoryId?catalog.categories.map(c=>c.id===editingCategoryId?{...c,...entry}:c):[...catalog.categories,entry];
     await persistCatalog({ ...catalog, categories }, "Kategori eklendi.");
-    elements.categoryForm.reset(); elements.categoryOrder.value = "0"; elements.categoryCustomerVisible.checked = true;
+    editingCategoryId="";document.getElementById("cancelCategoryEdit").hidden=true;elements.categoryForm.reset(); elements.categoryOrder.value = "0"; elements.categoryCustomerVisible.checked = true;
 }
 
 async function importMenuFile(event) {
@@ -87,7 +90,7 @@ async function importMenuFile(event) {
     if (!file || isBusy) return;
     try {
         const importedCatalog = validateImport(JSON.parse(await file.text()));
-        const shouldReplace = await systemConfirm({title:"Menünün Tamamı Değiştirilsin mi?",message:`${importedCatalog.categories.length} kategori ve ${importedCatalog.items.length} ürün içe aktarılacak. Mevcut menünün tamamı silinip değiştirilecek.`,confirmText:"Menüyü Değiştir",danger:true});
+        const shouldReplace = await systemConfirm({title:"Menünün Tamamı Değiştirilsin mi?",message:`${importedCatalog.categories.length} kategori ve ${importedCatalog.items.length} ürün içe aktarılacak. Listede olmayan ürünler arşivlenecek; geçmiş satış bağlantıları korunacak.`,confirmText:"Menüyü Değiştir",danger:true});
         if (!shouldReplace) return;
         const succeeded = await persistCatalog(importedCatalog, "Menü listesi başarıyla içe aktarıldı.");
         if (succeeded) resetProductForm();
@@ -109,14 +112,14 @@ async function saveProduct(event) {
     const product = {
         id: elements.editingProductId.value || createId("product"),
         name: elements.productName.value.trim(), categoryId: elements.productCategory.value,
-        price: Math.max(0, Number(elements.productPrice.value) || 0), order: Number(elements.productOrder.value) || 0,
+        price: checkedPrice(elements.productPrice.value), order: Number(elements.productOrder.value) || 0,
         description: elements.productDescription.value.trim(), available: elements.productAvailable.checked, posVisible:existingIndex>=0?catalog.items[existingIndex].posVisible!==false:true, costMode:document.getElementById("productCostMode").value, recipe:recipeDraft.map(r=>({stockItemId:r.stockItemId,amount:Number(r.amount)}))
     };
     if (!product.name || !product.categoryId) return;
     const items = [...catalog.items];
     if (existingIndex >= 0) {
         const existingStockAvailable = catalog.items[existingIndex].stockAvailable, existingPosVisible = catalog.items[existingIndex].posVisible;
-        items[existingIndex] = { ...product, ...(typeof existingStockAvailable === "boolean" ? { stockAvailable: existingStockAvailable } : {}), posVisible:typeof existingPosVisible==='boolean'?existingPosVisible:true };
+        items[existingIndex] = { ...catalog.items[existingIndex], ...product, ...(typeof existingStockAvailable === "boolean" ? { stockAvailable: existingStockAvailable } : {}), posVisible:typeof existingPosVisible==='boolean'?existingPosVisible:true };
     } else items.push(product);
     const ingredientIds=new Set(product.recipe.map(r=>r.stockItemId));
     const conflicts=catalog.bundleRules.filter(r=>r.active!==false&&r.triggerProductId===product.id&&recipeStocks.some(s=>ingredientIds.has(s.id)&&s.linkedMenuItemId===r.rewardProductId));
@@ -173,6 +176,7 @@ async function setupCoffeeWaterRule() {
 }
 
 async function handleCategoryAction(event) {
+    const edit=event.target.closest("[data-edit-category]");if(edit){const c=catalog.categories.find(c=>c.id===edit.dataset.editCategory);if(c){editingCategoryId=c.id;elements.categoryName.value=c.name;elements.categoryOrder.value=c.order;elements.categoryCustomerVisible.checked=c.customerVisible;document.getElementById("cancelCategoryEdit").hidden=false;elements.categoryForm.scrollIntoView({block:"center"})}return}
     const moveButton = event.target.closest("[data-move-category]");
     const visibilityButton = event.target.closest("[data-toggle-category-visibility]");
     const deleteButton = event.target.closest("[data-delete-category]");
@@ -224,29 +228,31 @@ function beginEditProduct(productId) {
 }
 
 function toggleProduct(productId) {
-    const items = catalog.items.map((item) => item.id === productId ? { ...item, available: !item.available } : item);
+    const items = catalog.items.map((item) => item.id === productId ? { ...item, available: !item.available,archived:false,posVisible:item.archived?true:item.posVisible } : item);
     persistCatalog({ ...catalog, items }, "Ürün durumu güncellendi.");
 }
 
 async function deleteProduct(productId) {
-    if (catalog.bundleRules.some((rule) => rule.triggerProductId === productId || rule.rewardProductId === productId)) { showToast("Bu ürün bağlı ürün kuralında kullanılıyor. Önce kuralı silin."); return; }
-    if (!await systemConfirm({title:"Ürün Menüden Silinsin mi?",message:"Ürün müşteri menüsünden ve adisyon ürün listesinden kaldırılacak.",confirmText:"Ürünü Sil",danger:true})) return;
-    persistCatalog({ ...catalog, items: catalog.items.filter((item) => item.id !== productId) }, "Ürün silindi.");
+ if(!await systemConfirm({title:"Ürün Arşivlensin mi?",message:"Ürün kaydı ve geçmiş bağlantıları korunacak; ürün yeni satışlardan ve müşteri menüsünden kaldırılacak.",confirmText:"Arşivle",danger:true}))return;
+ await persistCatalog({...catalog,items:catalog.items.map(p=>p.id===productId?{...p,available:false,archived:true}:p)},"Ürün arşivlendi.");
 }
-
-async function persistCatalog(nextCatalog, successMessage) {
-    if (isBusy) return false; setBusy(true);
-    try {
-        await setDoc(catalogReference, { categories: nextCatalog.categories, items: nextCatalog.items, bundleRules: nextCatalog.bundleRules || [], updatedAt: serverTimestamp() });
-        showToast(successMessage); return true;
-    } catch (error) { console.error(error); showToast("Değişiklik kaydedilemedi. İnternet bağlantısını kontrol edin."); return false; }
-    finally { setBusy(false); }
+async function persistCatalog(nextCatalog,successMessage){
+ if(isBusy)return false;setBusy(true);const base=structuredClone(catalog);
+ try{
+  await runTransaction(database,async tx=>{
+   const snap=await tx.get(catalogReference),raw=snap.data()||{},live=normalizeCatalog(raw),merged=mergeCatalogChanges(live,base,nextCatalog),now=Date.now(),changes=[];
+   merged.items=merged.items.map(item=>{const old=live.items.find(p=>p.id===item.id);if(!old)return{...item,priceUpdatedAtMs:now};if(checkedPrice(old.price)===checkedPrice(item.price))return item;changes.push({productId:item.id,productName:item.name,oldPrice:checkedPrice(old.price),newPrice:checkedPrice(item.price),changedAtMs:now,changedAt:serverTimestamp(),changedBy:auth.currentUser.uid});return{...item,price:checkedPrice(item.price),previousPrice:checkedPrice(old.price),priceUpdatedAtMs:now}});
+   if(changes.length>400)throw new Error("Tek işlemde en fazla 400 fiyat değiştirilebilir.");
+   tx.set(catalogReference,{...raw,categories:merged.categories,items:merged.items,bundleRules:merged.bundleRules||[],updatedAt:serverTimestamp(),updatedAtMs:now},{merge:true});
+   for(const change of changes)tx.set(doc(collection(database,"adminProductPriceHistory")),change);
+  });showToast(successMessage);return true;
+ }catch(error){console.error(error);showToast(error.message||"Değişiklik kaydedilemedi.");return false}finally{setBusy(false)}
 }
 
 function render() {
     elements.categoryCount.textContent = String(catalog.categories.length); elements.productCount.textContent = String(catalog.items.length); elements.availableCount.textContent = String(catalog.items.filter((item) => item.available).length);
     elements.categoryEmpty.hidden = catalog.categories.length > 0; elements.productEmpty.hidden = catalog.items.length > 0;
-    elements.categoryList.innerHTML = catalog.categories.map((category, index) => `<article class="category-item"><div class="category-copy"><strong>${escapeHtml(category.name)}</strong><span>Sıra: ${index + 1} • ${catalog.items.filter((item) => item.categoryId === category.id).length} Ürün</span><em class="visibility-badge ${category.customerVisible ? "" : "is-hidden"}"><i class="fa-solid ${category.customerVisible ? "fa-eye" : "fa-eye-slash"}"></i> ${category.customerVisible ? "Müşteri menüsünde görünür" : "Gizli kategori • Yalnız adisyonda"}</em></div><div class="item-actions"><button class="icon-button" type="button" data-move-category="${escapeHtml(category.id)}" data-direction="-1" aria-label="Kategoriyi yukarı taşı" title="Yukarı taşı" ${index === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button><button class="icon-button" type="button" data-move-category="${escapeHtml(category.id)}" data-direction="1" aria-label="Kategoriyi aşağı taşı" title="Aşağı taşı" ${index === catalog.categories.length - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button><button class="icon-button" type="button" data-toggle-category-visibility="${escapeHtml(category.id)}" aria-label="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}" title="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}"><i class="fa-solid ${category.customerVisible ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i></button><button class="icon-button is-danger" type="button" data-delete-category="${escapeHtml(category.id)}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`).join("");
+    elements.categoryList.innerHTML = catalog.categories.map((category, index) => `<article class="category-item"><div class="category-copy"><strong>${escapeHtml(category.name)}</strong><span>Sıra: ${index + 1} • ${catalog.items.filter((item) => item.categoryId === category.id).length} Ürün</span><em class="visibility-badge ${category.customerVisible ? "" : "is-hidden"}"><i class="fa-solid ${category.customerVisible ? "fa-eye" : "fa-eye-slash"}"></i> ${category.customerVisible ? "Müşteri menüsünde görünür" : "Gizli kategori • Yalnız adisyonda"}</em></div><div class="item-actions"><button class="icon-button" type="button" data-edit-category="${escapeHtml(category.id)}" aria-label="Kategoriyi düzenle"><i class="fa-solid fa-pen"></i></button><button class="icon-button" type="button" data-move-category="${escapeHtml(category.id)}" data-direction="-1" aria-label="Kategoriyi yukarı taşı" title="Yukarı taşı" ${index === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button><button class="icon-button" type="button" data-move-category="${escapeHtml(category.id)}" data-direction="1" aria-label="Kategoriyi aşağı taşı" title="Aşağı taşı" ${index === catalog.categories.length - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button><button class="icon-button" type="button" data-toggle-category-visibility="${escapeHtml(category.id)}" aria-label="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}" title="${category.customerVisible ? "Müşteri menüsünde gizle" : "Müşteri menüsünde göster"}"><i class="fa-solid ${category.customerVisible ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i></button><button class="icon-button is-danger" type="button" data-delete-category="${escapeHtml(category.id)}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`).join("");
     const previousCategory = elements.productCategory.value;
     elements.productCategory.innerHTML = catalog.categories.length ? '<option value="">Kategori seçin</option>' + catalog.categories.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("") : '<option value="">Önce kategori ekleyin</option>';
     if (catalog.categories.some((category) => category.id === previousCategory)) elements.productCategory.value = previousCategory;
@@ -275,11 +281,11 @@ function clampQuantity(value) { return Math.min(50, Math.max(1, Math.floor(Numbe
 function renderProducts() {
     const query = elements.productSearch.value.trim().toLocaleLowerCase("tr-TR");
     const items = catalog.items.filter((item) => `${item.name} ${item.description}`.toLocaleLowerCase("tr-TR").includes(query));
-    elements.productList.innerHTML = items.map((item) => { const category = catalog.categories.find((entry) => entry.id === item.categoryId); return `<article class="product-item"><div class="product-copy"><strong>${escapeHtml(item.name)} — ${formatPrice(item.price)}</strong><span>${escapeHtml(item.description || "Açıklama yok")}</span><div class="product-meta"><span>${escapeHtml(category?.name || "Kategorisiz")}</span><span>Sıra ${item.order}</span><span class="${item.available ? "" : "off"}">${item.available ? "Aktif" : "Pasif"}</span></div></div><div class="item-actions"><button class="icon-button" type="button" data-toggle-product="${escapeHtml(item.id)}" aria-label="Aktiflik durumunu değiştir"><i class="fa-solid ${item.available ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i></button><button class="icon-button" type="button" data-edit-product="${escapeHtml(item.id)}" aria-label="Ürünü düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button><button class="icon-button is-danger" type="button" data-delete-product="${escapeHtml(item.id)}" aria-label="Ürünü sil"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`; }).join("");
+    elements.productList.innerHTML = items.map((item) => { const category = catalog.categories.find((entry) => entry.id === item.categoryId); return `<article class="product-item"><div class="product-copy"><strong>${escapeHtml(item.name)} — ${formatPrice(item.price)}</strong><span>${escapeHtml(item.description || "Açıklama yok")}</span><div class="product-meta"><span>${escapeHtml(category?.name || "Kategorisiz")}</span><span>Sıra ${item.order}</span><span class="${item.available ? "" : "off"}">${item.archived?"Arşiv":item.available ? "Aktif" : "Pasif"}</span></div></div><div class="item-actions"><button class="icon-button" type="button" data-toggle-product="${escapeHtml(item.id)}" aria-label="Aktiflik durumunu değiştir"><i class="fa-solid ${item.available ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i></button><button class="icon-button" type="button" data-edit-product="${escapeHtml(item.id)}" aria-label="Ürünü düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button><button class="icon-button is-danger" type="button" data-delete-product="${escapeHtml(item.id)}" aria-label="Ürünü arşivle"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></div></article>`; }).join("");
 }
 
 function resetProductForm() { recipeDraft=[];renderRecipe(); elements.productForm.reset(); elements.editingProductId.value = ""; elements.productOrder.value = "0"; elements.productAvailable.checked = true; elements.productFormTitle.textContent = "Yeni Ürün"; elements.cancelEditButton.hidden = true; elements.saveProductButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ürünü Kaydet'; }
-function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ id:String(x.id), name:String(x.name), order:Number(x.order)||0, customerVisible:x.customerVisible!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false, posVisible:x.posVisible!==false, costMode:["auto","recipe","estimate","combined"].includes(x.costMode)?x.costMode:"auto", recipe:Array.isArray(x.recipe)?x.recipe.map(r=>({stockItemId:String(r.stockItemId||""),amount:Number(r.amount)})):[], ...(typeof x.stockAvailable==="boolean"?{stockAvailable:x.stockAvailable}:{}) })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), bundleRules: (Array.isArray(data.bundleRules) ? data.bundleRules : []).map((x)=>({ id:String(x.id), name:String(x.name||"Bağlı ürün kuralı"), triggerProductId:String(x.triggerProductId), triggerQuantity:clampQuantity(x.triggerQuantity), rewardProductId:String(x.rewardProductId), rewardQuantity:clampQuantity(x.rewardQuantity), priceMode:["free","regular","fixed"].includes(x.priceMode)?x.priceMode:"free", fixedPrice:Math.max(0,Number(x.fixedPrice)||0), startDate:String(x.startDate||""), endDate:String(x.endDate||""), active:x.active!==false })) }; }
+function normalizeCatalog(data) { return { categories: (Array.isArray(data.categories) ? data.categories : []).map((x) => ({ ...x,id:String(x.id), name:String(x.name), order:Number(x.order)||0, customerVisible:x.customerVisible!==false })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), items: (Array.isArray(data.items) ? data.items : []).map((x)=>({ ...x,id:String(x.id), name:String(x.name), categoryId:String(x.categoryId), price:Math.max(0,Number(x.price)||0), order:Number(x.order)||0, description:String(x.description||""), available:x.available!==false, posVisible:x.posVisible!==false, costMode:["auto","recipe","estimate","combined"].includes(x.costMode)?x.costMode:"auto", recipe:Array.isArray(x.recipe)?x.recipe.map(r=>({stockItemId:String(r.stockItemId||""),amount:Number(r.amount)})):[], ...(typeof x.stockAvailable==="boolean"?{stockAvailable:x.stockAvailable}:{}) })).sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"tr")), bundleRules: (Array.isArray(data.bundleRules) ? data.bundleRules : []).map((x)=>({ id:String(x.id), name:String(x.name||"Bağlı ürün kuralı"), triggerProductId:String(x.triggerProductId), triggerQuantity:clampQuantity(x.triggerQuantity), rewardProductId:String(x.rewardProductId), rewardQuantity:clampQuantity(x.rewardQuantity), priceMode:["free","regular","fixed"].includes(x.priceMode)?x.priceMode:"free", fixedPrice:Math.max(0,Number(x.fixedPrice)||0), startDate:String(x.startDate||""), endDate:String(x.endDate||""), active:x.active!==false })) }; }
 function validateImport(data) { if (!data || !Array.isArray(data.categories) || !Array.isArray(data.items) || !data.categories.length || !data.items.length) throw new Error("invalid-menu-file"); const normalized = normalizeCatalog(data); const categoryIds = new Set(normalized.categories.map((category) => category.id)); const uniqueCategoryIds = new Set(); const uniqueItemIds = new Set(); for (const category of normalized.categories) { if (!category.id || !category.name.trim() || uniqueCategoryIds.has(category.id)) throw new Error("invalid-category"); uniqueCategoryIds.add(category.id); } for (const item of normalized.items) { if (!item.id || !item.name.trim() || !categoryIds.has(item.categoryId) || uniqueItemIds.has(item.id) || !Number.isFinite(item.price)) throw new Error("invalid-item"); uniqueItemIds.add(item.id); } return normalized; }
 function setBusy(value) { isBusy = value; elements.saveProductButton.disabled = value; elements.saveBundleButton.disabled = value; elements.setupCoffeeWater.disabled = value; }
 function setConnection(connected, snapshot) { if (!connected) { elements.saveStatus.classList.add("is-error"); elements.saveStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Bağlantı yok'; return; } if (snapshot) { menuConnectionFromCache = snapshot.metadata.fromCache; menuWritesPending = snapshot.metadata.hasPendingWrites; } renderConnectionState(); }
@@ -301,3 +307,32 @@ function renderRecipe(){
 }
 
 function recipeCampaignConflict(trigger,reward){return(catalog.items.find(p=>p.id===trigger)?.recipe||[]).some(r=>recipeStocks.some(s=>s.id===r.stockItemId&&s.linkedMenuItemId===reward));}
+
+const $price=id=>document.getElementById(id);
+$price("cancelCategoryEdit").onclick=()=>{editingCategoryId="";elements.categoryForm.reset();$price("cancelCategoryEdit").hidden=true};
+$price("priceSettingsButton").onclick=()=>{priceSelection.clear();pricePreview=[];$price("priceSearch").value="";$price("priceCategory").innerHTML='<option value="all">Tüm kategoriler</option>'+catalog.categories.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");renderPriceCards();$price("priceSettingsDialog").showModal()};
+$price("closePriceSettings").onclick=()=>{if(!isBusy)$price("priceSettingsDialog").close()};
+$price("priceSearch").oninput=renderPriceCards;$price("priceCategory").onchange=renderPriceCards;
+function filteredPriceProducts(){const query=$price("priceSearch").value.trim().toLocaleLowerCase('tr-TR'),category=$price("priceCategory").value;return catalog.items.filter(p=>!p.archived&&(category==='all'||p.categoryId===category)&&p.name.toLocaleLowerCase('tr-TR').includes(query))}
+function renderPriceCards(){
+ $price("priceCardGrid").innerHTML=filteredPriceProducts().map(p=>`<article class="price-product-card"><label class="price-select"><input type="checkbox" data-price-select="${escapeHtml(p.id)}" ${priceSelection.has(p.id)?'checked':''}> Seç</label><strong>${escapeHtml(p.name)}</strong><b>${formatPrice(p.price)}</b><small>Önceki: ${Number.isFinite(p.previousPrice)?formatPrice(p.previousPrice):'Kayıt yok'}</small><small>${p.priceUpdatedAtMs?new Date(p.priceUpdatedAtMs).toLocaleString('tr-TR'):'Henüz güncellenmedi'}</small><button type="button" data-change-price="${escapeHtml(p.id)}">Fiyatı Güncelle</button><button type="button" class="secondary-button" data-price-history="${escapeHtml(p.id)}">Fiyat Geçmişi</button></article>`).join('')||'<p>Ürün bulunamadı.</p>';
+ $price("priceSelectedCount").textContent=priceSelection.size+' ürün seçili';
+}
+$price("priceCardGrid").onchange=event=>{const id=event.target.dataset.priceSelect;if(!id)return;if(event.target.checked)priceSelection.add(id);else priceSelection.delete(id);$price("priceSelectedCount").textContent=priceSelection.size+' ürün seçili'};
+$price("selectVisiblePrices").onclick=()=>{filteredPriceProducts().forEach(p=>priceSelection.add(p.id));renderPriceCards()};$price("clearPriceSelection").onclick=()=>{priceSelection.clear();renderPriceCards()};
+$price("priceCardGrid").onclick=event=>{const change=event.target.closest('[data-change-price]'),history=event.target.closest('[data-price-history]');if(change){const p=catalog.items.find(p=>p.id===change.dataset.changePrice);if(!p)return;$price("singlePriceId").value=p.id;$price("singlePriceTitle").textContent=p.name+' • Fiyat';$price("singlePriceOld").textContent='Güncel fiyat: '+formatPrice(p.price);$price("singlePriceValue").value=p.price;$price("singlePriceDialog").showModal();$price("singlePriceValue").click()}if(history)openPriceHistory(history.dataset.priceHistory)};
+$price("cancelSinglePrice").onclick=()=>$price("singlePriceDialog").close();
+$price("singlePriceForm").onsubmit=event=>{event.preventDefault();try{const p=catalog.items.find(p=>p.id===$price("singlePriceId").value);pricePreview=[{id:p.id,name:p.name,oldPrice:p.price,newPrice:checkedPrice($price("singlePriceValue").value)}];showPricePreview()}catch(error){showToast(error.message)}};
+$price("previewBulkPrices").onclick=()=>{try{pricePreview=bulkPricePreview(catalog.items,priceSelection,$price("bulkPriceMode").value,$price("bulkPriceValue").value);if(!pricePreview.length)return showToast('Önce ürün seçin.');showPricePreview()}catch(error){showToast(error.message)}};
+function showPricePreview(){$price("pricePreviewRows").innerHTML=pricePreview.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td>${formatPrice(p.oldPrice)}</td><td>${formatPrice(p.newPrice)}</td></tr>`).join('');$price("pricePreviewDialog").showModal()}
+$price("cancelPricePreview").onclick=()=>$price("pricePreviewDialog").close();
+$price("confirmPricePreview").onclick=async()=>{
+ if(isBusy)return;const stale=pricePreview.some(p=>!catalog.items.some(n=>n.id===p.id&&n.price===p.oldPrice));if(stale)return showToast('Fiyatlar başka bir işlemde değişti. Önizlemeyi yeniden oluşturun.');
+ $price("confirmPricePreview").disabled=true;const next={...catalog,items:catalog.items.map(p=>{const change=pricePreview.find(c=>c.id===p.id);return change?{...p,price:change.newPrice}:p})};
+ if(await persistCatalog(next,'Fiyatlar ve fiyat geçmişleri kaydedildi.')){$price("pricePreviewDialog").close();$price("singlePriceDialog").close();pricePreview=[];renderPriceCards()}
+ $price("confirmPricePreview").disabled=false;
+};
+function openPriceHistory(id){priceHistoryUnsubscribe?.();const product=catalog.items.find(p=>p.id===id);$price("priceHistoryTitle").textContent=(product?.name||'Ürün')+' • Fiyat Geçmişi';$price("priceHistoryRows").textContent='Yükleniyor…';$price("priceHistoryDialog").showModal();priceHistoryUnsubscribe=onSnapshot(query(collection(database,'adminProductPriceHistory'),where('productId','==',id)),snap=>{const entries=snap.docs.map(d=>d.data()).sort((a,b)=>b.changedAtMs-a.changedAtMs);$price("priceHistoryRows").innerHTML=entries.map(e=>`<p>${new Date(e.changedAtMs).toLocaleString('tr-TR')} — ${formatPrice(e.oldPrice)} → <b>${formatPrice(e.newPrice)}</b></p>`).join('')||'<p>Kayıtlı fiyat değişikliği yok.</p>'},()=>{$price("priceHistoryRows").textContent='Fiyat geçmişi yüklenemedi.'})}
+$price("closePriceHistory").onclick=()=>$price("priceHistoryDialog").close();$price("priceHistoryDialog").addEventListener('close',()=>{priceHistoryUnsubscribe?.();priceHistoryUnsubscribe=null});
+
+$price("selectCategoryPrices").onclick=()=>{const category=$price("priceCategory").value;if(category==='all')return showToast('Önce bir kategori seçin.');priceSelection=new Set(catalog.items.filter(p=>!p.archived&&p.categoryId===category).map(p=>p.id));renderPriceCards()};

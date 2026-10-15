@@ -24,17 +24,18 @@ tabs.addEventListener("click", (event) => {
     renderMenu();
 });
 
-onSnapshot(catalogReference, (snapshot) => {
+onSnapshot(catalogReference, {includeMetadataChanges:true}, (snapshot) => {
     const data = snapshot.exists() ? snapshot.data() : {};
     const categories = normalizeCategories(data.categories);
     const visibleCategoryIds = new Set(categories.map((category) => category.id));
+    if(activeCategory!=="all"&&!visibleCategoryIds.has(activeCategory))activeCategory="all";
     catalog = {
         categories,
         items: normalizeItems(data.items).filter((item) => visibleCategoryIds.has(item.categoryId) && item.active)
     };
     loading.hidden = true;
     syncBadge.classList.remove("is-error");
-    syncBadge.innerHTML = '<span aria-hidden="true"></span> Canlı menü';
+    syncBadge.innerHTML = snapshot.metadata.fromCache?'<span aria-hidden="true"></span> Bağlantı bekleniyor • Kayıtlı fiyatlar':'<span aria-hidden="true"></span> Canlı menü';
     renderMenu();
 }, (error) => {
     console.error(error);
@@ -118,7 +119,7 @@ function normalizeItems(items) {
             categoryId: String(item.categoryId),
             description: String(item.description || ""),
             price: Math.max(0, Number(item.price) || 0),
-            active: item.available !== false,
+            active: item.available !== false && item.archived !== true,
             available: item.stockAvailable !== false,
             stockAvailable: item.stockAvailable !== false,
             order: Number(item.order) || 0

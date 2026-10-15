@@ -6,7 +6,7 @@ import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasej
 import{collection,doc,getDocs,getFirestore,onSnapshot,query,where,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{getDownloadURL,getStorage,ref,uploadBytes}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
-import{isOwner}from"../assets/js/admin-access.js";
+import{isOwner,hasPanelAccess}from"../assets/js/admin-access.js";
 import{runTransaction}from"../assets/js/offline-firestore.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),configRef=doc(db,"publicSite","config"),teaStateRef=doc(db,"adminTea","state"),publicTeaRef=doc(db,"publicTea","status"),$=id=>document.getElementById(id);
@@ -16,9 +16,9 @@ const defaults={businessName:"Fatih Çay Evi",address:"Ulukavak Mah. Osmancık C
 const receiptDefaults={paperWidthMm:80,showLogo:true,showBusinessName:true,showAddress:true,showPhone:true,showInstagram:true,showDate:true,showTime:true,showItemTimes:true,topMessage:"",bottomMessage:"Afiyet olsun, yine bekleriz."};
 let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSaving=false,teaSaving=false,previewObjectUrl="",toastTimer;
 
-onAuthStateChanged(auth,user=>{
+onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
-  if(!isOwner(user)){location.replace("../yonetim-merkezi/");return}
+  if(!isOwner(user)){location.replace(await hasPanelAccess(user,db,"menu")?"../menu-yonetimi/":"../yonetim-merkezi/");return}
   onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});layoutLoaded=true;updateLayoutCard()},error=>console.error(error));
   onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>console.error(error));
   $("applicationSoundsCard").disabled=false;

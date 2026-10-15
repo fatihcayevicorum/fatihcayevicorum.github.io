@@ -126,6 +126,14 @@ service cloud.firestore {
     match /adminTea/{document} {
       allow read, write: if hasAnyPanel(['tea', 'pos']);
     }
+    match /adminProductPriceHistory/{recordId} {
+      allow read: if hasPanel('menu') || isOwner();
+      allow create: if hasPanel('menu') && request.resource.data.productId is string
+        && request.resource.data.oldPrice is number && request.resource.data.newPrice is number
+        && request.resource.data.newPrice >= 0 && request.resource.data.newPrice <= 99999
+        && request.resource.data.changedBy == request.auth.uid;
+      allow update, delete: if false;
+    }
     match /publicMenu/catalog {
       allow read: if true;
       allow write: if hasPanel('menu');
