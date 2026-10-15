@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=522">
+  <link rel="stylesheet" href="style.css?v=523">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
 </head>
 <body>
@@ -198,7 +198,7 @@
       <button id="closeTableRegionSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
       <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-table-cells-large"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Masa ve Bölge Ayarları</h2></div></div>
       <label class="setting-toggle"><span>Bölge Sistemi</span><input id="regionSystemEnabled" type="checkbox"><i aria-hidden="true"></i></label>
-      <p class="dialog-copy">Kapalıyken masalar tek listede gösterilir. Bölge ve masa bağlantıları korunur. Masa sayılarını Adisyon → Masa Ayarı bölümünden değiştirebilirsiniz.</p>
+      <p class="dialog-copy">Kapalıyken masalar tek listede gösterilir. Bölge ve masa bağlantıları korunur. Bölge kartından Masa Ekle ile veya Adisyon → Masa Ayarı bölümünden masa sayılarını değiştirebilirsiniz.</p>
       <section id="regionOverview" class="layout-setting-section"><h3>Bölgeler</h3>
         <div class="region-add-row"><input id="newRegionName" maxlength="40" aria-label="Yeni bölge adı" placeholder="Yeni bölge adı"><button id="addTableRegion" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Ekle</button></div>
         <div id="tableRegionList" class="table-region-list"></div>
@@ -210,7 +210,7 @@
         <h4>Boş Masa Rengi</h4><p class="dialog-copy">Yeşil, mavi ve turuncu durum renkleri seçime kapalıdır. Seçim Tümü sekmesindeki boş masalara da uygulanır.</p><div id="regionColorChoices" class="region-choices"></div>
         <h4>Adisyondaki Masa Simgesi</h4><div id="regionIconChoices" class="region-choices icon-choices"></div>
         <div id="regionTablePreview" class="region-table-preview"></div>
-        <h4>Bu Bölgenin Masaları</h4><p class="dialog-copy">Masa adlarını, aktif/pasif durumunu, bölge bağlantısını ve sıralamayı düzenleyin. Açık adisyon bulunan masalar korunur.</p><div id="regionTableList" class="region-table-list"></div><p id="regionTablesEmpty" class="dialog-copy" hidden>Bu bölgede masa yok. Adisyon → Masa Ayarı bölümünden masa ekleyebilirsiniz.</p>
+        <h4>Bu Bölgenin Masaları</h4><p class="dialog-copy">Masa adları bölgeye göre otomatik verilir. Yeni masalar sıradaki numarayla eklenir; mevcut numaralar değişmez. Açık adisyon bulunan masalar korunur.</p><button id="addRegionTable" class="primary-button add-region-table" type="button"><i class="fa-solid fa-plus"></i> Masa Ekle</button><div id="regionTableList" class="region-table-list"></div><p id="regionTablesEmpty" class="dialog-copy" hidden>Bu bölgede masa yok. Masa Ekle butonunu kullanabilirsiniz.</p>
       </section>
       <p id="tableRegionMessage" class="form-message" role="alert"></p>
       <div class="dialog-actions"><button id="cancelTableRegionSettings" class="secondary-button" type="button">Vazgeç</button><button id="saveTableRegionSettings" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
@@ -222,7 +222,7 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=522"></script>
+  <script type="module" src="script.js?v=523"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

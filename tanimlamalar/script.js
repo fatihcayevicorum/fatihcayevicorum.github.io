@@ -1,4 +1,4 @@
-import{REGION_COLORS,REGION_ICONS,regionColor,regionIconMarkup,normalizeTableLayout,cloneTableLayout,openTableKeys,validateTableLayout,persistTableLayout}from"../assets/js/table-layout.js?v=522";
+import{appendRegionTable,transferRegionTables,numberRegionTables,automaticTableTitle,REGION_COLORS,REGION_ICONS,regionColor,regionIconMarkup,normalizeTableLayout,cloneTableLayout,openTableKeys,validateTableLayout,persistTableLayout,tableLayoutPayload}from"../assets/js/table-layout.js?v=523";
 import{systemConfirm}from"../assets/js/system-confirm.js";
 import{getNotificationSound,isNotificationSoundMuted,playNotificationSound,resetNotificationSound,saveNotificationSound,setNotificationSoundMuted}from"../assets/js/notification-sounds.js?v=511";
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
@@ -183,7 +183,7 @@ $("tableRegionSettingsCard").onclick=()=>{
   for(const key of openTableKeys(layoutOrders))if(!layoutDraft.tables.some(t=>t.key===key))layoutDraft.tables.push({key,name:"",active:true,regionId:layoutDraft.regions[0].id});
   layoutDraft.nextNumber=Math.max(layoutDraft.nextNumber,...layoutDraft.tables.map(t=>Number(t.key.slice(6))+1));
   $("regionSystemEnabled").checked=layoutDraft.enabled;$("newRegionName").value="";$("tableRegionMessage").textContent="";
-  editingRegionId="";renderTableRegionDraft();$("tableRegionSettingsDialog").showModal();
+  numberRegionTables(layoutDraft);editingRegionId="";renderTableRegionDraft();$("tableRegionSettingsDialog").showModal();
 };
 function closeTableRegionSettings(){if(!layoutSaving)$("tableRegionSettingsDialog").close()}
 $("closeTableRegionSettings").onclick=closeTableRegionSettings;$("cancelTableRegionSettings").onclick=closeTableRegionSettings;
@@ -206,7 +206,8 @@ function renderTableRegionDraft(){
   $("regionIconChoices").innerHTML=REGION_ICONS.map(i=>`<button type="button" data-region-icon="${i.id}" aria-pressed="${(region.tableIcon||'chair')===i.id}">${regionIconMarkup(i.id)}<span>${i.name}</span></button>`).join("");
   const color=regionColor(region.emptyColor);$("regionTablePreview").style.background=`linear-gradient(145deg,${color.start},${color.end})`;$("regionTablePreview").innerHTML=`${regionIconMarkup(region.tableIcon)}<strong>${text(region.name)} • Örnek Masa</strong><b>BOŞ</b>`;
   const tables=layoutDraft.tables.filter(t=>t.regionId===region.id);$("regionTablesEmpty").hidden=tables.length>0;
-  $("regionTableList").innerHTML=tables.map((t,i)=>`<div class="region-table-row ${t.active?'':'is-passive'}"><label><small>Masa ${text(t.key.slice(6))}${open.has(t.key)?' • Açık adisyon':''}</small><input data-layout-table-name="${text(t.key)}" maxlength="60" value="${text(t.name)}" placeholder="Masa ${text(t.key.slice(6))}" aria-label="Masa adı"></label><select data-layout-table-region="${text(t.key)}" aria-label="Masanın bölgesi">${regions.map(r=>`<option value="${text(r.id)}" ${r.id===t.regionId?'selected':''}>${text(r.name)}</option>`).join("")}</select><label class="table-active-field"><input type="checkbox" data-layout-table-active="${text(t.key)}" ${t.active?'checked':''} ${open.has(t.key)?'disabled':''}> Aktif</label>${layoutActions('table',t.key,i,tables.length,open.has(t.key)||layoutDraft.tables.length===1)}</div>`).join("");
+  $("regionTableList").innerHTML=tables.map((t,i)=>`<div class="region-table-row auto-table-row ${t.active?'':'is-passive'}"><div class="auto-table-name"><strong>${text(automaticTableTitle(layoutDraft,t.key))}</strong>${open.has(t.key)?'<small>Açık adisyon</small>':''}</div><label class="table-active-field"><input type="checkbox" data-layout-table-active="${text(t.key)}" ${t.active?'checked':''} ${open.has(t.key)?'disabled':''}> Aktif</label>${layoutActions('table',t.key,i,tables.length,open.has(t.key)||layoutDraft.tables.length===1)}</div>`).join("");
+
 }
 $("backToRegionCards").onclick=()=>{editingRegionId="";layoutMessage("");renderTableRegionDraft()};
 $("regionDetailName").oninput=event=>{const region=layoutDraft.regions.find(r=>r.id===editingRegionId);if(region){region.name=event.target.value;$("regionDetailTitle").textContent=region.name+" Ayarları"}};
@@ -236,7 +237,7 @@ $("tableRegionSettingsForm").addEventListener("click",async event=>{
   // Onay penceresi açıkken yeni adisyon gelmiş olabilir.
   if(kind==='table'&&openTableKeys(layoutOrders).has(id))return layoutMessage("Bu masada açık adisyon var; silinemez.");
   const currentIndex=list.findIndex(x=>(kind==='region'?x.id:x.key)===id);if(currentIndex<0)return;
-  if(kind==='region')layoutDraft.tables.forEach(t=>{if(t.regionId===id)t.regionId=target.id});
+  if(kind==='region')transferRegionTables(layoutDraft,id,target.id);
   list.splice(currentIndex,1);renderTableRegionDraft();
 });
 $("tableRegionSettingsForm").onsubmit=async event=>{
@@ -248,8 +249,15 @@ $("tableRegionSettingsForm").onsubmit=async event=>{
     if(destructive&&navigator.onLine!==false){const snapshot=await getDocs(query(layoutOrdersCol,where("status","==","open")));layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}))}
     validateTableLayout(layoutDraft,layoutOrders);
     await persistTableLayout({db,ref:posLayoutRef,current:layoutBase,next:layoutDraft,orders:layoutOrders,runTransaction,serverTimestamp});
-    $("tableRegionSettingsDialog").close();toast("Masa ve bölge ayarları kaydedildi.");
+    // Kaydet bölge kartlarına döner; pencere açık ve sonraki kayda hazır kalır.
+    tableLayout=normalizeTableLayout(tableLayoutPayload(layoutDraft));layoutBase=cloneTableLayout(tableLayout);layoutDraft=cloneTableLayout(tableLayout);
+    editingRegionId="";renderTableRegionDraft();$("tableRegionSettingsForm").scrollTop=0;toast("Masa ve bölge ayarları kaydedildi.");
   }catch(error){console.error(error);layoutMessage(error.message||"Ayarlar kaydedilemedi.")}
   finally{layoutSaving=false;$("tableRegionSettingsForm").inert=false;$("saveTableRegionSettings").disabled=false}
 };
 $("tableRegionSettingsDialog").addEventListener("cancel",event=>{if(layoutSaving)event.preventDefault()});
+
+$("addRegionTable").onclick=()=>{
+ if(layoutSaving||!editingRegionId)return;
+ try{appendRegionTable(layoutDraft,editingRegionId);layoutMessage("");renderTableRegionDraft()}catch(error){layoutMessage(error.message)}
+};
