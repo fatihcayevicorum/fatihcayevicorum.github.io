@@ -1,10 +1,24 @@
+// R522: durum renklerinden ayrı, sınırlı boş masa paleti ve bölge simgeleri.
+export const REGION_COLORS=[
+ {id:'default',name:'Kırmızı',start:'#c74048',end:'#9b242d'},
+ {id:'purple',name:'Mor',start:'#7955aa',end:'#533777'},
+ {id:'plum',name:'Mürdüm',start:'#925473',end:'#66374f'},
+ {id:'graphite',name:'Antrasit',start:'#59565e',end:'#39363e'},
+ {id:'stone',name:'Taş Grisi',start:'#7a7772',end:'#55524e'},
+ {id:'brown',name:'Kahverengi',start:'#8b6752',end:'#624634'}
+];
+export const REGION_ICONS=[{id:'chair',name:'Sandalye',fa:'chair'},{id:'umbrella',name:'Şemsiye',fa:'umbrella-beach'},{id:'bench',name:'Bank'},{id:'couch',name:'Koltuk',fa:'couch'},{id:'tree',name:'Ağaç',fa:'tree'},{id:'house',name:'Ev',fa:'house'},{id:'shop',name:'Dükkan',fa:'shop'}];
+export function regionColor(id){return REGION_COLORS.find(c=>c.id===id)||REGION_COLORS[0]}
+export function regionIconMarkup(id){const icon=REGION_ICONS.find(i=>i.id===id)||REGION_ICONS[0];return icon.id==='bench'?'<svg class="region-bench-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M5 7h22v10H5zM3 21h26M7 17v11m18-11v11M5 12h22"/></svg>':`<i class="fa-solid fa-${icon.fa}" aria-hidden="true"></i>`}
+export function regionAppearance(layout,key){const table=layout.tables.find(t=>t.key===key),region=layout.regions.find(r=>r.id===table?.regionId);return{color:regionColor(region?.emptyColor),icon:region?.tableIcon||'chair'}}
+export function regionStyleMarkup(layout,key){const {color}=regionAppearance(layout,key);return `style="--region-start:${color.start};--region-end:${color.end}"`}
 // R521: masa kimliklerini koruyan ortak bölge/masa ayarları.
 export const DEFAULT_REGION={id:'salon',name:'Salon'};
 export const MAX_TABLES=50;
 const copy=value=>JSON.parse(JSON.stringify(value));
 export function normalizeTableLayout(data={}){
-  const regions=(Array.isArray(data.tableRegions)?data.tableRegions:[]).filter((r,i,a)=>r&&typeof r.id==='string'&&r.id&&a.findIndex(x=>x?.id===r.id)===i).map(r=>({id:r.id,name:String(r.name||'Bölge').slice(0,40)}));
-  if(!regions.length)regions.push({...DEFAULT_REGION});
+  const regions=(Array.isArray(data.tableRegions)?data.tableRegions:[]).filter((r,i,a)=>r&&typeof r.id==='string'&&r.id&&a.findIndex(x=>x?.id===r.id)===i).map(r=>({id:r.id,name:String(r.name||'Bölge').slice(0,40),emptyColor:regionColor(r.emptyColor).id,tableIcon:REGION_ICONS.some(i=>i.id===r.tableIcon)?r.tableIcon:'chair'}));
+  if(!regions.length)regions.push({...DEFAULT_REGION,emptyColor:'default',tableIcon:'chair'});
   const fallback=regions.find(r=>r.id==='salon')?.id||regions[0].id;
   const legacyCount=Math.min(50,Math.max(1,Math.floor(Number(data.tableCount)||15)));
   const slots=Array.isArray(data.tableSlots)?data.tableSlots:Array.from({length:legacyCount},(_,i)=>({key:`table-${i+1}`}));
@@ -41,7 +55,7 @@ export function resizeTableLayout(layout,counts,orders=[]){
   for(const {id,count} of targets){let size=next.tables.filter(t=>id===null||t.regionId===id).length;while(size++<count)next.tables.push({key:`table-${next.nextNumber++}`,name:'',active:true,regionId:id||next.regions.find(r=>r.id==='salon')?.id||next.regions[0].id})}
   validateTableLayout(next,orders);return next;
 }
-export function tableLayoutPayload(layout){return{regionSystemEnabled:layout.enabled,tableRegions:layout.regions.map(r=>({id:r.id,name:r.name.trim()})),tableSlots:layout.tables.map(t=>({...t,name:t.name.trim()})),tableNextNumber:layout.nextNumber,tableCount:layout.tables.length}}
+export function tableLayoutPayload(layout){return{regionSystemEnabled:layout.enabled,tableRegions:layout.regions.map(r=>({id:r.id,name:r.name.trim(),emptyColor:regionColor(r.emptyColor).id,tableIcon:REGION_ICONS.some(i=>i.id===r.tableIcon)?r.tableIcon:'chair'})),tableSlots:layout.tables.map(t=>({...t,name:t.name.trim()})),tableNextNumber:layout.nextNumber,tableCount:layout.tables.length}}
 // Sadece ayar belgesine yaz; adisyon, ödeme ve geçmiş kayıtlarını değiştirme.
 export async function persistTableLayout({db,ref,current,next,orders,runTransaction,serverTimestamp,extra={}}){
   validateTableLayout(next,orders);
