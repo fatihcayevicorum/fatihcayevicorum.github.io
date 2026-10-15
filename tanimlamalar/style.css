@@ -235,3 +235,45 @@ button{-webkit-tap-highlight-color:transparent}
   .table-region-dialog .dialog-actions{min-height:0;padding:0}
   .product-settings-host-heading{padding:9px 12px 6px}
 }
+
+/* R538 — Bölümler yeniden ayrışır; işlem butonları her ekranda eş ve rahat ölçüdedir. */
+.dialog-actions .primary-button,
+.dialog-actions .secondary-button{
+  width:132px;
+  min-width:132px;
+  min-height:48px;
+  padding:0 16px;
+  font-size:.76rem;
+}
+.table-region-dialog .table-region-scroll>.layout-setting-section{
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#f6f1eb;
+}
+.table-region-dialog .dialog-actions{
+  padding-top:2px;
+  border:0;
+  background:transparent;
+}
+@media(max-width:650px){
+  .dialog-actions .primary-button,
+  .dialog-actions .secondary-button{
+    width:auto;
+    min-width:118px;
+    min-height:48px;
+    padding-inline:14px;
+  }
+  .table-region-dialog .table-region-scroll>.layout-setting-section{
+    padding:12px;
+    border-radius:14px;
+  }
+}
+@media(max-width:380px){
+  .dialog-actions .primary-button,
+  .dialog-actions .secondary-button{
+    flex:1 1 0;
+    width:50%;
+    min-width:0;
+  }
+}
