@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r533-masa-bolge-sabit-alt-butonlar",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r534-urun-fiyat-mobil-modal",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./assets/js/product-pricing.js","./assets/js/current-account-pricing.js","./assets/js/current-account-pricing-store.js",
   "./assets/js/table-layout.js",
