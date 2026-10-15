@@ -23,6 +23,7 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>console.error(error));
   $("applicationSoundsCard").disabled=false;
   $("cashSettingsCard").disabled=false;
+  $("productPriceSettingsCard").disabled=false;
   if(new URLSearchParams(location.search).get("kasa")==="1"){history.replaceState(null,"",location.pathname);$("cashSettingsCard").click()}
   onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>console.error(error));
   onSnapshot(teaStateRef,snapshot=>{teaState=snapshot.data()||{};teaLoaded=true;renderPageState()},error=>console.error(error));
@@ -263,7 +264,7 @@ $("addRegionTable").onclick=()=>{
 };
 
 // R529: aynı ürün yönetimi, Tanımlamalar içinde açılan pencere.
-$("productPriceSettingsCard").onclick=()=>{const dialog=$("productPriceSettingsDialog"),frame=$("productSettingsFrame");if(!dialog.open)dialog.showModal();requestAnimationFrame(()=>{if(!frame.getAttribute("src"))frame.src=frame.dataset.src})};
+$("productPriceSettingsCard").onclick=()=>{const frame=$("productSettingsFrame");if(!frame.getAttribute("src"))frame.src=frame.dataset.src;$("productPriceSettingsDialog").showModal()};
 $("closeProductSettings").onclick=()=>$("productPriceSettingsDialog").close();
 $("productPriceSettingsDialog").addEventListener("close",()=>$("productSettingsFrame").removeAttribute("src"));
 window.addEventListener("message",event=>{if(event.origin===location.origin&&event.source===$("productSettingsFrame").contentWindow&&event.data?.type==="fatih-product-settings-close")$("productPriceSettingsDialog").close()});
