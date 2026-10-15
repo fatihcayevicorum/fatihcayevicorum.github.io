@@ -1,4 +1,4 @@
-import{normalizeTableLayout,cloneTableLayout,openTableKeys,validateTableLayout,persistTableLayout}from"../assets/js/table-layout.js?v=521";
+import{REGION_COLORS,REGION_ICONS,regionColor,regionIconMarkup,normalizeTableLayout,cloneTableLayout,openTableKeys,validateTableLayout,persistTableLayout}from"../assets/js/table-layout.js?v=522";
 import{systemConfirm}from"../assets/js/system-confirm.js";
 import{getNotificationSound,isNotificationSoundMuted,playNotificationSound,resetNotificationSound,saveNotificationSound,setNotificationSoundMuted}from"../assets/js/notification-sounds.js?v=511";
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
@@ -11,7 +11,7 @@ import{runTransaction}from"../assets/js/offline-firestore.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),configRef=doc(db,"publicSite","config"),teaStateRef=doc(db,"adminTea","state"),publicTeaRef=doc(db,"publicTea","status"),$=id=>document.getElementById(id);
 const posLayoutRef=doc(db,"adminAppSettings","pos"),layoutOrdersCol=collection(db,"adminOrders");
-let tableLayout=normalizeTableLayout(),layoutOrders=[],layoutLoaded=false,layoutOrdersLoaded=false,layoutDraft=null,layoutBase=null,layoutSaving=false;
+let tableLayout=normalizeTableLayout(),layoutOrders=[],layoutLoaded=false,layoutOrdersLoaded=false,layoutDraft=null,layoutBase=null,layoutSaving=false,editingRegionId="";
 const defaults={businessName:"Fatih Çay Evi",address:"Ulukavak Mah. Osmancık Cad. No:285, Çorum/Merkez",phone:"0554 118 08 06",instagramUrl:"https://www.instagram.com/fatihcayevicorum/",logoUrl:"../assets/images/logo.png"};
 const receiptDefaults={paperWidthMm:80,showLogo:true,showBusinessName:true,showAddress:true,showPhone:true,showInstagram:true,showDate:true,showTime:true,showItemTimes:true,topMessage:"",bottomMessage:"Afiyet olsun, yine bekleriz."};
 let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSaving=false,teaSaving=false,previewObjectUrl="",toastTimer;
@@ -183,7 +183,7 @@ $("tableRegionSettingsCard").onclick=()=>{
   for(const key of openTableKeys(layoutOrders))if(!layoutDraft.tables.some(t=>t.key===key))layoutDraft.tables.push({key,name:"",active:true,regionId:layoutDraft.regions[0].id});
   layoutDraft.nextNumber=Math.max(layoutDraft.nextNumber,...layoutDraft.tables.map(t=>Number(t.key.slice(6))+1));
   $("regionSystemEnabled").checked=layoutDraft.enabled;$("newRegionName").value="";$("tableRegionMessage").textContent="";
-  renderTableRegionDraft();$("tableRegionSettingsDialog").showModal();
+  editingRegionId="";renderTableRegionDraft();$("tableRegionSettingsDialog").showModal();
 };
 function closeTableRegionSettings(){if(!layoutSaving)$("tableRegionSettingsDialog").close()}
 $("closeTableRegionSettings").onclick=closeTableRegionSettings;$("cancelTableRegionSettings").onclick=closeTableRegionSettings;
@@ -191,28 +191,43 @@ $("regionSystemEnabled").onchange=()=>{layoutDraft.enabled=$("regionSystemEnable
 $("addTableRegion").onclick=()=>{
   const name=$("newRegionName").value.trim();if(!name)return layoutMessage("Bölge adını yazın.");
   if(layoutDraft.regions.some(r=>r.name.trim().toLocaleLowerCase("tr-TR")===name.toLocaleLowerCase("tr-TR")))return layoutMessage("Bu bölge adı zaten var.");
-  layoutDraft.regions.push({id:`region-${globalThis.crypto.randomUUID()}`,name});$("newRegionName").value="";layoutMessage("");renderTableRegionDraft();
+  layoutDraft.regions.push({id:`region-${globalThis.crypto.randomUUID()}`,name,emptyColor:"default",tableIcon:"chair"});$("newRegionName").value="";layoutMessage("");renderTableRegionDraft();
 };
 function layoutMessage(message){$("tableRegionMessage").textContent=message}
 function layoutActions(kind,id,index,length,locked=false){return `<div class="layout-row-actions"><button type="button" data-layout-action="up" data-layout-kind="${kind}" data-layout-id="${text(id)}" aria-label="Yukarı taşı" ${index===0?'disabled':''}><i class="fa-solid fa-chevron-up"></i></button><button type="button" data-layout-action="down" data-layout-kind="${kind}" data-layout-id="${text(id)}" aria-label="Aşağı taşı" ${index===length-1?'disabled':''}><i class="fa-solid fa-chevron-down"></i></button><button type="button" data-layout-action="delete" data-layout-kind="${kind}" data-layout-id="${text(id)}" aria-label="Sil" ${locked?'disabled':''}><i class="fa-solid fa-trash"></i></button></div>`}
 function renderTableRegionDraft(){
-  const open=openTableKeys(layoutOrders),regions=layoutDraft.regions;
-  $("tableRegionList").innerHTML=regions.map((r,i)=>`<div class="table-region-row"><input data-region-name="${text(r.id)}" maxlength="40" value="${text(r.name)}" aria-label="Bölge adı">${layoutActions('region',r.id,i,regions.length,regions.length===1)}</div>`).join("");
-  $("regionTableList").innerHTML=layoutDraft.tables.map((t,i)=>`<div class="region-table-row ${t.active?'':'is-passive'}"><label><small>Masa ${text(t.key.slice(6))}${open.has(t.key)?' • Açık adisyon':''}</small><input data-layout-table-name="${text(t.key)}" maxlength="60" value="${text(t.name)}" placeholder="Masa ${text(t.key.slice(6))}" aria-label="Masa adı"></label><select data-layout-table-region="${text(t.key)}" aria-label="Masanın bölgesi">${regions.map(r=>`<option value="${text(r.id)}" ${r.id===t.regionId?'selected':''}>${text(r.name)}</option>`).join("")}</select><label class="table-active-field"><input type="checkbox" data-layout-table-active="${text(t.key)}" ${t.active?'checked':''} ${open.has(t.key)?'disabled':''}> Aktif</label>${layoutActions('table',t.key,i,layoutDraft.tables.length,open.has(t.key)||layoutDraft.tables.length===1)}</div>`).join("");
+  const open=openTableKeys(layoutOrders),regions=layoutDraft.regions,region=regions.find(r=>r.id===editingRegionId);
+  if(!region)editingRegionId="";
+  $("regionOverview").hidden=!!region;$("regionDetail").hidden=!region;
+  $("tableRegionList").innerHTML=regions.map((r,i)=>{const c=regionColor(r.emptyColor),count=layoutDraft.tables.filter(t=>t.regionId===r.id).length;return `<article class="region-settings-card"><button type="button" data-open-region="${text(r.id)}"><span class="region-card-icon" style="background:linear-gradient(145deg,${c.start},${c.end})">${regionIconMarkup(r.tableIcon)}</span><strong>${text(r.name)}</strong><small>${count} masa • Ayarları düzenle</small></button>${layoutActions('region',r.id,i,regions.length,regions.length===1)}</article>`}).join("");
+  if(!region)return;
+  $("regionDetailTitle").textContent=region.name+" Ayarları";$("regionDetailName").value=region.name;
+  $("regionColorChoices").innerHTML=REGION_COLORS.map(c=>`<button type="button" data-region-color="${c.id}" aria-pressed="${(region.emptyColor||'default')===c.id}"><span style="background:linear-gradient(145deg,${c.start},${c.end})"></span>${c.name}</button>`).join("");
+  $("regionIconChoices").innerHTML=REGION_ICONS.map(i=>`<button type="button" data-region-icon="${i.id}" aria-pressed="${(region.tableIcon||'chair')===i.id}">${regionIconMarkup(i.id)}<span>${i.name}</span></button>`).join("");
+  const color=regionColor(region.emptyColor);$("regionTablePreview").style.background=`linear-gradient(145deg,${color.start},${color.end})`;$("regionTablePreview").innerHTML=`${regionIconMarkup(region.tableIcon)}<strong>${text(region.name)} • Örnek Masa</strong><b>BOŞ</b>`;
+  const tables=layoutDraft.tables.filter(t=>t.regionId===region.id);$("regionTablesEmpty").hidden=tables.length>0;
+  $("regionTableList").innerHTML=tables.map((t,i)=>`<div class="region-table-row ${t.active?'':'is-passive'}"><label><small>Masa ${text(t.key.slice(6))}${open.has(t.key)?' • Açık adisyon':''}</small><input data-layout-table-name="${text(t.key)}" maxlength="60" value="${text(t.name)}" placeholder="Masa ${text(t.key.slice(6))}" aria-label="Masa adı"></label><select data-layout-table-region="${text(t.key)}" aria-label="Masanın bölgesi">${regions.map(r=>`<option value="${text(r.id)}" ${r.id===t.regionId?'selected':''}>${text(r.name)}</option>`).join("")}</select><label class="table-active-field"><input type="checkbox" data-layout-table-active="${text(t.key)}" ${t.active?'checked':''} ${open.has(t.key)?'disabled':''}> Aktif</label>${layoutActions('table',t.key,i,tables.length,open.has(t.key)||layoutDraft.tables.length===1)}</div>`).join("");
 }
+$("backToRegionCards").onclick=()=>{editingRegionId="";layoutMessage("");renderTableRegionDraft()};
+$("regionDetailName").oninput=event=>{const region=layoutDraft.regions.find(r=>r.id===editingRegionId);if(region){region.name=event.target.value;$("regionDetailTitle").textContent=region.name+" Ayarları"}};
+
 $("tableRegionSettingsForm").addEventListener("input",event=>{
   const e=event.target;if(e.dataset.regionName){const r=layoutDraft.regions.find(r=>r.id===e.dataset.regionName);if(r)r.name=e.value}
   if(e.dataset.layoutTableName){const t=layoutDraft.tables.find(t=>t.key===e.dataset.layoutTableName);if(t)t.name=e.value}
 });
 $("tableRegionSettingsForm").addEventListener("change",event=>{
   const e=event.target;if(e.dataset.regionName){renderTableRegionDraft();return}const key=e.dataset.layoutTableRegion||e.dataset.layoutTableActive,t=layoutDraft?.tables.find(t=>t.key===key);if(!t)return;
-  if(e.dataset.layoutTableRegion)t.regionId=e.value;
+  if(e.dataset.layoutTableRegion){t.regionId=e.value;renderTableRegionDraft()}
   if(e.dataset.layoutTableActive){if(!e.checked&&openTableKeys(layoutOrders).has(key)){e.checked=true;return layoutMessage("Açık adisyon bulunan masa pasife alınamaz.")}t.active=e.checked}
 });
 $("tableRegionSettingsForm").addEventListener("click",async event=>{
+  if(layoutSaving)return;
+  const open=event.target.closest("[data-open-region]");if(open){editingRegionId=open.dataset.openRegion;renderTableRegionDraft();return}
+  const appearance=event.target.closest("[data-region-color],[data-region-icon]");
+  if(appearance){const region=layoutDraft.regions.find(r=>r.id===editingRegionId);if(region){if(appearance.dataset.regionColor&&REGION_COLORS.some(c=>c.id===appearance.dataset.regionColor))region.emptyColor=appearance.dataset.regionColor;if(appearance.dataset.regionIcon&&REGION_ICONS.some(i=>i.id===appearance.dataset.regionIcon))region.tableIcon=appearance.dataset.regionIcon;renderTableRegionDraft()}return}
   const button=event.target.closest("[data-layout-action]");if(!button||button.disabled||layoutSaving)return;
   const {layoutAction:action,layoutKind:kind,layoutId:id}=button.dataset,list=kind==='region'?layoutDraft.regions:layoutDraft.tables,index=list.findIndex(x=>(kind==='region'?x.id:x.key)===id);if(index<0)return;
-  if(action==='up'||action==='down'){const to=index+(action==='up'?-1:1);if(to>=0&&to<list.length)[list[index],list[to]]=[list[to],list[index]];renderTableRegionDraft();return}
+  if(action==='up'||action==='down'){const ordered=kind==='table'?list.filter(t=>t.regionId===editingRegionId):list,position=ordered.findIndex(t=>(kind==='region'?t.id:t.key)===id),neighbor=ordered[position+(action==='up'?-1:1)],to=neighbor?list.indexOf(neighbor):-1;if(to>=0)[list[index],list[to]]=[list[to],list[index]];renderTableRegionDraft();return}
   if(kind==='table'&&openTableKeys(layoutOrders).has(id))return layoutMessage("Açık adisyon bulunan masa silinemez.");
   const target=kind==='region'?layoutDraft.regions.find(r=>r.id!==id&&r.id==='salon')||layoutDraft.regions.find(r=>r.id!==id):null;
   if(kind==='region'&&!target)return layoutMessage("Son bölge silinemez.");
