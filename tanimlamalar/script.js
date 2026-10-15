@@ -263,7 +263,7 @@ $("addRegionTable").onclick=()=>{
 };
 
 // R529: aynı ürün yönetimi, Tanımlamalar içinde açılan pencere.
-$("productPriceSettingsCard").onclick=()=>{const frame=$("productSettingsFrame");if(!frame.getAttribute("src"))frame.src=frame.dataset.src;$("productPriceSettingsDialog").showModal()};
+$("productPriceSettingsCard").onclick=()=>{const dialog=$("productPriceSettingsDialog"),frame=$("productSettingsFrame");if(!dialog.open)dialog.showModal();requestAnimationFrame(()=>{if(!frame.getAttribute("src"))frame.src=frame.dataset.src})};
 $("closeProductSettings").onclick=()=>$("productPriceSettingsDialog").close();
 $("productPriceSettingsDialog").addEventListener("close",()=>$("productSettingsFrame").removeAttribute("src"));
 window.addEventListener("message",event=>{if(event.origin===location.origin&&event.source===$("productSettingsFrame").contentWindow&&event.data?.type==="fatih-product-settings-close")$("productPriceSettingsDialog").close()});
