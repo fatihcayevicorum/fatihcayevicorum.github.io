@@ -1,220 +1,228 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Tanımlamalar | Fatih Çay Evi</title>
-  <meta name="theme-color" content="#5a1018">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
-  <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=521">
-  <script type="module" src="../assets/js/connection-status.js?v=481"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <title>Fatih Çay Evi | Çorum</title>
+
+    <meta name="description"
+        content="Çorum Fatih Çay Evi - Günlük taze demlenen Çay, sıcak sohbet, kaliteli hizmet.">
+    <meta name="keywords"
+        content="Fatih Çay Evi, Çorum Çay Evi, Çorum Çay, Osmancık Caddesi">
+    <meta name="theme-color" content="#7b1013">
+    <meta name="color-scheme" content="light">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/home.css?v=266"><link rel="stylesheet" href="assets/css/home-dynamic.css?v=1"><link rel="stylesheet" href="assets/css/campaign-enhancements.css?v=1"><link rel="stylesheet" href="assets/css/news-campaign-layout.css?v=1">
+  <link rel="stylesheet" href="assets/css/theme.css?v=539">
+  <script src="assets/js/theme.js?v=539"></script>
 </head>
+
 <body>
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="brand">
-        <img src="../assets/images/logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu">
-        <div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1>Tanımlamalar</h1></div>
-      </div>
-      <div class="header-actions">
-        <div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div>
-        <a class="management-center-link" href="../yonetim-merkezi/" title="Yönetim Merkezi" aria-label="Yönetim Merkezine git"><i class="fa-solid fa-grip"></i><span>Yönetim Merkezi</span></a>
-        <button class="logout-button" id="logoutButton" type="button" title="Güvenli Çıkış" aria-label="Güvenli Çıkış"><i class="fa-solid fa-right-from-bracket"></i></button>
-      </div>
-    </div>
-  </header>
-
-  <main class="page-shell definitions-shell">
-    <section class="center-section definitions-section">
-      <div class="section-heading">
-        <div><p class="kicker">Temel ayarlar</p><h2>Tanımlamalar</h2></div>
-      </div>
-      <div class="card-grid definitions-grid">
-        <button id="systemInfoCard" class="center-card definition-card" type="button" disabled>
-          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
-          <span class="card-icon"><i class="fa-solid fa-building"></i></span>
-          <span class="card-copy"><strong>Sistem Bilgileri</strong><small>İşletme adı, logo, adres, telefon ve Instagram bilgilerini düzenle</small></span>
+    <header class="hero">
+        <button id="customerNotificationButton" class="customer-notification-button is-off" type="button" aria-label="Bildirimler kapalı" title="Bildirimler kapalı">
+            <i class="fa-solid fa-bell" aria-hidden="true"></i>
         </button>
-        <button id="receiptSettingsCard" class="center-card definition-card" type="button" disabled>
-          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
-          <span class="card-icon"><i class="fa-solid fa-receipt"></i></span>
-          <span class="card-copy"><strong>Adisyon Fişi Ayarları</strong><small>Hesap fişindeki logo, işletme bilgileri, saatler ve mesajları düzenle</small></span>
-        </button>
-        <button id="teaSettingsCard" class="center-card definition-card" type="button" disabled>
-          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
-          <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
-          <span class="card-copy"><strong>Taze Dem Ayarları</strong><small>Demlik sayısını, demlenme süresini ve tazelik süresini düzenle</small></span>
-        </button>
-        <button id="cashSettingsCard" class="center-card definition-card" type="button" disabled>
-          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
-          <span class="card-icon"><i class="fa-solid fa-coins"></i></span>
-          <span class="card-copy"><strong>Kasa Ayarları</strong><small>Başlangıç bakiyelerini, gelir, gider ve hesap aktarım kategorilerini düzenle</small></span>
-        </button>
-        <button id="tableRegionSettingsCard" class="center-card definition-card" type="button" disabled>
-          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
-          <span class="card-icon"><i class="fa-solid fa-table-cells-large"></i></span>
-          <span class="card-copy"><strong>Masa ve Bölge Ayarları</strong><small>Bölgeleri, masa adlarını, durumlarını ve sıralamayı düzenle</small></span>
-        </button>
-        <button id="applicationSoundsCard" class="center-card definition-card" type="button" disabled>
-          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
-          <span class="card-icon"><i class="fa-solid fa-volume-high"></i></span>
-          <span class="card-copy"><strong>Uygulama Sesleri</strong><small>Ses seçimi, ses testi ve sessize alma ayarlarını düzenle</small></span>
-        </button>
-      </div>
-    </section>
-  </main>
+        <div class="hero-atmosphere" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="hero-overlay">
+            <img src="assets/images/logo.png" alt="Fatih Çay Evi logosu" class="logo" width="300" height="300">
 
-  <dialog id="systemInfoDialog" class="settings-dialog system-info-dialog">
-    <form id="systemInfoForm">
-      <button id="closeSystemInfo" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
-      <div class="dialog-heading">
-        <div class="dialog-icon"><i class="fa-solid fa-building"></i></div>
-        <div><p class="dialog-kicker">Tanımlamalar</p><h2>Sistem Bilgileri</h2></div>
-      </div>
+            <h1 id="dynamicBusinessName">Fatih Çay Evi</h1>
+            <h2 class="hero-title" id="dynamicHeroTitle">Çorum'un Sıcak Sohbet Noktası</h2>
+            <p class="subtitle" id="dynamicSubtitle">Kaliteli Çay • Samimi Sohbet</p>
+            <p class="slogan" id="dynamicSlogan">“Oksijeni bilmem ama yaşamak için ÇAY şart.”</p>
 
-      <section class="logo-field">
-        <img id="logoPreview" src="../assets/images/logo.png" alt="Mevcut işletme logosu">
-        <div><strong>İşletme Logosu</strong><small id="logoFileName">Mevcut logo kullanılacak.</small><label class="logo-select">Yeni Logo Seç<input id="logoFile" type="file" accept="image/*"></label></div>
-      </section>
-
-      <div class="system-fields">
-        <label>İşletme Adı<input id="businessName" maxlength="80" autocomplete="organization" required></label>
-        <label>Telefon<input id="phone" maxlength="20" inputmode="tel" autocomplete="tel" required></label>
-        <label class="full-field">Adres<textarea id="address" maxlength="240" rows="3" autocomplete="street-address" required></textarea></label>
-        <label class="full-field">Instagram Hesabı<div class="instagram-input"><span>@</span><input id="instagram" maxlength="30" autocomplete="off" required></div></label>
-      </div>
-
-      <p id="formMessage" class="form-message" role="alert"></p>
-      <div class="dialog-actions"><button id="cancelSystemInfo" class="secondary-button" type="button">Vazgeç</button><button id="saveSystemInfo" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
-    </form>
-  </dialog>
-
-  <dialog id="teaSettingsDialog" class="settings-dialog tea-definition-dialog">
-    <form id="teaSettingsForm">
-      <button id="closeTeaSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
-      <div class="dialog-heading">
-        <div class="dialog-icon"><i class="fa-solid fa-mug-hot"></i></div>
-        <div><p class="dialog-kicker">Tanımlamalar</p><h2>Taze Dem Ayarları</h2></div>
-      </div>
-      <p class="tea-settings-copy">Taze Dem ekranının kullandığı demlik kapasitesini ve sayaç sürelerini belirleyin.</p>
-
-      <div class="tea-definition-fields">
-        <label><span>Demlik Sayısı</span><div class="tea-number-input"><input id="teaMaxActiveBrews" type="number" inputmode="numeric" min="1" max="8" required><b>Adet</b></div><small>En az 1, en fazla 8 demlik</small></label>
-        <label><span>Demlenme Süresi</span><div class="tea-number-input"><input id="teaBrewingMinutes" type="number" inputmode="numeric" min="1" max="120" required><b>Dakika</b></div><small>En az 1, en fazla 120 dakika</small></label>
-        <label><span>Tazelik Süresi</span><div class="tea-number-input"><input id="teaFreshnessMinutes" type="number" inputmode="numeric" min="1" max="240" required><b>Dakika</b></div><small>En az 1, en fazla 240 dakika</small></label>
-      </div>
-
-      <p id="teaFormMessage" class="form-message" role="alert"></p>
-      <div class="dialog-actions"><button id="cancelTeaSettings" class="secondary-button" type="button">Vazgeç</button><button id="saveTeaSettings" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
-    </form>
-  </dialog>
-
-  <dialog id="receiptSettingsDialog" class="settings-dialog receipt-settings-dialog">
-    <form id="receiptSettingsForm">
-      <button id="closeReceiptSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
-      <div class="dialog-heading">
-        <div class="dialog-icon"><i class="fa-solid fa-receipt"></i></div>
-        <div><p class="dialog-kicker">Tanımlamalar</p><h2>Adisyon Fişi Ayarları</h2></div>
-      </div>
-
-      <div class="receipt-settings-layout">
-        <div class="receipt-options">
-          <fieldset class="setting-group">
-            <legend>Logo</legend>
-            <label class="setting-toggle"><span><b>Logoyu Göster</b><small>Sistem Bilgileri bölümündeki logo kullanılır.</small></span><input id="receiptShowLogo" type="checkbox"><i aria-hidden="true"></i></label>
-          </fieldset>
-
-          <fieldset class="setting-group">
-            <legend>İşletme Bilgileri</legend>
-            <label class="setting-toggle"><span>İşletme adını göster</span><input id="receiptShowBusinessName" type="checkbox"><i aria-hidden="true"></i></label>
-            <label class="setting-toggle"><span>Adresi göster</span><input id="receiptShowAddress" type="checkbox"><i aria-hidden="true"></i></label>
-            <label class="setting-toggle"><span>Telefonu göster</span><input id="receiptShowPhone" type="checkbox"><i aria-hidden="true"></i></label>
-            <label class="setting-toggle"><span>Instagram hesabını göster</span><input id="receiptShowInstagram" type="checkbox"><i aria-hidden="true"></i></label>
-          </fieldset>
-
-          <fieldset class="setting-group">
-            <legend>Fiş Bilgileri</legend>
-            <label class="paper-width-field">Kâğıt Genişliği<select id="receiptPaperWidth"><option value="80">80 mm</option><option value="58">58 mm</option></select><small>Termal yazıcınızda kullandığınız kâğıt ölçüsünü seçin.</small></label>
-            <label class="setting-toggle"><span>Tarihi göster</span><input id="receiptShowDate" type="checkbox"><i aria-hidden="true"></i></label>
-            <label class="setting-toggle"><span>Fiş saatini göster</span><input id="receiptShowTime" type="checkbox"><i aria-hidden="true"></i></label>
-            <label class="setting-toggle"><span>Ürün eklenme saatlerini göster</span><input id="receiptShowItemTimes" type="checkbox"><i aria-hidden="true"></i></label>
-          </fieldset>
-
-          <fieldset class="setting-group receipt-message-fields">
-            <legend>Fiş Metinleri</legend>
-            <label>Üst Mesaj<textarea id="receiptTopMessage" maxlength="160" rows="2" placeholder="Örnek: Bizi tercih ettiğiniz için teşekkür ederiz."></textarea></label>
-            <label>Alt Mesaj<textarea id="receiptBottomMessage" maxlength="160" rows="2"></textarea></label>
-            <small>“Mali belge yerine geçmez.” ibaresi fişte her zaman korunur.</small>
-          </fieldset>
+            <div class="status">
+                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                <span>Her Gün Taze Demleme</span>
+            </div>
         </div>
+    </header>
 
-        <section class="receipt-settings-preview" aria-labelledby="receiptPreviewHeading">
-          <div class="preview-heading"><div><p>Canlı görünüm</p><h3 id="receiptPreviewHeading">Fiş Önizleme</h3></div><span id="receiptPreviewWidthLabel">80 mm</span></div>
-          <div class="settings-receipt-scroll"><article id="settingsReceiptPreview" class="settings-receipt-paper"></article></div>
+    <main class="container">
+        <section class="panel welcome-panel">
+            <h2>
+                <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                <span id="dynamicWelcomeTitle">Hoş Geldiniz</span>
+            </h2>
+            <p id="dynamicWelcomeText">Fatih Çay Evi’nde taze demlenmiş Çay, samimi sohbet ve güler yüzlü hizmet sizi bekliyor.</p>
         </section>
-      </div>
 
-      <p id="receiptFormMessage" class="form-message" role="alert"></p>
-      <div class="dialog-actions"><button id="cancelReceiptSettings" class="secondary-button" type="button">Vazgeç</button><button id="saveReceiptSettings" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
-    </form>
-  </dialog>
+        <section class="panel weather-card" aria-labelledby="weatherTitle">
+            <h2 id="weatherTitle">
+                <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>
+                <span>Çorum Hava Durumu</span>
+            </h2>
 
-  <dialog id="applicationSoundsDialog" class="settings-dialog application-sounds-dialog">
-    <form id="applicationSoundsForm">
-      <button id="closeApplicationSounds" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
-      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-volume-high"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Uygulama Sesleri</h2></div></div>
-      <p class="dialog-copy">Ses seçimleri bu cihazda geçerlidir ve anında kaydedilir. Mevcut seçilmiş sesler korunur.</p>
-      <div class="sound-settings">
-<div class="sound-setting" data-sound-setting="tea-ready">
-            <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Demlik hazır sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
-            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
-          </div>
-<div class="sound-setting" data-sound-setting="tea-expired">
-            <div class="sound-setting-copy"><i class="fa-solid fa-volume-high"></i><span><strong>Dem eskidi / süre doldu sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
-            <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
-          </div>
-<div class="sound-setting" data-sound-setting="merchant-order">
-          <div class="sound-setting-copy"><i class="fa-solid fa-bell"></i><span><strong>Esnaf çay siparişi sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
-          <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
-        </div>
-<div class="sound-setting" data-sound-setting="in-app-notification">
-          <div class="sound-setting-copy"><i class="fa-solid fa-bell"></i><span><strong>Uygulama içi bildirim sesi</strong><small data-sound-status>Varsayılan ses</small></span></div>
-          <div class="sound-setting-actions"><label><i class="fa-solid fa-folder-open"></i><span>Ses Seç</span><input type="file" accept="audio/*" data-sound-file></label><button type="button" data-sound-test>Sesi Dene</button><button type="button" data-sound-mute>Sessize Al</button><button type="button" data-sound-reset>Varsayılana Dön</button></div>
-        </div>
-      </div>
-      <p class="dialog-copy">Uygulama içi bildirim sesi; sipariş listesi, kritik stok, tükenen ürün, aylık stok sayımı, ödeme günü ve geciken ödeme hatırlatmalarında kullanılır.</p>
-      <div class="dialog-actions"><button id="doneApplicationSounds" class="primary-button" type="button">Tamam</button></div>
-    </form>
-  </dialog>
+            <div id="weather" aria-live="polite">
+                <div class="weather-icon" id="weatherIcon" aria-hidden="true">🌤️</div>
+                <div class="weather-copy">
+                    <h3>Çorum</h3>
+                    <p class="weather-temp" id="weatherTemp">--°C</p>
+                    <p id="weatherText">Hava durumu yükleniyor...</p>
+                </div>
+            </div>
+        </section>
 
-  <dialog id="tableRegionSettingsDialog" class="settings-dialog table-region-dialog">
-    <form id="tableRegionSettingsForm">
-      <button id="closeTableRegionSettings" class="dialog-close" type="button" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
-      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-table-cells-large"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Masa ve Bölge Ayarları</h2></div></div>
-      <label class="setting-toggle"><span>Bölge Sistemi</span><input id="regionSystemEnabled" type="checkbox"><i aria-hidden="true"></i></label>
-      <p class="dialog-copy">Kapalıyken masalar tek listede gösterilir. Bölge ve masa bağlantıları korunur. Masa sayılarını Adisyon → Masa Ayarı bölümünden değiştirebilirsiniz.</p>
-      <section class="layout-setting-section"><h3>Bölgeler</h3>
-        <div class="region-add-row"><input id="newRegionName" maxlength="40" aria-label="Yeni bölge adı" placeholder="Yeni bölge adı"><button id="addTableRegion" class="primary-button" type="button"><i class="fa-solid fa-plus"></i> Ekle</button></div>
-        <div id="tableRegionList" class="table-region-list"></div>
-      </section>
-      <section class="layout-setting-section"><h3>Masalar</h3><p class="dialog-copy">Oklarla sıralamayı değiştirin. Açık adisyon bulunan masalar silinemez veya pasife alınamaz.</p><div id="regionTableList" class="region-table-list"></div></section>
-      <p id="tableRegionMessage" class="form-message" role="alert"></p>
-      <div class="dialog-actions"><button id="cancelTableRegionSettings" class="secondary-button" type="button">Vazgeç</button><button id="saveTableRegionSettings" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
-    </form>
-  </dialog>
+        <section class="panel menu-panel" id="menu">
+            <h2>
+                <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                <span>Menü</span>
+            </h2>
+            <p>
+                Güncel Çay, oralet ve soğuk içecek fiyatlarımızı görmek için aşağıdaki butona dokunabilirsiniz.
+            </p>
+            <a href="menu.html" class="menuButton" aria-label="Menü ve fiyatları görüntüle">
+                <span class="menu-button-icon" aria-hidden="true">
+                    <i class="fa-solid fa-mug-hot"></i>
+                </span>
+                <span class="menu-button-copy">
+                    <small class="menu-button-kicker">FATİH ÇAY EVİ</small>
+                    <strong>Menü ve Fiyatlar</strong>
+                    <small>Güncel Ürünleri görüntüle</small>
+                </span>
+                <span class="menu-button-shine" aria-hidden="true"></span>
+                <i class="fa-solid fa-arrow-right menu-button-arrow" aria-hidden="true"></i>
+            </a>
+        </section>
 
-  <dialog id="cashSettingsDialog" class="cash-settings-host" aria-label="Kasa Ayarları">
-    <iframe id="cashSettingsFrame" title="Kasa Ayarları" data-src="../kasa-hesap-yonetimi/?tanimlamalar=1"></iframe>
-  </dialog>
+        <section class="panel tea-live-panel" id="taze-dem" aria-labelledby="freshnessTitle">
+            <h2 id="freshnessTitle">
+                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                <span>Çay Tazelik Durumu</span>
+            </h2>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=521"></script>
-  <script type="module" src="../assets/js/system-ui.js?v=496"></script>
+            <div class="tea-live-intro">
+                <p>Demliklerimizin güncel durumunu canlı olarak takip edebilirsiniz.</p>
+                <div class="tea-badges">
+                    <span class="tea-service-badge" id="teaServiceBadge" hidden>Servis Kapalı</span>
+                    <span class="tea-sync-badge" id="teaSyncBadge">
+                        <span aria-hidden="true"></span>
+                        Bağlanıyor
+                    </span>
+                </div>
+            </div>
+
+            <div class="customer-tea-empty" id="customerTeaEmpty">
+                <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                <div>
+                    <strong>Güncel dem bilgisi bekleniyor</strong>
+                    <span>Yeni dem başladığında burada görünecek.</span>
+                </div>
+            </div>
+
+            <div class="customer-tea-list" id="customerTeaList" aria-live="polite"></div>
+        </section>
+
+        <section class="panel" id="gallerySection" hidden>
+            <h2>
+                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                <span>Galeri</span>
+            </h2>
+            <p>Fatih Çay Evi’nden güncel fotoğraflar.</p>
+            <div class="gallery-placeholder dynamic-gallery" id="dynamicGallery" role="group" aria-label="İşletme görselleri"></div>
+        </section>
+
+        <section class="panel news-campaign-panel" id="newsCampaignSection" hidden>
+            <h2><i class="fa-solid fa-bullhorn"></i><span>Duyurular ve Kampanyalar</span></h2>
+            <div class="news-campaign-layout">
+                <div class="news-column" id="announcementColumn">
+                    <h3><i class="fa-solid fa-circle-info"></i> Duyurular</h3>
+                    <div id="announcementList" class="content-grid"></div>
+                </div>
+                <div class="campaign-column" id="campaignColumn">
+                    <h3><i class="fa-solid fa-gift"></i> Kampanyalarımız</h3>
+                    <div id="campaignList" class="content-grid"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>
+                <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                <span>Hızlı Erişim</span>
+            </h2>
+            <p class="quick-text">
+                Tek dokunuşla bize ulaşabilir, yol tarifi alabilir veya Google'da yorum bırakabilirsiniz.
+            </p>
+
+            <div class="quick-actions">
+                <a id="dynamicMaps" href="https://maps.app.goo.gl/wTP2GV7GnEHdP8dD7?g_st=ac" target="_blank"
+                    rel="noopener noreferrer" class="card">
+                    <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                    <h3>Yol Tarifi</h3>
+                    <p>Haritada Aç</p>
+                </a>
+
+                <a id="dynamicInstagram" href="https://www.instagram.com/fatihcayevicorum" target="_blank"
+                    rel="noopener noreferrer" class="card">
+                    <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+                    <h3>Instagram</h3>
+                    <p>Bizi Takip Et</p>
+                </a>
+
+                <a id="dynamicPhone" href="tel:+905541180806" class="card">
+                    <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                    <h3>Hemen&nbsp;Ara</h3>
+                    <p>0554&nbsp;118&nbsp;08&nbsp;06</p>
+                </a>
+
+                <a id="dynamicReview" href="https://g.page/r/CSOIVY6sAnqOEAE/review" target="_blank"
+                    rel="noopener noreferrer" class="card">
+                    <i class="fa-solid fa-star" aria-hidden="true"></i>
+                    <h3>Yorum Yap</h3>
+                    <p>Google'da Değerlendir</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <div class="visitor-strip"><div><span>Şu anda aktif</span><strong id="activeVisitors">1</strong></div><div><span>Toplam ziyaret</span><strong id="totalVisitors">—</strong></div></div>
+    <nav class="panel-entry-links" aria-label="Panel girişleri"><a href="yonetici-giris.html"><i class="fa-solid fa-user-shield"></i>Yönetici Girişi</a><a href="esnaf-giris.html"><i class="fa-solid fa-store"></i>Esnaf Girişi</a></nav>
+
+    <footer class="site-footer">
+        <p>© 2026 Fatih Çay Evi — Tüm Hakları Saklıdır.</p>
+    </footer>
+
+    <button id="topBtn" type="button" aria-label="Sayfanın başına dön">
+        <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <dialog id="customerNotificationDialog" class="customer-notification-dialog">
+        <form id="customerNotificationForm" method="dialog">
+            <div class="customer-notification-heading">
+                <span class="customer-notification-icon"><i class="fa-solid fa-bell"></i></span>
+                <div><small>FATİH ÇAY EVİ</small><h2>Bildirim Tercihleri</h2></div>
+                <button id="closeCustomerNotifications" class="customer-notification-close" type="button" aria-label="Pencereyi kapat"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="customer-notification-intro">Haberdar olmak istediğiniz bildirimleri seçin. Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.</p>
+            <label class="customer-notification-option">
+                <input id="customerTeaNotifications" type="checkbox">
+                <span class="customer-notification-check"><i class="fa-solid fa-check"></i></span>
+                <span><strong>Her Taze Demlikten Haberdar Ol</strong><small>Yeni demlenen çay servise hazır olduğunda bildirim al.</small></span>
+            </label>
+            <label class="customer-notification-option">
+                <input id="customerCampaignNotifications" type="checkbox">
+                <span class="customer-notification-check"><i class="fa-solid fa-check"></i></span>
+                <span><strong>Duyuru ve Kampanyalardan Haberdar Ol</strong><small>Fatih Çay Evi duyurularını ve fırsatlarını kaçırma.</small></span>
+            </label>
+            <p id="customerNotificationStatus" class="customer-notification-status is-info" role="status">Almak istediğiniz bildirimleri seçin.</p>
+            <button id="saveCustomerNotifications" class="customer-notification-save" type="submit"><i class="fa-solid fa-check"></i> Tercihlerimi Kaydet</button>
+        </form>
+    </dialog>
+
+    <script src="assets/js/home.js?v=251"></script>
+    <script type="module" src="assets/js/tea-live.js?v=7"></script>
+    <script type="module" src="assets/js/site-dynamic.js?v=250"></script>
+    <script type="module" src="assets/js/customer-push.js?v=512"></script>
+    <script type="module" src="assets/js/system-ui.js?v=265"></script>
 </body>
+
 </html>

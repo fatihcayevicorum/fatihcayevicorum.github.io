@@ -1,0 +1,123 @@
+/* Fatih Çay Evi — sistem geneli tema katmanı (R539). */
+:root{
+  --theme-primary:#741722;
+  --theme-primary-dark:#4c0d14;
+  --theme-primary-bright:#8f2028;
+  --theme-accent:#e3b84c;
+  --theme-page:#f8f1e7;
+  --theme-page-glow:#fffdf9;
+  --theme-surface:#fffdf9;
+  --theme-surface-2:#f4ece4;
+  --theme-input:#fff;
+  --theme-text:#271d1f;
+  --theme-muted:#77686a;
+  --theme-border:#eadfd3;
+  --theme-shadow:0 12px 30px rgba(67,28,25,.1);
+  --theme-on-primary:#fff;
+  --theme-header-text:#fff;
+  --theme-header-muted:rgba(255,255,255,.7);
+}
+
+:root[data-color-theme="graphite"]{
+  --theme-primary:#642d35;--theme-primary-dark:#2b2225;--theme-primary-bright:#88404a;--theme-accent:#c9ab70;
+}
+:root[data-color-theme="gold"]{
+  --theme-primary:#795219;--theme-primary-dark:#4b310e;--theme-primary-bright:#a77927;--theme-accent:#efc861;
+}
+:root[data-color-theme="coffee"]{
+  --theme-primary:#654032;--theme-primary-dark:#3e241c;--theme-primary-bright:#8b5b43;--theme-accent:#d9aa3b;
+}
+:root[data-color-theme="navy"]{
+  --theme-primary:#244a70;--theme-primary-dark:#162b45;--theme-primary-bright:#356d9a;--theme-accent:#e0b64d;
+}
+
+:root[data-effective-theme="dark"]{
+  --theme-page:#171315;
+  --theme-page-glow:#211b1d;
+  --theme-surface:#241e20;
+  --theme-surface-2:#30282b;
+  --theme-input:#2b2426;
+  --theme-text:#f5ece8;
+  --theme-muted:#bcaeb0;
+  --theme-border:#4a3b3f;
+  --theme-shadow:0 14px 34px rgba(0,0,0,.28);
+}
+:root[data-effective-theme="dark"][data-color-theme="graphite"]{--theme-page:#151416;--theme-page-glow:#211f22;--theme-surface:#242225;--theme-surface-2:#302d31;--theme-input:#2a282c;--theme-border:#49454b}
+:root[data-effective-theme="dark"][data-color-theme="gold"]{--theme-page:#18150f;--theme-page-glow:#242016;--theme-surface:#29241a;--theme-surface-2:#342e20;--theme-input:#302a1e;--theme-border:#50462e}
+:root[data-effective-theme="dark"][data-color-theme="coffee"]{--theme-page:#171210;--theme-page-glow:#241b18;--theme-surface:#29201d;--theme-surface-2:#352923;--theme-input:#302520;--theme-border:#514039}
+:root[data-effective-theme="dark"][data-color-theme="navy"]{--theme-page:#101720;--theme-page-glow:#172331;--theme-surface:#1b2836;--theme-surface-2:#243547;--theme-input:#213142;--theme-border:#38516a}
+
+/* Eski sayfalardaki ortak değişkenleri tek tema diline bağlar. */
+:root{
+  --wine:var(--theme-primary);--wine-dark:var(--theme-primary-dark);
+  --burgundy-950:var(--theme-primary-dark);--burgundy-900:var(--theme-primary-dark);
+  --burgundy-800:var(--theme-primary);--burgundy-700:var(--theme-primary-bright);
+  --red:var(--theme-primary);--red2:var(--theme-primary-bright);
+  --gold:var(--theme-accent);--gold-500:var(--theme-accent);--gold-400:color-mix(in srgb,var(--theme-accent) 76%,#fff);
+  --cream:var(--theme-page);--cream-50:var(--theme-surface);--cream-100:var(--theme-page-glow);
+  --paper:var(--theme-surface);--ink:var(--theme-text);--muted:var(--theme-muted);--line:var(--theme-border);--shadow:var(--theme-shadow);
+}
+
+html,body{background-color:var(--theme-page);color:var(--theme-text)}
+body{
+  background-image:radial-gradient(circle at 10% 0,color-mix(in srgb,var(--theme-accent) 12%,transparent),transparent 25rem),linear-gradient(180deg,var(--theme-page-glow),var(--theme-page));
+  transition:background-color .2s ease,color .2s ease;
+}
+
+/* Marka alanı seçilen vurgu rengini kullanır. */
+.app-header,.hero,.menu-hero{
+  color:var(--theme-header-text)!important;
+  background:radial-gradient(circle at 12% 0,color-mix(in srgb,var(--theme-accent) 24%,transparent),transparent 12rem),linear-gradient(145deg,var(--theme-primary-dark),var(--theme-primary) 62%,var(--theme-primary-bright))!important;
+}
+body>footer{background:linear-gradient(140deg,var(--theme-primary-dark),var(--theme-primary))!important}
+.brand-copy .eyebrow,.live-time strong{color:color-mix(in srgb,var(--theme-accent) 78%,#fff)!important}
+.brand-copy h1,.app-header a,.app-header button,.hero,.menu-hero{color:var(--theme-header-text)}
+.live-time span{color:var(--theme-header-muted)!important}
+.panel-menu-list{border-color:var(--theme-border)!important;background:var(--theme-surface)!important;box-shadow:var(--theme-shadow)!important}
+.panel-menu-list a,.panel-menu-list span{color:var(--theme-text)!important}.panel-menu-list a:hover{background:var(--theme-surface-2)!important}.panel-menu-list .is-current{color:#fff!important;background:var(--theme-primary)!important}
+
+/* Ana yüzeyler. Durum kartları ve renkli masa kartları bu listede özellikle yoktur. */
+:is(.center-section,.panel,.panel-card,.control-card,.ledger-card,.balances,.card,.history-card,.notification-card,.profile-request-card,.settings-section,.layout-setting-section,.summary-grid article,.daily-summary article,.balance,.menu-toolbar,.product-card,.login-card,.price-dialog-card,.cost-groups-dialog,.product-settings-host,.cash-settings-host,.internal-pos-card,.receipt-settings-preview,.sound-setting,.region-settings-card){
+  border-color:var(--theme-border)!important;
+  color:var(--theme-text);
+  background:var(--theme-surface)!important;
+  box-shadow:var(--theme-shadow);
+}
+:is(.settings-dialog form,.dialog-card,dialog>form,.management-dialog-card){color:var(--theme-text);background-color:var(--theme-surface)!important}
+
+:is(input:not([type="checkbox"]):not([type="radio"]),textarea,select,.search-box,.product-search,.input-wrap){
+  border-color:var(--theme-border)!important;
+  color:var(--theme-text)!important;
+  background-color:var(--theme-input)!important;
+}
+input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--theme-muted) 78%,transparent)!important}
+option{color:var(--theme-text);background:var(--theme-input)}
+
+:is(.secondary,.secondary-button,.soft,.date-control button,.category-tabs button:not(.active),.category-tab:not(.is-active),.close,.dialog-close,.definition-close-button){
+  border-color:var(--theme-border)!important;
+  color:var(--theme-text)!important;
+  background-color:var(--theme-surface-2)!important;
+}
+:is(.primary,.primary-button,.dialog-primary,.settings-save,.login-button,.submit-order,.management-create-button){
+  color:var(--theme-on-primary)!important;
+  background:linear-gradient(135deg,var(--theme-primary-bright),var(--theme-primary-dark))!important;
+}
+
+:is(.kicker,.dialog-kicker,.eyebrow,.section-heading p,.heading p,.section-head p,.summary-grid b,.product-card strong,.product-price,.section-title){color:var(--theme-primary)!important}
+:is(.dialog-copy,.empty,.lead,.card-copy small,.section-heading small,label small,.menu-note){color:var(--theme-muted)}
+
+/* Karanlık modda eski sabit açık yüzeyleri güvenli şekilde dönüştürür. */
+:root[data-effective-theme="dark"] :is(.table-region-row,.region-table-row,.category-row,.cash-group-row,.movement,.order-item:not(.is-gift),.detail-items article,.content-item,.product,.price-product-card,.bundle-item,.cost-product,.sound-setting,.setting-group,.theme-setting-panel,.theme-preview-card,.profile-request-row){
+  border-color:var(--theme-border)!important;
+  color:var(--theme-text)!important;
+  background:var(--theme-surface)!important;
+}
+:root[data-effective-theme="dark"] :is(.stats article,.detail-meta div,.detail-payments div,.order-summary,.preview,.lock-notice,.request-count,.profile-change-grid>span,.profile-request-empty,.weather,.receipt-options fieldset,.region-choices button,.permission-grid label){
+  border-color:var(--theme-border)!important;
+  color:var(--theme-text);
+  background:var(--theme-surface-2)!important;
+}
+:root[data-effective-theme="dark"] dialog::backdrop{background:rgba(4,3,4,.78)}
+:root[data-effective-theme="dark"] img:not(.brand-logo):not(.settings-receipt-logo){filter:saturate(.94)}
+
+@media(prefers-reduced-motion:reduce){body{transition:none}}

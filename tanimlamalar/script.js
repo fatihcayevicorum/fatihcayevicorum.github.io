@@ -14,7 +14,7 @@ const posLayoutRef=doc(db,"adminAppSettings","pos"),layoutOrdersCol=collection(d
 let tableLayout=normalizeTableLayout(),layoutOrders=[],layoutLoaded=false,layoutOrdersLoaded=false,layoutDraft=null,layoutBase=null,layoutSaving=false,editingRegionId="";
 const defaults={businessName:"Fatih Çay Evi",address:"Ulukavak Mah. Osmancık Cad. No:285, Çorum/Merkez",phone:"0554 118 08 06",instagramUrl:"https://www.instagram.com/fatihcayevicorum/",logoUrl:"../assets/images/logo.png"};
 const receiptDefaults={paperWidthMm:80,showLogo:true,showBusinessName:true,showAddress:true,showPhone:true,showInstagram:true,showDate:true,showTime:true,showItemTimes:true,topMessage:"",bottomMessage:"Afiyet olsun, yine bekleriz."};
-let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSaving=false,teaSaving=false,previewObjectUrl="",toastTimer;
+let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSaving=false,teaSaving=false,themeSaving=false,themeBase=null,themeDraft=null,previewObjectUrl="",toastTimer;
 
 onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
@@ -43,14 +43,54 @@ $("receiptSettingsForm").addEventListener("input",renderReceiptSettingsPreview);
 $("closeTeaSettings").onclick=closeTeaSettings;
 $("cancelTeaSettings").onclick=closeTeaSettings;
 $("teaSettingsForm").onsubmit=saveTeaSettings;
+$("themeSettingsCard").onclick=openThemeSettings;
+$("closeThemeSettings").onclick=closeThemeSettings;
+$("cancelThemeSettings").onclick=closeThemeSettings;
+$("resetThemeSettings").onclick=resetThemeSettings;
+$("themeSettingsForm").onchange=previewThemeSettings;
+$("themeSettingsForm").onsubmit=saveThemeSettings;
+$("themeSettingsDialog").addEventListener("cancel",event=>{event.preventDefault();closeThemeSettings()});
 $("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 
 function renderPageState(){
   $("systemInfoCard").disabled=!loaded;
   $("receiptSettingsCard").disabled=!loaded;
   $("teaSettingsCard").disabled=!teaLoaded;
+  $("themeSettingsCard").disabled=!loaded;
   document.querySelector(".eyebrow").textContent=config.businessName||defaults.businessName;
 }
+
+const themeModeNames={light:"Açık",dark:"Karanlık",auto:"Otomatik"};
+function themeApi(){return window.FatihTheme}
+function normalizeTheme(value){return themeApi()?.normalize(value)||{mode:["light","dark","auto"].includes(value?.mode)?value.mode:"light",palette:["classic","graphite","gold","coffee","navy"].includes(value?.palette)?value.palette:"classic"}}
+function themeFromForm(){return normalizeTheme({mode:document.querySelector('input[name="themeMode"]:checked')?.value,palette:document.querySelector('input[name="themePalette"]:checked')?.value})}
+function fillThemeForm(settings){
+  const value=normalizeTheme(settings),mode=document.querySelector(`input[name="themeMode"][value="${value.mode}"]`),palette=document.querySelector(`input[name="themePalette"][value="${value.palette}"]`);
+  if(mode)mode.checked=true;if(palette)palette.checked=true;themeDraft=value;renderThemePreview(value)
+}
+function renderThemePreview(settings){
+  const value=normalizeTheme(settings),paletteName=themeApi()?.palettes?.[value.palette]?.name||({classic:"Klasik Bordo",graphite:"Bordo Antrasit",gold:"Altın Krem",coffee:"Kahve Krem",navy:"Lacivert Altın"}[value.palette]);
+  const effective=document.documentElement.dataset.effectiveTheme==="dark"?"Karanlık":"Açık",mode=value.mode==="auto"?`Otomatik (${effective})`:themeModeNames[value.mode];
+  $("themePreviewTitle").textContent=`${paletteName} • ${mode}`;
+}
+function openThemeSettings(){
+  if(!loaded||!themeApi())return;
+  themeBase=normalizeTheme(config.themeSettings||themeApi().saved());themeDraft={...themeBase};fillThemeForm(themeDraft);themeApi().apply(themeDraft);$("themeFormMessage").textContent="";$("themeSettingsDialog").showModal();
+}
+function previewThemeSettings(){if(themeSaving||!themeApi())return;themeDraft=themeFromForm();themeApi().apply(themeDraft);renderThemePreview(themeDraft);$("themeFormMessage").textContent=""}
+function resetThemeSettings(){if(themeSaving||!themeApi())return;fillThemeForm(themeApi().defaults);themeApi().apply(themeDraft);$("themeFormMessage").textContent="Varsayılan Klasik Bordo ve Açık görünüm seçildi. Kaydettiğinizde bütün sisteme uygulanacak."}
+function closeThemeSettings(){if(themeSaving)return;if(themeBase&&themeApi())themeApi().apply(themeBase);$("themeSettingsDialog").close()}
+async function saveThemeSettings(event){
+  event.preventDefault();if(themeSaving||!themeApi())return;const next=themeFromForm();themeSaving=true;setThemeBusy(true);$("themeFormMessage").textContent="";
+  try{
+    themeApi().save(next);themeBase={...next};themeDraft={...next};config={...config,themeSettings:next};
+    await setDoc(configRef,{themeSettings:next,themeSettingsUpdatedAt:serverTimestamp(),themeSettingsUpdatedBy:auth.currentUser?.uid||""},{merge:true});
+    $("themeSettingsDialog").close();toast("Tema ve görünüm ayarları bütün sistem için kaydedildi.");
+  }catch(error){
+    console.error(error);themeApi().save(next);themeBase={...next};themeDraft={...next};config={...config,themeSettings:next};$("themeSettingsDialog").close();toast("Tema bu cihazda kaydedildi; diğer cihazlarla eşitleme şu anda tamamlanamadı.");
+  }finally{themeSaving=false;setThemeBusy(false)}
+}
+function setThemeBusy(value){$("saveThemeSettings").disabled=value;$("cancelThemeSettings").disabled=value;$("closeThemeSettings").disabled=value;$("resetThemeSettings").disabled=value;$("saveThemeSettings").innerHTML=value?'<i class="fa-solid fa-spinner fa-spin"></i> Kaydediliyor':'<i class="fa-solid fa-floppy-disk"></i> Kaydet'}
 function openSystemInfo(){
   if(!loaded)return;
   clearPreviewObjectUrl();
