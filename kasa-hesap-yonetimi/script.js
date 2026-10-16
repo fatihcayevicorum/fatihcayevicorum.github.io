@@ -4,7 +4,7 @@ import { collection, doc, getFirestore, getDoc, getDocs, query, where, onSnapsho
 import { ADMIN_UID, firebaseConfig } from "../assets/js/firebase-config.js";
 import { deleteDoc, runTransaction, setDoc, updateDoc } from "../assets/js/offline-firestore.js";
 import { savingsOwner,unlockSavings,openSavingsMovement,savingsError } from "../assets/js/savings.js?v=423";
-import { hasPanelAccess } from "../assets/js/admin-access.js";
+import { hasPanelAccess, isOwner } from "../assets/js/admin-access.js";
 import { systemConfirm } from "../assets/js/system-confirm.js";
 import { lockSensitiveAccess, requireSensitiveAccess } from "../assets/js/sensitive-access.js";
 import { hasLocalPendingInternalConsumption, hasPendingInternalConsumptionDraft } from "../assets/js/internal-consumption-guard.js?v=395";
@@ -48,7 +48,8 @@ document.addEventListener("click",e=>{const menu=document.querySelector(".panel-
 onAuthStateChanged(auth,async user=>{
   if(!user){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");return}
   if(!await hasPanelAccess(user,db,"cash")){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetici-giris.html");return}
-  if(!await unlock()){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetim-merkezi/");return}
+  if(definitionsSettingsMode&&!isOwner(user)){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}
+  if(!definitionsSettingsMode&&!await unlock()){location.replace("../yonetim-merkezi/");return}
   const owner=savingsOwner();$("savingsPageLink").hidden=!owner;document.documentElement.classList.remove("cash-pending");if(owner&&new URLSearchParams(location.search).get("birikim")==="1"){history.replaceState(null,"",location.pathname);setTimeout(openSavingsPanel,80)}if(started)return;started=true;
   if(definitionsSettingsMode){
     // Geçmiş kategori/grup silme korumaları için hareketleri de önce yükle.
