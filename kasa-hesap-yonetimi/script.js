@@ -14,19 +14,36 @@ const movementsCol=collection(db,"adminCashMovements"),stockMovesCol=collection(
 const definitionsSettingsMode=window.parent!==window&&new URLSearchParams(location.search).get("tanimlamalar")==="1";
 if(definitionsSettingsMode){
   document.documentElement.classList.add("definitions-settings-mode");
+  document.querySelectorAll(".cash-settings-modal").forEach(dialog=>{
+    const card=dialog.querySelector(".settings-dialog");if(!card)return;
+    const section=card.querySelector(":scope>.settings-section");
+    if(section){
+      const footer=section.querySelector(".dialog-actions");
+      if(footer){footer.querySelectorAll("button").forEach(button=>{const form=button.closest("form");if(form?.id)button.setAttribute("form",form.id)});footer.classList.add("cash-modal-footer");card.append(footer)}
+      section.classList.add("cash-modal-scroll");
+    }
+  });
+  document.querySelectorAll("[data-category-form],[data-group-form]").forEach(form=>{
+    form.noValidate=true;
+    form.addEventListener("submit",event=>{
+      if(!form.checkValidity()){event.preventDefault();event.stopImmediatePropagation();toast("Lütfen eklenecek grup veya kategori adını girin.")}
+    },true);
+  });
   let sizeFrame;
   const reportSettingsSize=()=>{
     cancelAnimationFrame(sizeFrame);
     sizeFrame=requestAnimationFrame(()=>{
       const active=document.querySelector(".cash-settings-modal[open]"),card=active?.querySelector(".settings-dialog");
       if(!card)return;
-      const width=active.id==="settingsDialog"?600:active.id==="openingSettingsDialog"?660:800;
-      window.parent.postMessage({type:"fatih-cash-settings-size",width,height:Math.ceil(card.scrollHeight+2)},location.origin);
+      const width=active.id==="settingsDialog"?620:active.id==="openingSettingsDialog"?560:active.classList.contains("transfer-mode")?620:760;
+      const body=card.querySelector(".cash-modal-scroll")||card.querySelector(".settings-menu"),head=card.querySelector(".dialog-head"),footer=card.querySelector(".cash-modal-footer");
+      const height=(head?.offsetHeight||0)+(body?.scrollHeight||0)+(footer?.offsetHeight||0)+60;
+      window.parent.postMessage({type:"fatih-cash-settings-size",width,height:Math.ceil(height)},location.origin);
     });
   };
   const settingsObserver=new MutationObserver(reportSettingsSize);
   document.querySelectorAll(".cash-settings-modal").forEach(dialog=>{
-    settingsObserver.observe(dialog,{attributes:true,attributeFilter:["open"]});
+    settingsObserver.observe(dialog,{attributes:true,attributeFilter:["open","class"],childList:true,subtree:true});
     const card=dialog.querySelector(".settings-dialog");if(card)new ResizeObserver(reportSettingsSize).observe(card);
   });
   window.addEventListener("resize",reportSettingsSize);

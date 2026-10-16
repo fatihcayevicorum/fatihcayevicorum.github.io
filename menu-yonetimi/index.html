@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
     <script type="module" src="../assets/js/connection-status.js?v=481"></script>
-  <link rel="stylesheet" href="../assets/css/theme.css?v=546">
+  <link rel="stylesheet" href="../assets/css/theme.css?v=547">
   <script src="../assets/js/theme.js?v=541"></script>
 </head>
 <body>
@@ -125,6 +125,7 @@
 
 <dialog id="costGroupsDialog" class="management-form-dialog cost-groups-dialog"><form id="costGroupForm">
 <div class="management-dialog-heading"><div><p class="kicker">Ürün ve maliyet</p><h2>Tahmini Maliyet Grupları</h2></div><button id="closeCostGroups" class="management-dialog-close" type="button" aria-label="Kapat">×</button></div>
+<div class="cost-modal-scroll">
 <p class="cost-notice"><strong>Bu hesaplar tahminidir. Stoktan düşüm yapmaz.</strong><br>Yalnızca İşletme Asistanı maliyet analizinde kullanılır. Şeker, su ve enerji gibi ek giderler dahil değildir. Reçete ile stok düşümü ayrı çalışır.</p>
 <div class="cost-group-toolbar"><label><span>Maliyet grubu</span><select id="costGroupSelect"></select></label><button id="newCostGroup" class="secondary-button" type="button">+ Yeni grup</button><button id="deleteCostGroup" class="icon-button is-danger" type="button" title="Grubu kaldır" aria-label="Grubu kaldır"><i class="fa-solid fa-trash"></i></button></div>
 <div id="costEditor"><div class="cost-input-grid">
@@ -138,7 +139,7 @@
 <div class="cost-product-tools"><input id="costSearch" type="search" placeholder="Bağlanacak ürünleri ara" aria-label="Ürün ara"><button id="selectCostProducts" type="button" class="secondary-button">Görünenleri Seç</button></div>
 <div id="costProducts"></div></div>
 <p class="cost-help">İlk tanımlama eski satışlara da tahmini maliyet sağlar. Sonraki fiyat değişiklikleri yeni satışlara uygulanır; önceki tanımlar saklanır. Kaydet, tüm grupları kaydeder.</p>
-<div class="cost-actions"><button id="cancelCostGroups" type="button" class="secondary-button">Vazgeç</button><button id="saveCostGroups" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
+</div><div class="cost-actions"><button id="cancelCostGroups" type="button" class="secondary-button">Vazgeç</button><button id="saveCostGroups" class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button></div>
 </form></dialog>
 <dialog id="productListDialog" class="product-list-dialog">        <section class="panel product-list-panel">
             <div class="section-heading">
