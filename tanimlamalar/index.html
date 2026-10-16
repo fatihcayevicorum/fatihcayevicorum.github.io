@@ -12,10 +12,10 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=540">
+  <link rel="stylesheet" href="style.css?v=541">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
-  <link rel="stylesheet" href="../assets/css/theme.css?v=540">
-  <script src="../assets/js/theme.js?v=540"></script>
+  <link rel="stylesheet" href="../assets/css/theme.css?v=541">
+  <script src="../assets/js/theme.js?v=541"></script>
 </head>
 <body>
   <header class="app-header">
@@ -197,9 +197,11 @@
           <label><input type="radio" name="themePalette" value="mono"><span><i class="theme-swatches mono"><b></b><b></b><b></b></i><strong>Siyah Beyaz</strong><small>Sade ve tamamen nötr görünüm</small></span></label>
           <label><input type="radio" name="themePalette" value="emerald"><span><i class="theme-swatches emerald"><b></b><b></b><b></b></i><strong>Zümrüt Altın</strong><small>Koyu yeşil ve sıcak altın uyumu</small></span></label>
           <label><input type="radio" name="themePalette" value="orange"><span><i class="theme-swatches orange"><b></b><b></b><b></b></i><strong>Turuncu Kömür</strong><small>Sıcak turuncu ve koyu antrasit</small></span></label>
+          <label><input type="radio" name="themePalette" value="custom"><span><i class="fa-solid fa-palette"></i><strong>Özel Tema</strong><small>Renkleri kendiniz belirleyin</small></span></label>
         </div>
       </section>
       <section class="theme-live-preview" aria-live="polite">
+        <div id="customThemeEditor" hidden><h3>Özel Tema Renkleri</h3><p>Açık ve karanlık görünümü ayrı düzenleyin. Okunamayan yazı renkleri otomatik dengelenir.</p><div id="customThemeColors"></div></div>
         <div><p>Canlı ön izleme</p><h3 id="themePreviewTitle">Klasik Bordo • Açık</h3></div>
         <article class="theme-preview-card"><span><i class="fa-solid fa-mug-hot"></i></span><div><strong>Fatih Çay Evi</strong><small>Yazılar ve yüzeyler seçilen temaya göre uyarlanır.</small></div><button type="button" tabindex="-1">Örnek</button></article>
       </section>
@@ -268,7 +270,7 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=540"></script>
+  <script type="module" src="script.js?v=541"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
   "use strict";
   const STORAGE_KEY="fatih-theme-settings-v1";
   const MODES=new Set(["light","dark","auto"]);
-  const PALETTES=new Set(["classic","graphite","gold","coffee","navy","mono","emerald","orange"]);
+  const PALETTES=new Set(["classic","graphite","gold","coffee","navy","mono","emerald","orange","custom"]);
   const PALETTE_META={
     classic:{name:"Klasik Bordo",light:"#5a1018",dark:"#25090c"},
     graphite:{name:"Bordo Antrasit",light:"#4a252a",dark:"#1f1c1e"},
@@ -15,13 +15,23 @@
     orange:{name:"Turuncu Kömür",light:"#a65324",dark:"#211713"}
   };
   const defaults=Object.freeze({mode:"light",palette:"classic"});
+  const customDefaults={light:{primary:"#741722",accent:"#e3b84c",page:"#f8f1e7",panel:"#fffdf9",card:"#f4ece4",text:"#271d1f",muted:"#77686a",input:"#ffffff"},dark:{primary:"#741722",accent:"#e3b84c",page:"#171315",panel:"#241e20",card:"#30282b",text:"#f5ece8",muted:"#bcaeb0",input:"#2b2426"}};
+  const colorKeys=Object.keys(customDefaults.light);
+  function customColors(value){
+    const result={light:{},dark:{}};
+    for(const mode of ["light","dark"])for(const key of colorKeys)result[mode][key]=/^#[0-9a-f]{6}$/i.test(value?.[mode]?.[key]||"")?value[mode][key]:customDefaults[mode][key];
+    return result;
+  }
+  function contrast(a,b){const lum=c=>{const v=c.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return .2126*v[0]+.7152*v[1]+.0722*v[2]};const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+  function readable(color,surfaces){if(surfaces.every(s=>contrast(color,s)>=4.5))return color;return ["#ffffff","#171717"].sort((a,b)=>Math.min(...surfaces.map(s=>contrast(b,s)))-Math.min(...surfaces.map(s=>contrast(a,s))))[0]}
   const media=matchMedia("(prefers-color-scheme: dark)");
   const scriptUrl=document.currentScript?.src||"";
 
   function normalize(value){
     return{
       mode:MODES.has(value?.mode)?value.mode:defaults.mode,
-      palette:PALETTES.has(value?.palette)?value.palette:defaults.palette
+      palette:PALETTES.has(value?.palette)?value.palette:defaults.palette,
+      custom:customColors(value?.custom)
     };
   }
   function readLocal(){
@@ -33,22 +43,33 @@
   function effectiveMode(settings){return settings.mode==="auto"?(media.matches?"dark":"light"):settings.mode}
   function apply(value,{persist=false,notify=true}={}){
     const settings=normalize(value),effective=effectiveMode(settings),root=document.documentElement;
+    activeSettings=settings;
     root.dataset.themeMode=settings.mode;
     root.dataset.effectiveTheme=effective;
     root.dataset.colorTheme=settings.palette;
     root.style.colorScheme=effective;
+    const vars=["primary","primary-dark","primary-bright","accent","page","page-glow","surface","surface-2","input","text","muted","border","on-primary","header-text","header-muted"];
+    vars.forEach(key=>root.style.removeProperty("--theme-"+key));
+    if(settings.palette==="custom"){
+      const c=settings.custom[effective],surfaces=[c.page,c.panel,c.card,c.input];
+      const tokens={primary:c.primary,"primary-dark":c.primary,"primary-bright":c.primary,accent:c.accent,page:c.page,"page-glow":c.page,surface:c.panel,"surface-2":c.card,input:c.input,text:readable(c.text,surfaces),muted:readable(c.muted,surfaces),border:`color-mix(in srgb,${c.text} 22%,${c.panel})`,"on-primary":readable("#ffffff",[c.primary])};
+      Object.entries(tokens).forEach(([key,value])=>root.style.setProperty("--theme-"+key,value));
+      root.style.setProperty("--theme-header-text",readable("#ffffff",[c.primary]));
+      root.style.setProperty("--theme-header-muted",readable("#eeeeee",[c.primary]));
+    }
     const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta)meta.content=PALETTE_META[settings.palette][effective];
+    if(meta)meta.content=settings.palette==="custom"?settings.custom[effective].primary:PALETTE_META[settings.palette][effective];
     if(persist)writeLocal(settings);
     if(notify)window.dispatchEvent(new CustomEvent("fatih-theme-change",{detail:{...settings,effective}}));
     return settings;
   }
   function save(value){return apply(value,{persist:true})}
-  function current(){return normalize({mode:document.documentElement.dataset.themeMode,palette:document.documentElement.dataset.colorTheme})}
+  let activeSettings;
+  function current(){return activeSettings||readLocal()}
   function saved(){return readLocal()}
   function reset(){return save(defaults)}
 
-  window.FatihTheme=Object.freeze({defaults,normalize,apply,save,current,saved,reset,palettes:PALETTE_META,modes:["light","dark","auto"]});
+  window.FatihTheme=Object.freeze({defaults,customDefaults,normalize,apply,save,current,saved,reset,contrast,palettes:{...PALETTE_META,custom:{name:"Özel Tema"}},modes:["light","dark","auto"]});
   apply(readLocal(),{notify:false});
 
   media.addEventListener?.("change",()=>{const settings=current();if(settings.mode==="auto")apply(settings)});
@@ -66,7 +87,7 @@
         const remote=snapshot.data()?.themeSettings;
         if(!remote)return;
         const next=normalize(remote),local=readLocal();
-        if(next.mode!==local.mode||next.palette!==local.palette)save(next);
+        if(JSON.stringify(next)!==JSON.stringify(local))save(next);
       },()=>{});
     }catch(error){console.debug("Tema eşitleme çevrim dışı çalışıyor.",error?.message||error)}
   }

@@ -63,15 +63,19 @@ function renderPageState(){
 const themeModeNames={light:"Açık",dark:"Karanlık",auto:"Otomatik"};
 function themeApi(){return window.FatihTheme}
 function normalizeTheme(value){return themeApi()?.normalize(value)||{mode:["light","dark","auto"].includes(value?.mode)?value.mode:"light",palette:["classic","graphite","gold","coffee","navy","mono","emerald","orange"].includes(value?.palette)?value.palette:"classic"}}
-function themeFromForm(){return normalizeTheme({mode:document.querySelector('input[name="themeMode"]:checked')?.value,palette:document.querySelector('input[name="themePalette"]:checked')?.value})}
+function themeFromForm(){const custom=themeApi().normalize(themeDraft).custom;document.querySelectorAll("[data-theme-color]").forEach(input=>{custom[input.dataset.mode][input.dataset.themeColor]=input.value});return normalizeTheme({mode:document.querySelector('input[name="themeMode"]:checked')?.value,palette:document.querySelector('input[name="themePalette"]:checked')?.value,custom})}
 function fillThemeForm(settings){
   const value=normalizeTheme(settings),mode=document.querySelector(`input[name="themeMode"][value="${value.mode}"]`),palette=document.querySelector(`input[name="themePalette"][value="${value.palette}"]`);
-  if(mode)mode.checked=true;if(palette)palette.checked=true;themeDraft=value;renderThemePreview(value)
+  if(mode)mode.checked=true;if(palette)palette.checked=true;themeDraft=value;
+  const names={primary:"Ana renk",accent:"Vurgu",page:"Sayfa zemini",panel:"Bölüm / panel",card:"Kartlar",text:"Ana yazı",muted:"Açıklama yazısı",input:"Giriş alanları"};
+  $("customThemeColors").innerHTML=["light","dark"].map(mode=>`<fieldset><legend>${mode==="light"?"Açık görünüm":"Karanlık görünüm"}</legend><div class="custom-color-grid">${Object.entries(names).map(([key,label])=>`<label><span>${label}</span><input type="color" data-mode="${mode}" data-theme-color="${key}" value="${value.custom[mode][key]}" aria-label="${label}"></label>`).join("")}</div></fieldset>`).join("");
+  renderThemePreview(value)
 }
 function renderThemePreview(settings){
   const value=normalizeTheme(settings),paletteName=themeApi()?.palettes?.[value.palette]?.name||({classic:"Klasik Bordo",graphite:"Bordo Antrasit",gold:"Altın Krem",coffee:"Kahve Krem",navy:"Lacivert Altın",mono:"Siyah Beyaz",emerald:"Zümrüt Altın",orange:"Turuncu Kömür"}[value.palette]);
   const effective=document.documentElement.dataset.effectiveTheme==="dark"?"Karanlık":"Açık",mode=value.mode==="auto"?`Otomatik (${effective})`:themeModeNames[value.mode];
   $("themePreviewTitle").textContent=`${paletteName} • ${mode}`;
+  $("customThemeEditor").hidden=value.palette!=="custom";
 }
 function openThemeSettings(){
   if(!loaded||!themeApi())return;

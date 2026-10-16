@@ -279,6 +279,7 @@ button{-webkit-tap-highlight-color:transparent}
 }
 
 /* R539 — Tema ve Görünüm Ayarları */
+#customThemeEditor{grid-column:1/-1;width:100%}#customThemeEditor[hidden]{display:none}#customThemeColors{display:grid;gap:12px;margin-top:12px}#customThemeColors fieldset{min-width:0;border:1px solid var(--line);border-radius:14px;padding:12px}#customThemeColors legend{font-size:.75rem;font-weight:700}.custom-color-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.custom-color-grid label{display:grid;gap:5px;font-size:.65rem}.custom-color-grid input[type=color]{width:100%;height:44px;padding:3px;cursor:pointer}@media(max-width:650px){.custom-color-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .theme-settings-dialog{width:min(920px,calc(100% - 24px));max-height:calc(100dvh - 24px)}
 .theme-settings-dialog form{gap:14px}.theme-dialog-copy{text-align:left}
 .theme-setting-panel{padding:15px;border:1px solid var(--line);border-radius:16px;background:#f6f1eb}
