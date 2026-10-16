@@ -147,6 +147,15 @@ option{color:var(--theme-text);background:var(--theme-input)}
 @media(prefers-reduced-motion:reduce){body{transition:none}}
 
 /* R543 — yönetici PIN penceresi ve ortak numerik tuş takımı. */
+:root .sound-setting-actions .sound-primary-action{background:linear-gradient(135deg,var(--theme-primary-bright),var(--theme-primary-dark))!important;color:var(--theme-on-primary)!important}
+:root .sound-setting-actions .sound-secondary-action{background:var(--theme-surface-2)!important;color:var(--theme-text)!important}
+:root .sound-setting-copy>i{background:var(--theme-surface-2)!important;color:var(--theme-text)!important}
+:root .sound-setting-actions :is(button,label):focus-visible{outline-color:var(--theme-accent)!important}
+:root.definitions-settings-mode,:root.definitions-settings-mode body{background:var(--theme-surface)!important;background-image:none!important}
+:root.definitions-settings-mode .cash-settings-modal{inset:0;margin:0;width:100%;max-width:100%;height:100%;max-height:100%;padding:0;border:0;border-radius:0;background:var(--theme-surface)!important}
+:root.definitions-settings-mode .cash-settings-modal::backdrop{background:transparent!important;backdrop-filter:none!important}
+:root.definitions-settings-mode .cash-settings-modal .settings-dialog{box-sizing:border-box;width:100%;max-width:100%;height:100%!important;max-height:100%!important;margin:0;padding:20px;border:0;border-radius:0;box-shadow:none;background:var(--theme-surface)!important}
+:root.definitions-settings-mode .settings-menu button{background:var(--theme-surface-2)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
 :root .sensitive-pin-dialog form{background:var(--theme-surface)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
 :root .sensitive-pin-dialog :is(h2,label){color:var(--theme-text)!important}
 :root .sensitive-pin-dialog .pin-copy{color:var(--theme-muted)!important}
