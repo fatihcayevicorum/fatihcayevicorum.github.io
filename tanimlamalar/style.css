@@ -279,7 +279,8 @@ button{-webkit-tap-highlight-color:transparent}
 }
 
 /* R539 — Tema ve Görünüm Ayarları */
-.cash-settings-host{position:fixed;inset:0;width:min(920px,calc(100vw - 24px));height:min(760px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);margin:auto;padding:0;border:0;border-radius:22px;background:var(--paper);box-shadow:0 28px 70px #1e080a59;overflow:hidden}
+.cash-settings-host{width:min(600px,calc(100vw - 24px));height:min(410px,calc(100dvh - 24px))}
+.cash-settings-host{position:fixed;inset:0;width:min(600px,calc(100vw - 24px));height:min(410px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);margin:auto;padding:0;border:0;border-radius:22px;background:var(--paper);box-shadow:0 28px 70px #1e080a59;overflow:hidden}
 .cash-settings-host iframe{width:100%;height:100%;background:var(--paper);border-radius:inherit}
 .cash-settings-host::backdrop{background:#280d0f8a;backdrop-filter:blur(4px)}
 #customThemeEditor{grid-column:1/-1;width:100%}#customThemeEditor[hidden]{display:none}#customThemeColors{display:grid;gap:12px;margin-top:12px}#customThemeColors fieldset{min-width:0;border:1px solid var(--line);border-radius:14px;padding:12px}#customThemeColors legend{font-size:.75rem;font-weight:700}.custom-color-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.custom-color-grid label{display:grid;gap:5px;font-size:.65rem}.custom-color-grid input[type=color]{width:100%;height:44px;padding:3px;cursor:pointer}@media(max-width:650px){.custom-color-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

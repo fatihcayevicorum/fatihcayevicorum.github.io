@@ -14,6 +14,22 @@ const movementsCol=collection(db,"adminCashMovements"),stockMovesCol=collection(
 const definitionsSettingsMode=window.parent!==window&&new URLSearchParams(location.search).get("tanimlamalar")==="1";
 if(definitionsSettingsMode){
   document.documentElement.classList.add("definitions-settings-mode");
+  let sizeFrame;
+  const reportSettingsSize=()=>{
+    cancelAnimationFrame(sizeFrame);
+    sizeFrame=requestAnimationFrame(()=>{
+      const active=document.querySelector(".cash-settings-modal[open]"),card=active?.querySelector(".settings-dialog");
+      if(!card)return;
+      const width=active.id==="settingsDialog"?600:active.id==="openingSettingsDialog"?660:800;
+      window.parent.postMessage({type:"fatih-cash-settings-size",width,height:Math.ceil(card.scrollHeight+2)},location.origin);
+    });
+  };
+  const settingsObserver=new MutationObserver(reportSettingsSize);
+  document.querySelectorAll(".cash-settings-modal").forEach(dialog=>{
+    settingsObserver.observe(dialog,{attributes:true,attributeFilter:["open"]});
+    const card=dialog.querySelector(".settings-dialog");if(card)new ResizeObserver(reportSettingsSize).observe(card);
+  });
+  window.addEventListener("resize",reportSettingsSize);
   document.querySelectorAll("dialog").forEach(dialog=>dialog.addEventListener("close",()=>setTimeout(()=>{
     if(!document.querySelector("dialog[open]"))window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);
   },0)));

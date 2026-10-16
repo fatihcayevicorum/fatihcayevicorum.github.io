@@ -217,6 +217,12 @@ $("cashSettingsCard").onclick=()=>{
 window.addEventListener("message",event=>{
   if(event.origin!==location.origin||event.source!==$("cashSettingsFrame").contentWindow)return;
   if(event.data?.type==="fatih-cash-settings-close")$("cashSettingsDialog").close();
+  if(event.data?.type==="fatih-cash-settings-size"){
+    const width=Number(event.data.width),height=Number(event.data.height);
+    if(!Number.isFinite(width)||!Number.isFinite(height))return;
+    $("cashSettingsDialog").style.width=Math.min(Math.max(300,width),window.innerWidth-24)+"px";
+    $("cashSettingsDialog").style.height=Math.min(Math.max(180,height),window.innerHeight-24)+"px";
+  }
 });
 $("cashSettingsDialog").addEventListener("close",()=>{$("cashSettingsFrame").removeAttribute("src")});
 

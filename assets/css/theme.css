@@ -202,3 +202,40 @@ option{color:var(--theme-text);background:var(--theme-input)}
 :root[data-effective-theme="dark"] .stock-card.is-empty{border-color:#cd5c67!important}
 :root[data-color-theme="custom"] .card-grid:not(.card-grid-daily) .center-card{background:var(--theme-surface-2)!important;color:var(--theme-text)!important}
 :root[data-color-theme="custom"] .card-grid:not(.card-grid-daily) .center-card strong{color:var(--theme-text)!important}
+
+/* R546 — Tanımlamalar ve ortak bildirimlerde eksik tema eşlemeleri. */
+:root :is(.price-selection-tools button,.bulk-price-tools button,.category-add button,.settings-done){background:var(--theme-primary)!important;color:var(--theme-on-primary)!important;border-color:var(--theme-primary)!important}
+:root :is(.price-card-open,.price-card-open strong,.price-card-open b,#priceSelectedCount,.product-settings-host-heading h2,.stats strong,.stats .product-summary-card,.section-heading h2){color:var(--theme-text)!important}
+:root .price-card-open{background:transparent!important}
+:root .price-card-open small{color:var(--theme-muted)!important}
+:root .price-select input{accent-color:var(--theme-primary)!important}
+:root :is(.bulk-price-tools,.product-price-history,.product-summary-card){background:var(--theme-surface)!important;border-color:var(--theme-border)!important}
+:root :is(.definition-close-button,.dialog-close.definition-close-button,#productSettingsClose,#closePriceSettings,#closeSinglePrice,#closePriceHistory,#closeBulkPrice,#closePricePreview,.management-dialog-close){background:transparent!important;border-color:transparent!important;color:var(--theme-muted)!important;box-shadow:none!important}
+:root.definitions-settings-mode .cash-settings-modal .settings-dialog{height:auto!important;min-height:0!important;max-height:100dvh!important;overflow:auto!important;padding:18px}
+:root.definitions-settings-mode .settings-dialog>.dialog-head{display:flex!important;align-items:center;justify-content:space-between;gap:12px}
+:root.definitions-settings-mode .settings-dialog>.dialog-head>div{min-width:0;flex:1}
+:root.definitions-settings-mode .settings-dialog>.dialog-head>button{flex:0 0 38px;margin-left:auto!important;background:transparent!important;color:var(--theme-muted)!important}
+:root.definitions-settings-mode :is(.opening-grid label,.cash-group-row,.category-row,.settings-subpanel){color:var(--theme-text)!important}
+:root.definitions-settings-mode :is(.settings-section,.settings-subpanel){background:var(--theme-surface-2)!important}
+:root.definitions-settings-mode .settings-menu button :is(b,small,i){color:inherit!important}
+:root #reportDialog .report-scroll-controls{display:none!important}
+:root #reportDialog .report-scroll-area{display:flex!important;min-height:0;overflow:hidden}
+:root #reportDialog #reportContent{width:100%;min-width:0;overflow-y:auto!important;scrollbar-width:none!important}
+:root #reportDialog #reportContent::-webkit-scrollbar{display:none!important}
+:root .history-modal-dialog{background:transparent!important;border-radius:24px!important}
+:root :is(.history-modal-card,.history-modal-head){background:var(--theme-surface)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+:root .history-modal-head h2{color:var(--theme-text)!important}
+:root .history-modal-head button{background:transparent!important;color:var(--theme-muted)!important}
+:root .internal-products .product-search{display:flex!important;align-items:center;gap:9px;min-width:0;min-height:38px;padding:0 10px;border:1px solid var(--theme-border)!important;background:var(--theme-input)!important}
+:root .internal-products .product-search>i{flex:0 0 auto;color:var(--theme-muted)}
+:root .internal-products .product-search input{display:block;flex:1 1 0;min-width:0;width:100%;height:100%!important;min-height:0!important;margin:0;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:var(--theme-text)!important}
+:root .internal-pos-dialog{background:transparent!important;border-radius:20px}
+:root :is(.admin-notification-panel,.admin-notification-row){background:var(--theme-surface)!important;border-color:var(--theme-border)!important;color:var(--theme-text)!important}
+:root .admin-notification-row{background:var(--theme-surface-2)!important}
+:root .admin-notification-bell{color:var(--theme-primary)!important;background:transparent!important}
+:root[data-effective-theme="dark"] .admin-notification-bell{color:var(--theme-accent)!important}
+:root :is(.admin-notification-toast,.admin-notification-panel>header,.notification-order-icon,.notification-actions button){background:var(--theme-primary)!important;color:var(--theme-on-primary)!important}
+:root .notification-actions button+button{background:var(--theme-surface-2)!important;color:var(--theme-text)!important}
+:root :is(.admin-notification-row small,.admin-notification-row em,.admin-notification-empty){color:var(--theme-muted)!important}
+:root .admin-notification-panel header button{color:var(--theme-on-primary)!important}
+:root :is(#closeCostGroups,#closeProductList,#closeBulkPrices){background:transparent!important;color:var(--theme-muted)!important;border-color:transparent!important;box-shadow:none!important}

@@ -8,6 +8,21 @@
 @media(max-width:680px){#categoryLists{grid-template-columns:1fr;gap:0}.category-block:nth-child(even)::before{display:none}.dialog-actions{grid-template-columns:1fr 1fr}.dialog-actions>button:first-child:last-child{grid-column:1/-1}}
 
 /* R217 - Sipariş miktarı Adet/Koli seçimi */
+@media(min-width:681px) and (max-width:1180px){
+ :root #categoryLists{grid-template-columns:minmax(0,1fr);gap:0}
+ :root .category-block:nth-child(even)::before{display:none}
+ :root .order-grid{grid-template-columns:minmax(0,1fr) 7rem 11rem}
+ .quantity-control{min-width:0}
+ .product-name{min-width:0}.product-name span:last-child{white-space:normal;overflow-wrap:anywhere}
+ .intro-actions{flex-wrap:wrap;min-width:0}
+ .automatic-draft-panel{grid-template-columns:auto minmax(0,1fr) auto}
+ .automatic-draft-panel>.primary-button{grid-column:1/-1;justify-self:end}
+ .summary-row{grid-template-columns:minmax(0,1fr) repeat(3,minmax(60px,5.2rem))}
+ .receive-row{grid-template-columns:minmax(0,1fr) 5rem 6rem}
+ .edit-order-row.has-remove{grid-template-columns:minmax(0,1fr) 5.2rem 4.6rem 2.2rem}
+ .custom-draft-row{grid-template-columns:minmax(0,1fr) auto 2.2rem}
+ .create-bar{flex-wrap:wrap}
+}
 .order-grid{grid-template-columns:minmax(10rem,1fr) 6.5rem 10rem}
 .quantity-control{display:grid;grid-template-columns:minmax(0,1fr) 4.5rem;gap:.35rem}
 .target-input,.unit-select{width:100%;min-width:0;min-height:2.15rem;padding:.35rem;border:1px solid rgba(90,16,24,.18);border-radius:9px;color:var(--ink);outline:0;text-align:center;background:#fff;font:600 .6rem Poppins}
