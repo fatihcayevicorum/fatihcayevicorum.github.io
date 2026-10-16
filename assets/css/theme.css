@@ -30,6 +30,15 @@
 :root[data-color-theme="navy"]{
   --theme-primary:#244a70;--theme-primary-dark:#162b45;--theme-primary-bright:#356d9a;--theme-accent:#e0b64d;
 }
+:root[data-color-theme="mono"]{
+  --theme-primary:#292929;--theme-primary-dark:#111;--theme-primary-bright:#4a4a4a;--theme-accent:#e2e2e2;
+}
+:root[data-color-theme="emerald"]{
+  --theme-primary:#28624f;--theme-primary-dark:#173d31;--theme-primary-bright:#3b826b;--theme-accent:#d8b85f;
+}
+:root[data-color-theme="orange"]{
+  --theme-primary:#a65324;--theme-primary-dark:#633018;--theme-primary-bright:#cf7135;--theme-accent:#f0bd63;
+}
 
 :root[data-effective-theme="dark"]{
   --theme-page:#171315;
@@ -46,6 +55,9 @@
 :root[data-effective-theme="dark"][data-color-theme="gold"]{--theme-page:#18150f;--theme-page-glow:#242016;--theme-surface:#29241a;--theme-surface-2:#342e20;--theme-input:#302a1e;--theme-border:#50462e}
 :root[data-effective-theme="dark"][data-color-theme="coffee"]{--theme-page:#171210;--theme-page-glow:#241b18;--theme-surface:#29201d;--theme-surface-2:#352923;--theme-input:#302520;--theme-border:#514039}
 :root[data-effective-theme="dark"][data-color-theme="navy"]{--theme-page:#101720;--theme-page-glow:#172331;--theme-surface:#1b2836;--theme-surface-2:#243547;--theme-input:#213142;--theme-border:#38516a}
+:root[data-effective-theme="dark"][data-color-theme="mono"]{--theme-page:#0f0f0f;--theme-page-glow:#171717;--theme-surface:#1d1d1d;--theme-surface-2:#282828;--theme-input:#242424;--theme-border:#414141;--theme-text:#f7f7f7;--theme-muted:#bdbdbd}
+:root[data-effective-theme="dark"][data-color-theme="emerald"]{--theme-page:#0d1915;--theme-page-glow:#13251f;--theme-surface:#192c25;--theme-surface-2:#223a31;--theme-input:#1e342c;--theme-border:#35594c}
+:root[data-effective-theme="dark"][data-color-theme="orange"]{--theme-page:#17110e;--theme-page-glow:#251a15;--theme-surface:#2a201b;--theme-surface-2:#382920;--theme-input:#32251f;--theme-border:#5b4032}
 
 /* Eski sayfalardaki ortak değişkenleri tek tema diline bağlar. */
 :root{
@@ -119,5 +131,17 @@ option{color:var(--theme-text);background:var(--theme-input)}
 }
 :root[data-effective-theme="dark"] dialog::backdrop{background:rgba(4,3,4,.78)}
 :root[data-effective-theme="dark"] img:not(.brand-logo):not(.settings-receipt-logo){filter:saturate(.94)}
+
+/* Yönetim ve Tanımlamalar kartları karanlık modda seçilen temanın koyu yüzeyini kullanır. */
+:root[data-effective-theme="dark"] .card-grid:not(.card-grid-daily) .center-card{
+  border-color:color-mix(in srgb,var(--theme-primary) 32%,var(--theme-border))!important;
+  color:#fff!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--theme-surface-2) 88%,var(--theme-primary)),var(--theme-surface))!important;
+  box-shadow:0 9px 22px rgba(0,0,0,.2)!important;
+}
+:root[data-effective-theme="dark"] .card-grid:not(.card-grid-daily) .center-card strong{color:#fff!important}
+:root[data-effective-theme="dark"] .card-grid:not(.card-grid-daily) .center-card small{color:var(--theme-muted)!important}
+:root[data-effective-theme="dark"] .card-grid:not(.card-grid-daily) .center-card .arrow{color:color-mix(in srgb,#fff 56%,transparent)!important}
+:root[data-effective-theme="dark"] .card-grid:not(.card-grid-daily) .center-card:hover{border-color:color-mix(in srgb,var(--theme-primary-bright) 68%,var(--theme-border))!important}
 
 @media(prefers-reduced-motion:reduce){body{transition:none}}

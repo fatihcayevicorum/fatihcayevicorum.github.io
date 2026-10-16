@@ -3,13 +3,16 @@
   "use strict";
   const STORAGE_KEY="fatih-theme-settings-v1";
   const MODES=new Set(["light","dark","auto"]);
-  const PALETTES=new Set(["classic","graphite","gold","coffee","navy"]);
+  const PALETTES=new Set(["classic","graphite","gold","coffee","navy","mono","emerald","orange"]);
   const PALETTE_META={
     classic:{name:"Klasik Bordo",light:"#5a1018",dark:"#25090c"},
     graphite:{name:"Bordo Antrasit",light:"#4a252a",dark:"#1f1c1e"},
     gold:{name:"Altın Krem",light:"#795219",dark:"#30230f"},
     coffee:{name:"Kahve Krem",light:"#654032",dark:"#2b1d19"},
-    navy:{name:"Lacivert Altın",light:"#244a70",dark:"#101d2d"}
+    navy:{name:"Lacivert Altın",light:"#244a70",dark:"#101d2d"},
+    mono:{name:"Siyah Beyaz",light:"#292929",dark:"#111111"},
+    emerald:{name:"Zümrüt Altın",light:"#28624f",dark:"#10251f"},
+    orange:{name:"Turuncu Kömür",light:"#a65324",dark:"#211713"}
   };
   const defaults=Object.freeze({mode:"light",palette:"classic"});
   const media=matchMedia("(prefers-color-scheme: dark)");

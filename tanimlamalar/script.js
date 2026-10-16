@@ -62,14 +62,14 @@ function renderPageState(){
 
 const themeModeNames={light:"Açık",dark:"Karanlık",auto:"Otomatik"};
 function themeApi(){return window.FatihTheme}
-function normalizeTheme(value){return themeApi()?.normalize(value)||{mode:["light","dark","auto"].includes(value?.mode)?value.mode:"light",palette:["classic","graphite","gold","coffee","navy"].includes(value?.palette)?value.palette:"classic"}}
+function normalizeTheme(value){return themeApi()?.normalize(value)||{mode:["light","dark","auto"].includes(value?.mode)?value.mode:"light",palette:["classic","graphite","gold","coffee","navy","mono","emerald","orange"].includes(value?.palette)?value.palette:"classic"}}
 function themeFromForm(){return normalizeTheme({mode:document.querySelector('input[name="themeMode"]:checked')?.value,palette:document.querySelector('input[name="themePalette"]:checked')?.value})}
 function fillThemeForm(settings){
   const value=normalizeTheme(settings),mode=document.querySelector(`input[name="themeMode"][value="${value.mode}"]`),palette=document.querySelector(`input[name="themePalette"][value="${value.palette}"]`);
   if(mode)mode.checked=true;if(palette)palette.checked=true;themeDraft=value;renderThemePreview(value)
 }
 function renderThemePreview(settings){
-  const value=normalizeTheme(settings),paletteName=themeApi()?.palettes?.[value.palette]?.name||({classic:"Klasik Bordo",graphite:"Bordo Antrasit",gold:"Altın Krem",coffee:"Kahve Krem",navy:"Lacivert Altın"}[value.palette]);
+  const value=normalizeTheme(settings),paletteName=themeApi()?.palettes?.[value.palette]?.name||({classic:"Klasik Bordo",graphite:"Bordo Antrasit",gold:"Altın Krem",coffee:"Kahve Krem",navy:"Lacivert Altın",mono:"Siyah Beyaz",emerald:"Zümrüt Altın",orange:"Turuncu Kömür"}[value.palette]);
   const effective=document.documentElement.dataset.effectiveTheme==="dark"?"Karanlık":"Açık",mode=value.mode==="auto"?`Otomatik (${effective})`:themeModeNames[value.mode];
   $("themePreviewTitle").textContent=`${paletteName} • ${mode}`;
 }
