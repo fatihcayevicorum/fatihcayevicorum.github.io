@@ -310,3 +310,31 @@ html:root #costGroupsDialog .cost-actions button{box-sizing:border-box;width:120
  html:root.definitions-settings-mode .cash-group-chip button{font-size:.62rem!important;padding:0 6px!important}
  html:root #costGroupsDialog .cost-actions{justify-content:flex-end}
 }
+
+/* R548 — dar ve geniş ekranlarda gereksiz boşluksuz kasa satırları. */
+html:root.definitions-settings-mode .settings-menu{flex:0 0 auto!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;overflow:visible!important;gap:8px!important}
+html:root.definitions-settings-mode .settings-menu button{min-height:84px!important;padding:10px!important;gap:8px!important}
+html:root.definitions-settings-mode .settings-menu button>i:last-child{position:static!important;justify-self:end}
+html:root.definitions-settings-mode .category-row{grid-template-columns:minmax(0,1fr) minmax(100px,.55fr) auto!important;padding:7px!important;gap:6px!important;min-height:0!important}
+html:root.definitions-settings-mode .category-row>div{grid-column:auto!important;grid-row:auto!important;flex-wrap:nowrap!important;justify-content:flex-end!important;gap:4px!important}
+html:root.definitions-settings-mode .category-row button{height:36px!important;min-height:36px!important;padding:0 7px!important;font-size:.62rem!important}
+html:root.definitions-settings-mode .category-row>input,html:root.definitions-settings-mode .category-row>select{height:38px!important;font-size:.69rem!important}
+html:root.definitions-settings-mode .cash-group-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html:root.definitions-settings-mode .cash-group-chip{padding:6px!important;gap:5px!important}
+html:root.definitions-settings-mode .cash-group-chip input{height:36px!important}
+html:root.definitions-settings-mode .cash-group-chip button{height:36px!important;min-height:36px!important;padding:0 7px!important}
+html:root.definitions-settings-mode #transferSettingsDialog .category-row{grid-template-columns:minmax(0,1fr) auto!important}
+html:root.definitions-settings-mode #transferSettingsDialog :is(.cash-group-list,[data-group-form],[data-category-group]){display:none!important}
+@media(max-width:620px){
+ html:root.definitions-settings-mode .settings-menu{grid-template-columns:minmax(0,1fr)!important}
+ html:root.definitions-settings-mode .settings-menu button{min-height:64px!important;grid-template-columns:36px minmax(0,1fr) 12px!important;padding:8px 10px!important}
+ html:root.definitions-settings-mode .settings-menu button>i:first-child{width:36px!important;height:36px!important}
+ html:root.definitions-settings-mode .settings-menu button small{font-size:.57rem!important}
+ html:root.definitions-settings-mode .cash-group-list{grid-template-columns:minmax(0,1fr)!important}
+ html:root.definitions-settings-mode .category-row{grid-template-columns:minmax(0,1fr) auto!important;gap:6px!important}
+ html:root.definitions-settings-mode .category-row>input{grid-column:1/-1!important}
+ html:root.definitions-settings-mode .category-row>select{grid-column:1!important;grid-row:2!important}
+ html:root.definitions-settings-mode .category-row>div{grid-column:2!important;grid-row:2!important}
+ html:root.definitions-settings-mode #transferSettingsDialog .category-row>input{grid-column:1!important}
+ html:root.definitions-settings-mode #transferSettingsDialog .category-row>div{grid-column:2!important;grid-row:1!important}
+}
