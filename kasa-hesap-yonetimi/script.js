@@ -17,6 +17,8 @@ const movementsCol=collection(db,"adminCashMovements"),stockMovesCol=collection(
 const paymentSettingsRef=doc(db,"adminPaymentSettings","config");
 const financialAccountsCol=collection(db,"adminFinancialAccounts");
 let financialAccounts=[];
+const definitionsBalanceParts={accounts:false,movements:false,closings:false,financeDays:false,settings:false};
+function definitionsBalanceLoaded(part){definitionsBalanceParts[part]=true;renderFinancialAccounts()}
 let paymentMethods=normalizePaymentMethods({}),paymentMethodsReady=false,paymentMethodsBusy=false,paymentMethodsCanEdit=false;
 const definitionsSettingsMode=window.parent!==window&&new URLSearchParams(location.search).get("tanimlamalar")==="1";
 if(definitionsSettingsMode){
@@ -102,14 +104,18 @@ onAuthStateChanged(auth,async user=>{
   paymentMethodsCanEdit=isOwner(user);
   const owner=savingsOwner();$("savingsPageLink").hidden=!owner;document.documentElement.classList.remove("cash-pending");if(owner&&new URLSearchParams(location.search).get("birikim")==="1"){history.replaceState(null,"",location.pathname);setTimeout(openSavingsPanel,80)}if(started)return;started=true;
   onSnapshot(paymentSettingsRef,s=>{paymentMethods=normalizePaymentMethods(s.data());paymentMethodsReady=true;renderPaymentMethods()},loadError);
-  onSnapshot(financialAccountsCol,s=>{financialAccounts=s.docs.map(d=>({id:d.id,...d.data()}));renderFinancialAccounts();if(!definitionsSettingsMode)render()},loadError);
+  onSnapshot(financialAccountsCol,s=>{financialAccounts=s.docs.map(d=>({id:d.id,...d.data()}));if(definitionsSettingsMode)definitionsBalanceLoaded("accounts");else render()},loadError);
   if(definitionsSettingsMode){
-    // Geçmiş kategori/grup silme korumaları için hareketleri de önce yükle.
+    // Ayar penceresi de ana kasa ekranıyla aynı hareket, kapanış ve gün kilitlerini kullanır.
+    onSnapshot(closingsCol,s=>{closings=s.docs.map(d=>({id:d.id,...d.data()}));definitionsBalanceLoaded("closings")},loadError);
+    onSnapshot(financeDaysCol,s=>{financeDays=s.docs.map(d=>({id:d.id,...d.data()}));definitionsBalanceLoaded("financeDays")},loadError);
+    // Geçmiş kategori/grup silme korumaları için hareketleri ayarlardan önce yükle.
     onSnapshot(movementsCol,s=>{
-      manualMovements=s.docs.filter(d=>d.data().reversed!==true).map(d=>({id:d.id,...d.data()}));
+      manualMovements=s.docs.filter(d=>d.data().reversed!==true).map(d=>({id:d.id,...d.data(),...(d.data().source==="savings"?{amount:d.data().amountCents/100}:{}),automatic:d.data().automatic===true}));
+      definitionsBalanceLoaded("movements");
       if(settingsPromptShown)return;
       settingsPromptShown=true;
-      onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});renderSettings();if(categoryPanelMode==="transfer")renderCategoryList("transfer");if(!document.querySelector("dialog[open]"))openSettings()},loadError);
+      onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});definitionsBalanceLoaded("settings");renderSettings();if(categoryPanelMode==="transfer")renderCategoryList("transfer");if(!document.querySelector("dialog[open]"))openSettings()},loadError);
     },loadError);
     return;
   }
@@ -258,6 +264,7 @@ function realBalances(date=selectedDate){
 }
 function renderFinancialAccounts(){
  const target=$("financialAccountList");if(!target)return;
+ if(definitionsSettingsMode&&!Object.values(definitionsBalanceParts).every(Boolean)){target.innerHTML='<p class="settings-note">Bakiyeler yükleniyor…</p>';return}
  const balances=realBalances();
  target.innerHTML=ACCOUNT_TYPES.map(type=>`<section class="financial-account-group"><h3>${ACCOUNT_LABELS[type]}</h3>${balances.filter(a=>a.type===type).map(a=>`<article class="financial-account-row ${a.status!=="active"?"is-passive":""}"><div><strong>${esc(a.name)}</strong><small>${a.legacy?"Varsayılan hesap • ":""}${a.status==="archived"?"Arşivde":a.status==="passive"?"Pasif": "Aktif"}${a.status==="passive"&&a.balanceCents!==0?" · Bakiye var":""}</small></div><b>${money(a.balanceCents/100)}</b>${paymentMethodsCanEdit?`<div class="financial-account-actions"><button type="button" data-account-edit="${esc(a.id)}">Adı</button>${!a.legacy?`<button type="button" data-account-status="${esc(a.id)}">${a.status==="active"?"Pasife Al":a.status==="passive"?"Aktif Et":"Arşivden Çıkar"}</button>${a.status==="passive"?`<button type="button" data-account-archive="${esc(a.id)}" ${a.balanceCents!==0?"disabled title=\"Önce bakiyeyi aktarın\"":""}>Arşivle</button>`:""}`:""}</div><form class="financial-account-rename" data-account-rename="${esc(a.id)}" hidden><input aria-label="Yeni hesap adı" maxlength="60" value="${esc(a.name)}" required><button>Kaydet</button></form>`:""}</article>`).join("")}</section>`).join("");
  $("financialAccountForm").hidden=!paymentMethodsCanEdit;
