@@ -473,6 +473,6 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .payment-method-settings{display:grid;gap:10px;margin:14px 0}
 .payment-method-settings button{width:100%;min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border:1px solid var(--theme-border,#eadfd3);border-radius:14px;color:var(--theme-text,#271d1f);background:var(--theme-surface-2,#f4ece4);font:inherit;text-align:left;cursor:pointer}
 .payment-method-settings button b{display:block}.payment-method-settings button small{display:block;color:var(--theme-muted,#77686a)}
-.payment-method-settings button[aria-pressed="true"] strong{color:#217449}.payment-method-settings button[aria-pressed="false"] strong{color:var(--theme-muted,#77686a)}
+.payment-switch-track{position:relative;display:block;flex:0 0 44px;width:44px;height:26px;border-radius:20px;background:#c9c0ba;transition:background .18s}.payment-switch-track::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #4b302b35;transition:transform .18s}.payment-method-switch[aria-checked="true"] .payment-switch-track{background:var(--theme-primary,#741722)}.payment-method-switch[aria-checked="true"] .payment-switch-track::after{transform:translateX(18px)}
 .payment-method-settings button:disabled{opacity:.55;cursor:wait}
 #paymentMethodsError{color:#a62029;margin:8px 0}

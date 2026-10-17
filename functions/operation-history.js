@@ -1,6 +1,6 @@
 "use strict";
 const crypto=require("crypto");
-const SOURCES={adminOrders:"Adisyon",adminSales:"Adisyon / Ödeme",adminTea:"Taze Dem",adminCashMovements:"Kasa ve Hesaplar",adminCashCounts:"Kasa ve Hesaplar",adminPaymentReminders:"Kasa ve Hesaplar",adminCurrentAccounts:"Cari Hesaplar",adminCurrentAccountMovements:"Cari Hesaplar",adminCreditCustomers:"Cari Hesaplar",adminCreditMovements:"Cari Hesaplar",adminStockItems:"Stok",adminStockMovements:"Stok",adminPurchaseOrders:"Sipariş Listesi",adminPurchaseDrafts:"Sipariş Listesi",adminInternalConsumptions:"Dahili Tüketim",adminInternalConsumptionDrafts:"Dahili Tüketim",adminCancellationEvents:"Adisyon",staffUsers:"Kullanıcı",merchantOrders:"Esnaf",merchantBalanceMovements:"Esnaf",merchantProfiles:"Esnaf",adminPersonnel:"Personel",adminPersonnelAttendance:"Personel",adminPersonnelPayments:"Personel",staffUserAudit:"Kullanıcı",adminSavingsAudit:"Birikim",publicMenu:"Menü",adminAppSettings:"Ayarlar",adminCashSettings:"Kasa ve Hesaplar",adminDailyClosings:"Gün Sonu",adminFinanceDays:"Gün Sonu"};
+const SOURCES={adminOrders:"Adisyon",adminSales:"Adisyon / Ödeme",adminTea:"Taze Dem",adminCashMovements:"Kasa ve Hesaplar",adminCashCounts:"Kasa ve Hesaplar",adminPaymentReminders:"Kasa ve Hesaplar",adminCurrentAccounts:"Cari Hesaplar",adminCurrentAccountMovements:"Cari Hesaplar",adminCreditCustomers:"Cari Hesaplar",adminCreditMovements:"Cari Hesaplar",adminStockItems:"Stok",adminStockMovements:"Stok",adminPurchaseOrders:"Sipariş Listesi",adminPurchaseDrafts:"Sipariş Listesi",adminInternalConsumptions:"Dahili Tüketim",adminInternalConsumptionDrafts:"Dahili Tüketim",adminCancellationEvents:"Adisyon",staffUsers:"Kullanıcı",merchantOrders:"Esnaf",merchantBalanceMovements:"Esnaf",merchantProfiles:"Esnaf",adminPersonnel:"Personel",adminPersonnelAttendance:"Personel",adminPersonnelPayments:"Personel",staffUserAudit:"Kullanıcı",adminSavingsAudit:"Birikim",publicMenu:"Menü",adminAppSettings:"Ayarlar",adminCashSettings:"Kasa ve Hesaplar",adminPaymentSettings:"Kasa ve Hesaplar",adminDailyClosings:"Gün Sonu",adminFinanceDays:"Gün Sonu"};
 const META=new Set(["updatedAt","updatedAtMs","updatedBy","createdAt","createdAtMs","createdBy","lastSeenAt","lastSeenAtMs"]);
 const SECRET=/password|passwd|pin|salt|token|credential|secret|fingerprint|session|device/i;
 function clean(value,depth=0){
@@ -43,6 +43,16 @@ function historyMeta(row){
  const before=row.before||null,after=row.after||null,d=after||before||{},at=row.eventAtMs,orderId=String(d.orderId||row.relatedId||row.recordId||"");let activities=[],groupKey=`${row.source}:${row.recordId}`,visible=true,action=row.action;
  if(row.source==="adminOrders"){activities=orderActivities(before,after,row.action,at);groupKey=`adisyon:${row.recordId}`;visible=activities.length>0}
  else if(row.source==="adminSales"){const paymentType=String(d.paymentType||d.settlementType||""),currentAccount=paymentType==="current-account"||d.settlementType==="current-account";groupKey=`adisyon:${orderId}`;activities=[{kind:row.action==="reopen"?"reopen":"payment",amount:paymentType==="rounding"?(Number(d.roundingDiscount)||0):currentAccount?(Number(d.currentAccountAmount??d.baseTotal??d.amount)||0):(Number(d.paymentAmount??d.baseTotal??d.amount)||0),roundingAmount:Number(d.roundingDiscount)||0,paymentType,accountName:String(d.currentAccountName||d.accountName||d.title||"Cari hesap"),items:Array.isArray(d.items)?d.items:[],eventAtMs:at}]}
+ else if(row.source==="adminPaymentSettings"){
+  const labels={cash:"Nakit",transfer:"Havale / EFT",card:"Kart / POS"};
+  const old=before?.methods||{},next=after?.methods||{};
+  const changed=Object.keys(labels).filter(method=>Boolean(old[method]!==false)!==Boolean(next[method]!==false));
+  const descriptions=changed.map(method=>`${labels[method]} ödeme yöntemi ${next[method]===false?"kapatıldı":"açıldı"}`);
+  row.title=descriptions.join("; ")||"Ödeme yöntemleri değiştirildi";
+  row.reason=row.title;
+  groupKey=`ödeme-yöntemi:${row.eventId||row.eventAtMs}`;
+  visible=changed.length>0;
+ }
  else if(row.source==="adminTea"){activities=teaActivities(before,after,at);groupKey=`taze-dem:${row.eventId||at}`;visible=activities.length>0;action="update"}
  else if(row.source==="adminCurrentAccountMovements"){const name=String(d.accountName||"Cari hesap"),type=String(d.type||"");groupKey=`cari-hareket:${row.recordId}`;if(type==="order")row.title=`${name} cari hesabına aktarıldı`;else if(type==="payment")row.title=`${name} cari tahsilatı`;else if(type==="payment-reversal")row.title=`${name} cari tahsilatı geri alındı`}
  else if(row.source==="adminCancellationEvents"){groupKey=`adisyon:${orderId}`;activities=[{kind:"cancel",eventAtMs:at}]}

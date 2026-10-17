@@ -203,7 +203,7 @@ function returnToSettings(e){e?.preventDefault();categoryPanelMode="";closeSetti
 function closeSettingsPanels(){["paymentMethodsDialog","categorySettingsDialog","openingSettingsDialog","incomeSettingsDialog","expenseSettingsDialog","transferSettingsDialog"].forEach(id=>{const dialog=$(id);if(dialog?.open)dialog.close()})}
 function renderPaymentMethods(){
  const names={cash:["Nakit","Ana Kasa"],transfer:["Havale / EFT","Varsayılan Banka"],card:["Kart / POS","Varsayılan POS"]};
- $("paymentMethodsList").innerHTML=PAYMENT_METHODS.map(method=>`<button type="button" data-payment-method="${method}" aria-pressed="${paymentMethods[method]}" ${!paymentMethodsReady||paymentMethodsBusy||!paymentMethodsCanEdit?"disabled":""}><span><b>${names[method][0]}</b><small>Tahsilat: ${names[method][1]}</small></span><strong>${paymentMethods[method]?"Açık":"Kapalı"}</strong></button>`).join("");
+ $("paymentMethodsList").innerHTML=PAYMENT_METHODS.map(method=>`<button type="button" class="payment-method-switch" data-payment-method="${method}" role="switch" aria-checked="${paymentMethods[method]}" ${!paymentMethodsReady||paymentMethodsBusy||!paymentMethodsCanEdit?"disabled":""}><span><b>${names[method][0]}</b><small>Tahsilat: ${names[method][1]}</small></span><i class="payment-switch-track" aria-hidden="true"></i></button>`).join("");
 }
 async function togglePaymentMethod(event){
  const button=event.target.closest("[data-payment-method]");if(!button||paymentMethodsBusy||!paymentMethodsReady||!paymentMethodsCanEdit)return;
