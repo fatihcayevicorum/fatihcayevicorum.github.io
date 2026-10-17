@@ -59,7 +59,33 @@ service cloud.firestore {
             && data.fromAccount in ['cash', 'personnel', 'bank', 'card', 'creditCard']
             && data.toAccount in ['cash', 'personnel', 'bank', 'card', 'creditCard', 'bankLoan']
             && (data.toAccount != 'bankLoan' || data.fromAccount in ['cash', 'bank', 'card'])
-            && data.fromAccount != data.toAccount));
+            && (data.fromAccount != data.toAccount
+              || (data.get('fromAccountId', '') is string
+                && data.get('toAccountId', '') is string
+                && data.get('fromAccountId', '') != ''
+                && data.get('toAccountId', '') != ''
+                && data.get('fromAccountId', '') != data.get('toAccountId', '')))))
+        && validFinanceRouting(data);
+    }
+    function validFinancialAccount(id, type, passiveSource) {
+      return (id == 'legacy-cash' && type == 'cash')
+        || (id == 'legacy-bank' && type == 'bank')
+        || (id == 'legacy-pos' && type == 'card')
+        || (id == 'legacy-credit-card-debt' && type == 'creditCard')
+        || (exists(/databases/$(database)/documents/adminFinancialAccounts/$(id))
+          && get(/databases/$(database)/documents/adminFinancialAccounts/$(id)).data.type == type
+          && (get(/databases/$(database)/documents/adminFinancialAccounts/$(id)).data.status == 'active'
+            || (passiveSource && get(/databases/$(database)/documents/adminFinancialAccounts/$(id)).data.status == 'passive')));
+    }
+    function validFinanceRouting(data) {
+      return data.get('source', '') != 'manual'
+        || (data.type != 'transfer'
+          && (data.get('accountId', '') == '' || validFinancialAccount(data.accountId, data.account, false)))
+        || (data.type == 'transfer'
+          && (data.get('fromAccountId', '') == '' || validFinancialAccount(data.fromAccountId, data.fromAccount, true))
+          && (data.toAccount == 'bankLoan'
+            || data.get('toAccountId', '') == ''
+            || validFinancialAccount(data.toAccountId, data.toAccount, false)));
     }
     function validPosInstantMovement(data) {
       return data.type == 'income'
@@ -325,6 +351,22 @@ service cloud.firestore {
         && request.resource.data.methods.transfer is bool
         && request.resource.data.methods.card is bool
         && (request.resource.data.methods.cash || request.resource.data.methods.transfer || request.resource.data.methods.card);
+    }
+    match /adminFinancialAccounts/{accountId} {
+      allow read: if hasAnyPanel(['cash', 'reports']);
+      allow create: if isOwner()
+        && request.resource.data.type in ['cash', 'bank', 'card', 'creditCard']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.status in ['active', 'passive', 'archived'];
+      allow update: if isOwner()
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.status in ['active', 'passive', 'archived'];
+      allow delete: if isOwner();
     }
     match /adminCashCounts/{document} {
       allow read, write: if hasPanel('cash');

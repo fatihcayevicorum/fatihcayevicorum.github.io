@@ -476,3 +476,25 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .payment-switch-track{position:relative;display:block;flex:0 0 44px;width:44px;height:26px;border-radius:20px;background:#c9c0ba;transition:background .18s}.payment-switch-track::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #4b302b35;transition:transform .18s}.payment-method-switch[aria-checked="true"] .payment-switch-track{background:var(--theme-primary,#741722)}.payment-method-switch[aria-checked="true"] .payment-switch-track::after{transform:translateX(18px)}
 .payment-method-settings button:disabled{opacity:.55;cursor:wait}
 #paymentMethodsError{color:#a62029;margin:8px 0}
+/* R557: gerçek hesaplar mevcut Kasa Ayarları penceresinin içinde. */
+#paymentMethodsDialog .settings-dialog{width:min(94vw,760px);height:min(92dvh,830px);max-height:92dvh}
+#paymentMethodsDialog .settings-subpanel{overflow-y:auto;scrollbar-width:none}
+#paymentMethodsDialog .settings-subpanel::-webkit-scrollbar{display:none}
+.financial-account-list{display:grid;gap:14px;margin:12px 0}
+.financial-account-group{min-width:0;padding:12px;border:1px solid var(--theme-border,#eadfd3);border-radius:14px;background:var(--theme-surface-2,#f4ece4)}
+.financial-account-group h3{margin:0 0 9px;color:var(--theme-text,#271d1f);font-size:.77rem}
+.financial-account-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 12px;align-items:center;padding:9px 0;border-top:1px solid var(--theme-border,#eadfd3)}
+.financial-account-row:first-of-type{border-top:0}.financial-account-row strong,.financial-account-row small{display:block}.financial-account-row strong{font-size:.75rem;color:var(--theme-text,#271d1f)}.financial-account-row small{margin-top:2px;font-size:.62rem;color:var(--theme-muted,#77686a)}
+.financial-account-row>b{white-space:nowrap;color:var(--theme-text,#271d1f);font-size:.76rem}.financial-account-row.is-passive{opacity:.78}
+.financial-account-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.financial-account-actions button,.financial-account-rename button,.financial-account-add button{min-height:38px;padding:7px 12px;border:1px solid var(--theme-border,#eadfd3);border-radius:10px;background:var(--theme-surface,#fff);color:var(--theme-text,#271d1f);font:inherit;font-size:.67rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.financial-account-actions button:active,.financial-account-add button:active{transform:scale(.97)}.financial-account-actions button:disabled{opacity:.45;cursor:not-allowed}
+.financial-account-rename,.financial-account-add{display:flex;flex-wrap:wrap;gap:8px}.financial-account-rename{grid-column:1/-1}.financial-account-rename[hidden],.financial-account-add[hidden]{display:none!important}
+.financial-account-rename input,.financial-account-add input,.financial-account-add select{min-width:0;min-height:40px;flex:1 1 150px;padding:8px 10px;border:1px solid var(--theme-border,#eadfd3);border-radius:10px;background:var(--theme-surface,#fff);color:var(--theme-text,#271d1f);font:inherit;font-size:.72rem}
+.financial-account-add button{background:var(--theme-primary,#741722);color:#fff}
+@media(max-width:620px){#paymentMethodsDialog .settings-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);height:calc(100dvh - 16px)}.financial-account-add>*{flex-basis:100%}}
+.definitions-settings-mode #paymentMethodsDialog .settings-dialog{height:auto!important;max-height:calc(100dvh - 24px)!important}
+.definitions-settings-mode #paymentMethodsDialog .settings-subpanel{overflow:visible}
+.financial-account-summary{display:grid;gap:4px;margin:9px 0 12px}
+.financial-account-summary>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 11px;border-radius:10px;background:var(--theme-surface-2,#f4ece4);color:var(--theme-text,#271d1f);font-size:.68rem}
+.financial-account-summary b{white-space:nowrap}

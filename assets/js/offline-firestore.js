@@ -113,6 +113,7 @@ export async function warmOfflineWorkspace(database) {
 
     const collectionReads = [
         getDocs(collection(database, "adminCurrentAccountMovements")),
+        getDocs(collection(database, "adminFinancialAccounts")),
         getDocs(collection(database, "adminProductPriceHistory")),
         getDocs(query(collection(database, "adminOrders"), where("status", "==", "open"), limit(100))),
         getDocs(query(collection(database, "adminStockItems"), limit(1000))),
