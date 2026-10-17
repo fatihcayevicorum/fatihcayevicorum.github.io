@@ -35,7 +35,7 @@ if(definitionsSettingsMode){
     sizeFrame=requestAnimationFrame(()=>{
       const active=document.querySelector(".cash-settings-modal[open]"),card=active?.querySelector(".settings-dialog");
       if(!card)return;
-      const width=active.id==="settingsDialog"?620:active.id==="openingSettingsDialog"?560:active.id==="transferSettingsDialog"?620:760;
+      const width=active.id==="settingsDialog"?1120:active.id==="openingSettingsDialog"?560:active.id==="transferSettingsDialog"?620:760;
       const body=card.querySelector(".cash-modal-scroll")||card.querySelector(".settings-menu"),head=card.querySelector(".dialog-head"),footer=card.querySelector(".cash-modal-footer");
       const height=(head?.offsetHeight||0)+cashSettingsContentHeight(body)+(footer?.offsetHeight||0)+60;
       window.parent.postMessage({type:"fatih-cash-settings-size",width,height:Math.ceil(height)},location.origin);
