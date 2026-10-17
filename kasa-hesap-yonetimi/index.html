@@ -12,6 +12,10 @@
   <link rel="stylesheet" href="style.css?v=538"><link rel="stylesheet" href="../birikim-hesaplari/style.css?v=424">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=7">
   <style>
+    /* Tanımlamalar içindeki ayar penceresinde ikinci bildirim zili görünmez. */
+    html.definitions-settings-mode #adminNotificationBell,
+    html.definitions-settings-mode #adminNotificationPanel,
+    html.definitions-settings-mode #adminNotificationToast{display:none!important}
     #transferSettingsDialog .settings-dialog{width:min(850px,calc(100vw - 40px));height:520px;min-height:0;max-height:calc(100dvh - 32px);overflow:auto}
     #transferCategoryList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:max-content;align-items:start;gap:8px}
     #transferCategoryList .category-row{min-height:0;height:auto;padding:8px}
