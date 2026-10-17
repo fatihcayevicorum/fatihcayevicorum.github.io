@@ -387,24 +387,30 @@ html:root.definitions-settings-mode #settingsDialog .settings-menu>button small{
   html:root.definitions-settings-mode #settingsDialog .settings-menu>button small{font-size:.57rem!important}
 }
 
-/* R550 — Kasa Ayarları giriş kartları, Tanımlamalar kart ölçüsünde 2 × 2. */
+/* R551 — Kasa Ayarları giriş kartları, Tanımlamalar kart ölçüsünde 2 × 2. */
 html:root.definitions-settings-mode #settingsDialog .settings-menu{
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:12px!important;
 }
 html:root.definitions-settings-mode #settingsDialog .settings-menu>button{
   aspect-ratio:auto!important;
-  height:154px!important;
-  min-height:154px!important;
+  height:130px!important;
+  min-height:130px!important;
   padding:18px!important;
   gap:10px!important;
 }
 @media(max-width:620px){
   html:root.definitions-settings-mode #settingsDialog .settings-menu{gap:9px!important}
   html:root.definitions-settings-mode #settingsDialog .settings-menu>button{
-    height:165px!important;
-    min-height:165px!important;
+    height:130px!important;
+    min-height:130px!important;
     padding:12px!important;
     gap:8px!important;
+  }
+}
+@media(max-width:400px){
+  html:root.definitions-settings-mode #settingsDialog .settings-menu>button{
+    height:155px!important;
+    min-height:155px!important;
   }
 }
