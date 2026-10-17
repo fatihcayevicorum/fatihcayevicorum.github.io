@@ -48,10 +48,12 @@ function historyMeta(row){
   const old=before?.methods||{},next=after?.methods||{};
   const changed=Object.keys(labels).filter(method=>Boolean(old[method]!==false)!==Boolean(next[method]!==false));
   const descriptions=changed.map(method=>`${labels[method]} ödeme yöntemi ${next[method]===false?"kapatıldı":"açıldı"}`);
+  const oldAccounts=before?.activeAccounts||{},nextAccounts=after?.activeAccounts||{};
+  for(const method of Object.keys(labels))if(oldAccounts[method]!==nextAccounts[method]&&nextAccounts[method])descriptions.push(`${labels[method]} tahsilat hesabı değiştirildi`);
   row.title=descriptions.join("; ")||"Ödeme yöntemleri değiştirildi";
   row.reason=row.title;
   groupKey=`ödeme-yöntemi:${row.eventId||row.eventAtMs}`;
-  visible=changed.length>0;
+  visible=descriptions.length>0;
  }
  else if(row.source==="adminFinancialAccounts"){
   const name=String(after?.name||before?.name||"Hesap");

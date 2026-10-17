@@ -344,16 +344,25 @@ service cloud.firestore {
       allow read: if hasAnyPanel(['cash', 'pos', 'currentAccounts', 'merchant']);
       allow delete: if isOwner() && document == 'config';
       allow create, update: if isOwner() && document == 'config'
-        && request.resource.data.keys().hasOnly(['methods', 'updatedAtMs', 'updatedBy'])
+        && request.resource.data.keys().hasOnly(['methods', 'activeAccounts', 'updatedAtMs', 'updatedBy'])
+        && (!exists(/databases/$(database)/documents/adminPaymentSettings/config)
+          || !('activeAccounts' in resource.data)
+          || 'activeAccounts' in request.resource.data)
         && request.resource.data.methods.keys().hasOnly(['cash', 'transfer', 'card'])
         && request.resource.data.methods.keys().hasAll(['cash', 'transfer', 'card'])
         && request.resource.data.methods.cash is bool
         && request.resource.data.methods.transfer is bool
         && request.resource.data.methods.card is bool
-        && (request.resource.data.methods.cash || request.resource.data.methods.transfer || request.resource.data.methods.card);
+        && (request.resource.data.methods.cash || request.resource.data.methods.transfer || request.resource.data.methods.card)
+        && (!('activeAccounts' in request.resource.data)
+          || (request.resource.data.activeAccounts.keys().hasAll(['cash','transfer','card'])
+            && request.resource.data.activeAccounts.keys().hasOnly(['cash','transfer','card'])
+            && (!request.resource.data.methods.cash || validFinancialAccount(request.resource.data.activeAccounts.cash,'cash',false))
+            && (!request.resource.data.methods.transfer || validFinancialAccount(request.resource.data.activeAccounts.transfer,'bank',false))
+            && (!request.resource.data.methods.card || validFinancialAccount(request.resource.data.activeAccounts.card,'card',false))));
     }
     match /adminFinancialAccounts/{accountId} {
-      allow read: if hasAnyPanel(['cash', 'reports']);
+      allow read: if hasAnyPanel(['cash', 'reports', 'pos', 'currentAccounts', 'merchant']);
       allow create: if isOwner()
         && request.resource.data.type in ['cash', 'bank', 'card', 'creditCard']
         && request.resource.data.name is string
@@ -365,8 +374,15 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 60
-        && request.resource.data.status in ['active', 'passive', 'archived'];
+        && request.resource.data.status in ['active', 'passive', 'archived']
+        && (request.resource.data.status == 'active' || !collectionAccountInUse(accountId,resource.data.type));
       allow delete: if isOwner();
+    }
+    function collectionAccountInUse(accountId,type){
+      let method=type=='bank'?'transfer':type=='card'?'card':'cash';
+      return exists(/databases/$(database)/documents/adminPaymentSettings/config)
+        && get(/databases/$(database)/documents/adminPaymentSettings/config).data.get('methods',{}).get(method,true)==true
+        && get(/databases/$(database)/documents/adminPaymentSettings/config).data.get('activeAccounts',{}).get(method,'')==accountId;
     }
     match /adminCashCounts/{document} {
       allow read, write: if hasPanel('cash');

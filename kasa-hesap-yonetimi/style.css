@@ -498,3 +498,7 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .financial-account-summary{display:grid;gap:4px;margin:9px 0 12px}
 .financial-account-summary>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 11px;border-radius:10px;background:var(--theme-surface-2,#f4ece4);color:var(--theme-text,#271d1f);font-size:.68rem}
 .financial-account-summary b{white-space:nowrap}
+.collection-account-targets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:9px 0 17px}
+.collection-account-targets label{display:grid;gap:5px;color:var(--theme-text,#271d1f);font-size:.65rem;font-weight:700}
+.collection-account-targets select{width:100%;min-width:0;min-height:43px;padding:8px;border:1px solid var(--theme-border,#eadfd3);border-radius:10px;background:var(--theme-surface,#fff);color:var(--theme-text,#271d1f);font:inherit;font-size:.7rem}
+@media(max-width:620px){.collection-account-targets{grid-template-columns:1fr}}
