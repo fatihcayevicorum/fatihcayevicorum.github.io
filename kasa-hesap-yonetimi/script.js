@@ -9,9 +9,12 @@ import { systemConfirm } from "../assets/js/system-confirm.js";
 import { lockSensitiveAccess, requireSensitiveAccess } from "../assets/js/sensitive-access.js";
 import { hasLocalPendingInternalConsumption, hasPendingInternalConsumptionDraft } from "../assets/js/internal-consumption-guard.js?v=395";
 import { projectLegacyBalances, reconcileLegacyBalances } from "../assets/js/finance-account-compat.js?v=554";
+import { PAYMENT_METHODS, normalizePaymentMethods, canDisablePaymentMethod } from "../assets/js/payment-methods.js?v=555";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const movementsCol=collection(db,"adminCashMovements"),stockMovesCol=collection(db,"adminStockMovements"),stockItemsCol=collection(db,"adminStockItems"),closingsCol=collection(db,"adminDailyClosings"),salesCol=collection(db,"adminSales"),staffUsersCol=collection(db,"staffUsers"),remindersCol=collection(db,"adminPaymentReminders"),settingsRef=doc(db,"adminCashSettings","config"),financeDaysCol=collection(db,"adminFinanceDays"),currentAccountsCol=collection(db,"adminCurrentAccounts"),currentAccountMovementsCol=collection(db,"adminCurrentAccountMovements");
+const paymentSettingsRef=doc(db,"adminPaymentSettings","config");
+let paymentMethods=normalizePaymentMethods({}),paymentMethodsReady=false,paymentMethodsBusy=false,paymentMethodsCanEdit=false;
 const definitionsSettingsMode=window.parent!==window&&new URLSearchParams(location.search).get("tanimlamalar")==="1";
 if(definitionsSettingsMode){
   document.documentElement.classList.add("definitions-settings-mode");
@@ -36,7 +39,7 @@ if(definitionsSettingsMode){
     sizeFrame=requestAnimationFrame(()=>{
       const active=document.querySelector(".cash-settings-modal[open]"),card=active?.querySelector(".settings-dialog");
       if(!card)return;
-      const width=active.id==="settingsDialog"?520:active.id==="openingSettingsDialog"?560:active.id==="transferSettingsDialog"?620:760;
+      const width=active.id==="settingsDialog"?520:active.id==="openingSettingsDialog"?560:active.id==="paymentMethodsDialog"?620:active.id==="transferSettingsDialog"?620:760;
       const body=card.querySelector(".cash-modal-scroll")||card.querySelector(".settings-menu"),head=card.querySelector(".dialog-head"),footer=card.querySelector(".cash-modal-footer");
       const height=(head?.offsetHeight||0)+cashSettingsContentHeight(body)+(footer?.offsetHeight||0)+60;
       window.parent.postMessage({type:"fatih-cash-settings-size",width,height:Math.ceil(height)},location.origin);
@@ -80,6 +83,7 @@ $("closeFinanceDayEndWarning").onclick=()=>$("financeDayEndWarningDialog").close
 $("reportButton").onclick=openReport;$("closeReport").onclick=()=>$("reportDialog").close();$("reportMonth").onchange=()=>{renderReport();$("reportContent").scrollTop=0;requestAnimationFrame(updateReportScroll)};$("reportPdfButton").onclick=printReport;
 $("reportContent").addEventListener("scroll",updateReportScroll,{passive:true});$("reportScrollUp").onclick=()=>scrollReport(-260);$("reportScrollDown").onclick=()=>scrollReport(260);$("reportScrollTrack").addEventListener("pointerdown",startReportScrollDrag);$("reportScrollTrack").addEventListener("pointermove",moveReportScrollDrag);$("reportScrollTrack").addEventListener("pointerup",stopReportScrollDrag);$("reportScrollTrack").addEventListener("pointercancel",stopReportScrollDrag);$("reportScrollTrack").addEventListener("keydown",reportScrollKey);window.addEventListener("resize",updateReportScroll);
 $("closeSettings").onclick=()=>$("settingsDialog").close();$("openingForm").onsubmit=saveOpeningBalances;$("settingsMenu").onclick=e=>{const button=e.target.closest("[data-settings-panel]");if(button)openSettingsPanel(button.dataset.settingsPanel)};document.querySelectorAll("[data-settings-back]").forEach(button=>button.onclick=returnToSettings);
+$("paymentMethodsList").onclick=togglePaymentMethod;$("categorySettingsDialog").onclick=e=>{const button=e.target.closest("[data-category-panel]");if(button){$("categorySettingsDialog").close();openSettingsPanel(button.dataset.categoryPanel)}};
 document.querySelectorAll("[data-category-form]").forEach(form=>form.onsubmit=addCategory);document.querySelectorAll("[data-group-form]").forEach(form=>form.onsubmit=addGroup);for(const type of ["income","expense"]){$(type+"GroupList").onclick=groupAction;$(type+"GroupList").onchange=groupChange;$(type+"CategoryList").addEventListener("change",categoryGroupChange)}$("movementCategoryButton").onclick=()=>$("movementCategoryPicker").hidden?openMovementCategoryPicker():closeMovementCategoryPicker();$("movementCategoryPicker").onclick=selectMovementCategory;document.addEventListener("pointerdown",e=>{if(!$("movementCategoryPicker").hidden&&!$("movementCategoryPicker").contains(e.target)&&!$("movementCategoryButton").contains(e.target))closeMovementCategoryPicker()});$("movementDialog").addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("movementCategoryPicker").hidden){e.preventDefault();e.stopPropagation();closeMovementCategoryPicker();$("movementCategoryButton").focus()}});$("movementDialog").addEventListener("close",closeMovementCategoryPicker);$("movementForm").addEventListener("scroll",()=>{if(!$("movementCategoryPicker").hidden)positionMovementCategoryPicker()});window.addEventListener("resize",()=>{if(!$("movementCategoryPicker").hidden)positionMovementCategoryPicker()});$("incomeCategoryList").onclick=categoryAction;$("expenseCategoryList").onclick=categoryAction;$("transferCategoryList").onclick=categoryAction;
 [$("incomeCategoryList"),$("expenseCategoryList"),$("transferCategoryList")].forEach(list=>list.addEventListener("keydown",categoryListKeys));
 $("remindersButton").onclick=()=>{$("reminderDueDate").value=today();renderReminders();$("remindersDialog").showModal()};$("reminderForm").onsubmit=saveReminder;$("reminderList").onclick=reminderAction;$("paidReminderList").onclick=reminderAction;document.querySelectorAll("[data-close-dialog]").forEach(button=>button.onclick=()=>$(button.dataset.closeDialog).close());
@@ -91,7 +95,9 @@ onAuthStateChanged(auth,async user=>{
   if(!await hasPanelAccess(user,db,"cash")){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetici-giris.html");return}
   if(definitionsSettingsMode&&!isOwner(user)){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}
   if(!definitionsSettingsMode&&!await unlock()){location.replace("../yonetim-merkezi/");return}
+  paymentMethodsCanEdit=isOwner(user);
   const owner=savingsOwner();$("savingsPageLink").hidden=!owner;document.documentElement.classList.remove("cash-pending");if(owner&&new URLSearchParams(location.search).get("birikim")==="1"){history.replaceState(null,"",location.pathname);setTimeout(openSavingsPanel,80)}if(started)return;started=true;
+  onSnapshot(paymentSettingsRef,s=>{paymentMethods=normalizePaymentMethods(s.data());paymentMethodsReady=true;renderPaymentMethods()},loadError);
   if(definitionsSettingsMode){
     // Geçmiş kategori/grup silme korumaları için hareketleri de önce yükle.
     onSnapshot(movementsCol,s=>{
@@ -189,12 +195,32 @@ function renderReminderBadge(){const items=pendingReminders(),overdue=items.filt
 
 function openSettings(){renderSettings();closeSettingsPanels();$("settingsDialog").showModal()}
 function openSettingsPanel(name){
- const dialogs={opening:"openingSettingsDialog",income:"incomeSettingsDialog",expense:"expenseSettingsDialog",transfer:"transferSettingsDialog"},target=$(dialogs[name]);if(!target)return;
+ const dialogs={methods:"paymentMethodsDialog",categories:"categorySettingsDialog",opening:"openingSettingsDialog",income:"incomeSettingsDialog",expense:"expenseSettingsDialog",transfer:"transferSettingsDialog"},target=$(dialogs[name]);if(!target)return;
  $("settingsDialog").close();categoryPanelMode=["income","expense","transfer"].includes(name)?name:"";
  if(categoryPanelMode)renderCategoryList(name);else renderSettings();target.showModal();
 }
 function returnToSettings(e){e?.preventDefault();categoryPanelMode="";closeSettingsPanels();renderSettings();$("settingsDialog").showModal()}
-function closeSettingsPanels(){["openingSettingsDialog","incomeSettingsDialog","expenseSettingsDialog","transferSettingsDialog"].forEach(id=>{const dialog=$(id);if(dialog?.open)dialog.close()})}
+function closeSettingsPanels(){["paymentMethodsDialog","categorySettingsDialog","openingSettingsDialog","incomeSettingsDialog","expenseSettingsDialog","transferSettingsDialog"].forEach(id=>{const dialog=$(id);if(dialog?.open)dialog.close()})}
+function renderPaymentMethods(){
+ const names={cash:["Nakit","Ana Kasa"],transfer:["Havale / EFT","Varsayılan Banka"],card:["Kart / POS","Varsayılan POS"]};
+ $("paymentMethodsList").innerHTML=PAYMENT_METHODS.map(method=>`<button type="button" data-payment-method="${method}" aria-pressed="${paymentMethods[method]}" ${!paymentMethodsReady||paymentMethodsBusy||!paymentMethodsCanEdit?"disabled":""}><span><b>${names[method][0]}</b><small>Tahsilat: ${names[method][1]}</small></span><strong>${paymentMethods[method]?"Açık":"Kapalı"}</strong></button>`).join("");
+}
+async function togglePaymentMethod(event){
+ const button=event.target.closest("[data-payment-method]");if(!button||paymentMethodsBusy||!paymentMethodsReady||!paymentMethodsCanEdit)return;
+ const method=button.dataset.paymentMethod,next=!paymentMethods[method],error=$("paymentMethodsError");error.hidden=true;
+ if(!next&&!canDisablePaymentMethod(paymentMethods,method)){error.textContent="En az bir ödeme yöntemi açık kalmalıdır.";error.hidden=false;return}
+ paymentMethodsBusy=true;renderPaymentMethods();
+ try{
+  await runTransaction(db,async tx=>{
+   const snap=await tx.get(paymentSettingsRef),fresh=normalizePaymentMethods(snap.data());
+   if(!next&&!canDisablePaymentMethod(fresh,method))throw Error("last-method");
+   const methods={...fresh,[method]:next};
+   tx.set(paymentSettingsRef,{methods,updatedAtMs:Date.now(),updatedBy:auth.currentUser.uid});
+  });
+  paymentMethods={...paymentMethods,[method]:next};toast(next?"Ödeme yöntemi açıldı.":"Ödeme yöntemi kapatıldı.");
+ }catch(e){console.error(e);error.textContent=e.message==="last-method"?"En az bir ödeme yöntemi açık kalmalıdır.":"Ayar kaydedilemedi. Bağlantıyı ve yetkileri kontrol edin.";error.hidden=false}
+ finally{paymentMethodsBusy=false;renderPaymentMethods()}
+}
 function renderSettings(){$("openingCash").value=settings.openingCash;$('openingBank').value=settings.openingBank;$('openingCard').value=settings.openingCard;$('openingCardDebt').value=settings.openingCardDebt;renderCategoryList("income");if(categoryPanelMode!=="transfer")renderCategoryList("expense")}
 function renderCategoryList(type){const target=$(type+"CategoryList"),items=categoryItems(type);if(type!=="transfer"){const groups=groupItems(type),select=document.querySelector(`[data-category-group="${type}"]`),prior=select.value;select.innerHTML=groups.filter(g=>g.active).map(g=>`<option value="${esc(g.id)}">${esc(g.name)}</option>`).join("");if([...select.options].some(o=>o.value===prior))select.value=prior;$(type+"GroupList").innerHTML=groups.map(g=>`<div class="cash-group-chip ${g.active?"":"is-passive"}"><input maxlength="60" value="${esc(g.name)}" data-group-name="${esc(g.id)}" data-type="${type}" ${g.id===`${type}-legacy`?"readonly":""}><button type="button" data-group-toggle="${esc(g.id)}" data-type="${type}" ${g.id===`${type}-legacy`?"disabled":""}>${g.active?"Pasife Al":"Aktif Et"}</button><button type="button" data-group-delete="${esc(g.id)}" data-type="${type}" ${g.id===`${type}-legacy`?"disabled":""} aria-label="Grubu sil"><i class="fa-solid fa-trash"></i></button></div>`).join("")}
  target.innerHTML=items.map((x,i)=>`<article class="category-row ${x.active?'':'is-passive'}"><input value="${esc(x.name)}" maxlength="60" data-category-name="${esc(x.id)}" data-type="${type}">${type!=="transfer"?`<select data-category-assign="${esc(x.id)}" data-type="${type}" aria-label="Grup seç">${groupItems(type).map(g=>`<option value="${esc(g.id)}" ${groupForCategory(type,x).id===g.id?'selected':''}>${esc(g.name)}</option>`).join("")}</select>`:""}<div><button data-category-move="up" data-id="${esc(x.id)}" data-type="${type}" ${i===0?'disabled':''}><i class="fa-solid fa-chevron-up"></i></button><button data-category-move="down" data-id="${esc(x.id)}" data-type="${type}" ${i===items.length-1?'disabled':''}><i class="fa-solid fa-chevron-down"></i></button><button data-category-toggle="${esc(x.id)}" data-type="${type}">${x.active?'Pasife Al':'Aktif Et'}</button>${type!=="transfer"?`<button data-category-delete="${esc(x.id)}" data-type="${type}" aria-label="Kategoriyi sil"><i class="fa-solid fa-trash"></i></button>`:""}</div></article>`).join("")}

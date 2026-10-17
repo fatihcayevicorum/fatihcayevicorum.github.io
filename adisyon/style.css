@@ -90,3 +90,5 @@ html[data-current-account-transfer="false"] #tableCurrentAccountField,html[data-
 @keyframes occupied-region-hint{0%,9%,100%{background:#fffaf4;color:#7d1b24;border-color:#eadfd2;box-shadow:none}4%{background:#af2733;color:#fff;border-color:#af2733;box-shadow:0 0 0 2px #af273320}}
 @media(max-width:550px){.table-region-tabs button{min-height:32px;padding:5px 9px;font-size:.65rem}.table-region-tabs button[data-table-region="all"]{padding-inline:8px;font-size:.63rem}}
 @media(prefers-reduced-motion:reduce){.table-region-tabs button.needs-attention{animation:none;border-color:#af2733;box-shadow:inset 0 -2px #af2733}}
+
+.payment-type-switch label.payment-method-disabled{opacity:.43;cursor:not-allowed}.payment-type-switch label.payment-method-disabled span{filter:grayscale(1)}

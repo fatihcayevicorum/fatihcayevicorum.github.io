@@ -104,6 +104,7 @@ export async function warmOfflineWorkspace(database) {
         ["adminAppSettings", "pos"],
         ["adminAppSettings", "analytics"],
         ["adminCashSettings", "config"],
+        ["adminPaymentSettings", "config"],
         ["adminTea", "state"],
         ["publicTea", "status"],
         ["adminPurchaseDrafts", "notification-draft"],

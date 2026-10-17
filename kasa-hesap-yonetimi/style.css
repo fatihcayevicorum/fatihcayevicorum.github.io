@@ -469,3 +469,10 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
     min-width:0;
   }
 }
+/* Ödeme yöntemi ayarı mevcut Kasa modalının renklerini kullanır. */
+.payment-method-settings{display:grid;gap:10px;margin:14px 0}
+.payment-method-settings button{width:100%;min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border:1px solid var(--theme-border,#eadfd3);border-radius:14px;color:var(--theme-text,#271d1f);background:var(--theme-surface-2,#f4ece4);font:inherit;text-align:left;cursor:pointer}
+.payment-method-settings button b{display:block}.payment-method-settings button small{display:block;color:var(--theme-muted,#77686a)}
+.payment-method-settings button[aria-pressed="true"] strong{color:#217449}.payment-method-settings button[aria-pressed="false"] strong{color:var(--theme-muted,#77686a)}
+.payment-method-settings button:disabled{opacity:.55;cursor:wait}
+#paymentMethodsError{color:#a62029;margin:8px 0}

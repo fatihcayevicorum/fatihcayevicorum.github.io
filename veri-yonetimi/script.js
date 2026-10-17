@@ -12,7 +12,7 @@ const CURRENT_ACCOUNT_COLLECTIONS=["adminCurrentAccounts","adminCurrentAccountMo
 const MUTABLE_COLLECTIONS=["adminProductPriceHistory","adminStockItems","adminStockMovements","adminInternalConsumptions","adminOrders","adminSales","adminDailyClosings","adminPurchaseOrders","adminCreditCustomers","adminCreditMovements",...CURRENT_ACCOUNT_COLLECTIONS,"merchantProfiles","merchantBalanceMovements","merchantOrders","adminCashMovements","adminCashCounts","adminPaymentReminders","staffUsers","adminPersonnel","adminPersonnelAttendance","adminPersonnelPayments"];
 const CREATE_ONLY_COLLECTIONS=["adminFinanceDays"];
 const COLLECTIONS=[...MUTABLE_COLLECTIONS,...CREATE_ONLY_COLLECTIONS];
-const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminAppSettings","analytics"],["adminCashSettings","config"]];
+const SINGLE_DOCS=[["publicMenu","catalog"],["publicSite","config"],["publicSite","stats"],["publicTea","status"],["adminTea","state"],["adminAppSettings","pos"],["adminAppSettings","analytics"],["adminCashSettings","config"],["adminPaymentSettings","config"]];
 const BACKUP_PREFIX="system-backups/";
 let busy=false,pendingRestore=null,pendingAction=null,toastTimer;
 
@@ -96,7 +96,7 @@ async function runCleanup(selected){
     if(selected.includes("menu"))await setDoc(doc(db,"publicMenu","catalog"),{categories:[],items:[],updatedAtMs:Date.now()});
     if(selected.includes("merchantActivity")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await updateCollection("merchantProfiles",()=>({balance:0,updatedAtMs:Date.now()}))}
     if(selected.includes("merchantProfiles")){await deleteCollection("merchantOrders");await deleteCollection("merchantBalanceMovements");await deleteCollection("merchantProfiles")}
-    if(selected.includes("cashAccounts")){await deleteCollection("adminCashMovements");await deleteCollection("adminCashCounts");await deleteCollection("adminPaymentReminders");await deleteDoc(doc(db,"adminCashSettings","config")).catch(()=>{})}
+    if(selected.includes("cashAccounts")){await deleteCollection("adminCashMovements");await deleteCollection("adminCashCounts");await deleteCollection("adminPaymentReminders");await deleteDoc(doc(db,"adminCashSettings","config")).catch(()=>{});await deleteDoc(doc(db,"adminPaymentSettings","config")).catch(()=>{})}
     if(selected.includes("currentAccounts")){for(const name of CURRENT_ACCOUNT_COLLECTIONS)await deleteCollection(name)}
     if(selected.includes("tea")){await setDoc(doc(db,"adminTea","state"),{activeBrews:[],history:[],updatedAtMs:Date.now()},{merge:true});await setDoc(doc(db,"publicTea","status"),{activeBrews:[],updatedAtMs:Date.now()},{merge:true})}
     if(selected.includes("businessDate")){const date=today(),now=Date.now(),previous=previousDate(date);await setDoc(doc(db,"adminAppSettings","pos"),{currentBusinessDate:date,currentBusinessDayStartedAtMs:now,lastClosedDate:previous,updatedAtMs:now},{merge:true})}

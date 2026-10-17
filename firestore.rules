@@ -314,6 +314,18 @@ service cloud.firestore {
       allow read: if hasPanel('cash');
       allow write: if hasPanel('cash');
     }
+    match /adminPaymentSettings/{document} {
+      allow read: if hasAnyPanel(['cash', 'pos', 'currentAccounts', 'merchant']);
+      allow delete: if isOwner() && document == 'config';
+      allow create, update: if isOwner() && document == 'config'
+        && request.resource.data.keys().hasOnly(['methods', 'updatedAtMs', 'updatedBy'])
+        && request.resource.data.methods.keys().hasOnly(['cash', 'transfer', 'card'])
+        && request.resource.data.methods.keys().hasAll(['cash', 'transfer', 'card'])
+        && request.resource.data.methods.cash is bool
+        && request.resource.data.methods.transfer is bool
+        && request.resource.data.methods.card is bool
+        && (request.resource.data.methods.cash || request.resource.data.methods.transfer || request.resource.data.methods.card);
+    }
     match /adminCashCounts/{document} {
       allow read, write: if hasPanel('cash');
     }
