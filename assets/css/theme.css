@@ -1,4 +1,4 @@
-/* Fatih Çay Evi — sistem geneli tema katmanı (R539). */
+/* Fatih Çay Evi — sistem geneli tema katmanı (R571). */
 :root{
   --theme-primary:#741722;
   --theme-primary-dark:#4c0d14;
@@ -471,3 +471,18 @@ html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>butto
 html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button b{font-size:1rem!important}
 html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button small{font-size:.72rem!important}
 @media(max-width:620px){html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button{padding:12px!important;gap:8px!important}html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button small{font-size:.6rem!important}}
+
+/* R571 — PWA işlemleri ve taramada bulunan sabit açık yüzeyler. */
+html:root :is(#pwaInstallButton,#pwaUpdateButton){background:var(--theme-primary)!important;color:var(--theme-on-primary)!important;box-shadow:var(--theme-shadow)!important}
+html:root :is(#pwaInstallButton,#pwaUpdateButton):focus-visible{outline:2px solid var(--theme-accent);outline-offset:3px}
+html:root :is(.savings-account,.savings-report-section,.record-card,.top-filter-bar){background:var(--theme-surface)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+html:root :is(.savings-summary>div,.savings-detail-summary>div,.savings-month-picker,.savings-preview,.account-code-preview,.history-categories button,.detail-facts div,.change-row h3,.snapshot,.simple-summary){background:var(--theme-surface-2)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+html:root :is(.savings-row-actions button,.record-icon,.history-categories i){background:var(--theme-surface-2)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+html:root .history-categories button.active{background:var(--theme-surface)!important;border-color:var(--theme-primary)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--theme-primary) 15%,transparent)!important}
+html:root :is(.savings-account,.record-card):hover{border-color:var(--theme-primary)!important}
+html:root .account-code-preview{color:var(--theme-text)!important}
+html:root :is(.savings-toolbar button,.savings-report-section button:not(.soft),.lock-icon,.summary-icon){background:var(--theme-primary)!important;color:var(--theme-on-primary)!important}
+html:root .filter-input{background:var(--theme-input)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+html:root .filter-input:focus-within{border-color:var(--theme-primary)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-primary) 15%,transparent)!important}
+html:root .timeline-mark:after{background:var(--theme-border)!important}
+html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h3,.simple-changes h3,.change-values small){color:var(--theme-accent)!important}
