@@ -5,7 +5,7 @@ import{firebaseConfig}from"./firebase-config.js";
 import{getManagementProfile,isPersonnelAccessLocked}from"./admin-access.js?v=346";
 import{systemConfirm,updateSystemBranding}from"./system-confirm.js";
 import{warmOfflineWorkspace}from"./offline-firestore.js";
-import("./pwa.js?v=565").catch(error=>console.error("PWA başlatılamadı:",error));
+import("./pwa.js?v=566").catch(error=>console.error("PWA başlatılamadı:",error));
 import("./management-forms.js?v=526").catch(error=>console.error("Fatih Çay Evi tuş takımı başlatılamadı:",error));
 if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js?v=388").then(module=>module.startForegroundAdminPush()).catch(error=>console.error("Yönetici bildirimi başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);

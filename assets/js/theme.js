@@ -26,6 +26,14 @@
   function readable(color,surfaces){if(surfaces.every(s=>contrast(color,s)>=4.5))return color;return ["#ffffff","#171717"].sort((a,b)=>Math.min(...surfaces.map(s=>contrast(b,s)))-Math.min(...surfaces.map(s=>contrast(a,s))))[0]}
   const media=matchMedia("(prefers-color-scheme: dark)");
   const scriptUrl=document.currentScript?.src||"";
+  let browserThemeColor="";
+
+  function syncBrowserThemeColor(color){
+    browserThemeColor=color;
+    let meta=document.querySelector('meta[name="theme-color"]');
+    if(!meta){meta=document.createElement("meta");meta.name="theme-color";document.head.prepend(meta)}
+    if(meta.content.toLowerCase()!==color.toLowerCase())meta.content=color;
+  }
 
   function normalize(value){
     return{
@@ -57,8 +65,7 @@
       root.style.setProperty("--theme-header-text",readable("#ffffff",[c.primary]));
       root.style.setProperty("--theme-header-muted",readable("#eeeeee",[c.primary]));
     }
-    const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta)meta.content=settings.palette==="custom"?settings.custom[effective].primary:PALETTE_META[settings.palette][effective];
+    syncBrowserThemeColor(settings.palette==="custom"?settings.custom[effective].primary:PALETTE_META[settings.palette][effective]);
     if(persist)writeLocal(settings);
     if(notify)window.dispatchEvent(new CustomEvent("fatih-theme-change",{detail:{...settings,effective}}));
     return settings;
@@ -71,6 +78,10 @@
 
   window.FatihTheme=Object.freeze({defaults,customDefaults,normalize,apply,save,current,saved,reset,contrast,palettes:{...PALETTE_META,custom:{name:"Özel Tema"}},modes:["light","dark","auto"]});
   apply(readLocal(),{notify:false});
+
+  // Eski önbellekte kalan bir sayfa veya PWA kodu sabit bordo renk yazarsa
+  // bütün sayfalarda seçili tema rengini yeniden uygula.
+  new MutationObserver(()=>syncBrowserThemeColor(browserThemeColor)).observe(document.head,{subtree:true,childList:true,attributes:true,attributeFilter:["content"]});
 
   media.addEventListener?.("change",()=>{const settings=current();if(settings.mode==="auto")apply(settings)});
   window.addEventListener("storage",event=>{if(event.key===STORAGE_KEY)apply(readLocal())});
