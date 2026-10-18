@@ -31,7 +31,7 @@ const backupApiNames={create:'createFullSystemBackup',inspect:'inspectFullSystem
 let restoreSummary=null,lastBackupStatus=null;
 async function backupApi(action,data={}){
  if(navigator.onLine===false)throw Error('Yedekleme ve geri yükleme için internet bağlantısı gerekiyor.');
- const call=httpsCallable(functions,backupApiNames[action],{timeout:540000});
+ const call=httpsCallable(functions,backupApiNames[action],{timeout:action==='status'?30000:540000});
  try{return(await call(data)).data}catch(error){
   if(String(error.code).includes('permission-denied')&&action!=='list'&&action!=='status'){
    const allowed=await requireServerSensitiveAccess(httpsCallable(functions,'unlockSavings'),{title:'Veri ve Yedekleme',message:'Yedekleme işlemleri için yönetici PIN’inizi girin.'});
@@ -43,7 +43,7 @@ function backupError(error){const code=String(error?.code||'');if(code.includes(
 async function settleLocalWrites(){if(navigator.onLine===false)throw Error('Önce internete bağlanın.');let timer;try{await Promise.race([waitForPendingWrites(db),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Bekleyen işlemler henüz eşitlenmedi. Yedekleme başlatılmadı.')),30000)})]);}finally{clearTimeout(timer);}}
 async function createBackup({download=true,reason='manual'}={}){
  if(busy)return null;setBusy(true,'Bekleyen kayıtlar eşitleniyor…');
- try{await settleLocalWrites();setProgress('İşletme verileri ve görseller sunucuda yedekleniyor…');const result=await backupApi('create',{reason});
+ try{await settleLocalWrites();setProgress('İşletme verileri ve görseller sunucuda yedekleniyor…');const pending=backupApi('create',{reason});if(!backupStatusTimer)backupStatusTimer=setInterval(()=>refreshBackupStatus(),10000);const result=await pending;
   if(download){try{await downloadCloudBackup(result.name)}catch(error){toast('Yedek bulutta doğrulandı; cihaza indirilemedi. Kayıtlı Yedekler’den tekrar indirebilirsiniz.');console.error(error);}}
   await renderBackups();toast(`Yedek bulutta doğrulandı: ${result.totalRecords} kayıt, ${result.totalAssets} görsel.`);return result;
  }catch(error){console.error(error);toast(backupError(error));throw error}finally{setBusy(false);await refreshBackupStatus();}
@@ -71,9 +71,26 @@ async function readLocalText(file){if(typeof file.text==='function')return file.
 function prepareRestore(){if(!pendingRestore||busy)return;confirmAction({title:'Tam İşletme Yedeği Geri Yüklensin mi?',text:'Diğer cihazlarda işlem yapmayın; bekleyen çevrimdışı kayıtları önce eşitleyin. Önce güncel durumun kurtarma yedeği alınacak. Ardından işletme verileri ve görseller seçilen yedeğe dönecek. Giriş şifreleri ve yönetici PIN’i korunur.',phrase:'GERİ YÜKLE',action:restoreBackup});}
 async function restoreBackup(){if(busy||!pendingRestore)return;setBusy(true,'Bekleyen kayıtlar eşitleniyor…');try{await settleLocalWrites();setProgress('İşlem öncesi kurtarma yedeği hazırlanıyor…');const result=await backupApi('start',{...pendingRestore,confirmation:'GERİ YÜKLE'});await continueRestore(result.jobId);}catch(error){console.error(error);toast(backupError(error));}finally{setBusy(false);await refreshBackupStatus();await renderBackups();}}
 async function continueRestore(jobId){let result;do{setProgress('Geri yükleniyor ve doğrulanıyor… Bu sırada sistemde işlem yapmayın.');result=await backupApi('resume',{jobId});if(!result.completed)setProgress(`Geri yükleme sürüyor • ${result.cursor} kayıt işlendi`);}while(!result.completed);pendingRestore=null;restoreSummary=null;$('restorePreview').hidden=true;toast('İşletme verileri ve görseller geri yüklendi; içerik doğrulaması tamamlandı. Diğer ekranları yenileyin.');}
-async function refreshBackupStatus(){try{lastBackupStatus=await backupApi('status');const s=lastBackupStatus,box=$('backupJobPanel');box.hidden=!s.active;$('backupJobText').textContent=s.active?(s.operation==='restore'?`Geri yükleme ${s.job?.status==='failed'?'durakladı':'devam ediyor'}. ${s.job?.error||''} İşlem bitene kadar kayıt eklemeyin.`:'Yedekleme sürüyor. Diğer ekranlarda işlem yapmayın.'):'Sistem hazır.';$('continueBackupRestore').hidden=!s.active||s.operation!=='restore'||!['ready','running','failed','completed'].includes(s.job?.status);$('rollbackBackupRestore').hidden=!s.active||s.operation!=='restore'||!s.job?.safetyBackup;$('releaseBackupLock').hidden=!s.active;$('backupButton').disabled=busy||s.active;$('prepareCleanup').disabled=busy||s.active||!selectedCleanup().length;$('restoreButton').disabled=busy||s.active||!pendingRestore;}
- catch(error){$('connection').textContent=backupError(error);}}
-$('refreshBackupStatus').onclick=()=>refreshBackupStatus();
+let checkingBackupStatus=false,backupStatusTimer=null;
+async function refreshBackupStatus({manual=false}={}){
+ if(checkingBackupStatus)return;checkingBackupStatus=true;const button=$('refreshBackupStatus');button.disabled=true;button.textContent='Kontrol ediliyor…';
+ try{lastBackupStatus=await backupApi('status');const s=lastBackupStatus,job=s.job,box=$('backupJobPanel');box.hidden=!s.active&&!job?.error&&job?.status!=='completed';
+  const age=Math.max(0,Math.floor(((s.serverNowMs||Date.now())-(s.startedAtMs||Date.now()))/1000));
+  const phases={starting:'Hazırlanıyor',documents:'Belgeler okunuyor',subcollections:'Alt kayıtlar kontrol ediliyor',assets:'Görseller okunuyor',identities:'Kullanıcı eşleşmeleri kontrol ediliyor',saving:'Buluta kaydediliyor ve doğrulanıyor',completed:'Tamamlandı',failed:'Hata oluştu'};
+  let message=s.active?(s.operation==='restore'?`Geri yükleme ${job?.status==='failed'?'durakladı':'devam ediyor'}. ${job?.error||''}`:`Yedekleme kilidi aktif. Geçen süre: ${Math.floor(age/60)} dk ${age%60} sn. ${job?.stage?phases[job.stage]||job.stage:'Bu eski işlemde aşama bilgisi kaydedilmemiş.'}`):job?.status==='failed'?`Yedekleme başarısız: ${job.error||'Hata ayrıntısı alınamadı.'}`:job?.backupName?`Yedek tamamlandı: ${job.records} kayıt, ${job.assets} görsel.`:'Sistem hazır.';
+  if(s.active&&s.operation==='backup'&&job?.collection)message+=` Bölüm: ${job.collection}. Okunan kayıt: ${job.records}.`;
+  if(s.active&&s.operation==='backup'&&job?.total)message+=` Alt kayıt taraması: ${job.checked}/${job.total}.`;
+  if(s.active&&s.canRelease)message+=' İşlem süresi aşıldı; kilit kontrolü yapılabilir. Bu durum yedeğin tamamlandığını göstermez.';
+  if(s.active&&job?.heartbeatAtMs)message+=` Son ilerleme: ${Math.max(0,Math.floor(((s.serverNowMs||Date.now())-job.heartbeatAtMs)/1000))} saniye önce.`;
+  $('backupJobText').textContent=message;$('backupStatusChecked').textContent='Son durum kontrolü: '+new Date().toLocaleTimeString('tr-TR');
+  $('continueBackupRestore').hidden=!s.active||s.operation!=='restore'||!['ready','running','failed','completed'].includes(job?.status);$('rollbackBackupRestore').hidden=!s.active||s.operation!=='restore'||!job?.safetyBackup;$('releaseBackupLock').hidden=!s.active;$('releaseBackupLock').disabled=busy||!s.canRelease;
+  $('backupButton').disabled=busy||s.active;$('prepareCleanup').disabled=busy||s.active||!selectedCleanup().length;$('restoreButton').disabled=busy||s.active||!pendingRestore;
+  if(manual)toast('Sunucudan durum alındı. Son kontrol saati güncellendi.');
+  if(s.active&&!backupStatusTimer)backupStatusTimer=setInterval(()=>refreshBackupStatus(),10000);if(!s.active&&!busy&&backupStatusTimer){clearInterval(backupStatusTimer);backupStatusTimer=null;}
+ }catch(error){$('backupJobPanel').hidden=false;$('backupJobText').textContent='Durum kontrolü başarısız: '+backupError(error);$('backupStatusChecked').textContent='Son kontrol başarısız oldu; önceki kilit bilgisi korunuyor.';if(manual)toast(backupError(error));}
+ finally{checkingBackupStatus=false;button.disabled=false;button.textContent='Durumu Yenile';}
+}
+$('refreshBackupStatus').onclick=()=>refreshBackupStatus({manual:true});
 $('continueBackupRestore').onclick=async()=>{if(busy||!lastBackupStatus?.jobId)return;setBusy(true,'Geri yükleme sürdürülüyor…');try{await continueRestore(lastBackupStatus.jobId)}catch(error){toast(backupError(error))}finally{setBusy(false);await refreshBackupStatus();await renderBackups();}};
 $('rollbackBackupRestore').onclick=()=>confirmAction({title:'Kurtarma Yedeğine Dönülsün mü?',text:'Bu geri yükleme başlamadan hemen önce alınan kurtarma yedeğine dönülecek. İşlem tamamlanıp doğrulanana kadar sistem kilitli kalacak.',phrase:'KURTARMA YEDEĞİNE DÖN',action:async()=>{setBusy(true,'Kurtarma başlatılıyor…');try{const r=await backupApi('rollback',{confirmation:'KURTARMA YEDEĞİNE DÖN'});await continueRestore(r.jobId)}catch(error){toast(backupError(error))}finally{setBusy(false);await refreshBackupStatus();}}});
 $('releaseBackupLock').onclick=()=>confirmAction({title:'İşlem Durumu Kontrol Edilsin mi?',text:'Yarım geri yüklemenin kilidi açılmaz. Yalnızca veri yazmaya başlamamış, en az on dakikadır bekleyen işlemin kilidi kaldırılabilir.',phrase:'KİLİDİ KONTROL ET',action:async()=>{try{await backupApi('release');await refreshBackupStatus();toast('İşlem kilidi kontrol edildi.')}catch(error){toast(backupError(error))}}});
