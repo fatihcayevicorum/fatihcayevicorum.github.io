@@ -562,15 +562,20 @@ exports.operationHistoryStatus=onCall({region:"europe-west1",cors:true},operatio
 exports.readOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.read);
 
 // Backup endpoints bypass only the maintenance writer gate, never owner/PIN access.
+const multipartBackup=require('./system-backup-parts').buildMultipartBackup({db,bucket:getStorage().bucket(),auth:getAuth(),Timestamp,GeoPoint,FieldValue,HttpsError,ownerUid:OWNER_UID,projectId:process.env.GCLOUD_PROJECT||db.projectId},systemBackup);
 const backupOptions={region:'europe-west1',cors:true,memory:'1GiB',timeoutSeconds:540,concurrency:1};
 const backupDataOptions={...backupOptions,memory:'2GiB'};
-exports.createFullSystemBackup=firebaseOnCall(backupDataOptions,systemBackup.create);
-exports.inspectFullSystemBackup=firebaseOnCall(backupDataOptions,systemBackup.inspect);
-exports.readFullSystemBackupChunk=firebaseOnCall(backupOptions,systemBackup.chunk);
-exports.listFullSystemBackups=firebaseOnCall(backupOptions,systemBackup.list);
-exports.deleteFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.remove);
-exports.fullSystemBackupStatus=firebaseOnCall(backupOptions,systemBackup.status);
-exports.startFullSystemRestore=firebaseOnCall(backupDataOptions,systemBackup.start);
-exports.continueFullSystemRestore=firebaseOnCall(backupDataOptions,systemBackup.resume);
-exports.releaseFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.release);
-exports.rollbackFullSystemRestore=firebaseOnCall(backupDataOptions,systemBackup.rollback);
+exports.createFullSystemBackup=firebaseOnCall(backupDataOptions,multipartBackup.create);
+exports.inspectFullSystemBackup=firebaseOnCall(backupDataOptions,multipartBackup.inspect);
+exports.readFullSystemBackupChunk=firebaseOnCall(backupOptions,multipartBackup.chunk);
+exports.listFullSystemBackups=firebaseOnCall(backupOptions,multipartBackup.list);
+exports.deleteFullSystemBackup=firebaseOnCall(backupOptions,multipartBackup.remove);
+exports.fullSystemBackupStatus=firebaseOnCall(backupOptions,multipartBackup.status);
+exports.startFullSystemRestore=firebaseOnCall(backupDataOptions,multipartBackup.start);
+exports.continueFullSystemRestore=firebaseOnCall(backupDataOptions,multipartBackup.resume);
+exports.releaseFullSystemBackup=firebaseOnCall(backupOptions,multipartBackup.release);
+exports.rollbackFullSystemRestore=firebaseOnCall(backupDataOptions,multipartBackup.rollback);
+
+exports.continueFullSystemBackup=firebaseOnCall(backupDataOptions,multipartBackup.continueBackup);
+exports.fullSystemBackupPackage=firebaseOnCall(backupDataOptions,multipartBackup.packageInfo);
+exports.finishFullSystemBackupUpload=firebaseOnCall(backupDataOptions,multipartBackup.finishUpload);

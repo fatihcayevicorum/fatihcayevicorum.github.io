@@ -81,8 +81,8 @@
 
     <section class="panel restore-panel">
       <div class="section-heading"><div><p class="kicker">Dosyadan kurtar</p><h2><i class="fa-solid fa-file-arrow-up"></i> Yedek Yükle</h2></div></div>
-      <p class="description">Daha önce indirilen Fatih Çay Evi JSON yedeğini seç. Dosya doğrulanmadan hiçbir veri değiştirilmez.</p>
-      <label class="file-picker"><input id="restoreFile" type="file" accept=".json,application/json"><i class="fa-solid fa-folder-open"></i><span><b>Yedek Dosyası Seç</b><small id="restoreFileName">JSON dosyası seçilmedi</small></span></label>
+      <p class="description">Daha önce indirilen Fatih Çay Evi ZIP yedeğini seç. Paketin tüm parçaları doğrulanmadan geri yükleme başlamaz. Önceki uyumlu JSON yedekleri de seçilebilir.</p>
+      <label class="file-picker"><input id="restoreFile" type="file" accept=".zip,.json,application/zip,application/json"><i class="fa-solid fa-folder-open"></i><span><b>Yedek Dosyası Seç</b><small id="restoreFileName">ZIP veya JSON dosyası seçilmedi</small></span></label>
       <div id="restorePreview" class="restore-preview" hidden></div>
       <p class="description">Tam geri yükleme mevcut işletme verilerini ve site görsellerini yedekteki duruma döndürür. Başlamadan önce diğer cihazlardaki işlemleri durdurun ve çevrimdışı kayıtları eşitleyin. Finans kayıtları karışmaması için birleştirme yapılmaz. Eski biçimdeki yedekler indirilebilir; bu sürümde otomatik tam geri yüklenmez.</p>
       <button id="restoreButton" class="primary" disabled><i class="fa-solid fa-rotate-left"></i> Yedeği Geri Yükle</button>
@@ -118,7 +118,7 @@
       }
     });
   </script>
-  <script type="module" src="script.js?v=573"></script>
+  <script type="module" src="script.js?v=575"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>

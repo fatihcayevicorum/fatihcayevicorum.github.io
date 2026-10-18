@@ -28,6 +28,16 @@ service firebase.storage {
         && request.resource.size < 100 * 1024 * 1024
         && request.resource.contentType == 'application/json');
     }
+    // R575: temporary upload chunks only. Final backup parts remain server-only.
+    match /system-backups/uploads/{uploadId}/{allPaths=**} {
+      allow read: if request.auth != null
+        && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02';
+      allow write: if backupWritable() && (request.auth != null
+        && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02'
+        && uploadId.matches('[a-f0-9-]{36}')
+        && request.resource.size <= 16 * 1024 * 1024
+        && request.resource.contentType.matches('application/(json|octet-stream)'));
+    }
     match /{allPaths=**} {
       allow read: if false;
       allow write: if backupWritable() && (false);
