@@ -41,7 +41,19 @@ if(definitionsSettingsMode){
       if(!form.checkValidity()){event.preventDefault();event.stopImmediatePropagation();toast("Lütfen eklenecek grup veya kategori adını girin.")}
     },true);
   });
-  // Ana pencere sabittir; alt pencereler açılışta yeniden boyut istemez.
+  // Sadece panel değişince boyut bildir; veri güncellemeleri pencereyi oynatmaz.
+  let panelSizeFrame;
+  const reportPanelSize=()=>{
+    cancelAnimationFrame(panelSizeFrame);panelSizeFrame=requestAnimationFrame(()=>{
+      const active=document.querySelector(".cash-settings-modal[open]");if(!active)return;
+      const phone=window.innerWidth<=620,heights={settingsDialog:phone?432:408,categorySettingsDialog:phone?300:250,openingSettingsDialog:440,paymentMethodsDialog:620,incomeSettingsDialog:560,expenseSettingsDialog:560,transferSettingsDialog:500};
+      window.parent.postMessage({type:"fatih-cash-settings-size",height:heights[active.id]||500},location.origin);
+    });
+  };
+  const panelObserver=new MutationObserver(reportPanelSize);
+  document.querySelectorAll(".cash-settings-modal").forEach(dialog=>panelObserver.observe(dialog,{attributes:true,attributeFilter:["open"]}));
+  window.addEventListener("resize",reportPanelSize);
+
   document.querySelectorAll("dialog").forEach(dialog=>dialog.addEventListener("close",()=>setTimeout(()=>{
     if(!document.querySelector("dialog[open]"))window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);
   },0)));

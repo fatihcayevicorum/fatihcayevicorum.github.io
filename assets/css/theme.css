@@ -419,11 +419,28 @@ html:root.definitions-settings-mode #settingsDialog .settings-menu>button{
 html:root .toast{position:fixed!important;inset:auto!important;top:max(18px,env(safe-area-inset-top))!important;right:max(18px,env(safe-area-inset-right))!important;left:auto!important;bottom:auto!important;margin:0!important;width:max-content;max-width:min(380px,calc(100vw - 36px))!important;padding:12px 16px!important;border:0!important;border-radius:14px!important;background:var(--theme-primary)!important;color:var(--theme-on-primary)!important;box-shadow:var(--theme-shadow)!important;font:600 .75rem/1.5 Poppins,sans-serif!important;pointer-events:none!important;opacity:0;transform:translateY(-8px)!important;transition:opacity .18s,transform .18s;z-index:2147483646!important;white-space:normal!important;overflow-wrap:anywhere}
 html:root .toast.show{opacity:1;transform:none!important}
 html:root .toast::backdrop{background:transparent!important;pointer-events:none}
-/* Sabit çerçeve; büyük/küçük pencere arasında sıçrama yok. */
+/* R561: kartlar kalan yüksekliğe yayılmaz; kısa menüler üstten başlar. */
 html:root.definitions-settings-mode .cash-settings-modal[open]{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important}
-html:root.definitions-settings-mode #settingsDialog .settings-menu{flex:1!important;min-height:0!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;overflow:auto!important;gap:14px!important}
-html:root.definitions-settings-mode #settingsDialog .settings-menu>button{height:100%!important;min-height:170px!important;padding:22px!important}
-html:root.definitions-settings-mode #settingsDialog .settings-menu>button b{font-size:.92rem!important}
-html:root.definitions-settings-mode .settings-menu-dialog{gap:18px!important}
+html:root.definitions-settings-mode #settingsDialog .settings-menu{flex:1 1 auto!important;min-height:0!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,152px)!important;align-content:start!important;overflow:auto!important;gap:12px!important;margin:0!important}
+html:root.definitions-settings-mode #settingsDialog .settings-menu>button{height:152px!important;min-height:0!important;aspect-ratio:auto!important;padding:16px!important;gap:10px!important;border:0!important}
+html:root.definitions-settings-mode #settingsDialog .settings-menu>button b{font-size:.82rem!important}
+html:root.definitions-settings-mode #settingsDialog .settings-menu>button small{font-size:.61rem!important}
+html:root.definitions-settings-mode #settingsDialog .settings-menu>button>i:first-child{width:42px!important;height:42px!important;font-size:1rem!important}
+html:root.definitions-settings-mode .settings-menu-dialog{gap:12px!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu{display:grid!important;flex:0 0 auto!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:92px!important;align-content:start!important;gap:12px!important;margin:0!important;overflow:auto!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button{display:grid!important;grid-template-columns:40px minmax(0,1fr)!important;align-items:center!important;align-content:center!important;min-height:0!important;height:92px!important;padding:12px!important;gap:10px!important;border:0!important;aspect-ratio:auto!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button>i:first-child{width:40px!important;height:40px!important;font-size:.95rem!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button>i:last-child{display:none!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button span{padding:0!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button b{font-size:.78rem!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button small{font-size:.6rem!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-form-actions{margin-top:auto!important}
 html:root #paymentMethodsError{color:var(--theme-text)!important;background:var(--theme-surface-2);padding:10px;border-radius:10px}
-@media(max-width:620px){html:root.definitions-settings-mode #settingsDialog .settings-menu{gap:10px!important}html:root.definitions-settings-mode #settingsDialog .settings-menu>button{min-height:140px!important;padding:13px!important}html:root.definitions-settings-mode #settingsDialog .settings-menu>button b{font-size:.76rem!important}}
+@media(max-width:620px){
+ html:root.definitions-settings-mode #settingsDialog .settings-menu{grid-template-rows:repeat(2,164px)!important;gap:12px!important}
+ html:root.definitions-settings-mode #settingsDialog .settings-menu>button{height:164px!important;padding:12px!important;gap:9px!important}
+ html:root.definitions-settings-mode #settingsDialog .settings-menu>button b{font-size:.73rem!important}
+ html:root.definitions-settings-mode #settingsDialog .settings-menu>button small{font-size:.56rem!important}
+ html:root.definitions-settings-mode #categorySettingsDialog .settings-menu{grid-template-rows:130px!important;gap:10px!important}
+ html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button{height:130px!important;grid-template-columns:minmax(0,1fr)!important;align-content:start!important;gap:8px!important}
+}
