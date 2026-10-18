@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r561-kompakt-kasa-pencereleri",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r562-onay-tema-logo-bildirim",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./assets/js/product-pricing.js","./assets/js/current-account-pricing.js","./assets/js/current-account-pricing-store.js",
   "./assets/js/table-layout.js","./assets/js/theme.js","./assets/js/finance-account-compat.js","./assets/js/finance-real-accounts.js","./assets/js/payment-methods.js","./assets/js/payment-account-routing.js","./assets/css/theme.css",
@@ -78,8 +78,8 @@ self.addEventListener("fetch",event=>{
     event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok||response.type==="opaque"){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response})));
     return;
   }
-  if(url.pathname.endsWith("/assets/js/system-ui.js")&&url.searchParams.get("v")!=="526"){
-    const latest=new URL(url);latest.searchParams.set("v","526");
+  if(url.pathname.endsWith("/assets/js/system-ui.js")&&url.searchParams.get("v")!=="562"){
+    const latest=new URL(url);latest.searchParams.set("v","562");
     event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));
     return;
   }
@@ -88,8 +88,9 @@ self.addEventListener("fetch",event=>{
     event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));
     return;
   }
-  if((url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js"))&&url.searchParams.get("v")!=="561"){
-    const latest=new URL(url);latest.searchParams.set("v","561");
+  if(url.pathname.endsWith("/assets/js/system-confirm.js")&&url.searchParams.get("v")!=="562"){const latest=new URL(url);latest.searchParams.set("v","562");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
+  if((url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js"))&&url.searchParams.get("v")!=="562"){
+    const latest=new URL(url);latest.searchParams.set("v","562");
     event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;
   }
   if(request.mode==="navigate"){event.respondWith(fetch(request).then(response=>{const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy));return response}).catch(async()=>await matchAppCache(request)||await caches.match("./offline.html")));return}

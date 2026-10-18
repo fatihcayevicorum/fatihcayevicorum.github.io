@@ -3,7 +3,7 @@ import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasej
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"./firebase-config.js";
 import{getManagementProfile,isPersonnelAccessLocked}from"./admin-access.js?v=346";
-import{systemConfirm}from"./system-confirm.js";
+import{systemConfirm,updateSystemBranding}from"./system-confirm.js";
 import{warmOfflineWorkspace}from"./offline-firestore.js";
 import("./pwa.js?v=496").catch(error=>console.error("PWA başlatılamadı:",error));
 import("./management-forms.js?v=526").catch(error=>console.error("Fatih Çay Evi tuş takımı başlatılamadı:",error));
@@ -31,7 +31,7 @@ function installLogoutConfirmation(){
 }
 if(isAdminPage)onAuthStateChanged(auth,async user=>{if(!user)return;warmOfflineWorkspace(db).catch(error=>console.warn("Çevrimdışı veriler hazırlanamadı:",error));if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js?v=388").then(module=>module.syncAdminTeaPushDevice(user.uid)).catch(error=>console.error("Yönetici bildirim cihazı yenilenemedi:",error));const profile=await getManagementProfile(user,db).catch(()=>null);if(isPersonnelAccessLocked(profile)){await signOut(auth);location.replace(new URL("../../yonetici-giris.html?reason=personnel-day-locked",import.meta.url).href);return}if(profile&&(panelMenu||location.pathname.includes("/yonetim-merkezi/")))renderWelcome(profile)});
 const panelBrand=document.querySelector(".app-header .brand");if(panelBrand){panelBrand.classList.add("brand-home-link");panelBrand.tabIndex=0;panelBrand.setAttribute("role","link");panelBrand.setAttribute("title","Taze Dem paneline git");const goTea=()=>location.href=new URL("../../taze-dem-paneli/",import.meta.url).href;panelBrand.addEventListener("click",goTea);panelBrand.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();goTea()}});const brandStyle=document.createElement("style");brandStyle.textContent=".brand-home-link{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}.brand-home-link,.brand-home-link:active,.brand-home-link:focus{outline:none!important;filter:none!important;box-shadow:none!important}.brand-home-link .brand-logo,.brand-home-link:active .brand-logo{transform:none!important;filter:none!important;box-shadow:none!important}";document.head.append(brandStyle)}
-onSnapshot(doc(db,"publicSite","config"),snapshot=>{const data=snapshot.data()||{};if(data.logoUrl)document.querySelectorAll("img.logo,img.brand-logo,.login-card img,.brand img").forEach(img=>{img.src=data.logoUrl});});
+onSnapshot(doc(db,"publicSite","config"),snapshot=>{const data=snapshot.data()||{};if(snapshot.exists())updateSystemBranding(data);if(data.logoUrl)document.querySelectorAll("img.logo,img.brand-logo,.login-card img,.brand img").forEach(img=>{img.src=data.logoUrl});});
 function installManagementCenterLink(){
   const details=panelMenu.closest(".panel-menu");
   if(!details)return;
@@ -167,16 +167,16 @@ function installTopLayerToasts(){
   const style=document.createElement("style");
   style.id="systemToastLayerStyle";
   style.textContent=`
-    :where(.toast,#toast)[popover]{
+    :where(.toast,#toast,.admin-notification-toast)[popover]{
       position:fixed!important;
-      inset:auto auto 22px 50%!important;
+      inset:auto auto max(22px,env(safe-area-inset-bottom)) 50%!important;
       margin:0!important;
       border:0!important;
       max-width:min(88vw,460px)!important;
       transform:translateX(-50%)!important;
       z-index:2147483647!important;
     }
-    :where(.toast,#toast)[popover]::backdrop{display:none!important}
+    :where(.toast,#toast,.admin-notification-toast)[popover]::backdrop{display:none!important}
   `;
   document.head.append(style);
   const connect=toast=>{
@@ -193,8 +193,8 @@ function installTopLayerToasts(){
     sync();
   };
   const scan=root=>{
-    if(root instanceof Element&&root.matches(".toast,#toast"))connect(root);
-    root.querySelectorAll?.(".toast,#toast").forEach(connect);
+    if(root instanceof Element&&root.matches(".toast,#toast,.admin-notification-toast"))connect(root);
+    root.querySelectorAll?.(".toast,#toast,.admin-notification-toast").forEach(connect);
   };
   scan(document);
   new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(scan))).observe(document.body,{childList:true,subtree:true});

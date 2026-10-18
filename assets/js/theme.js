@@ -79,11 +79,13 @@
     if(!scriptUrl||!/^https?:$/.test(location.protocol))return;
     try{
       const base=new URL(".",scriptUrl);
-      const [{firestoreDb},{doc,onSnapshot}]=await Promise.all([
+      const [{firestoreDb},{doc,onSnapshot},{updateSystemBranding}]=await Promise.all([
         import(new URL("firebase-config.js",base).href),
-        import("https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js")
+        import("https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js"),
+        import(new URL("system-confirm.js",base).href)
       ]);
       onSnapshot(doc(firestoreDb,"publicSite","config"),snapshot=>{
+        if(snapshot.exists())updateSystemBranding(snapshot.data()||{});
         const remote=snapshot.data()?.themeSettings;
         if(!remote)return;
         const next=normalize(remote),local=readLocal();
@@ -96,7 +98,7 @@
   // İşlem mesajları native dialogların üzerinde de aynı konumda görünür.
   function watchSystemToasts(){
     function sync(toast){
-      if(!toast.matches?.(".toast"))return;
+      if(!toast.matches?.(".toast,#toast,.admin-notification-toast"))return;
       toast.setAttribute("role","status");toast.setAttribute("aria-live","polite");
       if(typeof toast.showPopover==="function"){
         if(!toast.hasAttribute("popover"))toast.setAttribute("popover","manual");
@@ -107,8 +109,13 @@
         if(toast.parentElement!==host)host.append(toast);
       }
     }
-    document.querySelectorAll(".toast").forEach(sync);
-    new MutationObserver(records=>{for(const record of records){if(record.type==="attributes")sync(record.target);else for(const node of record.addedNodes)if(node.nodeType===1){sync(node);node.querySelectorAll?.(".toast").forEach(sync)}}}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
+    function markConfirmations(root){
+      const dialogs=root.matches?.("dialog")?[root]:[...root.querySelectorAll?.("dialog")||[]];
+      for(const dialog of dialogs)if(dialog.matches(".confirm,.confirm-dialog,.reopen-confirm-dialog,.system-confirm,.pos-warning-dialog,#systemConfirmDialog,#financeDayEndWarningDialog,#reminderPaidDialog,#closeDayDialog")||dialog.querySelector(".confirm-card,.confirm-icon,.reopen-confirm-icon,.warning-icon,[value='confirm']"))dialog.classList.add("system-theme-confirm");
+    }
+    markConfirmations(document);
+    document.querySelectorAll(".toast,#toast,.admin-notification-toast").forEach(sync);
+    new MutationObserver(records=>{for(const record of records){if(record.type==="attributes")sync(record.target);else for(const node of record.addedNodes)if(node.nodeType===1){sync(node);markConfirmations(node);node.querySelectorAll?.(".toast,#toast,.admin-notification-toast").forEach(sync)}}}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watchSystemToasts,{once:true});else watchSystemToasts();
 })();

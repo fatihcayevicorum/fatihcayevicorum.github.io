@@ -416,9 +416,9 @@ html:root.definitions-settings-mode #settingsDialog .settings-menu>button{
 }
 
 /* R560: sistem işlem mesajları aynı tema ve ekran konumunu kullanır. */
-html:root .toast{position:fixed!important;inset:auto!important;top:max(18px,env(safe-area-inset-top))!important;right:max(18px,env(safe-area-inset-right))!important;left:auto!important;bottom:auto!important;margin:0!important;width:max-content;max-width:min(380px,calc(100vw - 36px))!important;padding:12px 16px!important;border:0!important;border-radius:14px!important;background:var(--theme-primary)!important;color:var(--theme-on-primary)!important;box-shadow:var(--theme-shadow)!important;font:600 .75rem/1.5 Poppins,sans-serif!important;pointer-events:none!important;opacity:0;transform:translateY(-8px)!important;transition:opacity .18s,transform .18s;z-index:2147483646!important;white-space:normal!important;overflow-wrap:anywhere}
-html:root .toast.show{opacity:1;transform:none!important}
-html:root .toast::backdrop{background:transparent!important;pointer-events:none}
+html:root :is(.toast,#toast,.admin-notification-toast){position:fixed!important;inset:auto!important;top:auto!important;right:auto!important;left:50%!important;bottom:max(22px,env(safe-area-inset-bottom))!important;margin:0!important;width:max-content;max-width:min(380px,calc(100vw - 36px))!important;padding:12px 16px!important;border:0!important;border-radius:14px!important;background:var(--theme-primary)!important;color:var(--theme-on-primary)!important;box-shadow:var(--theme-shadow)!important;font:600 .75rem/1.5 Poppins,sans-serif!important;pointer-events:none!important;opacity:0;transform:translate(-50%,8px)!important;transition:opacity .18s,transform .18s;z-index:2147483646!important;white-space:normal!important;overflow-wrap:anywhere}
+html:root :is(.toast,#toast,.admin-notification-toast).show{opacity:1;transform:translate(-50%,0)!important}
+html:root :is(.toast,#toast,.admin-notification-toast)::backdrop{background:transparent!important;pointer-events:none}
 /* R561: kartlar kalan yüksekliğe yayılmaz; kısa menüler üstten başlar. */
 html:root.definitions-settings-mode .cash-settings-modal[open]{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important}
 html:root.definitions-settings-mode #settingsDialog .settings-menu{flex:1 1 auto!important;min-height:0!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,152px)!important;align-content:start!important;overflow:auto!important;gap:12px!important;margin:0!important}
@@ -444,3 +444,22 @@ html:root #paymentMethodsError{color:var(--theme-text)!important;background:var(
  html:root.definitions-settings-mode #categorySettingsDialog .settings-menu{grid-template-rows:130px!important;gap:10px!important}
  html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button{height:130px!important;grid-template-columns:minmax(0,1fr)!important;align-content:start!important;gap:8px!important}
 }
+
+/* R562: onay pencereleri seçili renk ve açık/koyu yüzeyleri izler. */
+html:root .system-theme-confirm,html:root .system-theme-confirm>:is(form,.dialog-card,.dialog-body,.reopen-confirm-card){background:var(--theme-surface)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+html:root .system-theme-confirm :is(h2,h3){color:var(--theme-text)!important}
+html:root .system-theme-confirm :is(p,.notice,.reopen-confirm-text){color:var(--theme-muted)!important}
+html:root .system-theme-confirm :is(.system-confirm-icon,.confirm-icon,.reopen-confirm-icon,.reminder-paid-icon,.pos-warning-icon,.dialog-icon){background:var(--theme-primary)!important;color:var(--theme-on-primary)!important;border-color:var(--theme-border)!important}
+html:root .system-theme-confirm>form>i,html:root .system-theme-confirm>.confirm-card>i,html:root .system-theme-confirm .warning-icon{color:var(--theme-primary)!important}
+html:root .system-theme-confirm button:is([value="confirm"],.primary,.primary-button,.danger,.danger-button,.danger-confirm-action,.reminder-paid-confirm,[id^="confirm"]){background:var(--theme-primary)!important;color:var(--theme-on-primary)!important;border-color:var(--theme-primary)!important}
+html:root .system-theme-confirm button:is([value="cancel"],.secondary,.secondary-button,.secondary-action,.soft,.cancel-button){background:var(--theme-surface-2)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+/* Pencere ölçüleri korunur; sadece Gelir/Gider kartları kare olur. */
+html:root.definitions-settings-mode #categorySettingsDialog .settings-dialog{gap:8px!important;padding:12px!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu{grid-template-columns:repeat(2,128px)!important;grid-template-rows:128px!important;justify-content:center!important;gap:12px!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button{width:128px!important;height:128px!important;aspect-ratio:1!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:8px!important;padding:12px!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button>i:first-child{width:36px!important;height:36px!important;font-size:.95rem!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button b{font-size:.78rem!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button small{font-size:.57rem!important;line-height:1.35!important;margin-top:3px!important}
+html:root.definitions-settings-mode .cash-modal-footer [data-settings-back],html:root.definitions-settings-mode #categorySettingsDialog .settings-form-actions [data-settings-back]{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;min-width:110px!important;height:40px!important;min-height:40px!important;padding:0 14px!important;border:0!important;border-radius:12px!important;background:var(--theme-surface-2)!important;color:var(--theme-text)!important;font:700 .7rem Poppins,sans-serif!important}
+html:root.definitions-settings-mode #categorySettingsDialog .settings-form-actions{justify-content:flex-end!important}
+@media(max-width:620px){html:root.definitions-settings-mode #categorySettingsDialog .settings-menu{grid-template-columns:repeat(2,128px)!important;grid-template-rows:128px!important}html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button{width:128px!important;height:128px!important;padding:12px!important;gap:8px!important}html:root.definitions-settings-mode #categorySettingsDialog .settings-menu>button small{font-size:.56rem!important}}
