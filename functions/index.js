@@ -563,13 +563,14 @@ exports.readOperationHistory=onCall({region:"europe-west1",cors:true},operationH
 
 // Backup endpoints bypass only the maintenance writer gate, never owner/PIN access.
 const backupOptions={region:'europe-west1',cors:true,memory:'1GiB',timeoutSeconds:540,concurrency:1};
-exports.createFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.create);
-exports.inspectFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.inspect);
+const backupDataOptions={...backupOptions,memory:'2GiB'};
+exports.createFullSystemBackup=firebaseOnCall(backupDataOptions,systemBackup.create);
+exports.inspectFullSystemBackup=firebaseOnCall(backupDataOptions,systemBackup.inspect);
 exports.readFullSystemBackupChunk=firebaseOnCall(backupOptions,systemBackup.chunk);
 exports.listFullSystemBackups=firebaseOnCall(backupOptions,systemBackup.list);
 exports.deleteFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.remove);
 exports.fullSystemBackupStatus=firebaseOnCall(backupOptions,systemBackup.status);
-exports.startFullSystemRestore=firebaseOnCall(backupOptions,systemBackup.start);
-exports.continueFullSystemRestore=firebaseOnCall(backupOptions,systemBackup.resume);
+exports.startFullSystemRestore=firebaseOnCall(backupDataOptions,systemBackup.start);
+exports.continueFullSystemRestore=firebaseOnCall(backupDataOptions,systemBackup.resume);
 exports.releaseFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.release);
-exports.rollbackFullSystemRestore=firebaseOnCall(backupOptions,systemBackup.rollback);
+exports.rollbackFullSystemRestore=firebaseOnCall(backupDataOptions,systemBackup.rollback);
