@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r570-pwa-tam-logo-tek-acilis",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r571-pwa-tema-uyumu",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./assets/js/product-pricing.js","./assets/js/current-account-pricing.js","./assets/js/current-account-pricing-store.js",
   "./assets/js/table-layout.js","./assets/js/theme.js","./assets/js/finance-account-compat.js","./assets/js/finance-real-accounts.js","./assets/js/payment-methods.js","./assets/js/payment-account-routing.js","./assets/css/theme.css",
@@ -89,9 +89,9 @@ self.addEventListener("fetch",event=>{
     return;
   }
   if(url.pathname.endsWith("/assets/js/system-confirm.js")&&url.searchParams.get("v")!=="566"){const latest=new URL(url);latest.searchParams.set("v","566");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
-  if(url.pathname.endsWith("/assets/js/pwa.js")&&url.searchParams.get("v")!=="566"){const latest=new URL(url);latest.searchParams.set("v","566");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
-  if((url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js"))&&url.searchParams.get("v")!=="566"){
-    const latest=new URL(url);latest.searchParams.set("v","566");
+  if(url.pathname.endsWith("/assets/js/pwa.js")&&url.searchParams.get("v")!=="571"){const latest=new URL(url);latest.searchParams.set("v","571");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
+  if((url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js"))&&url.searchParams.get("v")!=="571"){
+    const latest=new URL(url);latest.searchParams.set("v","571");
     event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;
   }
   if(request.mode==="navigate"){event.respondWith(fetch(request).then(response=>{const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy));return response}).catch(async()=>await matchAppCache(request)||await caches.match("./offline.html")));return}
