@@ -47,8 +47,9 @@ if(definitionsSettingsMode){
   const reportPanelSize=()=>{
     cancelAnimationFrame(panelSizeFrame);panelSizeFrame=requestAnimationFrame(()=>{
       const active=document.querySelector(".cash-settings-modal[open]");if(!active)return;
-      const phone=window.innerWidth<=620,heights={settingsDialog:phone?432:408,categorySettingsDialog:phone?360:520,openingSettingsDialog:440,paymentMethodsDialog:620,incomeSettingsDialog:560,expenseSettingsDialog:560,transferSettingsDialog:500};
-      window.parent.postMessage({type:"fatih-cash-settings-size",height:heights[active.id]||500},location.origin);
+      const phone=(window.parent?.innerWidth||window.innerWidth)<=620,heights={settingsDialog:phone?432:408,categorySettingsDialog:phone?360:410,openingSettingsDialog:440,paymentMethodsDialog:620,incomeSettingsDialog:560,expenseSettingsDialog:560,transferSettingsDialog:500};
+      const widths={categorySettingsDialog:588};
+      window.parent.postMessage({type:"fatih-cash-settings-size",height:heights[active.id]||500,width:widths[active.id]||760},location.origin);
     });
   };
   const panelObserver=new MutationObserver(reportPanelSize);

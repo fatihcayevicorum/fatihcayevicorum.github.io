@@ -314,7 +314,7 @@ button{-webkit-tap-highlight-color:transparent}
 @media(max-width:440px){.theme-mode-options{gap:6px}.theme-mode-options label>span{min-height:84px;padding:8px 4px}.theme-mode-options small{font-size:.49rem}.theme-preview-card{grid-template-columns:auto minmax(0,1fr)}.theme-preview-card button{display:none}.theme-reset-row .secondary-button{width:100%}}
 
 /* R561: ortak genişlik, her panel için sınırlı ve kararlı yükseklik. */
-html:root .cash-settings-host{width:min(760px,calc(100vw - 32px))!important;height:min(var(--cash-panel-height,408px),calc(100dvh - 32px))!important;max-width:none;max-height:calc(100dvh - 32px);border-radius:22px;isolation:isolate}
+html:root .cash-settings-host{width:min(var(--cash-panel-width,760px),calc(100vw - 32px))!important;height:min(var(--cash-panel-height,408px),calc(100dvh - 32px))!important;max-width:none;max-height:calc(100dvh - 32px);border-radius:22px;isolation:isolate}
 .cash-settings-loading{position:absolute;inset:0;display:grid;place-items:center;margin:0;padding:24px;color:var(--theme-muted);background:var(--theme-surface);font-size:.8rem}
 .cash-settings-host.is-ready .cash-settings-loading{display:none}
 .cash-settings-host:not(.is-ready) iframe{visibility:hidden}

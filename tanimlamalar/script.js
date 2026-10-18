@@ -217,8 +217,9 @@ window.addEventListener("message",event=>{
   if(event.origin!==location.origin||event.source!==$("cashSettingsFrame").contentWindow)return;
   if(event.data?.type==="fatih-cash-settings-close")$("cashSettingsDialog").close();
   if(event.data?.type==="fatih-cash-settings-size"){
-    const height=Number(event.data.height);
-    if(Number.isFinite(height)&&height>=200&&height<=660)$("cashSettingsDialog").style.setProperty("--cash-panel-height",height+"px");
+    const height=Number(event.data.height),width=Number(event.data.width),dialog=$("cashSettingsDialog");
+    if(Number.isFinite(height)&&height>=200&&height<=660)dialog.style.setProperty("--cash-panel-height",height+"px");
+    if(Number.isFinite(width)&&width>=560&&width<=760)dialog.style.setProperty("--cash-panel-width",width+"px");
   }
   if(event.data?.type==="fatih-cash-settings-ready")$("cashSettingsDialog").classList.add("is-ready");
   if(event.data?.type==="fatih-cash-settings-toast"&&typeof event.data.message==="string")toast(event.data.message.slice(0,300));
