@@ -76,6 +76,10 @@ export function automaticTableTitle(layout,key){const table=layout.tables.find(t
 export function appendRegionTable(layout,regionId){
  if(layout.tables.length>=MAX_TABLES)throw new Error(`En fazla ${MAX_TABLES} masa tanımlanabilir.`);
  const region=layout.regions.find(r=>r.id===regionId);if(!region)throw new Error('Bölge bulunamadı.');
- numberRegionTables(layout);const table={key:`table-${layout.nextNumber++}`,name:'',active:true,regionId,regionNumber:region.nextTableNumber++};layout.tables.push(table);return table;
+ numberRegionTables(layout);
+ // Görünen numaralar mevcut masalardan devam eder; kalıcı kimlikler tekrar kullanılmaz.
+ const nextVisibleNumber=1+Math.max(0,...layout.tables.filter(t=>t.regionId===regionId).map(t=>t.regionNumber));
+ const table={key:`table-${layout.nextNumber++}`,name:'',active:true,regionId,regionNumber:nextVisibleNumber};
+ region.nextTableNumber=nextVisibleNumber+1;layout.tables.push(table);return table;
 }
 export function transferRegionTables(layout,fromId,toId){const region=layout.regions.find(r=>r.id===toId);if(!region)throw new Error('Hedef bölge bulunamadı.');numberRegionTables(layout);for(const table of layout.tables.filter(t=>t.regionId===fromId)){table.regionId=toId;table.regionNumber=region.nextTableNumber++}}

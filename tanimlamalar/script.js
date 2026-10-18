@@ -1,4 +1,4 @@
-import{appendRegionTable,transferRegionTables,numberRegionTables,automaticTableTitle,REGION_COLORS,REGION_ICONS,regionColor,regionIconMarkup,normalizeTableLayout,cloneTableLayout,openTableKeys,validateTableLayout,persistTableLayout,tableLayoutPayload}from"../assets/js/table-layout.js?v=523";
+import{appendRegionTable,transferRegionTables,numberRegionTables,automaticTableTitle,REGION_COLORS,REGION_ICONS,regionColor,regionIconMarkup,normalizeTableLayout,cloneTableLayout,openTableKeys,validateTableLayout,persistTableLayout,tableLayoutPayload}from"../assets/js/table-layout.js?v=560";
 import{systemConfirm}from"../assets/js/system-confirm.js";
 import{getNotificationSound,isNotificationSoundMuted,playNotificationSound,resetNotificationSound,saveNotificationSound,setNotificationSoundMuted}from"../assets/js/notification-sounds.js?v=511";
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
@@ -23,6 +23,7 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>console.error(error));
   $("applicationSoundsCard").disabled=false;
   $("cashSettingsCard").disabled=false;
+  if("requestIdleCallback" in window)requestIdleCallback(preloadCashSettings,{timeout:1200});else setTimeout(preloadCashSettings,300);
   $("productPriceSettingsCard").disabled=false;
   if(new URLSearchParams(location.search).get("kasa")==="1"){history.replaceState(null,"",location.pathname);$("cashSettingsCard").click()}
   onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>console.error(error));
@@ -208,23 +209,19 @@ function setupSoundSettings(){
   })
 }
 
-// R520: aynı kasa ayarları ve aynı veri erişimi; ikinci finans uygulaması oluşturma.
-$("cashSettingsCard").onclick=()=>{
-  const dialog=$("cashSettingsDialog"),frame=$("cashSettingsFrame");
-  if(!frame.getAttribute("src"))frame.src=frame.dataset.src;
-  dialog.showModal();
-};
+// Ayar çerçevesi yetkili girişten sonra bir kez hazırlanır; her açılışta yeniden indirilmez.
+function preloadCashSettings(){if(!auth.currentUser||!isOwner(auth.currentUser))return;const frame=$("cashSettingsFrame");if(!frame.getAttribute("src"))frame.src=frame.dataset.src}
+$("cashSettingsCard").onclick=()=>{preloadCashSettings();$("cashSettingsDialog").showModal()};
 window.addEventListener("message",event=>{
   if(event.origin!==location.origin||event.source!==$("cashSettingsFrame").contentWindow)return;
   if(event.data?.type==="fatih-cash-settings-close")$("cashSettingsDialog").close();
-  if(event.data?.type==="fatih-cash-settings-size"){
-    const width=Number(event.data.width),height=Number(event.data.height);
-    if(!Number.isFinite(width)||!Number.isFinite(height))return;
-    $("cashSettingsDialog").style.width=Math.min(Math.max(300,width),window.innerWidth-24)+"px";
-    $("cashSettingsDialog").style.height=Math.min(Math.max(180,height),window.innerHeight-24)+"px";
-  }
+  if(event.data?.type==="fatih-cash-settings-ready")$("cashSettingsDialog").classList.add("is-ready");
+  if(event.data?.type==="fatih-cash-settings-toast"&&typeof event.data.message==="string")toast(event.data.message.slice(0,300));
 });
-$("cashSettingsDialog").addEventListener("close",()=>{$("cashSettingsFrame").removeAttribute("src")});
+$("cashSettingsDialog").addEventListener("close",()=>{
+  // Aynı yüklenmiş çerçevede giriş menüsüne dön; veri aboneliklerini çoğaltma.
+  $("cashSettingsFrame").contentWindow?.postMessage({type:"fatih-cash-settings-reset"},location.origin);
+});
 
 function updateLayoutCard(){$("tableRegionSettingsCard").disabled=!(layoutLoaded&&layoutOrdersLoaded)}
 $("tableRegionSettingsCard").onclick=()=>{

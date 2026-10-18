@@ -18,6 +18,7 @@ const movementsCol=collection(db,"adminCashMovements"),stockMovesCol=collection(
 const paymentSettingsRef=doc(db,"adminPaymentSettings","config");
 const financialAccountsCol=collection(db,"adminFinancialAccounts");
 let financialAccounts=[];
+let definitionsBalanceStreamsStarted=false;
 let paymentSettingsData={};
 const definitionsBalanceParts={accounts:false,movements:false,sales:false,closings:false,financeDays:false,settings:false};
 function definitionsBalanceLoaded(part){definitionsBalanceParts[part]=true;renderFinancialAccounts()}
@@ -40,35 +41,13 @@ if(definitionsSettingsMode){
       if(!form.checkValidity()){event.preventDefault();event.stopImmediatePropagation();toast("Lütfen eklenecek grup veya kategori adını girin.")}
     },true);
   });
-  let sizeFrame;
-  const reportSettingsSize=()=>{
-    cancelAnimationFrame(sizeFrame);
-    sizeFrame=requestAnimationFrame(()=>{
-      const active=document.querySelector(".cash-settings-modal[open]"),card=active?.querySelector(".settings-dialog");
-      if(!card)return;
-      const width=active.id==="settingsDialog"?520:active.id==="openingSettingsDialog"?560:active.id==="paymentMethodsDialog"?620:active.id==="transferSettingsDialog"?620:760;
-      const body=card.querySelector(".cash-modal-scroll")||card.querySelector(".settings-menu"),head=card.querySelector(".dialog-head"),footer=card.querySelector(".cash-modal-footer");
-      const height=(head?.offsetHeight||0)+cashSettingsContentHeight(body)+(footer?.offsetHeight||0)+60;
-      window.parent.postMessage({type:"fatih-cash-settings-size",width,height:Math.ceil(height)},location.origin);
-    });
-  };
-  const settingsObserver=new MutationObserver(reportSettingsSize);
-  document.querySelectorAll(".cash-settings-modal").forEach(dialog=>{
-    settingsObserver.observe(dialog,{attributes:true,attributeFilter:["open","class"],childList:true,subtree:true});
-    const card=dialog.querySelector(".settings-dialog");if(card)new ResizeObserver(reportSettingsSize).observe(card);
-  });
-  window.addEventListener("resize",reportSettingsSize);
+  // Ana pencere sabittir; alt pencereler açılışta yeniden boyut istemez.
   document.querySelectorAll("dialog").forEach(dialog=>dialog.addEventListener("close",()=>setTimeout(()=>{
     if(!document.querySelector("dialog[open]"))window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);
   },0)));
+
 }
-function cashSettingsContentHeight(body){
-  if(!body)return 0;
-  const visible=[...body.children].filter(child=>child.getClientRects().length);
-  if(!visible.length)return 0;
-  const first=visible[0].getBoundingClientRect().top;
-  return Math.ceil(Math.max(...visible.map(child=>child.getBoundingClientRect().bottom))-first);
-}
+
 const HISTORY_START_DATE="2026-08-01",FINANCE_START_DATE="2026-08-13";
 const defaultIncome=["İşletmeye Para Girişi","PET Şişe Dönüşüm İadesi","Diğer Gelir"];
 const defaultExpense=["Toptancı / Ürün Alımı","Faturalar","Kira","Elektrik","Su","İnternet","Demirbaş","Temizlik","Market","Manav","Bakım ve Onarım","Maaş Ödemesi","Diğer Gider"];
@@ -90,8 +69,13 @@ $("closeFinanceDayEndWarning").onclick=()=>$("financeDayEndWarningDialog").close
 $("reportButton").onclick=openReport;$("closeReport").onclick=()=>$("reportDialog").close();$("reportMonth").onchange=()=>{renderReport();$("reportContent").scrollTop=0;requestAnimationFrame(updateReportScroll)};$("reportPdfButton").onclick=printReport;
 $("reportContent").addEventListener("scroll",updateReportScroll,{passive:true});$("reportScrollUp").onclick=()=>scrollReport(-260);$("reportScrollDown").onclick=()=>scrollReport(260);$("reportScrollTrack").addEventListener("pointerdown",startReportScrollDrag);$("reportScrollTrack").addEventListener("pointermove",moveReportScrollDrag);$("reportScrollTrack").addEventListener("pointerup",stopReportScrollDrag);$("reportScrollTrack").addEventListener("pointercancel",stopReportScrollDrag);$("reportScrollTrack").addEventListener("keydown",reportScrollKey);window.addEventListener("resize",updateReportScroll);
 $("closeSettings").onclick=()=>$("settingsDialog").close();$("openingForm").onsubmit=saveOpeningBalances;$("settingsMenu").onclick=e=>{const button=e.target.closest("[data-settings-panel]");if(button)openSettingsPanel(button.dataset.settingsPanel)};document.querySelectorAll("[data-settings-back]").forEach(button=>button.onclick=returnToSettings);
-$("paymentMethodsList").onclick=togglePaymentMethod;$("paymentAccountTargets").onchange=selectCollectionAccount;$("categorySettingsDialog").onclick=e=>{const button=e.target.closest("[data-category-panel]");if(button){$("categorySettingsDialog").close();openSettingsPanel(button.dataset.categoryPanel)}};
+$("paymentMethodsList").onclick=togglePaymentMethod;$("paymentMethodsList").onchange=selectCollectionAccount;$("categorySettingsDialog").onclick=e=>{const button=e.target.closest("[data-category-panel]");if(button){$("categorySettingsDialog").close();openSettingsPanel(button.dataset.categoryPanel)}};
 $("financialAccountForm").onsubmit=createFinancialAccount;$("financialAccountList").onclick=financialAccountAction;
+$("financialAccountArchiveList").onclick=financialAccountAction;
+$("openFinancialAccountCreate").onclick=()=>{if(!paymentMethodsCanEdit)return;$("financialAccountForm").reset();$("financialAccountCreateDialog").showModal()};
+$("openFinancialAccountArchive").onclick=()=>{$("financialAccountArchiveDialog").showModal();renderFinancialAccounts()};
+document.querySelectorAll("[data-close-financial]").forEach(button=>button.onclick=()=>$(button.dataset.closeFinancial).close());
+
 document.querySelectorAll("[data-category-form]").forEach(form=>form.onsubmit=addCategory);document.querySelectorAll("[data-group-form]").forEach(form=>form.onsubmit=addGroup);for(const type of ["income","expense"]){$(type+"GroupList").onclick=groupAction;$(type+"GroupList").onchange=groupChange;$(type+"CategoryList").addEventListener("change",categoryGroupChange)}$("movementCategoryButton").onclick=()=>$("movementCategoryPicker").hidden?openMovementCategoryPicker():closeMovementCategoryPicker();$("movementCategoryPicker").onclick=selectMovementCategory;document.addEventListener("pointerdown",e=>{if(!$("movementCategoryPicker").hidden&&!$("movementCategoryPicker").contains(e.target)&&!$("movementCategoryButton").contains(e.target))closeMovementCategoryPicker()});$("movementDialog").addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("movementCategoryPicker").hidden){e.preventDefault();e.stopPropagation();closeMovementCategoryPicker();$("movementCategoryButton").focus()}});$("movementDialog").addEventListener("close",closeMovementCategoryPicker);$("movementForm").addEventListener("scroll",()=>{if(!$("movementCategoryPicker").hidden)positionMovementCategoryPicker()});window.addEventListener("resize",()=>{if(!$("movementCategoryPicker").hidden)positionMovementCategoryPicker()});$("incomeCategoryList").onclick=categoryAction;$("expenseCategoryList").onclick=categoryAction;$("transferCategoryList").onclick=categoryAction;
 [$("incomeCategoryList"),$("expenseCategoryList"),$("transferCategoryList")].forEach(list=>list.addEventListener("keydown",categoryListKeys));
 $("remindersButton").onclick=()=>{$("reminderDueDate").value=today();renderReminders();$("remindersDialog").showModal()};$("reminderForm").onsubmit=saveReminder;$("reminderList").onclick=reminderAction;$("paidReminderList").onclick=reminderAction;document.querySelectorAll("[data-close-dialog]").forEach(button=>button.onclick=()=>$(button.dataset.closeDialog).close());
@@ -100,7 +84,7 @@ document.addEventListener("click",e=>{const menu=document.querySelector(".panel-
 
 onAuthStateChanged(auth,async user=>{
   if(!user){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetici-giris.html?next=kasa-hesap-yonetimi/");return}
-  if(!await hasPanelAccess(user,db,"cash")){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetici-giris.html");return}
+  if(!isOwner(user)&&!await hasPanelAccess(user,db,"cash")){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}location.replace("../yonetici-giris.html");return}
   if(definitionsSettingsMode&&!isOwner(user)){window.parent.postMessage({type:"fatih-cash-settings-close"},location.origin);return}
   if(!definitionsSettingsMode&&!await unlock()){location.replace("../yonetim-merkezi/");return}
   paymentMethodsCanEdit=isOwner(user);
@@ -108,18 +92,14 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(paymentSettingsRef,s=>{paymentSettingsData=s.data()||{};paymentMethods=normalizePaymentMethods(paymentSettingsData);paymentMethodsReady=true;renderPaymentMethods()},loadError);
   onSnapshot(financialAccountsCol,s=>{financialAccounts=s.docs.map(d=>({id:d.id,...d.data()}));renderPaymentMethods();if(definitionsSettingsMode)definitionsBalanceLoaded("accounts");else render()},loadError);
   if(definitionsSettingsMode){
-    // Ayar penceresi de ana kasa ekranıyla aynı hareket, kapanış ve gün kilitlerini kullanır.
-    onSnapshot(closingsCol,s=>{closings=s.docs.map(d=>({id:d.id,...d.data()}));definitionsBalanceLoaded("closings")},loadError);
-    onSnapshot(salesCol,s=>{sales=s.docs.map(d=>({id:d.id,...d.data()}));definitionsBalanceLoaded("sales")},loadError);
-    onSnapshot(financeDaysCol,s=>{financeDays=s.docs.map(d=>({id:d.id,...d.data()}));definitionsBalanceLoaded("financeDays")},loadError);
-    // Geçmiş kategori/grup silme korumaları için hareketleri ayarlardan önce yükle.
+    // Menü, büyük hareket koleksiyonunu beklemeden açılır. Kategori işlemleri yüklenene kadar korunur.
     onSnapshot(movementsCol,s=>{
       manualMovements=s.docs.filter(d=>d.data().reversed!==true).map(d=>({id:d.id,...d.data(),...(d.data().source==="savings"?{amount:d.data().amountCents/100}:{}),automatic:d.data().automatic===true}));
       definitionsBalanceLoaded("movements");
-      if(settingsPromptShown)return;
-      settingsPromptShown=true;
-      onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});definitionsBalanceLoaded("settings");renderSettings();if(categoryPanelMode==="transfer")renderCategoryList("transfer");if(!document.querySelector("dialog[open]"))openSettings()},loadError);
     },loadError);
+    onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});definitionsBalanceLoaded("settings");renderSettings();if(categoryPanelMode==="transfer")renderCategoryList("transfer")},loadError);
+    openSettings();
+    window.parent.postMessage({type:"fatih-cash-settings-ready"},location.origin);
     return;
   }
   onSnapshot(movementsCol,s=>{manualMovements=s.docs.filter(d=>d.data().reversed!==true).map(d=>({id:d.id,...d.data(),...(d.data().source==="savings"?{amount:d.data().amountCents/100}:{}),automatic:d.data().automatic===true}));render()},loadError);
@@ -132,6 +112,16 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(remindersCol,s=>{reminders=s.docs.map(d=>({id:d.id,...d.data()}));renderReminders();renderReminderBadge()},loadError);
   onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});render();renderSettings();if(!settings.openingConfigured&&!settingsPromptShown){settingsPromptShown=true;setTimeout(()=>location.href="../tanimlamalar/?kasa=1",250)}},loadError);
 });
+function ensureDefinitionsBalanceStreams(){
+ if(!definitionsSettingsMode||definitionsBalanceStreamsStarted)return;
+ definitionsBalanceStreamsStarted=true;
+    // Ayar penceresi de ana kasa ekranıyla aynı hareket, kapanış ve gün kilitlerini kullanır.
+    onSnapshot(closingsCol,s=>{closings=s.docs.map(d=>({id:d.id,...d.data()}));definitionsBalanceLoaded("closings")},loadError);
+    onSnapshot(salesCol,s=>{sales=s.docs.map(d=>({id:d.id,...d.data()}));definitionsBalanceLoaded("sales")},loadError);
+    onSnapshot(financeDaysCol,s=>{financeDays=s.docs.map(d=>({id:d.id,...d.data()}));definitionsBalanceLoaded("financeDays")},loadError);
+
+}
+
 async function unlock(){return requireSensitiveAccess({title:"Kasa ve Hesaplar",message:"Kasa defterini açmak için yönetici PIN'ini girin."})}
 async function openSavingsPanel(){const dialog=$("savingsPanelDialog"),button=$("savingsPageLink");if(!dialog||dialog.open||button.disabled)return;button.disabled=true;try{if(!await unlockSavings())return;const frame=dialog.querySelector("iframe");if(!frame.getAttribute("src"))frame.src=frame.dataset.src;dialog.showModal()}catch(error){toast(savingsError(error))}finally{button.disabled=false}}
 function loadError(error){console.error(error);toast("Kasa kayıtları yüklenemedi. Firebase kurallarını kontrol edin.")}
@@ -242,15 +232,19 @@ function renderReminderBadge(){const items=pendingReminders(),overdue=items.filt
 function openSettings(){renderSettings();closeSettingsPanels();$("settingsDialog").showModal()}
 function openSettingsPanel(name){
  const dialogs={methods:"paymentMethodsDialog",categories:"categorySettingsDialog",opening:"openingSettingsDialog",income:"incomeSettingsDialog",expense:"expenseSettingsDialog",transfer:"transferSettingsDialog"},target=$(dialogs[name]);if(!target)return;
+ if(definitionsSettingsMode&&(!definitionsBalanceParts.settings||["categories","income","expense","transfer"].includes(name)&&!definitionsBalanceParts.movements))return toast("Kasa ayarları yükleniyor. Birazdan tekrar deneyin.");
+ if(name==="methods")ensureDefinitionsBalanceStreams();
  $("settingsDialog").close();categoryPanelMode=["income","expense","transfer"].includes(name)?name:"";
  if(categoryPanelMode)renderCategoryList(name);else renderSettings();target.showModal();
 }
 function returnToSettings(e){e?.preventDefault();categoryPanelMode="";closeSettingsPanels();renderSettings();$("settingsDialog").showModal()}
 function closeSettingsPanels(){["paymentMethodsDialog","categorySettingsDialog","openingSettingsDialog","incomeSettingsDialog","expenseSettingsDialog","transferSettingsDialog"].forEach(id=>{const dialog=$(id);if(dialog?.open)dialog.close()})}
 function renderPaymentMethods(){
- const names={cash:"Nakit",transfer:"Havale / EFT",card:"Kart / POS"},types={cash:"cash",transfer:"bank",card:"card"},selected=normalizeCollectionAccounts(paymentSettingsData);
- $("paymentMethodsList").innerHTML=PAYMENT_METHODS.map(method=>{const row=accountById(selected[method]);return `<button type="button" class="payment-method-switch" data-payment-method="${method}" role="switch" aria-checked="${paymentMethods[method]}" ${!paymentMethodsReady||paymentMethodsBusy||!paymentMethodsCanEdit?"disabled":""}><span><b>${names[method]}</b><small>Tahsilat: ${esc(row?.name||"Hesap seçilmedi")}</small></span><i class="payment-switch-track" aria-hidden="true"></i></button>`}).join("");
- $("paymentAccountTargets").innerHTML=PAYMENT_METHODS.map(method=>`<label>${names[method]} tahsilat hesabı<select data-collection-method="${method}" ${!paymentMethodsCanEdit||!paymentMethodsReady||paymentMethodsBusy?"disabled":""}>${accountRows(financialAccounts).filter(a=>a.type===types[method]&&a.status==="active").map(a=>`<option value="${esc(a.id)}" ${a.id===selected[method]?"selected":""}>${esc(a.name)}</option>`).join("")}</select></label>`).join("");
+ const names={cash:"Nakit",transfer:"Havale",card:"Kart"},types={cash:"cash",transfer:"bank",card:"card"},selected=normalizeCollectionAccounts(paymentSettingsData);
+ $("paymentMethodsList").innerHTML=PAYMENT_METHODS.map(method=>{
+   const options=accountRows(financialAccounts).filter(a=>a.type===types[method]&&a.status==="active"),disabled=!paymentMethodsCanEdit||!paymentMethodsReady||paymentMethodsBusy;
+   return `<article class="collection-method-card"><button type="button" class="payment-method-switch" data-payment-method="${method}" role="switch" aria-label="${names[method]} ile ödeme al" aria-checked="${paymentMethods[method]}" ${disabled?"disabled":""}><b>${names[method]}</b><i class="payment-switch-track" aria-hidden="true"></i></button><label>Tahsilat hesabı<select data-collection-method="${method}" ${disabled?"disabled":""}>${!options.some(a=>a.id===selected[method])?'<option value="" selected disabled>Aktif hesap seçin</option>':""}${options.map(a=>`<option value="${esc(a.id)}" ${a.id===selected[method]?"selected":""}>${esc(a.name)}</option>`).join("")}</select></label></article>`;
+ }).join("");
  renderFinancialAccounts();
 }
 async function selectCollectionAccount(e){
@@ -279,12 +273,19 @@ function realBalances(date=selectedDate){
  if(!reconcileAccounts(totals,rows))console.error("Gerçek hesap dağılımı kasa toplamlarıyla eşleşmiyor");
  return rows;
 }
+function pendingAccountCollectionTotals(){
+ const totals=new Map();for(const sale of sales){const m=paymentAccountFromSale(sale);if(m&&["cash","card"].includes(m.account)&&m.businessDate>=FINANCE_START_DATE&&!isFinanceDayClosed(m.businessDate))totals.set(m.accountId,(totals.get(m.accountId)||0)+Math.round(m.amount*100))}return totals;
+}
+function pendingAccountCollections(id){return pendingAccountCollectionTotals().get(id)||0}
+
 function renderFinancialAccounts(){
  const target=$("financialAccountList");if(!target)return;
- if(definitionsSettingsMode&&!Object.values(definitionsBalanceParts).every(Boolean)){target.innerHTML='<p class="settings-note">Bakiyeler yükleniyor…</p>';return}
- const balances=realBalances();
- target.innerHTML=ACCOUNT_TYPES.map(type=>`<section class="financial-account-group"><h3>${ACCOUNT_LABELS[type]}</h3>${balances.filter(a=>a.type===type).map(a=>`<article class="financial-account-row ${a.status!=="active"?"is-passive":""}"><div><strong>${esc(a.name)}</strong><small>${a.legacy?"Varsayılan hesap • ":""}${a.status==="archived"?"Arşivde":a.status==="passive"?"Pasif": "Aktif"}${a.status==="passive"&&a.balanceCents!==0?" · Bakiye var":""}</small></div><b>${money(a.balanceCents/100)}</b>${paymentMethodsCanEdit?`<div class="financial-account-actions"><button type="button" data-account-edit="${esc(a.id)}">Adı</button>${!a.legacy?`<button type="button" data-account-status="${esc(a.id)}">${a.status==="active"?"Pasife Al":a.status==="passive"?"Aktif Et":"Arşivden Çıkar"}</button>${a.status==="passive"?`<button type="button" data-account-archive="${esc(a.id)}" ${a.balanceCents!==0?"disabled title=\"Önce bakiyeyi aktarın\"":""}>Arşivle</button>`:""}`:""}</div><form class="financial-account-rename" data-account-rename="${esc(a.id)}" hidden><input aria-label="Yeni hesap adı" maxlength="60" value="${esc(a.name)}" required><button>Kaydet</button></form>`:""}</article>`).join("")}</section>`).join("");
- $("financialAccountForm").hidden=!paymentMethodsCanEdit;
+ $("openFinancialAccountCreate").hidden=!paymentMethodsCanEdit;
+ if(definitionsSettingsMode&&!Object.values(definitionsBalanceParts).every(Boolean)){target.innerHTML='<p class="settings-note">Bakiyeler yükleniyor…</p>';$("financialAccountArchiveList").innerHTML='<p class="settings-note">Bakiyeler yükleniyor…</p>';return}
+ const balances=realBalances(),archived=balances.filter(a=>a.status==="archived"),pending=pendingAccountCollectionTotals();
+ target.innerHTML=ACCOUNT_TYPES.map(type=>`<section class="financial-account-group"><h3>${ACCOUNT_LABELS[type]}</h3><div class="financial-account-grid">${balances.filter(a=>a.type===type&&a.status!=="archived").map(a=>`<article class="financial-account-row ${a.status!=="active"?"is-passive":""}"><div><strong>${esc(a.name)}</strong><small>${a.status==="passive"?"Pasif":"Aktif"}${a.status==="passive"&&a.balanceCents!==0?" · Bakiye var":""}</small></div><b>${money(a.balanceCents/100)}${(pending.get(a.id)||0)?`<small class="pending-account-collection">Kapanış bekleyen: ${money((pending.get(a.id)||0)/100)}</small>`:""}</b>${paymentMethodsCanEdit?`<div class="financial-account-actions"><button type="button" data-account-edit="${esc(a.id)}">Adı</button>${!a.legacy?`<button type="button" data-account-status="${esc(a.id)}">${a.status==="active"?"Pasife Al":"Aktif Et"}</button>${a.status==="passive"?`<button type="button" data-account-archive="${esc(a.id)}" ${a.balanceCents!==0||(pending.get(a.id)||0)!==0?'disabled title="Bakiye ve kapanış bekleyen tahsilatlar bitmeli"':""}>Arşivle</button>`:""}`:""}</div><form class="financial-account-rename" data-account-rename="${esc(a.id)}" hidden><input aria-label="Yeni hesap adı" maxlength="60" value="${esc(a.name)}" required><button>Kaydet</button></form>`:""}</article>`).join("")||'<p class="settings-note">Hesap yok.</p>'}</div></section>`).join("");
+ $("financialArchiveCount").textContent=archived.length?`${archived.length} hesap`:"";
+ $("financialAccountArchiveList").innerHTML=archived.map(a=>`<article class="financial-archive-row"><div><strong>${esc(a.name)}</strong><small>${ACCOUNT_LABELS[a.type]}</small></div>${paymentMethodsCanEdit?`<button type="button" data-account-status="${esc(a.id)}">Aktif Et</button>`:""}</article>`).join("")||'<p class="settings-note">Arşivlenmiş hesap yok.</p>';
 }
 function accountById(id){return accountRows(financialAccounts).find(row=>row.id===id)}
 function accountOptions(types,selected="",source=false){
@@ -298,7 +299,7 @@ async function createFinancialAccount(e){
  const type=$("newFinancialAccountType").value,name=$("newFinancialAccountName").value.trim();
  if(!ACCOUNT_TYPES.includes(type)||!validAccountName(name,type))return toast("Bu türde aynı adlı hesap var veya ad geçersiz.");
  const button=e.submitter;button.disabled=true;
- try{await setDoc(doc(financialAccountsCol),{type,name,status:"active",createdAtMs:Date.now(),createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});$("newFinancialAccountName").value="";toast("Hesap oluşturuldu. Başlangıç bakiyesi sıfırdır.")}
+ try{await setDoc(doc(financialAccountsCol),{type,name,status:"active",createdAtMs:Date.now(),createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});$("newFinancialAccountName").value="";$("financialAccountCreateDialog").close();toast("Hesap oluşturuldu. Başlangıç bakiyesi sıfırdır.")}
  catch(error){console.error(error);toast("Hesap oluşturulamadı.")}finally{button.disabled=false}
 }
 async function financialAccountAction(e){
@@ -308,8 +309,9 @@ async function financialAccountAction(e){
  const form=e.target.closest("[data-account-rename]");if(form&&e.type==="submit")return;
  const id=status?.dataset.accountStatus||archive?.dataset.accountArchive;if(!id)return;
  const row=realBalances().find(a=>a.id===id);if(!row||row.legacy)return;
- if((status||archive)&&paymentMethods[({cash:"cash",bank:"transfer",card:"card"})[row.type]]!==false&&Object.values(normalizeCollectionAccounts(paymentSettingsData)).includes(id))return toast("Önce başka bir tahsilat hesabı seçin veya ilgili ödeme yöntemini kapatın.");
+ if((archive||row.status==="active")&&paymentMethods[({cash:"cash",bank:"transfer",card:"card"})[row.type]]!==false&&Object.values(normalizeCollectionAccounts(paymentSettingsData)).includes(id))return toast("Önce başka bir tahsilat hesabı seçin veya ilgili ödeme yöntemini kapatın.");
  if(archive&&row.balanceCents!==0)return toast("Önce hesabın bakiyesini aktif hesaba aktarın.");
+ if(archive&&pendingAccountCollections(id)!==0)return toast("Bu hesapta kapanış bekleyen tahsilat var. Önce ilgili finans gününü kapatın.");
  const next=archive?"archived":row.status==="active"?"passive":"active";
  if(next!=="active"&&!await systemConfirm({title:archive?"Hesap Arşivlensin mi?":"Hesap Pasife Alınsın mı?",message:`${row.name} hesabının geçmişi ve bakiyesi korunacak.`,confirmText:archive?"Arşivle":"Pasife Al"}))return;
  try{await updateDoc(doc(financialAccountsCol,id),{status:next,updatedAtMs:Date.now(),updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid});toast(next==="active"?"Hesap aktif edildi.":next==="passive"?"Hesap pasife alındı.":"Hesap arşivlendi.")}
@@ -415,4 +417,10 @@ function renderReport(){const d=reportData();$("reportContent").innerHTML=`<div 
 function printReport(){const d=reportData(),title=monthName(d.month),content=$("reportContent").innerHTML,w=window.open("","_blank","width=900,height=700");if(!w)return toast("PDF penceresi açılamadı.");w.document.write(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>${esc(title)} Kasa Raporu</title><style>body{font-family:Arial;color:#352522;padding:28px}header{display:flex;align-items:center;border-bottom:3px solid #7d1b24;padding-bottom:14px;margin-bottom:18px}header img{width:72px;height:72px;object-fit:contain;margin-right:14px}h1,h2,h3,p{margin:0}header p{color:#777;margin-top:4px}.report-totals,.report-accounts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.report-stat{border:1px solid #ddd;border-radius:8px;padding:10px}.report-stat span,.report-stat b{display:block}.report-stat span{font-size:11px;color:#777}.report-stat b{margin-top:5px}.current-account-balance b{color:#b3262d}.total-income-stat b{color:#315f89}.report-result{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-weight:700}.report-result.profit{border-color:#b8d8c5;background:#eef8f2;color:#207245}.report-result.loss{border-color:#e5b9bd;background:#fff0f1;color:#b3262d}.report-result.neutral{background:#f4f1ed;color:#6f6460}.report-section{margin-top:18px}.report-row{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:7px 0;font-size:12px}.empty{color:#777}button{display:none}@media print{body{padding:0}}</style></head><body><header><img src="../assets/images/logo.png"><div><h1>Fatih Çay Evi</h1><h2>${esc(title)} Kasa Raporu</h2><p>Oluşturulma: ${new Date().toLocaleString("tr-TR")}</p></div></header>${content}<script>setTimeout(()=>window.print(),500)<\/script></body></html>`);w.document.close()}
 function groupAmounts(rows,key){const map=new Map;for(const row of rows){const name=key(row);map.set(name,(map.get(name)||0)+number(row.amount))}return[...map].sort((a,b)=>b[1]-a[1])}function groupProducts(items){const map=new Map;for(const c of items)for(const p of c.products||[]){const name=p.name||"Ürün",v=map.get(name)||{quantity:0,total:0};v.quantity+=number(p.quantity);v.total+=number(p.total);map.set(name,v)}return[...map].sort((a,b)=>b[1].quantity-a[1].quantity)}function reportSection(title,rows,empty){return`<section class="report-section"><h3>${title}</h3>${rows.length?rows.map(([name,total])=>`<div class="report-row"><span>${esc(name)}</span><b>${money(total)}</b></div>`).join(""):`<p class="empty">${empty}</p>`}</section>`}function productSection(rows){return`<section class="report-section"><h3>Ürün Satışları</h3>${rows.length?rows.map(([name,v])=>`<div class="report-row"><span>${esc(name)}</span><b>${v.quantity} adet <small>• ${money(v.total)}</small></b></div>`).join(""):'<p class="empty">Bu ay kapatılmış ürün satışı yok.</p>'}</section>`}
 
-function sortMovements(a,b){return number(b.createdAtMs)-number(a.createdAtMs)||String(b.id).localeCompare(String(a.id))}function movementIcon(m){return m.automatic?"fa-lock":m.type==="income"?"fa-arrow-trend-up":m.type==="expense"?"fa-arrow-trend-down":"fa-right-left"}function sign(m){return m.type==="income"?"+":m.type==="expense"?"−":"↔"}function typeName(t){return t==="income"?"Gelir":t==="expense"?"Gider":"Aktarım"}function accountText(m){const n={cash:"Nakit",bank:"Banka Havalesi",card:"Kart / POS",creditCard:"Kredi Kartı",bankLoan:"Banka Kredisi",savings:"Birikim"};return m.type==="transfer"?`${m.fromAccountNameSnapshot||n[m.fromAccount]||""} → ${m.toAccountNameSnapshot||n[m.toAccount]||""}`:m.accountNameSnapshot||n[m.account]||""}function number(v){return Number(v)||0}function money(v){return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(number(v))}function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}function shiftDate(v,n){const d=new Date(`${v}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}function dateObject(v){return new Date(`${v}T12:00:00Z`)}function formatBusinessDate(v){return new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"}).format(dateObject(v))}function dayName(v){return new Intl.DateTimeFormat("tr-TR",{weekday:"long",timeZone:"UTC"}).format(dateObject(v))}function monthName(v){return new Intl.DateTimeFormat("tr-TR",{month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(`${v}-01T12:00:00Z`))}function formatTime(ms){return ms?new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"}).format(new Date(ms)):""}function updateClock(){const n=new Date();$("currentTime").textContent=n.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});$("currentDate").textContent=n.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit"})}function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}function toast(message){clearTimeout(toastTimer);$("toast").textContent=message;$("toast").classList.add("show");toastTimer=setTimeout(()=>$("toast").classList.remove("show"),3000)}
+function sortMovements(a,b){return number(b.createdAtMs)-number(a.createdAtMs)||String(b.id).localeCompare(String(a.id))}function movementIcon(m){return m.automatic?"fa-lock":m.type==="income"?"fa-arrow-trend-up":m.type==="expense"?"fa-arrow-trend-down":"fa-right-left"}function sign(m){return m.type==="income"?"+":m.type==="expense"?"−":"↔"}function typeName(t){return t==="income"?"Gelir":t==="expense"?"Gider":"Aktarım"}function accountText(m){const n={cash:"Nakit",bank:"Banka Havalesi",card:"Kart / POS",creditCard:"Kredi Kartı",bankLoan:"Banka Kredisi",savings:"Birikim"};return m.type==="transfer"?`${m.fromAccountNameSnapshot||n[m.fromAccount]||""} → ${m.toAccountNameSnapshot||n[m.toAccount]||""}`:m.accountNameSnapshot||n[m.account]||""}function number(v){return Number(v)||0}function money(v){return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(number(v))}function today(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(new Date())}function shiftDate(v,n){const d=new Date(`${v}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}function dateObject(v){return new Date(`${v}T12:00:00Z`)}function formatBusinessDate(v){return new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"}).format(dateObject(v))}function dayName(v){return new Intl.DateTimeFormat("tr-TR",{weekday:"long",timeZone:"UTC"}).format(dateObject(v))}function monthName(v){return new Intl.DateTimeFormat("tr-TR",{month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(`${v}-01T12:00:00Z`))}function formatTime(ms){return ms?new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"}).format(new Date(ms)):""}function updateClock(){const n=new Date();$("currentTime").textContent=n.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});$("currentDate").textContent=n.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit"})}function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}function toast(message){if(definitionsSettingsMode){window.parent.postMessage({type:"fatih-cash-settings-toast",message:String(message)},location.origin);return}clearTimeout(toastTimer);$("toast").textContent=message;$("toast").classList.add("show");toastTimer=setTimeout(()=>$("toast").classList.remove("show"),3000)}
+
+window.addEventListener("message",event=>{
+ if(definitionsSettingsMode&&event.origin===location.origin&&event.source===window.parent&&event.data?.type==="fatih-cash-settings-reset"){
+  $("settingsDialog").showModal();document.querySelectorAll("dialog[open]").forEach(dialog=>{if(dialog.id!=="settingsDialog")dialog.close()});categoryPanelMode="";
+ }
+});

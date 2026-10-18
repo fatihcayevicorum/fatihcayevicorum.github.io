@@ -92,4 +92,23 @@
     }catch(error){console.debug("Tema eşitleme çevrim dışı çalışıyor.",error?.message||error)}
   }
   if("requestIdleCallback"in window)requestIdleCallback(connectRemote,{timeout:1800});else setTimeout(connectRemote,250);
+
+  // İşlem mesajları native dialogların üzerinde de aynı konumda görünür.
+  function watchSystemToasts(){
+    function sync(toast){
+      if(!toast.matches?.(".toast"))return;
+      toast.setAttribute("role","status");toast.setAttribute("aria-live","polite");
+      if(typeof toast.showPopover==="function"){
+        if(!toast.hasAttribute("popover"))toast.setAttribute("popover","manual");
+        if(toast.classList.contains("show")&&!toast.matches(":popover-open"))toast.showPopover();
+        if(!toast.classList.contains("show")&&toast.matches(":popover-open"))toast.hidePopover();
+      }else if(toast.classList.contains("show")){
+        const dialogs=[...document.querySelectorAll("dialog[open]")],host=dialogs.at(-1)||document.body;
+        if(toast.parentElement!==host)host.append(toast);
+      }
+    }
+    document.querySelectorAll(".toast").forEach(sync);
+    new MutationObserver(records=>{for(const record of records){if(record.type==="attributes")sync(record.target);else for(const node of record.addedNodes)if(node.nodeType===1){sync(node);node.querySelectorAll?.(".toast").forEach(sync)}}}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watchSystemToasts,{once:true});else watchSystemToasts();
 })();

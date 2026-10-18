@@ -63,3 +63,21 @@ dialog select{
 .calendar-legend i.leave{border-color:#dda6c0;background:#fde9f2}
 .status-options .leave input:checked+span{color:#8e345d;border-color:#d58bad;background:#fde9f2}
 .status-options input:disabled+span{cursor:wait;opacity:.62}
+
+/* R560: personel yüzeyleri sistemin açık/koyu ve renk temalarını izler. */
+html:root .personnel-page :is(.detail-heading,.person-summary,.person-summary article,.card-stats span,.payment-row,.wage-settings,.active-row,.status-options span,.wage-action-options span,.linked-account-summary,.permission-grid label){background:var(--theme-surface-2)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+html:root .personnel-page :is(.month-controls button,.month-controls input,.detail-actions button:not(.primary):not(.worked-button),.payment-actions button,.calendar-day:not(.worked):not(.leave):not(.absent)){background:var(--theme-input)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important}
+html:root .personnel-page :is(.personnel-avatar,.person-avatar,.dialog-icon:not(.danger),.linked-account-summary>i){background:var(--theme-primary)!important;color:var(--theme-on-primary)!important}
+html:root .personnel-page :is(.card-stats b,.person-summary strong,dialog label){color:var(--theme-text)!important}
+html:root .personnel-page :is(.summary-grid .remaining strong,.person-summary .remaining strong,.payment-side>b,.permission-grid label>i,fieldset legend){color:var(--theme-primary)!important}
+html:root[data-effective-theme="dark"] .personnel-page :is(.summary-grid .remaining strong,.person-summary .remaining strong,.payment-side>b,fieldset legend){color:var(--theme-accent)!important}
+html:root .personnel-page .personnel-card.selected{border-color:var(--theme-primary)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--theme-primary) 20%,transparent)!important}
+html:root .personnel-page .calendar-day.today{box-shadow:inset 0 0 0 2px var(--theme-accent)}
+html:root .personnel-page .status-options input:checked+span{border-color:var(--theme-primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--theme-primary) 20%,transparent)}
+html:root .personnel-page .wage-action-options button:not(.cash):not(.bank){background:var(--theme-primary)!important;color:var(--theme-on-primary)!important;border-color:var(--theme-primary)!important}
+html:root[data-effective-theme="dark"] .personnel-page :is(.calendar-day.worked,.status-options .worked input:checked+span,.wage-action-options button.cash){background:#193b2c!important;color:#b8efd1!important;border-color:#478b67!important}
+html:root[data-effective-theme="dark"] .personnel-page :is(.calendar-day.leave,.status-options .leave input:checked+span){background:#3e2434!important;color:#f1c4dc!important;border-color:#a46787!important}
+html:root[data-effective-theme="dark"] .personnel-page :is(.calendar-day.absent,.status-options .absent input:checked+span){background:#42262c!important;color:#f5c5cc!important;border-color:#b96d78!important}
+html:root[data-effective-theme="dark"] .personnel-page .wage-action-options button.bank{background:#1a3445!important;color:#bce1fb!important;border-color:#4e88ad!important}
+html:root .personnel-page .cash-note{background:var(--theme-surface-2);color:var(--theme-text)}
+html:root .personnel-page .empty{background:var(--theme-surface-2)!important;color:var(--theme-muted)!important}

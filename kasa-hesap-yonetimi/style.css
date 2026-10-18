@@ -502,3 +502,40 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .collection-account-targets label{display:grid;gap:5px;color:var(--theme-text,#271d1f);font-size:.65rem;font-weight:700}
 .collection-account-targets select{width:100%;min-width:0;min-height:43px;padding:8px;border:1px solid var(--theme-border,#eadfd3);border-radius:10px;background:var(--theme-surface,#fff);color:var(--theme-text,#271d1f);font:inherit;font-size:.7rem}
 @media(max-width:620px){.collection-account-targets{grid-template-columns:1fr}}
+
+/* R560: ödeme tercihleri kompakt; hesaplar türlerine göre kartlar. */
+#paymentMethodsDialog .settings-subpanel>h3{margin:0 0 10px;font-size:.85rem}
+#paymentMethodsList{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 18px}
+.collection-method-card{min-width:0;padding:12px;border-radius:15px;background:var(--theme-surface-2);color:var(--theme-text)}
+#paymentMethodsList .payment-method-switch{min-height:32px;padding:0;border:0;background:transparent!important;border-radius:0;font-size:.81rem}
+#paymentMethodsList .collection-method-card label{display:grid;gap:5px;margin:9px 0 0;font-size:.58rem;color:var(--theme-muted)}
+#paymentMethodsList select{height:38px;min-width:0;font-size:.65rem;padding:0 7px}
+.financial-account-group{padding:0;border:0;background:transparent}
+.financial-account-group h3{font-size:.78rem;margin:0 0 8px}
+.financial-account-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:9px}
+.financial-account-row{grid-template-columns:minmax(0,1fr);align-content:space-between;min-height:156px;padding:13px;border:0;border-radius:15px;background:var(--theme-surface-2);gap:10px}
+.financial-account-row strong{overflow-wrap:anywhere;line-height:1.4}
+.financial-account-row>b{font-size:.88rem;align-self:end}
+.financial-account-actions{gap:5px;align-content:end}
+.financial-account-actions button{min-height:32px;padding:5px 8px;font-size:.58rem;border:0}
+.financial-account-row.is-passive{opacity:.7}
+.financial-account-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0 4px}
+.financial-account-tools>button{display:grid;justify-items:center;align-content:center;gap:8px;min-height:100px;border:0;border-radius:15px;background:var(--theme-surface-2);color:var(--theme-text);font:inherit;font-size:.73rem}
+.financial-account-tools i{font-size:1.1rem;color:var(--theme-primary)}
+.financial-account-tools small{font-size:.6rem;color:var(--theme-muted)}
+.financial-account-small-dialog{width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px);border:0;border-radius:20px;padding:0;background:var(--theme-surface);color:var(--theme-text);box-shadow:var(--theme-shadow)}
+.financial-account-small-dialog::backdrop{background:#0006;backdrop-filter:blur(3px)}
+.financial-account-small-dialog .dialog-card{width:100%;padding:20px;max-height:calc(100dvh - 32px)}
+#financialAccountForm{display:grid;padding:20px;gap:12px}
+#financialAccountForm label{display:grid;gap:6px;margin:0;font-size:.72rem}
+#financialAccountForm label>*{width:100%;flex:none;min-height:44px}
+#financialAccountForm .dialog-head h2,.financial-account-small-dialog h2{margin:0;font-size:1.05rem}
+#financialAccountForm .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin:3px 0 0}
+.financial-account-small-dialog .dialog-head>button{background:transparent!important;color:var(--theme-muted);border:0;font-size:1.5rem}
+.financial-archive-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--theme-border)}
+.financial-archive-row strong,.financial-archive-row small{display:block}
+.financial-archive-row strong{font-size:.77rem;overflow-wrap:anywhere}
+.financial-archive-row small{font-size:.59rem;color:var(--theme-muted);margin-top:3px}
+.financial-archive-row button{flex:none;min-height:38px;padding:7px 12px;border:0;border-radius:10px;background:var(--theme-primary);color:var(--theme-on-primary);font:inherit;font-size:.66rem}
+@media(max-width:500px){#paymentMethodsList{gap:6px}.collection-method-card{padding:8px}#paymentMethodsList .payment-method-switch{font-size:.7rem;gap:3px}.payment-switch-track{transform:scale(.8);transform-origin:right center;flex-basis:38px;width:44px}#paymentMethodsList select{font-size:.57rem;padding-left:4px}.financial-account-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.financial-account-row{min-height:160px;padding:11px}.financial-account-row>b{font-size:.78rem}}
+.financial-account-row .pending-account-collection{display:block;margin-top:5px;font-size:.56rem;font-weight:500;white-space:normal;color:var(--theme-muted)}

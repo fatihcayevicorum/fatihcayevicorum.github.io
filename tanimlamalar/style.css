@@ -312,3 +312,10 @@ button{-webkit-tap-highlight-color:transparent}
 .theme-reset-row{display:flex;justify-content:flex-start}.theme-reset-row .secondary-button{min-width:154px}
 @media(max-width:760px){.theme-palette-options{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-palette-options label>span{min-height:100px}.theme-live-preview{grid-template-columns:1fr}.theme-settings-dialog form{padding:17px}}
 @media(max-width:440px){.theme-mode-options{gap:6px}.theme-mode-options label>span{min-height:84px;padding:8px 4px}.theme-mode-options small{font-size:.49rem}.theme-preview-card{grid-template-columns:auto minmax(0,1fr)}.theme-preview-card button{display:none}.theme-reset-row .secondary-button{width:100%}}
+
+/* R560: ayar alt sayfaları aynı dış pencereyi paylaşır. */
+html:root .cash-settings-host{width:min(920px,calc(100vw - 24px))!important;height:min(740px,calc(100dvh - 24px))!important;max-width:none;max-height:calc(100dvh - 24px);border-radius:22px;isolation:isolate}
+.cash-settings-loading{position:absolute;inset:0;display:grid;place-items:center;margin:0;padding:24px;color:var(--theme-muted);background:var(--theme-surface);font-size:.8rem}
+.cash-settings-host.is-ready .cash-settings-loading{display:none}
+.cash-settings-host:not(.is-ready) iframe{visibility:hidden}
+@media(max-width:620px){html:root .cash-settings-host{width:calc(100vw - 16px)!important;height:calc(100dvh - 24px)!important;border-radius:18px}}
