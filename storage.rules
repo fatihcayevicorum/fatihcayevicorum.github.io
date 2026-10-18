@@ -1,9 +1,13 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    function backupWritable() {
+      return !firestore.exists(/databases/(default)/documents/adminBackupControl/state)
+        || firestore.get(/databases/(default)/documents/adminBackupControl/state).data.active != true;
+    }
     match /site/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null
+      allow write: if backupWritable() && (request.auth != null
         && (
           request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02'
           || (
@@ -12,18 +16,21 @@ service firebase.storage {
           )
         )
         && request.resource.size < 8 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && request.resource.contentType.matches('image/.*'));
     }
     match /system-backups/{backupFile} {
-      allow read, delete: if request.auth != null
+      allow read: if request.auth != null
         && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02';
-      allow create, update: if request.auth != null
+      allow delete: if backupWritable() && (request.auth != null
+        && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02');
+      allow create, update: if backupWritable() && (request.auth != null
         && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02'
-        && request.resource.size < 25 * 1024 * 1024
-        && request.resource.contentType == 'application/json';
+        && request.resource.size < 100 * 1024 * 1024
+        && request.resource.contentType == 'application/json');
     }
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read: if false;
+      allow write: if backupWritable() && (false);
     }
   }
 }

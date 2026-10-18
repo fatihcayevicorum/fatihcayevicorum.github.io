@@ -1,0 +1,34 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const project='demo-fatih-backup',ownerUid='obuZLQXuPAWsHE20bZxcAxCNsO02';
+if(process.env.GCLOUD_PROJECT!==project||!process.env.FIRESTORE_EMULATOR_HOST||!process.env.FIREBASE_STORAGE_EMULATOR_HOST)throw Error('Yalnızca demo-fatih-backup emülatörlerinde çalıştırılabilir.');
+const {initializeApp}=require('firebase-admin/app'),{getFirestore,Timestamp,GeoPoint,FieldValue}=require('firebase-admin/firestore'),{getStorage}=require('firebase-admin/storage'),{buildSystemBackup}=require('../system-backup');
+class HttpsError extends Error{constructor(code,msg){super(msg);this.code=code}}
+const app=initializeApp({projectId:project,storageBucket:project+'.appspot.com'}),db=getFirestore(app),bucket=getStorage(app).bucket();
+const auth={async getUsers(ids){return {users:ids.map(x=>({uid:x.uid,email:x.uid+'@example.test',disabled:false})),notFound:[]}}};
+const api=buildSystemBackup({db,bucket,auth,Timestamp,GeoPoint,FieldValue,HttpsError,ownerUid,projectId:project});const call=(name,data={})=>api[name]({auth:{uid:ownerUid},data});
+function token(uid){const at=Math.floor(Date.now()/1000);return Buffer.from(JSON.stringify({alg:'none',typ:'JWT'})).toString('base64url')+'.'+Buffer.from(JSON.stringify({iss:'https://securetoken.google.com/'+project,aud:project,sub:uid,user_id:uid,iat:at,auth_time:at,exp:at+3600,firebase:{sign_in_provider:'custom',identities:{}}})).toString('base64url')+'.';}
+async function patch(path,fields,uid){return fetch('http://'+process.env.FIRESTORE_EMULATOR_HOST+'/v1/projects/'+project+'/databases/(default)/documents/'+path,{method:'PATCH',headers:{'Content-Type':'application/json',...(uid?{Authorization:'Bearer '+token(uid)}:{})},body:JSON.stringify({fields})});}
+async function image(name,uid){const boundary='fatih-backup-test-boundary';const body='--'+boundary+'\r\nContent-Type: application/json; charset=utf-8\r\n\r\n'+JSON.stringify({name,contentType:'image/png'})+'\r\n--'+boundary+'\r\nContent-Type: image/png\r\n\r\nimage-body\r\n--'+boundary+'--';return fetch('http://'+process.env.FIREBASE_STORAGE_EMULATOR_HOST+'/v0/b/'+bucket.name+'/o?name='+encodeURIComponent(name),{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+boundary,'x-goog-upload-protocol':'multipart',Authorization:'Firebase '+token(uid)},body});}
+
+test('emulator: maintenance blocks owner, staff, public and Storage writes; internal metadata is protected',async()=>{
+ await db.doc('adminBackupControl/state').set({active:false});await db.doc('staffUsers/staff-one').set({active:true,permissions:['stock','home']});
+ for(const uid of [ownerUid,'staff-one']){let r=await patch('adminStockItems/rules-'+uid,{quantity:{integerValue:'5'}},uid);assert.equal(r.status,200,await r.text());r=await image('site/logo/rules-'+uid+'.png',uid);assert.equal(r.status,200,uid+' '+await r.text());}
+ await db.doc('adminBackupControl/state').set({active:true,operation:'restore',jobId:'rules-check'});
+ for(const uid of [ownerUid,'staff-one']){let r=await patch('adminStockItems/rules-'+uid,{quantity:{integerValue:'99'}},uid);assert.equal(r.status,403,await r.text());r=await image('site/logo/blocked-'+uid+'.png',uid);assert.ok([401,403].includes(r.status),await r.text());}
+ let r=await patch('publicSite/stats',{totalVisits:{integerValue:'1'}});assert.equal(r.status,403,await r.text());await db.doc('adminBackupControl/state').set({active:false});
+ for(const path of ['adminBackupControl/state','adminBackupJobs/forged','adminBackupLeases/forged']){r=await patch(path,{active:{booleanValue:false}},ownerUid);assert.equal(r.status,403,await r.text());}
+ await db.doc('staffUsers/staff-one').delete();
+});
+
+test('emulator: real Firestore and Storage backup/restore round trip, including savings and nanosecond timestamps',async()=>{
+ await db.doc('adminSecurity/sensitiveAccess').set({updatedAtMs:8,pinHash:'do-not-export',salt:'secret'});await db.doc('adminSavingsSessions/'+ownerUid).set({expiresAtMs:Date.now()+3600000,pinVersion:8});
+ await db.doc('adminSales/emulator-sale').set({amount:42,stamp:new Timestamp(1700000000,123456789),point:new GeoPoint(40.5,34.9),bytes:Buffer.from([0,255]),ref:db.doc('publicMenu/catalog'),literal:{__fatihType:'timestamp',ms:7}});
+ for(const [path,data] of Object.entries({'adminPurchaseDrafts/notification-draft':{items:[{id:'stock-1',quantity:3}]},'orphanCollection/missing/children/child':{kept:true},'adminFinanceDays/2026-10-01':{locked:true},'adminOperationHistory/past':{before:{amount:10},after:{amount:42}},'adminSavingsAccounts/gold':{balanceUnits:1000},'adminSavingsLedger/move-asset':{accountId:'gold',side:'asset',direction:'in',amountScaled:1000},'adminSavingsOperations/move':{accountId:'gold'},'adminCashMovements/savings-move':{source:'savings',amountCents:100000}}))await db.doc(path).set(data);
+ await bucket.file('site/logo/roundtrip.png').save(Buffer.from('original asset'),{contentType:'image/png',metadata:{metadata:{firebaseStorageDownloadTokens:'preserved-public-token'},cacheControl:'public,max-age=60'}});
+ const storedStamp=(await db.doc('adminSales/emulator-sale').get()).data().stamp;const backup=await call('create');assert.ok(backup.totalRecords>=9);assert.ok(backup.totalAssets>=1);assert.equal((await call('inspect',{name:backup.name})).checksum,backup.checksum);
+ await db.doc('adminSales/emulator-sale').set({amount:999});await db.doc('adminSales/extra').set({amount:12});await db.doc('adminFinanceDays/extra').set({locked:true});await bucket.file('site/logo/roundtrip.png').save(Buffer.from('changed'));
+ const start=await call('start',{name:backup.name,checksum:backup.checksum,confirmation:'GERİ YÜKLE'});let done;do{done=await call('resume',{jobId:start.jobId});}while(!done.completed);
+ const sale=(await db.doc('adminSales/emulator-sale').get()).data();assert.equal(sale.amount,42);assert.equal(sale.stamp.nanoseconds,storedStamp.nanoseconds);assert.deepEqual(sale.bytes,Buffer.from([0,255]));assert.equal(sale.ref.path,'publicMenu/catalog');assert.deepEqual(sale.literal,{__fatihType:'timestamp',ms:7});assert.equal((await db.doc('adminSales/extra').get()).exists,false);assert.equal((await db.doc('adminFinanceDays/extra').get()).exists,false);assert.equal((await db.doc('orphanCollection/missing/children/child').get()).data().kept,true);
+ assert.equal((await bucket.file('site/logo/roundtrip.png').download())[0].toString(),'original asset');assert.equal((await bucket.file('site/logo/roundtrip.png').getMetadata())[0].metadata.firebaseStorageDownloadTokens,'preserved-public-token');assert.equal((await call('status')).active,false);assert.equal((await db.doc('adminSecurity/sensitiveAccess').get()).data().pinHash,'do-not-export');assert.ok((await bucket.file('system-backups/'+done.safetyBackup).getMetadata())[0]);
+});

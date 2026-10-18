@@ -214,3 +214,21 @@ function installSensitiveLinkGate(){
     if(await requireSensitiveAccess(options))location.href=target.href;
   });
 }
+
+// R572: prevent new actions while the server holds the backup/restore gate.
+if(!location.pathname.includes('/veri-yonetimi/')){
+ const maintenanceApp=location.pathname.includes('/esnaf-paneli/')?(getApps().find(a=>a.name==='merchant-portal')||app):app;
+ let stopMaintenance=()=>{},maintenanceDialog=null,sawRestore=false;
+ onAuthStateChanged(getAuth(maintenanceApp),user=>{
+  stopMaintenance();if(!user){if(maintenanceDialog){maintenanceDialog.close();maintenanceDialog.remove();maintenanceDialog=null;}return;}
+  stopMaintenance=onSnapshot(doc(getFirestore(maintenanceApp),'adminBackupControl','state'),snap=>{
+   const state=snap.data()||{};
+   if(state.active){
+    sawRestore=sawRestore||state.operation==='restore';
+    if(!maintenanceDialog){maintenanceDialog=document.createElement('dialog');maintenanceDialog.className='system-theme-confirm';maintenanceDialog.style.cssText='width:min(430px,calc(100% - 28px));padding:24px;border:1px solid var(--theme-border);border-radius:20px;color:var(--theme-text);background:var(--theme-surface);font-family:Poppins,Arial,sans-serif';maintenanceDialog.innerHTML='<h2>Sistem İşlemi Sürüyor</h2><p data-backup-message></p>';maintenanceDialog.addEventListener('cancel',e=>e.preventDefault());document.body.append(maintenanceDialog);}
+    maintenanceDialog.querySelector('[data-backup-message]').textContent=state.operation==='restore'?'Yedek geri yükleniyor. İşlem tamamlanana kadar kayıt eklemeyin.':'Yedek alınıyor. İşlem tamamlanana kadar bekleyin.';
+    if(!maintenanceDialog.open)maintenanceDialog.showModal();
+   }else{if(maintenanceDialog){maintenanceDialog.close();maintenanceDialog.remove();maintenanceDialog=null;}if(sawRestore&&!snap.metadata.fromCache)location.reload();}
+  },()=>{});
+ });
+}

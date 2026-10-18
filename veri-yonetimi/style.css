@@ -94,3 +94,10 @@ dialog p{color:var(--muted);font-size:.78rem}
 .current-account-restore>button{width:100%}
 .current-account-restore .restore-preview{grid-column:auto}
 }
+
+/* R572 — yarıda kalan yedek işlemi mevcut panel ve buton ölçülerini kullanır. */
+#backupJobPanel .backup-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start}
+#backupJobPanel .backup-actions button{width:auto;min-width:140px;height:auto;min-height:44px;padding:10px 14px;white-space:normal;color:var(--theme-text);background:var(--theme-surface-2);border:1px solid var(--theme-border)}
+#backupJobPanel [hidden]{display:none!important}
+#backupJobText{overflow-wrap:anywhere}
+@media(max-width:620px){#backupJobPanel .section-heading{align-items:flex-start;flex-wrap:wrap}#backupJobPanel .backup-actions button{flex:1 1 100%;min-width:0}}

@@ -1,6 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // R572: client mutations are blocked throughout a backup/restore.
+    function backupWritable() {
+      return !exists(/databases/$(database)/documents/adminBackupControl/state)
+        || get(/databases/$(database)/documents/adminBackupControl/state).data.get('active', false) != true;
+    }
+    match /adminBackupControl/state {
+      allow read: if request.auth != null;
+      allow write: if backupWritable() && (false);
+    }
     function isOwner() {
       return request.auth != null
         && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02';
@@ -107,106 +116,111 @@ service cloud.firestore {
 
     match /staffUsers/{uid} {
       allow read: if isOwner() || (request.auth != null && request.auth.uid == uid);
-      allow create, update: if isOwner()
+      allow create, update: if backupWritable() && (isOwner()
         && (uid != 'obuZLQXuPAWsHE20bZxcAxCNsO02'
           || (request.resource.data.role == 'owner'
             && request.resource.data.active == true
             && request.resource.data.permissions.hasAll([
               'tea', 'pos', 'currentAccounts', 'currentAccountTransfer', 'menu',
               'stock', 'credit', 'merchant', 'reports', 'cash', 'home'
-            ])));
-      allow delete: if isOwner() && uid != 'obuZLQXuPAWsHE20bZxcAxCNsO02';
+            ]))));
+      allow delete: if backupWritable() && (isOwner() && uid != 'obuZLQXuPAWsHE20bZxcAxCNsO02');
     }
     match /staffUserAudit/{document} {
       allow read: if isOwner();
-      allow write: if false;
+      allow write: if backupWritable() && (false);
     }
     match /adminPersonnel/{document} {
       allow read: if hasPanel('reports') || (hasPanel('personnel') && resource.data.linkedUserUid == request.auth.uid);
-      allow create, update: if isOwner()
+      allow create, update: if backupWritable() && (isOwner()
         && (document != 'obuZLQXuPAWsHE20bZxcAxCNsO02'
           || (request.resource.data.isOwnerProfile == true
             && request.resource.data.active == true
-            && request.resource.data.linkedUserUid == 'obuZLQXuPAWsHE20bZxcAxCNsO02'));
-      allow delete: if isOwner() && document != 'obuZLQXuPAWsHE20bZxcAxCNsO02';
+            && request.resource.data.linkedUserUid == 'obuZLQXuPAWsHE20bZxcAxCNsO02')));
+      allow delete: if backupWritable() && (isOwner() && document != 'obuZLQXuPAWsHE20bZxcAxCNsO02');
     }
     match /adminPersonnelAttendance/{document} {
       allow read: if hasPanel('reports') || (hasPanel('personnel') && resource.data.personnelId == get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.personnelId);
-      allow write: if isOwner();
+      allow write: if backupWritable() && (isOwner());
     }
     match /adminPersonnelPayments/{document} {
       allow read: if hasPanel('reports') || (hasPanel('personnel') && resource.data.personnelId == get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.personnelId);
-      allow write: if isOwner();
+      allow write: if backupWritable() && (isOwner());
     }
     match /adminSecurity/{document} {
-      allow read, write: if false;
+      allow read: if false;
+      allow write: if backupWritable() && (false);
     }
     match /sensitivePinAttempts/{document} {
-      allow read, write: if false;
+      allow read: if false;
+      allow write: if backupWritable() && (false);
     }
 
     match /publicTea/status {
       allow read: if true;
-      allow write: if hasAnyPanel(['tea', 'pos']);
+      allow write: if backupWritable() && (hasAnyPanel(['tea', 'pos']));
     }
     match /adminTea/{document} {
-      allow read, write: if hasAnyPanel(['tea', 'pos']);
+      allow read: if hasAnyPanel(['tea', 'pos']);
+      allow write: if backupWritable() && (hasAnyPanel(['tea', 'pos']));
     }
     match /adminProductPriceHistory/{recordId} {
       allow read: if hasPanel('menu') || isOwner();
-      allow create: if hasPanel('menu') && request.resource.data.productId is string
+      allow create: if backupWritable() && (hasPanel('menu') && request.resource.data.productId is string
         && request.resource.data.oldPrice is number && request.resource.data.newPrice is number
         && request.resource.data.newPrice >= 0 && request.resource.data.newPrice <= 99999
-        && request.resource.data.changedBy == request.auth.uid;
-      allow update, delete: if false;
+        && request.resource.data.changedBy == request.auth.uid);
+      allow update, delete: if backupWritable() && (false);
     }
     match /publicMenu/catalog {
       allow read: if true;
-      allow write: if hasPanel('menu');
+      allow write: if backupWritable() && (hasPanel('menu'));
     }
     match /publicSite/config {
       allow read: if true;
-      allow write: if hasPanel('home');
+      allow write: if backupWritable() && (hasPanel('home'));
     }
     match /publicSite/stats {
       allow read: if true;
-      allow create: if request.resource.data.totalVisits == 1;
-      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+      allow create: if backupWritable() && (request.resource.data.totalVisits == 1);
+      allow update: if backupWritable() && (request.resource.data.diff(resource.data).affectedKeys()
         .hasOnly(['totalVisits', 'updatedAt'])
-        && request.resource.data.totalVisits == resource.data.totalVisits + 1;
+        && request.resource.data.totalVisits == resource.data.totalVisits + 1);
     }
     match /publicPresence/{sessionId} {
       allow read: if true;
-      allow create, update: if request.resource.data.lastSeenMs is int;
-      allow delete: if false;
+      allow create, update: if backupWritable() && (request.resource.data.lastSeenMs is int);
+      allow delete: if backupWritable() && (false);
     }
     match /adminStockItems/{document} {
       allow read: if hasAnyPanel(['stock', 'pos', 'reports', 'currentAccounts']);
-      allow write: if hasAnyPanel(['stock', 'pos', 'currentAccounts'])
+      allow write: if backupWritable() && (hasAnyPanel(['stock', 'pos', 'currentAccounts'])
         && request.resource.data.quantity is number
-        && request.resource.data.quantity >= 0;
+        && request.resource.data.quantity >= 0);
     }
     match /adminStockMovements/{document} {
       allow read: if hasAnyPanel(['stock', 'pos', 'reports', 'currentAccounts']);
-      allow write: if hasAnyPanel(['stock', 'pos', 'currentAccounts']);
+      allow write: if backupWritable() && (hasAnyPanel(['stock', 'pos', 'currentAccounts']));
     }
     match /adminPurchaseOrders/{document} {
-      allow read, write: if hasPanel('stock');
+      allow read: if hasPanel('stock');
+      allow write: if backupWritable() && (hasPanel('stock'));
     }
     match /adminPurchaseDrafts/{document} {
-      allow read, write: if hasPanel('stock');
+      allow read: if hasPanel('stock');
+      allow write: if backupWritable() && (hasPanel('stock'));
     }
     match /adminCreditCustomers/{document} {
       allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
-      allow write: if hasAnyPanel(['credit', 'pos']);
+      allow write: if backupWritable() && (hasAnyPanel(['credit', 'pos']));
     }
     match /adminCreditMovements/{document} {
       allow read: if hasAnyPanel(['credit', 'pos', 'reports']);
-      allow write: if hasAnyPanel(['credit', 'pos']);
+      allow write: if backupWritable() && (hasAnyPanel(['credit', 'pos']));
     }
     match /adminCurrentAccounts/{accountId} {
       allow read: if hasAnyPanel(['credit', 'pos', 'reports', 'cash', 'currentAccounts']);
-      allow create: if hasPanel('currentAccounts')
+      allow create: if backupWritable() && (hasPanel('currentAccounts')
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 80
@@ -217,8 +231,8 @@ service cloud.firestore {
         && request.resource.data.balance == 0
         && request.resource.data.active == true
         && request.resource.data.startDate == '2026-08-27'
-        && request.resource.data.schemaVersion == 'r279-current-account';
-      allow update: if (hasPanel('currentAccounts')
+        && request.resource.data.schemaVersion == 'r279-current-account');
+      allow update: if backupWritable() && ((hasPanel('currentAccounts')
           && request.resource.data.balance == resource.data.balance
           && request.resource.data.startDate == resource.data.startDate
           && request.resource.data.schemaVersion == resource.data.schemaVersion
@@ -240,12 +254,12 @@ service cloud.firestore {
           && request.resource.data.createdBy == resource.data.createdBy
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'balance', 'updatedAtMs', 'updatedAt', 'updatedBy'
-          ]));
-      allow delete: if false;
+          ])));
+      allow delete: if backupWritable() && (false);
     }
     match /adminCurrentAccountMovements/{movementId} {
       allow read: if hasAnyPanel(['credit', 'pos', 'reports', 'cash', 'currentAccounts']) || hasCurrentAccountTransfer();
-      allow create: if hasCurrentAccountWriteAccess()
+      allow create: if backupWritable() && (hasCurrentAccountWriteAccess()
         && request.resource.data.accountId is string
         && request.resource.data.accountId.size() > 0
         && request.resource.data.amount is number
@@ -257,45 +271,46 @@ service cloud.firestore {
         && request.resource.data.direction in ['increase', 'decrease']
         && request.resource.data.businessDate is string
         && request.resource.data.businessDate >= '2026-08-27'
-        && request.resource.data.schemaVersion == 'r280-current-account-movement';
-      allow update: if hasCurrentAccountWriteAccess()
+        && request.resource.data.schemaVersion == 'r280-current-account-movement');
+      allow update: if backupWritable() && (hasCurrentAccountWriteAccess()
         && (!('reversed' in resource.data) || resource.data.reversed != true)
         && request.resource.data.reversed == true
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'reversed', 'reversedAtMs', 'reversedAt', 'reversedBy',
           'reversalReason', 'reversalMovementId', 'replacementMovementId'
-        ]);
-      allow delete: if false;
+        ]));
+      allow delete: if backupWritable() && (false);
     }
     match /adminAppSettings/{document} {
       allow read: if isManager();
-      allow write: if hasAnyPanel(['pos', 'reports', 'cash']);
+      allow write: if backupWritable() && (hasAnyPanel(['pos', 'reports', 'cash']));
     }
     match /adminOrders/{document} {
-      allow read, write: if hasPanel('pos');
+      allow read: if hasPanel('pos');
+      allow write: if backupWritable() && (hasPanel('pos'));
     }
     match /adminSales/{document} {
       allow read: if hasAnyPanel(['pos', 'reports', 'merchant', 'cash', 'currentAccounts']);
-      allow write: if hasAnyPanel(['pos', 'reports', 'merchant', 'currentAccounts']);
+      allow write: if backupWritable() && (hasAnyPanel(['pos', 'reports', 'merchant', 'currentAccounts']));
     }
     match /adminDailyClosings/{document} {
       allow read: if hasAnyPanel(['reports', 'pos', 'cash', 'currentAccounts']);
-      allow write: if hasAnyPanel(['reports', 'pos']);
+      allow write: if backupWritable() && (hasAnyPanel(['reports', 'pos']));
     }
     match /adminInternalConsumptions/{document} {
       allow read: if hasAnyPanel(['pos', 'reports']);
-      allow write: if hasPanel('pos');
+      allow write: if backupWritable() && (hasPanel('pos'));
     }
     match /adminInternalConsumptionDrafts/{document} {
       allow read: if hasAnyPanel(['pos', 'cash']);
-      allow write: if hasPanel('pos');
+      allow write: if backupWritable() && (hasPanel('pos'));
     }
     match /adminCashMovements/{document} {
       allow get: if hasAnyPanel(['cash', 'reports'])
         || ((hasPanel('pos') || hasCurrentAccountWriteAccess())
           && document.matches('pos-gelir-(cash|bank|card)-.*'));
       allow list: if hasAnyPanel(['cash', 'reports']);
-      allow create: if (validFinanceMovement(request.resource.data) && (hasPanel('cash') || (hasPanel('pos')
+      allow create: if backupWritable() && ((validFinanceMovement(request.resource.data) && (hasPanel('cash') || (hasPanel('pos')
           && request.resource.data.source == 'pos-quick-cash'
           && request.resource.data.type in ['income', 'expense']
           && request.resource.data.account in ['cash', 'bank', 'card', 'creditCard']
@@ -309,8 +324,8 @@ service cloud.firestore {
         || ((hasPanel('pos') || hasCurrentAccountWriteAccess())
           && validPosInstantMovement(request.resource.data)
           && request.resource.data.amount > 0
-          && isPosInstantDocument(document, request.resource.data.account));
-      allow update: if resource.data.get('source', '') != 'savings'
+          && isPosInstantDocument(document, request.resource.data.account)));
+      allow update: if backupWritable() && (resource.data.get('source', '') != 'savings'
         && request.resource.data.get('source', '') != 'savings'
         && financeDateOpen(resource.data.businessDate)
         && request.resource.data.businessDate == resource.data.businessDate
@@ -323,27 +338,27 @@ service cloud.firestore {
             && request.resource.data.account == resource.data.account
             && request.resource.data.type == resource.data.type
             && request.resource.data.sourceGroup == resource.data.sourceGroup
-            && request.resource.data.cashMovementVersion == resource.data.cashMovementVersion));
-      allow delete: if hasPanel('cash')
+            && request.resource.data.cashMovementVersion == resource.data.cashMovementVersion)));
+      allow delete: if backupWritable() && (hasPanel('cash')
         && resource.data.get('source', '') != 'savings'
-        && financeDateOpen(resource.data.businessDate);
+        && financeDateOpen(resource.data.businessDate));
     }
     match /adminFinanceDays/{businessDate} {
       allow read: if hasAnyPanel(['cash', 'pos', 'reports']);
-      allow create: if hasPanel('cash')
+      allow create: if backupWritable() && (hasPanel('cash')
         && businessDate >= '2026-08-13'
         && request.resource.data.businessDate == businessDate
-        && request.resource.data.locked == true;
-      allow update, delete: if false;
+        && request.resource.data.locked == true);
+      allow update, delete: if backupWritable() && (false);
     }
     match /adminCashSettings/{document} {
       allow read: if hasPanel('cash');
-      allow write: if hasPanel('cash');
+      allow write: if backupWritable() && (hasPanel('cash'));
     }
     match /adminPaymentSettings/{document} {
       allow read: if hasAnyPanel(['cash', 'pos', 'currentAccounts', 'merchant']);
-      allow delete: if isOwner() && document == 'config';
-      allow create, update: if isOwner() && document == 'config'
+      allow delete: if backupWritable() && (isOwner() && document == 'config');
+      allow create, update: if backupWritable() && (isOwner() && document == 'config'
         && request.resource.data.keys().hasOnly(['methods', 'activeAccounts', 'updatedAtMs', 'updatedBy'])
         && (!exists(/databases/$(database)/documents/adminPaymentSettings/config)
           || !('activeAccounts' in resource.data)
@@ -359,24 +374,24 @@ service cloud.firestore {
             && request.resource.data.activeAccounts.keys().hasOnly(['cash','transfer','card'])
             && (!request.resource.data.methods.cash || validFinancialAccount(request.resource.data.activeAccounts.cash,'cash',false))
             && (!request.resource.data.methods.transfer || validFinancialAccount(request.resource.data.activeAccounts.transfer,'bank',false))
-            && (!request.resource.data.methods.card || validFinancialAccount(request.resource.data.activeAccounts.card,'card',false))));
+            && (!request.resource.data.methods.card || validFinancialAccount(request.resource.data.activeAccounts.card,'card',false)))));
     }
     match /adminFinancialAccounts/{accountId} {
       allow read: if hasAnyPanel(['cash', 'reports', 'pos', 'currentAccounts', 'merchant']);
-      allow create: if isOwner()
+      allow create: if backupWritable() && (isOwner()
         && request.resource.data.type in ['cash', 'bank', 'card', 'creditCard']
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 60
-        && request.resource.data.status in ['active', 'passive', 'archived'];
-      allow update: if isOwner()
+        && request.resource.data.status in ['active', 'passive', 'archived']);
+      allow update: if backupWritable() && (isOwner()
         && request.resource.data.type == resource.data.type
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 60
         && request.resource.data.status in ['active', 'passive', 'archived']
-        && (request.resource.data.status == 'active' || !collectionAccountInUse(accountId,resource.data.type));
-      allow delete: if isOwner();
+        && (request.resource.data.status == 'active' || !collectionAccountInUse(accountId,resource.data.type)));
+      allow delete: if backupWritable() && (isOwner());
     }
     function collectionAccountInUse(accountId,type){
       let method=type=='bank'?'transfer':type=='card'?'card':'cash';
@@ -385,117 +400,123 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/adminPaymentSettings/config).data.get('activeAccounts',{}).get(method,'')==accountId;
     }
     match /adminCashCounts/{document} {
-      allow read, write: if hasPanel('cash');
+      allow read: if hasPanel('cash');
+      allow write: if backupWritable() && (hasPanel('cash'));
     }
     match /adminPaymentReminders/{document} {
-      allow read, write: if hasPanel('cash');
+      allow read: if hasPanel('cash');
+      allow write: if backupWritable() && (hasPanel('cash'));
     }
 
     match /merchantProfiles/{merchantId} {
       allow read: if hasPanel('merchant')
         || (request.auth != null && request.auth.uid == merchantId);
-      allow create, update, delete: if hasPanel('merchant');
+      allow create, update, delete: if backupWritable() && (hasPanel('merchant'));
     }
     match /merchantBalanceMovements/{movementId} {
       allow read: if hasPanel('merchant')
         || (request.auth != null && resource.data.merchantId == request.auth.uid);
-      allow create, update, delete: if hasPanel('merchant');
+      allow create, update, delete: if backupWritable() && (hasPanel('merchant'));
     }
     match /merchantOrders/{orderId} {
       allow read: if hasPanel('merchant')
         || (request.auth != null && resource.data.merchantId == request.auth.uid);
-      allow create: if isActiveMerchant()
+      allow create: if backupWritable() && (isActiveMerchant()
         && request.resource.data.merchantId == request.auth.uid
         && request.resource.data.status == 'pending'
         && request.resource.data.quantity >= 1
-        && request.resource.data.quantity <= 50;
-      allow update: if hasPanel('merchant')
+        && request.resource.data.quantity <= 50);
+      allow update: if backupWritable() && (hasPanel('merchant')
         || (isActiveMerchant()
           && resource.data.merchantId == request.auth.uid
           && resource.data.status == 'pending'
           && request.resource.data.status == 'cancelled'
           && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'cancelledAt', 'updatedAt']));
-      allow delete: if hasPanel('merchant');
+            .hasOnly(['status', 'cancelledAt', 'updatedAt'])));
+      allow delete: if backupWritable() && (hasPanel('merchant'));
     }
 
     match /adminTeaPushDevices/{deviceId} {
       allow get: if isManager();
       allow list: if isOwner();
-      allow create: if isManager()
+      allow create: if backupWritable() && (isManager()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.token is string
         && request.resource.data.token.size() >= 20
         && request.resource.data.token.size() <= 4096
-        && request.resource.data.active is bool;
-      allow update: if isManager()
+        && request.resource.data.active is bool);
+      allow update: if backupWritable() && (isManager()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.token == resource.data.token
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'uid', 'active', 'deviceType', 'platform', 'userAgent', 'createdAtMs',
           'updatedAtMs', 'updatedAt'
-        ]);
-      allow delete: if false;
+        ]));
+      allow delete: if backupWritable() && (false);
     }
     match /adminTeaNotificationEvents/{document} {
-      allow read, write: if false;
+      allow read: if false;
+      allow write: if backupWritable() && (false);
     }
     match /merchantPushDevices/{deviceId} {
       allow read: if isOwner()
         || (isActiveMerchant() && resource.data.merchantId == request.auth.uid);
-      allow create: if isActiveMerchant()
+      allow create: if backupWritable() && (isActiveMerchant()
         && request.resource.data.merchantId == request.auth.uid
         && request.resource.data.token is string
         && request.resource.data.token.size() >= 20
         && request.resource.data.token.size() <= 4096
-        && request.resource.data.active is bool;
-      allow update: if isActiveMerchant()
+        && request.resource.data.active is bool);
+      allow update: if backupWritable() && (isActiveMerchant()
         && resource.data.merchantId == request.auth.uid
         && request.resource.data.merchantId == request.auth.uid
         && request.resource.data.token == resource.data.token
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'active', 'preferences', 'deviceType', 'platform', 'userAgent',
           'createdAtMs', 'updatedAtMs', 'updatedAt'
-        ]);
-      allow delete: if false;
+        ]));
+      allow delete: if backupWritable() && (false);
     }
     match /merchantBroadcastRequests/{requestId} {
-      allow read, create: if isOwner();
-      allow update, delete: if false;
+      allow read: if isOwner();
+      allow create: if backupWritable() && (isOwner());
+      allow update, delete: if backupWritable() && (false);
     }
     match /adminInAppNotifications/{notificationId} {
       allow read: if isOwner() || (isStaff() && resource.data.get('ownerOnly', false) != true);
-      allow update: if isManager()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy', 'snoozedUntilBy', 'readAtMs', 'updatedAt']);
-      allow create, delete: if false;
+      allow update: if backupWritable() && (isManager()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy', 'snoozedUntilBy', 'readAtMs', 'updatedAt']));
+      allow create, delete: if backupWritable() && (false);
     }
     match /adminReminderPreferences/{uid} {
-      allow read, create, update: if isManager() && request.auth.uid == uid;
-      allow delete: if false;
+      allow read: if isManager() && request.auth.uid == uid;
+      allow create, update: if backupWritable() && (isManager() && request.auth.uid == uid);
+      allow delete: if backupWritable() && (false);
     }
     match /staffProfileChangeRequests/{uid} {
       allow read: if isOwner() || (request.auth != null && request.auth.uid == uid);
-      allow create, update, delete: if false;
+      allow create, update, delete: if backupWritable() && (false);
     }
 
     // R428: cancellation receipt and deletion must commit together.
     match /adminCancellationEvents/{eventId} {
-      allow create: if hasPanel('pos')
+      allow create: if backupWritable() && (hasPanel('pos')
         && request.resource.data.keys().hasOnly(['action','orderId','title','businessDate','before','createdBy','createdAt'])
         && request.resource.data.action == 'cancel'
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.createdAt == request.time
         && request.resource.data.orderId is string
         && request.resource.data.before == get(/databases/$(database)/documents/adminOrders/$(request.resource.data.orderId)).data
-        && !existsAfter(/databases/$(database)/documents/adminOrders/$(request.resource.data.orderId));
-      allow read, update, delete: if false;
+        && !existsAfter(/databases/$(database)/documents/adminOrders/$(request.resource.data.orderId)));
+      allow read: if false;
+      allow update, delete: if backupWritable() && (false);
     }
 
     // R469: Cihaz çevrim dışıyken sıraya alınan Adisyon ve Taze Dem işlemlerinin
     // Firebase'e ulaşıp ulaşmadığını istemci yazma meta verisiyle izler.
     match /adminOfflineOperations/{operationId} {
       allow read: if hasAnyPanel(['pos', 'tea']);
-      allow create: if hasAnyPanel(['pos', 'tea'])
+      allow create: if backupWritable() && (hasAnyPanel(['pos', 'tea'])
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.deviceId is string
         && request.resource.data.deviceId.size() > 0
@@ -503,17 +524,22 @@ service cloud.firestore {
           'checkout', 'cancel-order', 'tea-start', 'tea-ready', 'tea-finish', 'tea-service'
         ]
         && request.resource.data.businessDate is string
-        && request.resource.data.createdAt == request.time;
-      allow update, delete: if false;
+        && request.resource.data.createdAt == request.time);
+      allow update, delete: if backupWritable() && (false);
     }
 
     // Savings collections use callable APIs even for the owner; PIN is server verified.
     match /{collection}/{document=**} {
-      allow read, write: if isOwner()
-        && !(collection in ['adminCashMovements', 'adminSavingsAccounts',
+      allow read: if isOwner()
+        && !(collection in ['adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
           'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']);
+      allow write: if backupWritable() && (isOwner()
+        && !(collection in ['adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
+          'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
+          'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']));
     }
   }
 }

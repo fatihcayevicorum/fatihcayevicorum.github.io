@@ -1,17 +1,25 @@
 "use strict";
 const crypto=require("crypto");
-const{onCall,HttpsError}=require("firebase-functions/v2/https");
-const{onDocumentCreated,onDocumentUpdated,onDocumentWritten}=require("firebase-functions/v2/firestore");
-const{onSchedule}=require("firebase-functions/v2/scheduler");
+const{onCall:firebaseOnCall,HttpsError}=require("firebase-functions/v2/https");
+const{onDocumentCreated:firebaseOnDocumentCreated,onDocumentUpdated:firebaseOnDocumentUpdated,onDocumentWritten:firebaseOnDocumentWritten}=require("firebase-functions/v2/firestore");
+const{onSchedule:firebaseOnSchedule}=require("firebase-functions/v2/scheduler");
 const{initializeApp}=require("firebase-admin/app");
 const{getAuth}=require("firebase-admin/auth");
-const{FieldValue,getFirestore}=require("firebase-admin/firestore");
+const{FieldValue,getFirestore,Timestamp,GeoPoint}=require("firebase-admin/firestore");
 const{getStorage}=require("firebase-admin/storage");
 const{getMessaging}=require("firebase-admin/messaging");
 const{logger}=require("firebase-functions");
 initializeApp();
 const db=getFirestore();
 const OWNER_UID="obuZLQXuPAWsHE20bZxcAxCNsO02";
+// R572: all application writers share the backup/restore maintenance gate.
+const systemBackup=require('./system-backup').buildSystemBackup({db,bucket:getStorage().bucket(),auth:getAuth(),Timestamp,GeoPoint,FieldValue,HttpsError,ownerUid:OWNER_UID,projectId:process.env.GCLOUD_PROJECT||db.projectId});
+const onCall=(options,handler)=>firebaseOnCall(options,systemBackup.guard(handler));
+const onDocumentCreated=(options,handler)=>firebaseOnDocumentCreated(options,systemBackup.guard(handler,'background'));
+const onDocumentUpdated=(options,handler)=>firebaseOnDocumentUpdated(options,systemBackup.guard(handler,'background'));
+const onDocumentWritten=(options,handler)=>firebaseOnDocumentWritten(options,systemBackup.guard(handler,'background'));
+const onSchedule=(options,handler)=>firebaseOnSchedule(options,systemBackup.guard(handler,'background'));
+
 const PANEL_IDS=["tea","pos","currentAccounts","currentAccountTransfer","menu","stock","credit","merchant","reports","cash","home","personnel"];
 
 function businessDateNow(now=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(now)}
@@ -534,7 +542,7 @@ exports.syncRecipeMenuOnWrite=onDocumentWritten({document:"publicMenu/catalog",r
 // R419 candidate: private savings APIs, server-side PIN grant, atomic ledger and cached market rates.
 const savingsHandlers=require("./savings").buildSavings({db,FieldValue,HttpsError,ownerUid:OWNER_UID,pinHash,safeHashEqual});
 const{updateSavingsRates}=require("./savings-rates");
-exports.unlockSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.unlock);
+exports.unlockSavings=firebaseOnCall({region:"europe-west1",cors:true},savingsHandlers.unlock);
 exports.readSavings=onCall({region:"europe-west1",cors:true},savingsHandlers.read);
 exports.manageSavingsAccount=onCall({region:"europe-west1",cors:true},savingsHandlers.account);
 exports.saveSavingsMovement=onCall({region:"europe-west1",cors:true,timeoutSeconds:120},savingsHandlers.movement);
@@ -544,10 +552,24 @@ exports.refreshSavingsRates=onCall({region:"europe-west1",cors:true,timeoutSecon
 exports.updateSavingsRates=onSchedule({region:"europe-west1",schedule:"every 5 minutes",timeZone:"Europe/Istanbul",timeoutSeconds:30,retryCount:1},async()=>updateSavingsRates({db,FieldValue}));
 
 // R428: append-only history; business records and balances are never changed here.
-const {onDocumentWrittenWithAuthContext}=require("firebase-functions/v2/firestore");
+const {onDocumentWrittenWithAuthContext:firebaseOnDocumentWrittenWithAuthContext}=require("firebase-functions/v2/firestore");
 const operationHistory=require("./operation-history").buildHistory({db,FieldValue,HttpsError,ownerUid:OWNER_UID,pinHash,safeHashEqual});
+const onDocumentWrittenWithAuthContext=(options,handler)=>firebaseOnDocumentWrittenWithAuthContext(options,systemBackup.guard(handler,'background'));
 exports.captureOperationHistory=onDocumentWrittenWithAuthContext({document:"{source}/{recordId}",region:"europe-west1",retry:true},operationHistory.capture);
 exports.unlockOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.unlock);
 exports.lockOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.lock);
 exports.operationHistoryStatus=onCall({region:"europe-west1",cors:true},operationHistory.status);
 exports.readOperationHistory=onCall({region:"europe-west1",cors:true},operationHistory.read);
+
+// Backup endpoints bypass only the maintenance writer gate, never owner/PIN access.
+const backupOptions={region:'europe-west1',cors:true,memory:'1GiB',timeoutSeconds:540,concurrency:1};
+exports.createFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.create);
+exports.inspectFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.inspect);
+exports.readFullSystemBackupChunk=firebaseOnCall(backupOptions,systemBackup.chunk);
+exports.listFullSystemBackups=firebaseOnCall(backupOptions,systemBackup.list);
+exports.deleteFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.remove);
+exports.fullSystemBackupStatus=firebaseOnCall(backupOptions,systemBackup.status);
+exports.startFullSystemRestore=firebaseOnCall(backupOptions,systemBackup.start);
+exports.continueFullSystemRestore=firebaseOnCall(backupOptions,systemBackup.resume);
+exports.releaseFullSystemBackup=firebaseOnCall(backupOptions,systemBackup.release);
+exports.rollbackFullSystemRestore=firebaseOnCall(backupOptions,systemBackup.rollback);
