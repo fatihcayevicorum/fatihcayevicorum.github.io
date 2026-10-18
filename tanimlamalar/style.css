@@ -6,7 +6,7 @@ button{-webkit-tap-highlight-color:transparent}
 .definitions-section{min-height:260px}
 .definitions-grid{width:100%}
 .definition-card{width:100%;font-family:inherit;text-align:left;cursor:pointer}
-.definition-card:disabled{cursor:wait;opacity:.58}
+.definition-card:disabled{cursor:wait;opacity:1}.definition-card[aria-busy="true"] .arrow{font-size:0}.definition-card[aria-busy="true"] .arrow::after{content:"";display:block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:definition-loading 1s linear infinite}@keyframes definition-loading{to{transform:rotate(360deg)}}
 .definition-card .card-copy{display:block}
 .system-info-dialog{width:min(660px,calc(100% - 24px));max-height:calc(100dvh - 24px)}
 .system-info-dialog form{gap:16px}

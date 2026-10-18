@@ -19,15 +19,15 @@ let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSavin
 onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
   if(!isOwner(user)){location.replace(await hasPanelAccess(user,db,"menu")?"../menu-yonetimi/":"../yonetim-merkezi/");return}
-  onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});layoutLoaded=true;updateLayoutCard()},error=>console.error(error));
-  onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>console.error(error));
+  onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});layoutLoaded=true;updateLayoutCard()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
+  onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
   $("applicationSoundsCard").disabled=false;
   $("cashSettingsCard").disabled=false;
   if("requestIdleCallback" in window)requestIdleCallback(preloadCashSettings,{timeout:1200});else setTimeout(preloadCashSettings,300);
   $("productPriceSettingsCard").disabled=false;
   if(new URLSearchParams(location.search).get("kasa")==="1"){history.replaceState(null,"",location.pathname);$("cashSettingsCard").click()}
-  onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>console.error(error));
-  onSnapshot(teaStateRef,snapshot=>{teaState=snapshot.data()||{};teaLoaded=true;renderPageState()},error=>console.error(error));
+  onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;renderPageState()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
+  onSnapshot(teaStateRef,snapshot=>{teaState=snapshot.data()||{};teaLoaded=true;renderPageState()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
 });
 
 $("systemInfoCard").onclick=openSystemInfo;
@@ -58,6 +58,7 @@ function renderPageState(){
   $("receiptSettingsCard").disabled=!loaded;
   $("teaSettingsCard").disabled=!teaLoaded;
   $("themeSettingsCard").disabled=!loaded;
+  document.querySelectorAll(".definition-card").forEach(card=>{card.setAttribute("aria-busy",String(card.disabled));card.title=card.disabled?"Ayar verileri yükleniyor…":""});
   document.querySelector(".eyebrow").textContent=config.businessName||defaults.businessName;
 }
 
@@ -227,7 +228,7 @@ $("cashSettingsDialog").addEventListener("close",()=>{
   $("cashSettingsFrame").contentWindow?.postMessage({type:"fatih-cash-settings-reset"},location.origin);
 });
 
-function updateLayoutCard(){$("tableRegionSettingsCard").disabled=!(layoutLoaded&&layoutOrdersLoaded)}
+function updateLayoutCard(){const card=$("tableRegionSettingsCard");card.disabled=!(layoutLoaded&&layoutOrdersLoaded);card.setAttribute("aria-busy",String(card.disabled));card.title=card.disabled?"Masa ve açık adisyon verileri yükleniyor…":""}
 $("tableRegionSettingsCard").onclick=()=>{
   if(!layoutLoaded||!layoutOrdersLoaded)return;
   layoutBase=cloneTableLayout(tableLayout);layoutDraft=cloneTableLayout(tableLayout);
@@ -318,3 +319,5 @@ $("productPriceSettingsCard").onclick=()=>{const frame=$("productSettingsFrame")
 $("closeProductSettings").onclick=()=>$("productPriceSettingsDialog").close();
 $("productPriceSettingsDialog").addEventListener("close",()=>$("productSettingsFrame").removeAttribute("src"));
 window.addEventListener("message",event=>{if(event.origin===location.origin&&event.source===$("productSettingsFrame").contentWindow&&event.data?.type==="fatih-product-settings-close")$("productPriceSettingsDialog").close()});
+
+renderPageState();updateLayoutCard();

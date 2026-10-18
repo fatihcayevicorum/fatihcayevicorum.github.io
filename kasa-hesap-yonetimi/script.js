@@ -22,6 +22,7 @@ let definitionsBalanceStreamsStarted=false;
 let paymentSettingsData={};
 const definitionsBalanceParts={accounts:false,movements:false,sales:false,closings:false,financeDays:false,settings:false};
 function definitionsBalanceLoaded(part){definitionsBalanceParts[part]=true;renderFinancialAccounts()}
+let paymentDraft=null;
 let paymentMethods=normalizePaymentMethods({}),paymentMethodsReady=false,paymentMethodsBusy=false,paymentMethodsCanEdit=false;
 const definitionsSettingsMode=window.parent!==window&&new URLSearchParams(location.search).get("tanimlamalar")==="1";
 if(definitionsSettingsMode){
@@ -46,7 +47,7 @@ if(definitionsSettingsMode){
   const reportPanelSize=()=>{
     cancelAnimationFrame(panelSizeFrame);panelSizeFrame=requestAnimationFrame(()=>{
       const active=document.querySelector(".cash-settings-modal[open]");if(!active)return;
-      const phone=window.innerWidth<=620,heights={settingsDialog:phone?432:408,categorySettingsDialog:phone?300:250,openingSettingsDialog:440,paymentMethodsDialog:620,incomeSettingsDialog:560,expenseSettingsDialog:560,transferSettingsDialog:500};
+      const phone=window.innerWidth<=620,heights={settingsDialog:phone?432:408,categorySettingsDialog:phone?360:520,openingSettingsDialog:440,paymentMethodsDialog:620,incomeSettingsDialog:560,expenseSettingsDialog:560,transferSettingsDialog:500};
       window.parent.postMessage({type:"fatih-cash-settings-size",height:heights[active.id]||500},location.origin);
     });
   };
@@ -81,6 +82,8 @@ $("closeFinanceDayEndWarning").onclick=()=>$("financeDayEndWarningDialog").close
 $("reportButton").onclick=openReport;$("closeReport").onclick=()=>$("reportDialog").close();$("reportMonth").onchange=()=>{renderReport();$("reportContent").scrollTop=0;requestAnimationFrame(updateReportScroll)};$("reportPdfButton").onclick=printReport;
 $("reportContent").addEventListener("scroll",updateReportScroll,{passive:true});$("reportScrollUp").onclick=()=>scrollReport(-260);$("reportScrollDown").onclick=()=>scrollReport(260);$("reportScrollTrack").addEventListener("pointerdown",startReportScrollDrag);$("reportScrollTrack").addEventListener("pointermove",moveReportScrollDrag);$("reportScrollTrack").addEventListener("pointerup",stopReportScrollDrag);$("reportScrollTrack").addEventListener("pointercancel",stopReportScrollDrag);$("reportScrollTrack").addEventListener("keydown",reportScrollKey);window.addEventListener("resize",updateReportScroll);
 $("closeSettings").onclick=()=>$("settingsDialog").close();$("openingForm").onsubmit=saveOpeningBalances;$("settingsMenu").onclick=e=>{const button=e.target.closest("[data-settings-panel]");if(button)openSettingsPanel(button.dataset.settingsPanel)};document.querySelectorAll("[data-settings-back]").forEach(button=>button.onclick=returnToSettings);
+document.querySelectorAll("[data-settings-save]").forEach(button=>button.onclick=()=>button.closest("dialog").id==="paymentMethodsDialog"?savePaymentPreferences():returnToSettings());
+$("paymentMethodsDialog").addEventListener("cancel",e=>{e.preventDefault();returnToSettings()});
 $("paymentMethodsList").onclick=togglePaymentMethod;$("paymentMethodsList").onchange=selectCollectionAccount;$("categorySettingsDialog").onclick=e=>{const button=e.target.closest("[data-category-panel]");if(button){$("categorySettingsDialog").close();openSettingsPanel(button.dataset.categoryPanel)}};
 $("financialAccountForm").onsubmit=createFinancialAccount;$("financialAccountList").onclick=financialAccountAction;
 $("financialAccountArchiveList").onclick=financialAccountAction;
@@ -245,31 +248,39 @@ function openSettings(){renderSettings();closeSettingsPanels();$("settingsDialog
 function openSettingsPanel(name){
  const dialogs={methods:"paymentMethodsDialog",categories:"categorySettingsDialog",opening:"openingSettingsDialog",income:"incomeSettingsDialog",expense:"expenseSettingsDialog",transfer:"transferSettingsDialog"},target=$(dialogs[name]);if(!target)return;
  if(definitionsSettingsMode&&(!definitionsBalanceParts.settings||["categories","income","expense","transfer"].includes(name)&&!definitionsBalanceParts.movements))return toast("Kasa ayarları yükleniyor. Birazdan tekrar deneyin.");
- if(name==="methods")ensureDefinitionsBalanceStreams();
+ if(name==="methods"){ensureDefinitionsBalanceStreams();paymentDraft={methods:{...paymentMethods},activeAccounts:normalizeCollectionAccounts(paymentSettingsData)};renderPaymentMethods()}
  $("settingsDialog").close();categoryPanelMode=["income","expense","transfer"].includes(name)?name:"";
  if(categoryPanelMode)renderCategoryList(name);else renderSettings();target.showModal();
 }
-function returnToSettings(e){e?.preventDefault();categoryPanelMode="";closeSettingsPanels();renderSettings();$("settingsDialog").showModal()}
+function returnToSettings(e){e?.preventDefault();if(paymentMethodsBusy)return;paymentDraft=null;categoryPanelMode="";closeSettingsPanels();renderSettings();$("settingsDialog").showModal()}
 function closeSettingsPanels(){["paymentMethodsDialog","categorySettingsDialog","openingSettingsDialog","incomeSettingsDialog","expenseSettingsDialog","transferSettingsDialog"].forEach(id=>{const dialog=$(id);if(dialog?.open)dialog.close()})}
 function renderPaymentMethods(){
- const names={cash:"Nakit",transfer:"Havale",card:"Kart"},types={cash:"cash",transfer:"bank",card:"card"},selected=normalizeCollectionAccounts(paymentSettingsData);
+ const names={cash:"Nakit",transfer:"Havale",card:"Kart"},types={cash:"cash",transfer:"bank",card:"card"},selected=normalizeCollectionAccounts(paymentDraft||paymentSettingsData),displayMethods=paymentDraft?.methods||paymentMethods;
  $("paymentMethodsList").innerHTML=PAYMENT_METHODS.map(method=>{
    const options=accountRows(financialAccounts).filter(a=>a.type===types[method]&&a.status==="active"),disabled=!paymentMethodsCanEdit||!paymentMethodsReady||paymentMethodsBusy;
-   return `<article class="collection-method-card"><button type="button" class="payment-method-switch" data-payment-method="${method}" role="switch" aria-label="${names[method]} ile ödeme al" aria-checked="${paymentMethods[method]}" ${disabled?"disabled":""}><b>${names[method]}</b><i class="payment-switch-track" aria-hidden="true"></i></button><label>Tahsilat hesabı<select data-collection-method="${method}" ${disabled?"disabled":""}>${!options.some(a=>a.id===selected[method])?'<option value="" selected disabled>Aktif hesap seçin</option>':""}${options.map(a=>`<option value="${esc(a.id)}" ${a.id===selected[method]?"selected":""}>${esc(a.name)}</option>`).join("")}</select></label></article>`;
+   return `<article class="collection-method-card"><button type="button" class="payment-method-switch" data-payment-method="${method}" role="switch" aria-label="${names[method]} ile ödeme al" aria-checked="${displayMethods[method]}" ${disabled?"disabled":""}><b>${names[method]}</b><i class="payment-switch-track" aria-hidden="true"></i></button><label>Tahsilat hesabı<select data-collection-method="${method}" ${disabled?"disabled":""}>${!options.some(a=>a.id===selected[method])?'<option value="" selected disabled>Aktif hesap seçin</option>':""}${options.map(a=>`<option value="${esc(a.id)}" ${a.id===selected[method]?"selected":""}>${esc(a.name)}</option>`).join("")}</select></label></article>`;
  }).join("");
  renderFinancialAccounts();
 }
-async function selectCollectionAccount(e){
- const select=e.target.closest("[data-collection-method]");if(!select||!paymentMethodsCanEdit)return;
- const method=select.dataset.collectionMethod,id=select.value,row=accountById(id);if(!row||row.status!=="active")return toast("Aktif hesap seçin.");
- select.disabled=true;
- try{await runTransaction(db,async tx=>{
-  const snap=await tx.get(paymentSettingsRef),data=snap.data()||{};
-  if(!row.legacy){const check=await tx.get(doc(financialAccountsCol,id));if(!check.exists()||check.data().status!=="active"||check.data().type!==row.type)throw Error("inactive-account")}
-  tx.set(paymentSettingsRef,{methods:normalizePaymentMethods(data),activeAccounts:{...normalizeCollectionAccounts(data),[method]:id},updatedAtMs:Date.now(),updatedBy:auth.currentUser.uid});
- });toast(`${row.name} tahsilat hesabı seçildi. Önceki işlemler yerinde kalır.`)}
- catch(error){console.error(error);toast("Tahsilat hesabı değiştirilemedi.");renderPaymentMethods()}
- finally{select.disabled=false}
+function selectCollectionAccount(e){
+ const select=e.target.closest("[data-collection-method]");if(!select||!paymentMethodsCanEdit||paymentMethodsBusy)return;
+ const row=accountById(select.value);if(!row||row.status!=="active"||!paymentDraft)return toast("Aktif hesap seçin.");
+ paymentDraft.activeAccounts[select.dataset.collectionMethod]=select.value;
+}
+async function savePaymentPreferences(){
+ if(paymentMethodsBusy||!paymentMethodsReady||!paymentMethodsCanEdit||!paymentDraft)return;
+ paymentMethodsBusy=true;renderPaymentMethods();
+ try{const draft=structuredClone(paymentDraft);await runTransaction(db,async tx=>{
+  const fresh=await tx.get(paymentSettingsRef);
+  if(!PAYMENT_METHODS.some(m=>draft.methods[m]))throw Error("En az bir ödeme yöntemi açık kalmalıdır.");
+  for(const method of PAYMENT_METHODS){if(!draft.methods[method])continue;
+   const row=selectedCollectionAccount(draft,financialAccounts,method);
+   if(!row.financeAccountId.startsWith("legacy-")){const snap=await tx.get(doc(financialAccountsCol,row.financeAccountId));if(!snap.exists()||snap.data().status!=="active"||snap.data().type!==row.financeAccountType)throw Error("Seçilen hesap artık aktif değil.")}
+  }
+  tx.set(paymentSettingsRef,{...fresh.data(),methods:draft.methods,activeAccounts:draft.activeAccounts,updatedAtMs:Date.now(),updatedBy:auth.currentUser.uid});
+ });paymentSettingsData={...paymentSettingsData,...draft};paymentMethods=normalizePaymentMethods(paymentSettingsData);paymentDraft=null;paymentMethodsBusy=false;returnToSettings();toast("Ödeme tercihleri kaydedildi.")}
+ catch(error){console.error(error);toast(error.message||"Ayar kaydedilemedi.")}
+ finally{paymentMethodsBusy=false;renderPaymentMethods()}
 }
 function realBalances(date=selectedDate){
  const totals=accountBalancesForDate(date),start=date<FINANCE_START_DATE?HISTORY_START_DATE:FINANCE_START_DATE;
@@ -336,23 +347,11 @@ $("financialAccountList").addEventListener("submit",async e=>{
  try{await setDoc(doc(financialAccountsCol,row.id),{type:row.type,name,status:row.legacy?"active":row.status,updatedAtMs:Date.now(),updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});toast("Hesap adı güncellendi.")}
  catch(error){console.error(error);toast("Hesap adı değiştirilemedi.")}
 });
-async function togglePaymentMethod(event){
- const button=event.target.closest("[data-payment-method]");if(!button||paymentMethodsBusy||!paymentMethodsReady||!paymentMethodsCanEdit)return;
- const method=button.dataset.paymentMethod,next=!paymentMethods[method],error=$("paymentMethodsError");error.hidden=true;
- if(!next&&!canDisablePaymentMethod(paymentMethods,method)){error.textContent="En az bir ödeme yöntemi açık kalmalıdır.";error.hidden=false;return}
- paymentMethodsBusy=true;renderPaymentMethods();
- try{
-  await runTransaction(db,async tx=>{
-   const snap=await tx.get(paymentSettingsRef),fresh=normalizePaymentMethods(snap.data());
-   if(!next&&!canDisablePaymentMethod(fresh,method))throw Error("last-method");
-   const methods={...fresh,[method]:next};
-   const activeAccounts=normalizeCollectionAccounts(snap.data());
-   if(next)selectedCollectionAccount({activeAccounts},financialAccounts,method);
-   tx.set(paymentSettingsRef,{methods,activeAccounts,updatedAtMs:Date.now(),updatedBy:auth.currentUser.uid});
-  });
-  paymentMethods={...paymentMethods,[method]:next};toast(next?"Ödeme yöntemi açıldı.":"Ödeme yöntemi kapatıldı.");
- }catch(e){console.error(e);error.textContent=e.message==="last-method"?"En az bir ödeme yöntemi açık kalmalıdır.":"Ayar kaydedilemedi. Bağlantıyı ve yetkileri kontrol edin.";error.hidden=false}
- finally{paymentMethodsBusy=false;renderPaymentMethods()}
+function togglePaymentMethod(event){
+ const button=event.target.closest("[data-payment-method]");if(!button||paymentMethodsBusy||!paymentMethodsReady||!paymentMethodsCanEdit||!paymentDraft)return;
+ const method=button.dataset.paymentMethod,next=!paymentDraft.methods[method],error=$("paymentMethodsError");error.hidden=true;
+ if(!next&&!canDisablePaymentMethod(paymentDraft.methods,method)){error.textContent="En az bir ödeme yöntemi açık kalmalıdır.";error.hidden=false;return}
+ paymentDraft.methods[method]=next;renderPaymentMethods();
 }
 function renderSettings(){$("openingCash").value=settings.openingCash;$('openingBank').value=settings.openingBank;$('openingCard').value=settings.openingCard;$('openingCardDebt').value=settings.openingCardDebt;renderCategoryList("income");if(categoryPanelMode!=="transfer")renderCategoryList("expense");renderFinancialAccounts()}
 function renderCategoryList(type){const target=$(type+"CategoryList"),items=categoryItems(type);if(type!=="transfer"){const groups=groupItems(type),select=document.querySelector(`[data-category-group="${type}"]`),prior=select.value;select.innerHTML=groups.filter(g=>g.active).map(g=>`<option value="${esc(g.id)}">${esc(g.name)}</option>`).join("");if([...select.options].some(o=>o.value===prior))select.value=prior;$(type+"GroupList").innerHTML=groups.map(g=>`<div class="cash-group-chip ${g.active?"":"is-passive"}"><input maxlength="60" value="${esc(g.name)}" data-group-name="${esc(g.id)}" data-type="${type}" ${g.id===`${type}-legacy`?"readonly":""}><button type="button" data-group-toggle="${esc(g.id)}" data-type="${type}" ${g.id===`${type}-legacy`?"disabled":""}>${g.active?"Pasife Al":"Aktif Et"}</button><button type="button" data-group-delete="${esc(g.id)}" data-type="${type}" ${g.id===`${type}-legacy`?"disabled":""} aria-label="Grubu sil"><i class="fa-solid fa-trash"></i></button></div>`).join("")}
