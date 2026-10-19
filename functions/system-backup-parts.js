@@ -43,16 +43,19 @@ function buildMultipartBackup(options,legacy){
   if(!b.initialized){b.queue=(await db.listCollections()).filter(c=>!core.excluded(c.path+'/placeholder')).map(c=>c.path);b.initialized=true;return;}
   if(b.phase==='documents'){
    if(b.head>=b.queue.length){b.phase='assets';return;}
-   const path=b.queue[b.head],batchRefs=await referencePage(m.backupId,path,b.cursor,5,cache);
+   const path=b.queue[b.head],batchRefs=await referencePage(m.backupId,path,b.cursor,50,cache);
    if(!m.collections.includes(path))m.collections.push(path);
    if(!batchRefs.length){b.head++;b.cursor='';return;}
-   const snapshots=await db.getAll(...batchRefs),rows=[],next=JSON.parse(JSON.stringify(b.aggregate));for(const doc of snapshots){if(!doc.exists)continue;const data=core.encode(doc.data()),row={kind:'document',path:doc.ref.path,data,sha256:core.hash(data)};validateRow(row,new Set([path]));addAggregate(next,row.path,doc.data());rows.push(row);}
+   // Keep body reads at five documents, but amortize storage/checkpoint work
+   // across up to 50 references. Stop early when encoded bodies reach 4 MiB.
+   const rows=[],processedRefs=[],next=JSON.parse(JSON.stringify(b.aggregate));let bufferedBytes=0;
+   outer:for(let offset=0;offset<batchRefs.length;offset+=5){const refs=batchRefs.slice(offset,offset+5),snapshots=await db.getAll(...refs);for(const ref of refs){const doc=snapshots.find(d=>d.ref.path===ref.path);if(!doc)fail('data-loss','Belge okuma yanıtı eksik.');processedRefs.push(ref);if(doc.exists){const value=doc.data(),data=core.encode(value),row={kind:'document',path:doc.ref.path,data,sha256:core.hash(data)};bufferedBytes+=Buffer.byteLength(JSON.stringify(row));addAggregate(next,row.path,value);rows.push(row);}if(bufferedBytes>=4*1024*1024)break outer;}}
    if(m.totalRecords+rows.length>RECORD_MAX)fail('resource-exhausted','Kayıt sınırı aşıldı; eksik yedek yayımlanmadı.');
-   const previous=m.parts.at(-1),reopen=previous&&previous.rawBytes<PART_TARGET,oldRows=reopen?await rowsFor(m,previous):[],base=m.parts.length-(reopen?1:0),additions=[];let group=[],size=2;
+   const previous=m.parts.at(-1),reopen=rows.length>0&&previous&&previous.rawBytes<PART_TARGET,oldRows=reopen?await rowsFor(m,previous):[],base=m.parts.length-(reopen?1:0),additions=[];let group=[],size=2;
    async function flush(){if(!group.length)return;const raw=Buffer.from(JSON.stringify(group));if(raw.length>PART_MAX)fail('resource-exhausted','Tek belge parça sınırını aşıyor.');const compressed=zlib.gzipSync(raw),key='parts/p-'+String(base+additions.length).padStart(6,'0')+'-'+core.hash(compressed)+'.json.gz';additions.push(await savePart({...m,totalBytes:m.totalBytes-(reopen?previous.bytes:0)},key,compressed,{records:group.length,rawBytes:raw.length}));group=[];size=2;}
    for(const row of [...oldRows,...rows]){const length=Buffer.byteLength(JSON.stringify(row));if(group.length&&size+length>PART_TARGET)await flush();group.push(row);size+=length+1;}await flush();
-   const children=(await Promise.all(batchRefs.map(r=>r.listCollections()))).flat().filter(c=>!core.excluded(c.path+'/placeholder')).map(c=>c.path);for(const child of children)if(!b.queue.includes(child))b.queue.push(child);
-   if(reopen){m.parts.pop();m.totalBytes-=previous.bytes;if(!additions.some(p=>p.key===previous.key))b.retiredParts=[...(b.retiredParts||[]),previous.key];}m.parts.push(...additions);m.totalBytes+=additions.reduce((n,p)=>n+p.bytes,0);m.totalRecords+=rows.length;b.aggregate=next;b.cursor=batchRefs.at(-1).path;return;
+   const children=(await Promise.all(processedRefs.map(r=>r.listCollections()))).flat().filter(c=>!core.excluded(c.path+'/placeholder')).map(c=>c.path);for(const child of children)if(!b.queue.includes(child))b.queue.push(child);
+   if(reopen){m.parts.pop();m.totalBytes-=previous.bytes;if(!additions.some(p=>p.key===previous.key))b.retiredParts=[...(b.retiredParts||[]),previous.key];}m.parts.push(...additions);m.totalBytes+=additions.reduce((n,p)=>n+p.bytes,0);m.totalRecords+=rows.length;b.aggregate=next;b.cursor=processedRefs.at(-1).path;return;
   }
   if(b.phase==='assets'){
    if(!b.assetNames){const [files]=await bucket.getFiles({prefix:'site/'});b.assetNames=files.filter(f=>!f.name.endsWith('/')).map(f=>f.name).sort();if(b.assetNames.length>10000)fail('resource-exhausted','Görsel sayısı sınırı aşıldı.');}
