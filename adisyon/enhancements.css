@@ -1209,3 +1209,23 @@
     overflow-wrap: anywhere;
   }
 }
+
+/* R579 — telefonda dahili tüketim sepeti sabit satırda ezilmez. */
+@media (max-width:760px){
+  #internalConsumptionDialog{height:min(92dvh,760px)!important}
+  #internalConsumptionDialog .internal-pos-layout{
+    display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
+    overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  }
+  #internalConsumptionDialog .internal-products{
+    flex:none;height:clamp(180px,30dvh,240px);
+  }
+  #internalConsumptionDialog .internal-cart{flex:none;height:auto;min-height:0}
+  #internalConsumptionDialog .order-items{
+    flex:none;min-height:0;max-height:clamp(140px,24dvh,220px);
+  }
+  #internalConsumptionDialog .order-title{flex-wrap:wrap;gap:4px}
+  #internalConsumptionDialog .order-item{grid-template-columns:minmax(0,1fr) auto}
+  #internalConsumptionDialog .order-item>div:first-child{min-width:0;overflow-wrap:anywhere}
+  #internalConsumptionDialog .qty button{width:32px!important;height:32px!important}
+}
