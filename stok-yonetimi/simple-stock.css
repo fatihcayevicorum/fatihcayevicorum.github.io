@@ -25,3 +25,12 @@
 
 /* R214 kompakt barkod kamerasi lens secimi */
 .camera-settings-button{position:absolute;z-index:5;top:.45rem;left:.45rem;display:grid;width:2rem;height:2rem;place-items:center;padding:0;border:1px solid rgba(255,255,255,.35);border-radius:9px;color:#fff;cursor:pointer;background:rgba(37,9,12,.72);font-size:.72rem}.camera-settings-button[hidden],.camera-device-popover[hidden]{display:none}.camera-settings-button:active{transform:scale(.95)}.camera-device-popover{position:absolute;z-index:6;top:2.8rem;left:.45rem;width:min(13.5rem,calc(100% - .9rem));padding:.48rem;border:1px solid rgba(255,255,255,.35);border-radius:10px;background:rgba(37,9,12,.9);box-shadow:0 8px 20px rgba(0,0,0,.22)}.camera-device-popover label{display:block;margin-bottom:.25rem;color:#fff;font-size:.5rem;font-weight:700}.camera-device-popover select{min-height:2.15rem;padding:.35rem .45rem;border-color:rgba(255,255,255,.25);font-size:.52rem}
+
+/* R578 — tablet dik görünümünde stok kartlarının taşmasını önler. */
+@media (min-width:621px) and (max-width:1199px) and (orientation:portrait){
+  .stock-list{grid-template-columns:repeat(auto-fill,minmax(min(100%,11rem),1fr))!important}
+  .stock-card{min-width:0;min-height:180px;aspect-ratio:auto}
+  .stock-card>*{min-width:0;flex-shrink:0}
+  .stock-card-name{min-height:2.6em;overflow-wrap:anywhere}
+  .stock-card-meta span{max-width:100%;overflow-wrap:anywhere}
+}
