@@ -1238,7 +1238,7 @@ body.quick-sale .open-total-card,body.quick-sale #currentAccountBar{display:none
 body.quick-sale #orderDialog{position:static;inset:auto;width:100%;max-width:none;max-height:none;margin:0;border-radius:18px;overflow:visible}
 body.quick-sale #orderDialog>.view{display:block;height:auto;max-height:none;overflow:visible;padding:0;background:transparent;border-radius:18px}
 body.quick-sale .order-toolbar{display:none}
-body.quick-sale #orderDialog .pos-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);height:clamp(490px,70dvh,820px);min-height:0;gap:14px}
+body.quick-sale #orderDialog .pos-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);height:var(--quick-sale-available-height,clamp(340px,calc(100dvh - 300px),820px));min-height:0;gap:14px}
 body.quick-sale #orderDialog .products,body.quick-sale #orderDialog .order{height:100%;min-height:0;min-width:0;display:flex;flex-direction:column;overflow:hidden}
 body.quick-sale #orderDialog .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));min-height:0;max-height:none;flex:1;overflow:auto;align-content:start;gap:9px}
 body.quick-sale #orderDialog .product{aspect-ratio:1;min-height:100px;padding:8px;overflow:hidden;overflow-wrap:anywhere}
@@ -1280,3 +1280,33 @@ body.quick-sale #orderDialog .product{height:auto}
 body.quick-sale #orderDialog #orderEmpty:not([hidden]){display:block!important}
 body.quick-sale #orderDialog .totals>div:not([hidden]){display:flex}
 @media(max-width:720px){body.quick-sale #orderDialog .pos-layout{grid-template-rows:auto auto;overflow:visible;flex:none}}
+
+/* R582 — Hızlı Satış: tek sıra işlemler, sayfa kaydırma ve erişilebilir ödeme. */
+body.quick-sale #posControlPanel .pos-live-overview,
+body.quick-sale #tablesView .control-panel-divider{display:none!important}
+body.quick-sale #posControlPanel{
+ display:block!important;max-height:none;margin:10px 0 0;overflow:visible;
+ opacity:1;pointer-events:auto;transform:none;transition:none;
+}
+body.quick-sale #posControlPanel .quick-actions{
+ display:flex!important;flex-wrap:nowrap;align-items:center;justify-content:flex-start;
+ width:100%;max-width:100%;min-width:0;height:auto;gap:8px;padding:3px;
+ overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
+}
+body.quick-sale #posControlPanel .quick-actions>.icon-action{
+ flex:0 0 44px;width:44px;min-width:44px;min-height:44px;height:44px;
+}
+/* Inline sepet açıkken sayfa kayar; gerçek ödeme/PIN/onay penceresi açılınca mevcut kilit sürer. */
+html:has(body.quick-sale):not(:has(dialog[open]:not(#orderDialog))){
+ overflow-x:hidden!important;overflow-y:auto!important;
+}
+body.quick-sale:not(:has(dialog[open]:not(#orderDialog))){
+ overflow-x:hidden!important;overflow-y:visible!important;
+}
+body.quick-sale #orderDialog{overscroll-behavior:auto}
+body.quick-sale #orderDialog .order-items,
+body.quick-sale #orderDialog .product-grid{overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch}
+body.quick-sale #orderDialog .order-title,
+body.quick-sale #orderDialog .pos-search-row,
+body.quick-sale #orderDialog .category-tabs{flex-shrink:0}
+body.quick-sale #orderDialog .order-bottom{flex:0 0 auto}

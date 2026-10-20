@@ -1,0 +1,40 @@
+FATİH ÇAY EVİ — R582 HIZLI SATIŞ GÖRÜNÜM DÜZELTMESİ
+Tarih: 21.10.2026
+Durum: Deneme adayı; kullanıcı cihaz onayı bekleniyor.
+Temel: R580 tam kaynak + bu sohbetin R581 Hızlı Satış değişiklikleri.
+
+Bu paket R581'in üzerine uygulanır. TAM sistem yedeği değildir. Dosyaları klasör yollarını koruyarak R581'deki karşılıklarının üzerine yükleyin.
+
+YAPILAN DÜZELTMELER
+- Yalnız Hızlı Satış ekranındaki Taze Dem/demlik kartları ve Taze Dem düğmesi gizlendi.
+- Üst işlem düğmeleri tek sıraya yerleştirildi. Dar ekranda bu sıra kendi içinde yatay kayabilir; düğmeler ikinci sıraya düşmez. Kontrol alanının aç/kapat ayıracı Hızlı Satış'ta kaldırıldı.
+- Ortak arayüzün açık dialog nedeniyle uyguladığı sayfa kaydırma kilidi, Hızlı Satış'ın sayfa içindeki sepeti için kaldırıldı. Ödeme/PIN/onay gibi başka bir pencere açıkken mevcut kilit korunur.
+- Tablet ve bilgisayarda üst alanın gerçek yüksekliği ölçülerek sepetin ekranın kalan kısmına sığması sağlandı. Sepet ürün listesi kendi içinde kayar, toplam ve Ödeme Al satırı liste dışında kalır.
+- Kısa ekranda sayfa aşağı kaydırılabilir. Telefon görünümü sabit yükseklikle sınırlandırılmaz.
+- Masalı Satış'ın Taze Dem alanı, görünüm kuralları ve pencere davranışları değiştirilmedi.
+- Ödeme, cari, stok, rapor, veri modeli, sunucu fonksiyonları ve Firestore kuralları değiştirilmedi.
+- Yalnız ilgili adisyon CSS/JS bağlantıları ve service-worker sürümü R582 olarak yenilendi.
+
+PAKET
+adisyon/index.html
+adisyon/enhancements.css
+adisyon/script.js
+service-worker.js
+docs/R582_Hizli_Satis_Gorunum_Notu.txt
+
+KONTROL
+164 mevcut otomatik test geçti.
+Değişen JavaScript dosyaları sözdizimi kontrolünden geçti.
+Adisyon HTML'indeki yerel dosya yolları, tekrarlanan kimlikler ve R582 sürüm bağlantıları kontrol edildi.
+Ekran yüksekliği hesaplaması 1536x960, 1024x768 ve 768x1024 ölçülerine göre DOM ölçüsü taklitleriyle kontrol edildi. Sayfa kaydırmasının sepet yüksekliğini değiştirmediği, telefonda sabit yüksekliğin kaldırıldığı ve masalı modda ölçüm yapılmadığı doğrulandı.
+Bunlar gerçek tarayıcı görüntü testi değildir. Yerel test sayfasına tarayıcıdan erişilemedi; fiziksel tablet/telefon, gerçek tarayıcı arayüzü veya canlı Firebase testi yapılmadı. Canlı yayın yapılmadı.
+
+CİHAZDA DENE
+1. Paket dosyalarını R581'in üzerine yükleyin ve uygulamanın R582 önbellek güncellemesini almasını sağlayıp sayfayı yeniden açın.
+2. Hızlı Satış'ta Taze Dem kartlarının bulunmadığını ve işlem düğmelerinin tek sırada olduğunu kontrol edin.
+3. Tableti yatay ve dikey çevirin. Ürünleri ve sepeti kaydırın; aşağı kaydırınca toplam/Ödeme Al düğmesine ulaşılabildiğini kontrol edin.
+4. Uzun sepetle ürün listesi kayarken ödeme satırının listenin dışında kaldığını kontrol edin.
+5. Ödeme penceresi açıkken arka sayfanın kaymadığını, pencereyi kapatınca sayfanın tekrar kaydığını deneyin.
+6. Masalı Satış'a geçip mevcut Taze Dem alanının ve adisyon penceresinin korunduğunu kontrol edin.
+
+R581'in tamamlanmış Hızlı Satış kayıtlarında düzeltme/iptal/geri açma sınırlaması bu görsel düzeltmeyle değiştirilmedi.

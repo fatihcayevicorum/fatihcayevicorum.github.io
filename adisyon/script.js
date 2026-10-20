@@ -632,7 +632,7 @@ function renderQuickSale(){
  document.querySelector('#tablesView .view-top h2').textContent='Hızlı Satış';$('dailyStatus').title='Bugünün Özeti';$('dailyStatus').setAttribute('aria-label','Bugünün Özeti');
  document.querySelector('#orderDetailsToggle h3').textContent='Sepet';$('orderEmpty').textContent='Ürünlere dokunarak sepete ekleyin.';
  $('clearOrder').hidden=false;$('clearOrder').innerHTML='<i class="fa-solid fa-trash"></i> İptal Et';
- if(!el.orderDialog.open)el.orderDialog.show();renderOrder();renderProducts();
+ if(!el.orderDialog.open)el.orderDialog.show();renderOrder();renderProducts();scheduleQuickSaleViewport();
  const notice=$('quickSaleNotice');notice.textContent=quickDraft.items.length&&quickDraft.businessDate!==businessDate?'Önceki iş gününden kalan sepet bu cihazda korunuyor. Ödeme, onay anındaki açık iş gününe kaydedilir.':'Sepet bu cihazda tutulur. Ödeme ve stok kaydı, Satışı Tamamla onayı sunucuda tamamlanınca oluşur.';notice.hidden=false;
 }
 function saveQuickDraft(items,extra={}){
@@ -734,3 +734,23 @@ async function commitQuickSale(event){
  }finally{quickCommitBusy=false;busy=false;$('quickCheckoutForm').inert=false;el.orderView.inert=false;renderQuickPayment()}
 }
 window.addEventListener('beforeunload',event=>{if(quickCommitBusy){event.preventDefault();event.returnValue=''}});
+
+// R582: üst alanın gerçek yüksekliğini ölç; işlem satırını ekranın altında kesme.
+let quickSaleViewportFrame=0;
+function scheduleQuickSaleViewport(){
+ cancelAnimationFrame(quickSaleViewportFrame);
+ quickSaleViewportFrame=requestAnimationFrame(syncQuickSaleViewport);
+}
+function syncQuickSaleViewport(){
+ if(posSalesMode!=='quick')return;
+ if(matchMedia('(max-width:720px)').matches){el.orderDialog.style.removeProperty('--quick-sale-available-height');return}
+ const grid=el.orderView.querySelector('.pos-layout');if(!grid)return;
+ const top=grid.getBoundingClientRect().top+window.scrollY;
+ const height=Math.max(340,Math.floor(window.innerHeight-top-16));
+ el.orderDialog.style.setProperty('--quick-sale-available-height',`${height}px`);
+}
+window.addEventListener('resize',scheduleQuickSaleViewport);
+if('ResizeObserver'in window){
+ const observer=new ResizeObserver(scheduleQuickSaleViewport);
+ for(const node of [document.querySelector('.app-header'),el.tablesView,$('quickSaleNotice')])if(node)observer.observe(node);
+}
