@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=567">
+  <link rel="stylesheet" href="style.css?v=584">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=564">
   <script src="../assets/js/theme.js?v=564"></script>
@@ -61,7 +61,7 @@
         </button>
         <button id="salesModeCard" class="center-card definition-card" type="button" disabled aria-haspopup="dialog">
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i><span class="card-icon"><i class="fa-solid fa-cash-register"></i></span>
-          <span class="card-copy"><strong>Satış Türü</strong><small id="salesModeDescription">Masalı Satış / Hızlı Satış</small></span>
+          <span class="card-copy"><strong>Satış Türü</strong><small id="salesModeDescription">Adisyon / Hızlı Satış</small></span>
         </button>
         <button id="tableRegionSettingsCard" class="center-card definition-card" type="button" disabled>
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
@@ -86,10 +86,14 @@
     <form id="salesModeForm">
       <button id="closeSalesMode" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
       <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-cash-register"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Satış Türü</h2></div></div>
-      <fieldset class="setting-group"><legend>İşletmenin satış ekranı</legend>
-        <label class="setting-toggle"><span><b>Masalı Satış</b><small>Mevcut masa ve adisyon düzeni.</small></span><input type="radio" name="salesMode" value="table" checked></label>
-        <label class="setting-toggle"><span><b>Hızlı Satış</b><small>Masa seçmeden ürünleri sepete ekleyin ve ödeme alın.</small></span><input type="radio" name="salesMode" value="quick"></label>
+      <p id="salesModeCurrent" class="sales-mode-current" role="status">Kullanılan ekran yükleniyor…</p>
+      <fieldset class="setting-group sales-mode-options"><legend>İşletmenin satış ekranı</legend>
+        <div class="sales-mode-switch">
+          <label><input type="radio" name="salesMode" value="table" checked><span><i class="fa-solid fa-receipt" aria-hidden="true"></i><b>Adisyon</b><i class="fa-solid fa-check sales-mode-check" aria-hidden="true"></i></span></label>
+          <label><input type="radio" name="salesMode" value="quick"><span><i class="fa-solid fa-cash-register" aria-hidden="true"></i><b>Hızlı Satış</b><i class="fa-solid fa-check sales-mode-check" aria-hidden="true"></i></span></label>
+        </div>
       </fieldset>
+      <p id="salesModeSelection" class="sales-mode-selection" aria-live="polite"></p>
       <p class="tea-settings-copy">Aynı anda tek satış türü kullanılır. Geçişten önce açık adisyonları kapatın. Kaydedilmemiş Hızlı Satış sepetleri bulundukları cihazda korunur.</p>
       <p id="salesModeMessage" class="form-message" role="alert"></p>
       <div class="dialog-actions"><button id="cancelSalesMode" type="button" class="secondary-button">Vazgeç</button><button id="saveSalesMode" class="primary-button" type="submit">Kaydet</button></div>
@@ -288,7 +292,7 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=581"></script>
+  <script type="module" src="script.js?v=584"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

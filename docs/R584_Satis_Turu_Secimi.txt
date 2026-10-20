@@ -1,0 +1,22 @@
+FATİH ÇAY EVİ — R584 SATIŞ TÜRÜ SEÇİMİ
+Tarih: 21.10.2026
+Durum: R583 üzerine uygulanacak deneme adayı; cihaz onayı bekleniyor.
+
+Tanımlamalar > Satış Türü bölümünde Masalı Satış adı Adisyon olarak değiştirildi.
+Adisyon / Hızlı Satış yan yana, ödeme ekranının seçim düğmelerine benzer iki seçenekli bir kontrol olarak düzenlendi. Seçili taraf sistemin ana rengiyle dolu görünür ve tik işareti taşır. Her seferinde yalnız bir tür seçilebilir.
+Kullanımda olan kayıtlı tür pencerenin üstünde ve Tanımlamalar kartında belirtilir. Kaydedilmemiş seçim için Kaydet'e basılması gerektiği açıkça gösterilir. Kaydet ve Vazgeç davranışı korunur; seçim tek başına sunucuya yazılmaz.
+Açık adisyon kontrolü, mevcut yetkiler, sunucu fonksiyonu ve Firestore kuralları değiştirilmedi. Veri içindeki table/quick değerleri korunur; yalnız görünen ad değiştirilir.
+
+KAPSAM
+Bu pakette yalnız tanimlamalar/index.html, tanimlamalar/style.css, tanimlamalar/script.js, service-worker.js ve bu not bulunur. Adisyon klasöründeki bütün dosyaların R583 ile birebir aynı kaldığı karşılaştırmayla doğrulandı. Önceki Hızlı Satış görünüm düzenlemeleri quick-sale koşulu altında kalır; normal Adisyon görünümüne aktarılmaz.
+Bu paket R583'ün üzerine klasör yolları korunarak yüklenir. TAM sistem yedeği değildir. Yeni bir sunucu veya kural değişikliği içermez. R584 denenip onaylanmadan ana referans sayılmaz.
+
+KONTROLLER
+164 mevcut otomatik test geçti. Değişen JavaScript dosyaları sözdizimi kontrolünden geçti. Tanımlamalar HTML'indeki kimlikler, yerel yollar, sürüm bağlantıları ve aynı isimli iki radio seçeneği kontrol edildi.
+Kayıtlı Adisyon/Hızlı Satış bilgisinin gösterilmesi, yeni seçimden sonra Kaydet uyarısı ve kaydetmeden kullanımda olan türün değişmemesi DOM taklitleriyle doğrulandı.
+Gerçek tarayıcı görüntüsü, fiziksel cihaz veya canlı Firebase testi yapılmadı. Canlı sisteme yayın yapılmadı.
+
+CİHAZDA DENE
+Tanımlamalar > Satış Türü'nü açın. Kullanımdaki tür renkli/tikli görünmeli. Diğer seçeneğe dokununca renk/tik ona geçmeli, kayıtlı kullanım ise Kaydet'e basılana kadar değişmemeli. Vazgeç sonrası yeniden açıldığında kayıtlı tür seçili gelmeli. Adisyon'a geçtikten sonra normal masa ve ödeme düzeninin korunduğunu kontrol edin.
+
+Üst başlık gizle/göster tercihinin cihazda kalıcı hatırlanması ayrı bekleyen nottur; bu sürümde uygulanmadı.

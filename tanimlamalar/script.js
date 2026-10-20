@@ -23,7 +23,7 @@ let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSavin
 onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
   if(!isOwner(user)){location.replace(await hasPanelAccess(user,db,"menu")?"../menu-yonetimi/":"../yonetim-merkezi/");return}
-  onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});posSalesMode=salesMode(snapshot.data());layoutLoaded=true;updateLayoutCard();$('salesModeCard').disabled=false;$('salesModeDescription').textContent=posSalesMode==='quick'?'Hızlı Satış kullanılıyor':'Masalı Satış kullanılıyor'},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
+  onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});posSalesMode=salesMode(snapshot.data());layoutLoaded=true;updateLayoutCard();$('salesModeCard').disabled=false;$('salesModeDescription').textContent=`Şu an: ${salesModeName(posSalesMode)}`;renderSalesModeCurrent()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
   onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
   $("applicationSoundsCard").disabled=false;
   $("cashSettingsCard").disabled=false;
@@ -328,7 +328,7 @@ window.addEventListener("message",event=>{if(event.origin===location.origin&&eve
 renderPageState();updateLayoutCard();
 
 // R581: tür değişikliği yalnızca sunucuda, güncel açık adisyon kontrolüyle yapılır.
-$("salesModeCard").onclick=()=>{if(!layoutLoaded||!isOwner(auth.currentUser))return;$("salesModeForm").elements.salesMode.value=posSalesMode;$("salesModeMessage").textContent='';$("salesModeDialog").showModal()};
+$("salesModeCard").onclick=()=>{if(!layoutLoaded||!isOwner(auth.currentUser))return;$("salesModeForm").elements.salesMode.value=posSalesMode;renderSalesModeCurrent();renderSalesModeSelection();$("salesModeMessage").textContent='';$("salesModeDialog").showModal()};
 const closeSalesMode=()=>{if(!salesModeSaving)$("salesModeDialog").close()};
 $("closeSalesMode").onclick=closeSalesMode;$("cancelSalesMode").onclick=closeSalesMode;
 $("salesModeDialog").addEventListener('cancel',event=>{if(salesModeSaving)event.preventDefault()});
@@ -341,3 +341,15 @@ $("salesModeForm").onsubmit=async event=>{
  catch(error){console.error(error);$("salesModeMessage").textContent=String(error.code||'').includes('failed-precondition')?error.message:'Satış türü değiştirilemedi. Bağlantıyı kontrol edip yeniden deneyin.'}
  finally{salesModeSaving=false;$("salesModeForm").inert=false}
 };
+
+// R584: kayıtlı kullanım ile henüz kaydedilmemiş seçimi ayrı ve açık göster.
+function salesModeName(mode){return mode==='quick'?'Hızlı Satış':'Adisyon'}
+function renderSalesModeCurrent(){
+ $("salesModeCurrent").textContent=`Şu anda kullanılan: ${salesModeName(posSalesMode)}`;
+ if($("salesModeDialog").open)renderSalesModeSelection();
+}
+function renderSalesModeSelection(){
+ const selected=$("salesModeForm").elements.salesMode.value;
+ $("salesModeSelection").textContent=selected===posSalesMode?`${salesModeName(selected)} seçili ve kullanımda.`:`${salesModeName(selected)} seçildi. Uygulamak için Kaydet'e basın.`;
+}
+$("salesModeForm").addEventListener('change',event=>{if(event.target.name==='salesMode')renderSalesModeSelection()});
