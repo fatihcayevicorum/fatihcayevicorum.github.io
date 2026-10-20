@@ -1,0 +1,18 @@
+FATİH ÇAY EVİ — R585 HIZLI SATIŞ YÜKLEME GÖRÜNÜMÜ
+
+Kapsam
+- R584 aday sürümünün üzerine uygulanır.
+- Yalnızca satış sayfasının ilk yüklenme görünümü düzeltildi.
+
+Değişiklik
+- Açık Toplam / Taze Dem alanı satış türü okunana kadar kapalı başlatılır.
+- Satış türü Adisyon ise ayar okunduktan sonra alan gösterilir.
+- Satış türü Hızlı Satış ise alan hiç gösterilmez; yükleme anındaki kısa görünme kaldırılmıştır.
+
+Korunan alanlar
+- Ödeme, sepet, satış kaydı, stok, cari hesap ve finans hesaplamaları değiştirilmedi.
+- Adisyon modunda Açık Toplam / Taze Dem alanı kullanılmaya devam eder.
+
+Kontrol sınırı
+- Kaynak kod ve otomatik test kontrolleri yapılmıştır.
+- Canlı Firebase, gerçek tarayıcı arayüzü ve fiziksel cihaz testi yapılmamıştır.

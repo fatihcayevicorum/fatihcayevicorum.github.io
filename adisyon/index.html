@@ -22,7 +22,7 @@
   <section id="tablesView" class="view">
     <div class="view-top"><div><h2>Masalar</h2></div><p id="connectionText" class="connection-status" data-state="pending" role="status" aria-live="polite"><i class="fa-solid connection-network-icon" aria-hidden="true" hidden></i><span>Bağlanıyor</span></p></div>
     <div class="overview-row" id="posControlPanel">
-      <section class="pos-live-overview" aria-label="Açık toplam ve Taze Dem durumu"><article class="open-total-card"><span><i class="fa-solid fa-receipt"></i> Açık Toplam</span><b id="openTotal">₺0</b></article><div id="posTeaCards" class="pos-tea-cards" aria-live="polite"></div><button id="startPosTeaBrew" class="pos-tea-start" type="button"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></button><button id="toggleTeaService" class="pos-tea-start personnel-only" type="button" hidden><i class="fa-solid fa-circle-play"></i><span>Servisi Başlat</span></button></section>
+      <section id="posLiveOverview" class="pos-live-overview" aria-label="Açık toplam ve Taze Dem durumu" hidden><article class="open-total-card"><span><i class="fa-solid fa-receipt"></i> Açık Toplam</span><b id="openTotal">₺0</b></article><div id="posTeaCards" class="pos-tea-cards" aria-live="polite"></div><button id="startPosTeaBrew" class="pos-tea-start" type="button"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></button><button id="toggleTeaService" class="pos-tea-start personnel-only" type="button" hidden><i class="fa-solid fa-circle-play"></i><span>Servisi Başlat</span></button></section>
       <div class="quick-actions">
         <button id="quickHeaderToggle" class="secondary icon-action quick-header-toggle" type="button" title="Üst başlığı gizle" aria-label="Üst başlığı gizle" aria-controls="posAppHeader" aria-expanded="true" hidden><i class="fa-solid fa-chevron-up" aria-hidden="true"></i></button>
         <button id="dailyStatus" class="secondary icon-action" title="Günlük Durum" aria-label="Günlük Durum"><i class="fa-solid fa-chart-pie"></i></button>
@@ -159,7 +159,7 @@
 </dialog>
 <div id="toast" class="toast" role="status"></div>
 <script src="../assets/js/management-forms.js?v=488"></script>
-<script type="module" src="script.js?v=583"></script>
+<script type="module" src="script.js?v=585"></script>
 <script type="module" src="internal-consumption.js?v=460"></script>
 <script type="module" src="quick-cash.js?v=405"></script>
 <script type="module" src="history-modal.js?v=1861"></script>

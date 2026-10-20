@@ -34,7 +34,7 @@ Object.assign(el,{newCurrentAccountDialog:$('newCurrentAccountDialog'),newCurren
 Object.assign(el,{posBarcodeButton:$('posBarcodeButton'),posBarcodeDialog:$('posBarcodeDialog'),posBarcodeVideo:$('posBarcodeVideo'),posCameraStatus:$('posCameraStatus'),posBarcodeResult:$('posBarcodeResult'),posBarcodeInput:$('posBarcodeInput'),usePosBarcode:$('usePosBarcode'),switchPosCamera:$('switchPosCamera'),closePosBarcode:$('closePosBarcode'),finishPosBarcode:$('finishPosBarcode'),posWarningPopup:$('posWarningPopup'),posWarningTitle:$('posWarningTitle'),posWarningMessage:$('posWarningMessage'),closePosWarning:$('closePosWarning')});
 Object.assign(el,{posCameraSettingsButton:$('posCameraSettingsButton'),posCameraDeviceRow:$('posCameraDeviceRow'),posCameraDeviceSelect:$('posCameraDeviceSelect')});
 Object.assign(el,{posTeaCards:$('posTeaCards'),startPosTeaBrew:$('startPosTeaBrew'),posTeaActionDialog:$('posTeaActionDialog'),posTeaActionTitle:$('posTeaActionTitle'),posTeaActionStatus:$('posTeaActionStatus'),markPosTeaReady:$('markPosTeaReady'),requestFinishPosTea:$('requestFinishPosTea'),confirmFinishPosTeaDialog:$('confirmFinishPosTeaDialog'),confirmFinishPosTeaText:$('confirmFinishPosTeaText'),confirmFinishPosTea:$('confirmFinishPosTea')});
-Object.assign(el,{posControlPanel:$('posControlPanel'),togglePosControlPanel:$('togglePosControlPanel')});
+Object.assign(el,{posControlPanel:$('posControlPanel'),posLiveOverview:$('posLiveOverview'),togglePosControlPanel:$('togglePosControlPanel')});
 Object.assign(el,{orderDetailsToggle:$('orderDetailsToggle'),orderItemCount:$('orderItemCount')});
 let currentPricingMovements=[],currentPricingReady=false;
 let tableLayout=normalizeTableLayout(),selectedRegion="all",tableSettingsBase=null;
@@ -614,7 +614,7 @@ function persistQuickDraft(){
 }
 function focusQuickSearch(){requestAnimationFrame(()=>{if(posSalesMode==='quick'&&!document.querySelector('dialog:modal'))el.productSearch.focus({preventScroll:true})})}
 function applySalesMode(next){
- const changed=posSalesMode!==next;posSalesMode=next;document.body.classList.toggle('quick-sale',next==='quick');$('quickHeaderToggle').hidden=next!=='quick';if(next!=='quick')setQuickHeaderCollapsed(false);
+ const changed=posSalesMode!==next;posSalesMode=next;el.posLiveOverview.hidden=next==='quick';document.body.classList.toggle('quick-sale',next==='quick');$('quickHeaderToggle').hidden=next!=='quick';if(next!=='quick')setQuickHeaderCollapsed(false);
  if(next==='quick'){
   if(changed&&el.orderDialog.open)el.orderDialog.close();
   quickDraft=quickDraft||restoreQuickDraft();selectedKey=quickDraft.slotKey;
