@@ -614,13 +614,13 @@ function persistQuickDraft(){
 }
 function focusQuickSearch(){requestAnimationFrame(()=>{if(posSalesMode==='quick'&&!document.querySelector('dialog:modal'))el.productSearch.focus({preventScroll:true})})}
 function applySalesMode(next){
- const changed=posSalesMode!==next;posSalesMode=next;el.posLiveOverview.hidden=next==='quick';document.body.classList.toggle('quick-sale',next==='quick');$('quickHeaderToggle').hidden=next!=='quick';if(next!=='quick')setQuickHeaderCollapsed(false);
+ const changed=posSalesMode!==next;posSalesMode=next;el.posControlPanel.hidden=false;el.posLiveOverview.hidden=next==='quick';document.body.classList.toggle('quick-sale',next==='quick');$('quickHeaderToggle').hidden=next!=='quick';if(next!=='quick')setQuickHeaderCollapsed(false);
  if(next==='quick'){
   if(changed&&el.orderDialog.open)el.orderDialog.close();
   quickDraft=quickDraft||restoreQuickDraft();selectedKey=quickDraft.slotKey;
   renderQuickSale();if(changed)focusQuickSearch();
  }else if(changed){
-  if(quickDraft?.items?.length){persistQuickDraft();show('Masalı Satış açıldı. Hızlı Satış sepetiniz bu cihazda korundu.')}
+  if(quickDraft?.items?.length){persistQuickDraft();show('Adisyon açıldı. Hızlı Satış sepetiniz bu cihazda korundu.')}
   if(el.orderDialog.open)el.orderDialog.close();$('quickCheckoutDialog').close();selectedKey=null;
   document.querySelector('#orderDetailsToggle h3').textContent='Siparişler';$('orderEmpty').textContent='Ürünlere dokunarak Adisyonu başlatın.';$('clearOrder').hidden=isPersonnel;$('posPageTitle').textContent=isPersonnel?'Personel Adisyonu':'Adisyon Yönetimi';
   document.querySelector('#tablesView .view-top h2').textContent='Masalar';$('dailyStatus').title='Günlük Durum';$('dailyStatus').setAttribute('aria-label','Günlük Durum');document.title='Adisyon Yönetimi | Fatih Çay Evi';
@@ -646,26 +646,50 @@ function clearQuickSale(){
 }
 function quickPaymentValues(){return {cash:$('quickPayCash').value,card:$('quickPayCard').value,transfer:$('quickPayTransfer').value,current:$('quickPayCurrent').value}}
 function quickQuote(){return quickPaymentQuote(billTotal(quickDraft),quickPaymentValues(),$('quickPayAccount').value)}
+const quickPaymentField={cash:'quickPayCash',card:'quickPayCard',transfer:'quickPayTransfer',current:'quickPayCurrent'};
+function selectedQuickPaymentMethod(){return $('quickCheckoutForm').elements.quickPayMethod.value}
+function selectQuickPaymentMethod(method,{focus=true}={}){
+ const radio=$('quickCheckoutForm').querySelector(`input[name="quickPayMethod"][value="${method}"]`);if(!radio||radio.disabled)return;
+ radio.checked=true;$('quickCurrentAccountField').hidden=method!=='current';
+ let remaining=0;try{remaining=Math.max(0,quickQuote().remaining)}catch{}
+ $('quickPayEntry').value=remaining?formatInputAmount(remaining):'';
+ if(focus)requestAnimationFrame(()=>{$('quickPayEntry').focus();$('quickPayEntry').select()});
+}
+function addQuickPaymentPart(){
+ const method=selectedQuickPaymentMethod(),input=$('quickPayEntry'),amount=Number(input.value),field=$(quickPaymentField[method]),methodRadio=$('quickCheckoutForm').querySelector(`input[name="quickPayMethod"][value="${method}"]`);
+ if(!methodRadio||methodRadio.disabled){$('quickCheckoutMessage').textContent='Bu ödeme yöntemi şu anda kullanılamıyor.';return}
+ if(!field||!Number.isFinite(amount)||amount<=0||Math.abs(Math.round(amount*100)-amount*100)>1e-8){$('quickCheckoutMessage').textContent='Geçerli bir tutar girin.';input.focus();return}
+ let quote;try{quote=quickQuote()}catch{renderQuickPayment();return}
+ if(amount-quote.remaining>.001){$('quickCheckoutMessage').textContent='Girilen tutar kalan ödemeyi aşıyor.';input.focus();input.select();return}
+ if(method==='current'&&!$('quickPayAccount').value){$('quickCheckoutMessage').textContent='Önce cari hesap seçin.';$('quickPayAccount').focus();return}
+ field.value=formatInputAmount((Number(field.value)||0)+amount);renderQuickPayment();
+ const next=quickQuote();input.value=next.remaining?formatInputAmount(next.remaining):'';if(next.remaining)input.select();
+}
+function removeQuickPaymentPart(method){const field=$(quickPaymentField[method]);if(!field)return;field.value='0';renderQuickPayment();selectQuickPaymentMethod(method)}
 function openQuickCheckout(){
  if(!quickDraft?.items.length){show('Önce sepete ürün ekleyin.');return}
  const form=$('quickCheckoutForm');form.reset();$('quickCheckoutMessage').textContent='';
- const total=billTotal(quickDraft),fields={cash:'quickPayCash',card:'quickPayCard',transfer:'quickPayTransfer'};
- for(const [method,id] of Object.entries(fields)){$(id).disabled=!paymentMethodsReady||paymentMethods[method]===false;$(id).value='0'}
- const first=Object.keys(fields).find(method=>!$(fields[method]).disabled);if(first)$(fields[first]).value=formatInputAmount(total);
- $('quickPayCurrent').disabled=!canTransferCurrentAccount;$('quickPayAccount').disabled=!canTransferCurrentAccount;
+ const fields={cash:'quickPayCash',card:'quickPayCard',transfer:'quickPayTransfer',current:'quickPayCurrent'};
+ for(const id of Object.values(fields))$(id).value='0';
+ for(const method of ['cash','card','transfer'])form.querySelector(`input[name="quickPayMethod"][value="${method}"]`).disabled=!paymentMethodsReady||paymentMethods[method]===false;
+ form.querySelector('input[name="quickPayMethod"][value="current"]').disabled=!canTransferCurrentAccount;$('quickPayAccount').disabled=!canTransferCurrentAccount;
  $('quickPayAccount').innerHTML='<option value="">Cari hesap seçin</option>'+currentAccounts.filter(a=>a.active).sort((a,b)=>a.name.localeCompare(b.name,'tr')).map(a=>`<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('');
- renderQuickPayment();$('quickCheckoutDialog').showModal();requestAnimationFrame(()=>{const input=first?$(fields[first]):$('quickPayCurrent');input.focus();input.select()});
+ const first=['cash','card','transfer','current'].find(method=>!form.querySelector(`input[name="quickPayMethod"][value="${method}"]`).disabled);
+ if(first)selectQuickPaymentMethod(first,{focus:false});renderQuickPayment();$('quickCheckoutDialog').showModal();requestAnimationFrame(()=>{$('quickPayEntry').focus();$('quickPayEntry').select()});
 }
 function renderQuickPayment(){
  try{
   const q=quickQuote(),account=currentAccounts.find(a=>a.id===$('quickPayAccount').value),labels={cash:'Nakit',card:'Kart / POS',transfer:'Havale',current:'Cari'};
   $('quickCheckoutTotal').textContent=money(q.total);$('quickCheckoutAllocated').textContent=money(q.allocated);$('quickCheckoutRemaining').textContent=money(q.remaining);
-  $('quickCheckoutSummary').textContent=Object.entries(q.parts).filter(([,amount])=>amount>0).map(([type,amount])=>`${labels[type]}${type==='current'&&account?` • ${account.name}`:''}: ${money(amount)}`).join('\n')||(q.total===0?'İkram satışı; kasaya para girmez.':'Ödeme paylarını girin.');
+  const parts=Object.entries(q.parts).filter(([,amount])=>amount>0);$('quickPaymentAllocations').innerHTML=parts.map(([type,amount])=>`<article><span><i class="fa-solid ${type==='cash'?'fa-money-bill-wave':type==='card'?'fa-credit-card':type==='transfer'?'fa-building-columns':'fa-address-book'}"></i><b>${labels[type]}${type==='current'&&account?` • ${esc(account.name)}`:''}</b></span><strong>${money(amount)}</strong><button type="button" data-remove-quick-payment="${type}" aria-label="${labels[type]} tutarını kaldır"><i class="fa-solid fa-xmark"></i></button></article>`).join('');$('quickPaymentEmpty').hidden=parts.length>0;
+  $('quickCheckoutSummary').textContent=q.total===0?'İkram satışı; kasaya para girmez.':q.complete?'Ödeme dağılımı tamamlandı. Satışı tamamlayabilirsiniz.':'Ödeme türünü seçin, tutarı yazın ve Ödemeye Ekle düğmesine basın.';
   $('confirmQuickCheckout').disabled=quickCommitBusy||!q.complete||!paymentMethodsReady;
-  $('quickCheckoutMessage').textContent=q.remaining<0?'Dağıtılan tutar satış toplamını aşıyor. Para üstünü düşerek net tahsilatı yazın.':q.parts.current&&!account?'Cari hesap seçin.':q.remaining>0?'Kalan tutarı bir ödeme yöntemine veya cari hesaba dağıtın.':'';
+  $('quickCheckoutMessage').textContent=q.remaining<0?'Dağıtılan tutar satış toplamını aşıyor. Para üstünü düşerek net tahsilatı yazın.':q.parts.current&&!account?'Cari hesap seçin.':q.remaining>0?'Kalan tutarı ödeme türlerinden birine ekleyin.':'';
  }catch(error){$('confirmQuickCheckout').disabled=true;$('quickCheckoutMessage').textContent='Tutarlar sıfır veya pozitif, en fazla iki ondalık basamaklı olmalı.'}
 }
-$('quickCheckoutForm').addEventListener('input',renderQuickPayment);$('quickCheckoutForm').addEventListener('change',renderQuickPayment);
+$('quickPayAdd').onclick=addQuickPaymentPart;$('quickPayEntry').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();addQuickPaymentPart()}});
+$('quickCheckoutForm').addEventListener('change',event=>{if(event.target.name==='quickPayMethod')selectQuickPaymentMethod(event.target.value);else renderQuickPayment()});
+$('quickPaymentAllocations').onclick=event=>{const button=event.target.closest('[data-remove-quick-payment]');if(button)removeQuickPaymentPart(button.dataset.removeQuickPayment)};
 $('quickPrintAccount').onclick=openReceiptPreview;
 $('quickCheckoutDialog').addEventListener('cancel',event=>{if(quickCommitBusy)event.preventDefault()});
 $('quickCheckoutForm').onsubmit=commitQuickSale;

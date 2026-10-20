@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=525"><link rel="stylesheet" href="polish.css?v=509"><link rel="stylesheet" href="enhancements.css?v=583"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
+  <link rel="stylesheet" href="style.css?v=525"><link rel="stylesheet" href="polish.css?v=509"><link rel="stylesheet" href="enhancements.css?v=586"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=548">
   <script src="../assets/js/theme.js?v=541"></script>
@@ -21,7 +21,7 @@
 <main>
   <section id="tablesView" class="view">
     <div class="view-top"><div><h2>Masalar</h2></div><p id="connectionText" class="connection-status" data-state="pending" role="status" aria-live="polite"><i class="fa-solid connection-network-icon" aria-hidden="true" hidden></i><span>Bağlanıyor</span></p></div>
-    <div class="overview-row" id="posControlPanel">
+    <div class="overview-row" id="posControlPanel" hidden>
       <section id="posLiveOverview" class="pos-live-overview" aria-label="Açık toplam ve Taze Dem durumu" hidden><article class="open-total-card"><span><i class="fa-solid fa-receipt"></i> Açık Toplam</span><b id="openTotal">₺0</b></article><div id="posTeaCards" class="pos-tea-cards" aria-live="polite"></div><button id="startPosTeaBrew" class="pos-tea-start" type="button"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></button><button id="toggleTeaService" class="pos-tea-start personnel-only" type="button" hidden><i class="fa-solid fa-circle-play"></i><span>Servisi Başlat</span></button></section>
       <div class="quick-actions">
         <button id="quickHeaderToggle" class="secondary icon-action quick-header-toggle" type="button" title="Üst başlığı gizle" aria-label="Üst başlığı gizle" aria-controls="posAppHeader" aria-expanded="true" hidden><i class="fa-solid fa-chevron-up" aria-hidden="true"></i></button>
@@ -94,12 +94,19 @@
 <dialog id="quickCheckoutDialog"><form id="quickCheckoutForm" class="dialog-card wide">
  <div class="dialog-head"><h2>Hızlı Satış • Ödeme Al</h2><button type="button" data-close="quickCheckoutDialog" aria-label="Kapat">×</button></div>
  <div class="payment-summary"><div><span>Satış toplamı</span><b id="quickCheckoutTotal"></b></div><div><span>Dağıtılan</span><b id="quickCheckoutAllocated"></b></div><div class="remaining"><span>Kalan</span><b id="quickCheckoutRemaining"></b></div></div>
- <div class="quick-payment-fields">
-  <label>Nakit<input id="quickPayCash" type="number" min="0" step="0.01" inputmode="decimal" value="0"></label>
-  <label>Kart / POS<input id="quickPayCard" type="number" min="0" step="0.01" inputmode="decimal" value="0"></label>
-  <label>Havale<input id="quickPayTransfer" type="number" min="0" step="0.01" inputmode="decimal" value="0"></label>
-  <label>Cari hesaba yazılacak<input id="quickPayCurrent" type="number" min="0" step="0.01" inputmode="decimal" value="0"></label>
-  <label class="quick-current-account">Cari Hesap<select id="quickPayAccount"><option value="">Cari hesap seçin</option></select></label>
+ <div class="quick-payment-workspace">
+  <section class="quick-payment-entry" aria-label="Ödeme ekle">
+   <div class="quick-payment-methods" role="radiogroup" aria-label="Ödeme türü">
+    <label><input type="radio" name="quickPayMethod" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label>
+    <label><input type="radio" name="quickPayMethod" value="card"><span><i class="fa-solid fa-credit-card"></i>Kart / POS</span></label>
+    <label><input type="radio" name="quickPayMethod" value="transfer"><span><i class="fa-solid fa-building-columns"></i>Havale</span></label>
+    <label class="quick-current-method"><input type="radio" name="quickPayMethod" value="current"><span><i class="fa-solid fa-address-book"></i>Cari Hesaba Aktar</span></label>
+   </div>
+   <label id="quickCurrentAccountField" class="quick-current-account" hidden>Cari Hesap<select id="quickPayAccount"><option value="">Cari hesap seçin</option></select></label>
+   <div class="quick-payment-amount-row"><label>Tutar<input id="quickPayEntry" type="number" min="0.01" step="0.01" inputmode="decimal" autocomplete="off"></label><button id="quickPayAdd" type="button" class="primary"><i class="fa-solid fa-plus"></i> Ödemeye Ekle</button></div>
+   <input id="quickPayCash" type="hidden" value="0"><input id="quickPayCard" type="hidden" value="0"><input id="quickPayTransfer" type="hidden" value="0"><input id="quickPayCurrent" type="hidden" value="0">
+  </section>
+  <section class="quick-payment-breakdown" aria-label="Ödeme dağılımı"><div class="quick-payment-breakdown-head"><h3>Ödeme Dağılımı</h3><small>Eklenen tutarlar</small></div><div id="quickPaymentAllocations" class="quick-payment-allocations"></div><p id="quickPaymentEmpty" class="quick-payment-empty">Henüz ödeme eklenmedi.</p></section>
  </div>
  <p class="notice" id="quickCheckoutSummary">Ödeme paylarını girin. Toplam tamamlanınca tek satış kaydedilir.</p>
  <p id="quickCheckoutMessage" role="alert"></p>
@@ -159,7 +166,7 @@
 </dialog>
 <div id="toast" class="toast" role="status"></div>
 <script src="../assets/js/management-forms.js?v=488"></script>
-<script type="module" src="script.js?v=585"></script>
+<script type="module" src="script.js?v=586"></script>
 <script type="module" src="internal-consumption.js?v=460"></script>
 <script type="module" src="quick-cash.js?v=405"></script>
 <script type="module" src="history-modal.js?v=1861"></script>

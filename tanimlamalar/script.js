@@ -328,7 +328,7 @@ window.addEventListener("message",event=>{if(event.origin===location.origin&&eve
 renderPageState();updateLayoutCard();
 
 // R581: tür değişikliği yalnızca sunucuda, güncel açık adisyon kontrolüyle yapılır.
-$("salesModeCard").onclick=()=>{if(!layoutLoaded||!isOwner(auth.currentUser))return;$("salesModeForm").elements.salesMode.value=posSalesMode;renderSalesModeCurrent();renderSalesModeSelection();$("salesModeMessage").textContent='';$("salesModeDialog").showModal()};
+$("salesModeCard").onclick=()=>{if(!layoutLoaded||!isOwner(auth.currentUser))return;setSalesModeChoice(posSalesMode);renderSalesModeCurrent();renderSalesModeSelection();$("salesModeMessage").textContent='';$("salesModeDialog").showModal()};
 const closeSalesMode=()=>{if(!salesModeSaving)$("salesModeDialog").close()};
 $("closeSalesMode").onclick=closeSalesMode;$("cancelSalesMode").onclick=closeSalesMode;
 $("salesModeDialog").addEventListener('cancel',event=>{if(salesModeSaving)event.preventDefault()});
@@ -344,6 +344,9 @@ $("salesModeForm").onsubmit=async event=>{
 
 // R584: kayıtlı kullanım ile henüz kaydedilmemiş seçimi ayrı ve açık göster.
 function salesModeName(mode){return mode==='quick'?'Hızlı Satış':'Adisyon'}
+function setSalesModeChoice(mode){
+ const quick=mode==='quick';$("salesModeToggle").checked=quick;$("salesModeValue").value=quick?'quick':'table';
+}
 function renderSalesModeCurrent(){
  $("salesModeCurrent").textContent=`Şu anda kullanılan: ${salesModeName(posSalesMode)}`;
  if($("salesModeDialog").open)renderSalesModeSelection();
@@ -352,4 +355,4 @@ function renderSalesModeSelection(){
  const selected=$("salesModeForm").elements.salesMode.value;
  $("salesModeSelection").textContent=selected===posSalesMode?`${salesModeName(selected)} seçili ve kullanımda.`:`${salesModeName(selected)} seçildi. Uygulamak için Kaydet'e basın.`;
 }
-$("salesModeForm").addEventListener('change',event=>{if(event.target.name==='salesMode')renderSalesModeSelection()});
+$("salesModeToggle").addEventListener('change',()=>{setSalesModeChoice($("salesModeToggle").checked?'quick':'table');renderSalesModeSelection()});
