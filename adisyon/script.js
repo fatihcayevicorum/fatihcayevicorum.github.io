@@ -614,7 +614,7 @@ function persistQuickDraft(){
 }
 function focusQuickSearch(){requestAnimationFrame(()=>{if(posSalesMode==='quick'&&!document.querySelector('dialog:modal'))el.productSearch.focus({preventScroll:true})})}
 function applySalesMode(next){
- const changed=posSalesMode!==next;posSalesMode=next;document.body.classList.toggle('quick-sale',next==='quick');
+ const changed=posSalesMode!==next;posSalesMode=next;document.body.classList.toggle('quick-sale',next==='quick');$('quickHeaderToggle').hidden=next!=='quick';if(next!=='quick')setQuickHeaderCollapsed(false);
  if(next==='quick'){
   if(changed&&el.orderDialog.open)el.orderDialog.close();
   quickDraft=quickDraft||restoreQuickDraft();selectedKey=quickDraft.slotKey;
@@ -622,7 +622,7 @@ function applySalesMode(next){
  }else if(changed){
   if(quickDraft?.items?.length){persistQuickDraft();show('Masalı Satış açıldı. Hızlı Satış sepetiniz bu cihazda korundu.')}
   if(el.orderDialog.open)el.orderDialog.close();$('quickCheckoutDialog').close();selectedKey=null;
-  document.querySelector('#orderDetailsToggle h3').textContent='Siparişler';$('orderEmpty').textContent='Ürünlere dokunarak Adisyonu başlatın.';$('clearOrder').hidden=isPersonnel;$('quickSaleNotice').hidden=true;$('posPageTitle').textContent=isPersonnel?'Personel Adisyonu':'Adisyon Yönetimi';
+  document.querySelector('#orderDetailsToggle h3').textContent='Siparişler';$('orderEmpty').textContent='Ürünlere dokunarak Adisyonu başlatın.';$('clearOrder').hidden=isPersonnel;$('posPageTitle').textContent=isPersonnel?'Personel Adisyonu':'Adisyon Yönetimi';
   document.querySelector('#tablesView .view-top h2').textContent='Masalar';$('dailyStatus').title='Günlük Durum';$('dailyStatus').setAttribute('aria-label','Günlük Durum');document.title='Adisyon Yönetimi | Fatih Çay Evi';
  }
 }
@@ -633,7 +633,7 @@ function renderQuickSale(){
  document.querySelector('#orderDetailsToggle h3').textContent='Sepet';$('orderEmpty').textContent='Ürünlere dokunarak sepete ekleyin.';
  $('clearOrder').hidden=false;$('clearOrder').innerHTML='<i class="fa-solid fa-trash"></i> İptal Et';
  if(!el.orderDialog.open)el.orderDialog.show();renderOrder();renderProducts();scheduleQuickSaleViewport();
- const notice=$('quickSaleNotice');notice.textContent=quickDraft.items.length&&quickDraft.businessDate!==businessDate?'Önceki iş gününden kalan sepet bu cihazda korunuyor. Ödeme, onay anındaki açık iş gününe kaydedilir.':'Sepet bu cihazda tutulur. Ödeme ve stok kaydı, Satışı Tamamla onayı sunucuda tamamlanınca oluşur.';notice.hidden=false;
+
 }
 function saveQuickDraft(items,extra={}){
  if(quickCommitBusy||!salesModeLoaded||posSalesMode!=='quick')return false;
@@ -752,5 +752,19 @@ function syncQuickSaleViewport(){
 window.addEventListener('resize',scheduleQuickSaleViewport);
 if('ResizeObserver'in window){
  const observer=new ResizeObserver(scheduleQuickSaleViewport);
- for(const node of [document.querySelector('.app-header'),el.tablesView,$('quickSaleNotice')])if(node)observer.observe(node);
+ for(const node of [document.querySelector('.app-header'),el.tablesView])if(node)observer.observe(node);
 }
+
+// R583: üst başlık yalnız Hızlı Satış'ta gizlenir; aynı düğmeyle tekrar açılır.
+function setQuickHeaderCollapsed(collapsed){
+ const header=$('posAppHeader'),toggle=$('quickHeaderToggle');
+ const hide=posSalesMode==='quick'&&collapsed===true;
+ document.body.classList.toggle('quick-header-collapsed',hide);
+ header.inert=hide;
+ if(hide)header.setAttribute('aria-hidden','true');else header.removeAttribute('aria-hidden');
+ const label=hide?'Üst başlığı göster':'Üst başlığı gizle';
+ toggle.title=label;toggle.setAttribute('aria-label',label);toggle.setAttribute('aria-expanded',String(!hide));
+ toggle.innerHTML=`<i class="fa-solid fa-chevron-${hide?'down':'up'}" aria-hidden="true"></i>`;
+ scheduleQuickSaleViewport();
+}
+$('quickHeaderToggle').onclick=()=>setQuickHeaderCollapsed(!document.body.classList.contains('quick-header-collapsed'));

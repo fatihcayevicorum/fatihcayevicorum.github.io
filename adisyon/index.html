@@ -7,13 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=525"><link rel="stylesheet" href="polish.css?v=509"><link rel="stylesheet" href="enhancements.css?v=582"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
+  <link rel="stylesheet" href="style.css?v=525"><link rel="stylesheet" href="polish.css?v=509"><link rel="stylesheet" href="enhancements.css?v=583"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=548">
   <script src="../assets/js/theme.js?v=541"></script>
 </head>
 <body>
-<header class="app-header"><div class="header-inner">
+<header class="app-header" id="posAppHeader"><div class="header-inner">
   <div class="brand"><img src="../assets/images/logo.png" class="brand-logo" width="72" height="72" alt="Fatih Çay Evi logosu"><div class="brand-copy"><p class="eyebrow">Fatih Çay Evi</p><h1 id="posPageTitle">Adisyon Yönetimi</h1></div></div>
   <div class="header-actions"><div class="live-time"><strong id="currentTime">--:--</strong><span id="currentDate">--/--/--</span></div><details class="panel-menu"><summary><i class="fa-solid fa-grip"></i><span>Paneller</span></summary><nav class="panel-menu-list"><a href="../taze-dem-paneli/"><i class="fa-solid fa-mug-hot"></i>Taze Dem</a><a href="../menu-yonetimi/"><i class="fa-solid fa-utensils"></i>Menü Yönetimi</a><a href="../stok-yonetimi/"><i class="fa-solid fa-boxes-stacked"></i>Stok Yönetimi</a><a class="is-current" href="./"><i class="fa-solid fa-receipt"></i>Adisyon</a><a href="../esnaf-yonetimi/"><i class="fa-solid fa-store"></i>Esnaf Yönetimi</a><a href="../raporlar/"><i class="fa-solid fa-chart-column"></i>Raporlar</a><a href="../kasa-hesap-yonetimi/"><i class="fa-solid fa-vault"></i>Kasa ve Hesaplar</a></nav></details><button id="logoutButton" class="logout-button" title="Güvenli Çıkış" aria-label="Güvenli Çıkış"><i class="fa-solid fa-right-from-bracket"></i></button></div>
 </div></header>
@@ -24,6 +24,7 @@
     <div class="overview-row" id="posControlPanel">
       <section class="pos-live-overview" aria-label="Açık toplam ve Taze Dem durumu"><article class="open-total-card"><span><i class="fa-solid fa-receipt"></i> Açık Toplam</span><b id="openTotal">₺0</b></article><div id="posTeaCards" class="pos-tea-cards" aria-live="polite"></div><button id="startPosTeaBrew" class="pos-tea-start" type="button"><i class="fa-solid fa-mug-hot"></i><span>Taze Dem</span></button><button id="toggleTeaService" class="pos-tea-start personnel-only" type="button" hidden><i class="fa-solid fa-circle-play"></i><span>Servisi Başlat</span></button></section>
       <div class="quick-actions">
+        <button id="quickHeaderToggle" class="secondary icon-action quick-header-toggle" type="button" title="Üst başlığı gizle" aria-label="Üst başlığı gizle" aria-controls="posAppHeader" aria-expanded="true" hidden><i class="fa-solid fa-chevron-up" aria-hidden="true"></i></button>
         <button id="dailyStatus" class="secondary icon-action" title="Günlük Durum" aria-label="Günlük Durum"><i class="fa-solid fa-chart-pie"></i></button>
         <button id="cashCountButton" class="secondary icon-action cash-count-action" title="Kasa Say" aria-label="Kasa Say"><i class="fa-solid fa-cash-register"></i></button>
         <button id="quickCashButton" class="secondary icon-action" title="Hızlı Gelir / Gider" aria-label="Hızlı Gelir veya Gider Ekle"><i class="fa-solid fa-money-bill-transfer"></i></button>
@@ -41,7 +42,6 @@
     <div id="tableGrid" class="table-grid"></div>
   </section>
 
-  <p id="quickSaleNotice" class="notice" hidden></p>
   <dialog id="orderDialog" class="order-dialog"><section id="orderView" class="view">
     <div class="order-toolbar">
       <button id="backToTables" class="back-button"><i class="fa-solid fa-arrow-left"></i><span>Masalara Dön</span></button>
@@ -159,7 +159,7 @@
 </dialog>
 <div id="toast" class="toast" role="status"></div>
 <script src="../assets/js/management-forms.js?v=488"></script>
-<script type="module" src="script.js?v=582"></script>
+<script type="module" src="script.js?v=583"></script>
 <script type="module" src="internal-consumption.js?v=460"></script>
 <script type="module" src="quick-cash.js?v=405"></script>
 <script type="module" src="history-modal.js?v=1861"></script>

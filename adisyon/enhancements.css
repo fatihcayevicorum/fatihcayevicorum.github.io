@@ -1262,7 +1262,6 @@ body.quick-sale #orderDialog .order-title-note{display:none}
 #quickCheckoutSummary{display:grid;gap:5px;font-size:.8rem;white-space:pre-line}
 #quickCheckoutMessage{color:var(--red);font-size:.8rem;min-height:1.3em}
 #quickCheckoutDialog .dialog-card{width:min(94vw,600px)}
-body.quick-sale #quickSaleNotice{margin:8px 0}
 @media(max-width:720px){
  body.quick-sale #orderDialog .pos-layout{height:auto;grid-template-columns:minmax(0,1fr);gap:10px}
  body.quick-sale #orderDialog .products{height:360px;min-height:0}
@@ -1310,3 +1309,25 @@ body.quick-sale #orderDialog .order-title,
 body.quick-sale #orderDialog .pos-search-row,
 body.quick-sale #orderDialog .category-tabs{flex-shrink:0}
 body.quick-sale #orderDialog .order-bottom{flex:0 0 auto}
+
+/* R583 — Hızlı Satış araç çubuğu doğrudan ürün alanının üzerinde. */
+body.quick-sale main{padding-top:6px;padding-bottom:6px}
+body.quick-sale #tablesView{
+ padding:3px 0 6px;border:0;border-radius:0;background:transparent;box-shadow:none;
+}
+body.quick-sale #tablesView .view-top{display:none!important}
+body.quick-sale #posControlPanel{margin:0}
+body.quick-sale #posControlPanel .quick-actions{justify-content:center;padding:3px 0}
+body.quick-sale #quickHeaderToggle:not([hidden]){display:inline-flex;align-items:center;justify-content:center}
+body.quick-sale .quick-header-toggle{display:none}
+body.quick-sale.quick-header-collapsed #posAppHeader{display:none!important}
+@media(max-width:420px){
+ body.quick-sale #posControlPanel .quick-actions{gap:4px}
+}
+
+@media(max-width:720px){
+ body.quick-sale #orderDialog .products{height:clamp(360px,56dvh,620px)}
+ body.quick-sale.quick-header-collapsed #orderDialog .products{height:clamp(400px,68dvh,720px)}
+}
+@media(max-width:420px){body.quick-sale #posControlPanel .quick-actions{justify-content:flex-start}}
+@supports(justify-content:safe center){body.quick-sale #posControlPanel .quick-actions{justify-content:safe center}}
