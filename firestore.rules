@@ -281,17 +281,40 @@ service cloud.firestore {
         ]));
       allow delete: if backupWritable() && (false);
     }
+    function posTableMode() {
+      return !exists(/databases/$(database)/documents/adminAppSettings/pos)
+        || get(/databases/$(database)/documents/adminAppSettings/pos).data.get('salesMode', 'table') != 'quick';
+    }
+    function unchangedSalesMode() {
+      return request.resource.data.get('salesMode', 'table') == resource.data.get('salesMode', 'table')
+        && request.resource.data.get('salesModeVersion', '') == resource.data.get('salesModeVersion', '');
+    }
     match /adminAppSettings/{document} {
       allow read: if isManager();
-      allow write: if backupWritable() && (hasAnyPanel(['pos', 'reports', 'cash']));
+      allow create: if backupWritable() && (hasAnyPanel(['pos', 'reports', 'cash'])
+        && (document != 'pos' || (!request.resource.data.keys().hasAny(['salesMode', 'salesModeVersion']))));
+      allow update: if backupWritable() && (hasAnyPanel(['pos', 'reports', 'cash'])
+        && (document != 'pos' || unchangedSalesMode()));
+      allow delete: if backupWritable() && (isOwner() && document != 'pos');
     }
     match /adminOrders/{document} {
       allow read: if hasPanel('pos');
-      allow write: if backupWritable() && (hasPanel('pos'));
+      allow write: if backupWritable() && (hasPanel('pos') && posTableMode());
     }
     match /adminSales/{document} {
       allow read: if hasAnyPanel(['pos', 'reports', 'merchant', 'cash', 'currentAccounts']);
-      allow write: if backupWritable() && (hasAnyPanel(['pos', 'reports', 'merchant', 'currentAccounts']));
+      allow create: if backupWritable() && (hasAnyPanel(['pos', 'reports', 'merchant', 'currentAccounts'])
+        && (request.resource.data.get('recordType', '') != 'sale' || posTableMode() || request.resource.data.get('salesMode', '') == 'quick')
+        && (request.resource.data.get('salesMode', '') != 'quick' || (hasPanel('pos') && !posTableMode()
+          && request.resource.data.recordType == 'sale'
+          && request.resource.data.cashAmount >= 0 && request.resource.data.cardAmount >= 0
+          && request.resource.data.transferAmount >= 0 && request.resource.data.currentAccountAmount >= 0
+          && math.round(request.resource.data.baseTotal * 100) == math.round(request.resource.data.cashAmount * 100)
+            + math.round(request.resource.data.cardAmount * 100) + math.round(request.resource.data.transferAmount * 100)
+            + math.round(request.resource.data.currentAccountAmount * 100)
+          && (request.resource.data.currentAccountAmount == 0 || hasCurrentAccountTransfer() || hasPanel('currentAccountTransfer')))));
+      allow update, delete: if backupWritable() && (hasAnyPanel(['pos', 'reports', 'merchant', 'currentAccounts'])
+        && resource.data.get('salesMode', '') != 'quick');
     }
     match /adminDailyClosings/{document} {
       allow read: if hasAnyPanel(['reports', 'pos', 'cash', 'currentAccounts']);
@@ -536,7 +559,7 @@ service cloud.firestore {
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
           'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']);
       allow write: if backupWritable() && (isOwner()
-        && !(collection in ['adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
+        && !(collection in ['adminAppSettings', 'adminOrders', 'adminSales', 'adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
           'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']));

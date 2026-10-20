@@ -44,6 +44,10 @@ onAuthStateChanged(auth,async user=>{
   const alphabetical=(a,b)=>a.name.localeCompare(b.name,"tr-TR"),visibleDaily=daily.filter(can).sort(alphabetical),visibleManagement=management.filter(item=>!item.ownerOnly&&can(item)).sort(alphabetical),visibleOwner=management.filter(item=>item.ownerOnly&&can(item)).sort(alphabetical);
   $("dailySection").hidden=!visibleDaily.length;
   $("dailyGrid").innerHTML=visibleDaily.map(card).join("");
+  if(visibleDaily.some(item=>item.permission==='pos'))onSnapshot(doc(db,'adminAppSettings','pos'),snap=>{
+    const quick=snap.data()?.salesMode==='quick';
+    const grid=$("dailyGrid");grid.innerHTML=visibleDaily.map(item=>card(item.permission==='pos'?{...item,name:quick?'Hızlı Satış':'Adisyon',description:quick?'Ürünleri sepete ekle, parçalı ödeme al':item.description,icon:quick?'fa-cash-register':item.icon}:item)).join('');
+  });
   $("managementSection").hidden=!visibleManagement.length;
   $("managementGrid").innerHTML=visibleManagement.map(card).join("");
   $("ownerSection").hidden=!visibleOwner.length;

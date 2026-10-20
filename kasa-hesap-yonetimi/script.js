@@ -11,7 +11,7 @@ import { hasLocalPendingInternalConsumption, hasPendingInternalConsumptionDraft 
 import { projectLegacyBalances, reconcileLegacyBalances } from "../assets/js/finance-account-compat.js?v=554";
 import { PAYMENT_METHODS, normalizePaymentMethods, canDisablePaymentMethod } from "../assets/js/payment-methods.js?v=555";
 import { ACCOUNT_TYPES, ACCOUNT_LABELS, accountRows, distributeBalances, reconcileAccounts } from "../assets/js/finance-real-accounts.js?v=557";
-import { normalizeCollectionAccounts, selectedCollectionAccount, paymentAccountFromSale } from "../assets/js/payment-account-routing.js?v=559";
+import { normalizeCollectionAccounts, selectedCollectionAccount, paymentAccountFromSale, paymentAccountsFromSale } from "../assets/js/payment-account-routing.js?v=581";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const movementsCol=collection(db,"adminCashMovements"),stockMovesCol=collection(db,"adminStockMovements"),stockItemsCol=collection(db,"adminStockItems"),closingsCol=collection(db,"adminDailyClosings"),salesCol=collection(db,"adminSales"),staffUsersCol=collection(db,"staffUsers"),remindersCol=collection(db,"adminPaymentReminders"),settingsRef=doc(db,"adminCashSettings","config"),financeDaysCol=collection(db,"adminFinanceDays"),currentAccountsCol=collection(db,"adminCurrentAccounts"),currentAccountMovementsCol=collection(db,"adminCurrentAccountMovements");
@@ -285,7 +285,7 @@ async function savePaymentPreferences(){
 }
 function realBalances(date=selectedDate){
  const totals=accountBalancesForDate(date),start=date<FINANCE_START_DATE?HISTORY_START_DATE:FINANCE_START_DATE;
- const attributedSales=sales.map(paymentAccountFromSale).filter(Boolean);
+ const attributedSales=sales.flatMap(paymentAccountsFromSale);
  const rows=distributeBalances(totals,financialAccounts,[...manualMovements,...attributedSales],m=>{
   if(m.businessDate<start||m.businessDate>date)return false;
   if(date<FINANCE_START_DATE||isFinanceDayClosed(m.businessDate))return true;
@@ -298,7 +298,7 @@ function realBalances(date=selectedDate){
  return rows;
 }
 function pendingAccountCollectionTotals(){
- const totals=new Map();for(const sale of sales){const m=paymentAccountFromSale(sale);if(m&&["cash","card"].includes(m.account)&&m.businessDate>=FINANCE_START_DATE&&!isFinanceDayClosed(m.businessDate))totals.set(m.accountId,(totals.get(m.accountId)||0)+Math.round(m.amount*100))}return totals;
+ const totals=new Map();for(const m of sales.flatMap(paymentAccountsFromSale)){if(m&&["cash","card"].includes(m.account)&&m.businessDate>=FINANCE_START_DATE&&!isFinanceDayClosed(m.businessDate))totals.set(m.accountId,(totals.get(m.accountId)||0)+Math.round(m.amount*100))}return totals;
 }
 function pendingAccountCollections(id){return pendingAccountCollectionTotals().get(id)||0}
 

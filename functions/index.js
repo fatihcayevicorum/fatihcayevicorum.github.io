@@ -20,6 +20,8 @@ const onDocumentUpdated=(options,handler)=>firebaseOnDocumentUpdated(options,sys
 const onDocumentWritten=(options,handler)=>firebaseOnDocumentWritten(options,systemBackup.guard(handler,'background'));
 const onSchedule=(options,handler)=>firebaseOnSchedule(options,systemBackup.guard(handler,'background'));
 
+exports.changePosSalesMode=onCall({region:"europe-west1",cors:true},require('./pos-sales-mode').buildPosSalesMode({db,FieldValue,HttpsError,requireOwner}));
+
 const PANEL_IDS=["tea","pos","currentAccounts","currentAccountTransfer","menu","stock","credit","merchant","reports","cash","home","personnel"];
 
 function businessDateNow(now=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(now)}

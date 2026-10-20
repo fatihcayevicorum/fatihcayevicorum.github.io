@@ -10,6 +10,10 @@ import{isOwner,hasPanelAccess}from"../assets/js/admin-access.js";
 import{runTransaction}from"../assets/js/offline-firestore.js";
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app),configRef=doc(db,"publicSite","config"),teaStateRef=doc(db,"adminTea","state"),publicTeaRef=doc(db,"publicTea","status"),$=id=>document.getElementById(id);
+import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js";
+import {salesMode} from "../assets/js/sales-mode.js?v=581";
+const changeSalesMode=httpsCallable(getFunctions(app,"europe-west1"),"changePosSalesMode");
+let posSalesMode='table',salesModeSaving=false;
 const posLayoutRef=doc(db,"adminAppSettings","pos"),layoutOrdersCol=collection(db,"adminOrders");
 let tableLayout=normalizeTableLayout(),layoutOrders=[],layoutLoaded=false,layoutOrdersLoaded=false,layoutDraft=null,layoutBase=null,layoutSaving=false,editingRegionId="";
 const defaults={businessName:"Fatih Çay Evi",address:"Ulukavak Mah. Osmancık Cad. No:285, Çorum/Merkez",phone:"0554 118 08 06",instagramUrl:"https://www.instagram.com/fatihcayevicorum/",logoUrl:"../assets/images/logo.png"};
@@ -19,7 +23,7 @@ let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSavin
 onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
   if(!isOwner(user)){location.replace(await hasPanelAccess(user,db,"menu")?"../menu-yonetimi/":"../yonetim-merkezi/");return}
-  onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});layoutLoaded=true;updateLayoutCard()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
+  onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});posSalesMode=salesMode(snapshot.data());layoutLoaded=true;updateLayoutCard();$('salesModeCard').disabled=false;$('salesModeDescription').textContent=posSalesMode==='quick'?'Hızlı Satış kullanılıyor':'Masalı Satış kullanılıyor'},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
   onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
   $("applicationSoundsCard").disabled=false;
   $("cashSettingsCard").disabled=false;
@@ -322,3 +326,18 @@ $("productPriceSettingsDialog").addEventListener("close",()=>$("productSettingsF
 window.addEventListener("message",event=>{if(event.origin===location.origin&&event.source===$("productSettingsFrame").contentWindow&&event.data?.type==="fatih-product-settings-close")$("productPriceSettingsDialog").close()});
 
 renderPageState();updateLayoutCard();
+
+// R581: tür değişikliği yalnızca sunucuda, güncel açık adisyon kontrolüyle yapılır.
+$("salesModeCard").onclick=()=>{if(!layoutLoaded||!isOwner(auth.currentUser))return;$("salesModeForm").elements.salesMode.value=posSalesMode;$("salesModeMessage").textContent='';$("salesModeDialog").showModal()};
+const closeSalesMode=()=>{if(!salesModeSaving)$("salesModeDialog").close()};
+$("closeSalesMode").onclick=closeSalesMode;$("cancelSalesMode").onclick=closeSalesMode;
+$("salesModeDialog").addEventListener('cancel',event=>{if(salesModeSaving)event.preventDefault()});
+$("salesModeForm").onsubmit=async event=>{
+ event.preventDefault();if(salesModeSaving||!isOwner(auth.currentUser))return;
+ const next=$("salesModeForm").elements.salesMode.value;if(next===posSalesMode){closeSalesMode();return}
+ if(navigator.onLine===false){$("salesModeMessage").textContent='Satış türünü değiştirmek için internet bağlantısı gerekir.';return}
+ salesModeSaving=true;$("salesModeForm").inert=true;$("salesModeMessage").textContent='';
+ try{await changeSalesMode({salesMode:next,expectedMode:posSalesMode});$("salesModeDialog").close();toast('Satış türü kaydedildi. Satış ekranları güncellendi.')}
+ catch(error){console.error(error);$("salesModeMessage").textContent=String(error.code||'').includes('failed-precondition')?error.message:'Satış türü değiştirilemedi. Bağlantıyı kontrol edip yeniden deneyin.'}
+ finally{salesModeSaving=false;$("salesModeForm").inert=false}
+};

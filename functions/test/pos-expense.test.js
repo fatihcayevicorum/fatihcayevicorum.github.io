@@ -51,7 +51,7 @@ test('specific POS account loses commission while another POS and legacy balance
  const compat=fs.readFileSync(path.join(root,'assets/js/finance-account-compat.js'),'utf8');
  const realSource=fs.readFileSync(path.join(root,'assets/js/finance-real-accounts.js'),'utf8').replace('./finance-account-compat.js?v=554',`data:text/javascript,${encodeURIComponent(compat)}`);
  const real=await import(`data:text/javascript,${encodeURIComponent(realSource)}`);
- const c=finance();Object.assign(c,real,{paymentAccountFromSale:()=>null});
+ const c=finance();Object.assign(c,real,{paymentAccountFromSale:()=>null,paymentAccountsFromSale:()=>[]});
  load(c,cash,['realBalances']);
  c.financialAccounts=[{id:'pos-a',name:'POS A',type:'card',status:'active'},{id:'pos-b',name:'POS B',type:'card',status:'active'}];
  c.manualMovements=[{type:'income',account:'card',accountId:'pos-a',amount:6470,businessDate:'2026-10-18'},{type:'income',account:'card',accountId:'pos-b',amount:500,businessDate:'2026-10-18'},commission(170,'pos-a')];

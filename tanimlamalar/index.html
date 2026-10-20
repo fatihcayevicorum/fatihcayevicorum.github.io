@@ -59,6 +59,10 @@
           <span class="card-icon"><i class="fa-solid fa-coins"></i></span>
           <span class="card-copy"><strong>Kasa Ayarları</strong><small>Başlangıç bakiyelerini, gelir, gider ve hesap aktarım kategorilerini düzenle</small></span>
         </button>
+        <button id="salesModeCard" class="center-card definition-card" type="button" disabled aria-haspopup="dialog">
+          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i><span class="card-icon"><i class="fa-solid fa-cash-register"></i></span>
+          <span class="card-copy"><strong>Satış Türü</strong><small id="salesModeDescription">Masalı Satış / Hızlı Satış</small></span>
+        </button>
         <button id="tableRegionSettingsCard" class="center-card definition-card" type="button" disabled>
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
           <span class="card-icon"><i class="fa-solid fa-table-cells-large"></i></span>
@@ -78,6 +82,19 @@
     </section>
   </main>
 
+  <dialog id="salesModeDialog" class="settings-dialog">
+    <form id="salesModeForm">
+      <button id="closeSalesMode" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
+      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-cash-register"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Satış Türü</h2></div></div>
+      <fieldset class="setting-group"><legend>İşletmenin satış ekranı</legend>
+        <label class="setting-toggle"><span><b>Masalı Satış</b><small>Mevcut masa ve adisyon düzeni.</small></span><input type="radio" name="salesMode" value="table" checked></label>
+        <label class="setting-toggle"><span><b>Hızlı Satış</b><small>Masa seçmeden ürünleri sepete ekleyin ve ödeme alın.</small></span><input type="radio" name="salesMode" value="quick"></label>
+      </fieldset>
+      <p class="tea-settings-copy">Aynı anda tek satış türü kullanılır. Geçişten önce açık adisyonları kapatın. Kaydedilmemiş Hızlı Satış sepetleri bulundukları cihazda korunur.</p>
+      <p id="salesModeMessage" class="form-message" role="alert"></p>
+      <div class="dialog-actions"><button id="cancelSalesMode" type="button" class="secondary-button">Vazgeç</button><button id="saveSalesMode" class="primary-button" type="submit">Kaydet</button></div>
+    </form>
+  </dialog>
   <dialog id="systemInfoDialog" class="settings-dialog system-info-dialog">
     <form id="systemInfoForm">
       <button id="closeSystemInfo" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
@@ -271,7 +288,7 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=564"></script>
+  <script type="module" src="script.js?v=581"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

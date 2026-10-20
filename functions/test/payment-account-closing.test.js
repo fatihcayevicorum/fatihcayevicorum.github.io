@@ -15,9 +15,9 @@ const date='2026-10-18';
 const sales=[['cash','cash2','cashAmount'],['card','pos2','cardAmount'],['transfer','bank2','transferAmount']].map(([paymentType,financeAccountId,amountKey])=>({paymentType,financeAccountId,[amountKey]:30,businessDate:date,cashMovementApplied:true}));
 
 async function project(closed,records=sales){
- const {distributeBalances,reconcileAccounts}=await real,{paymentAccountFromSale}=await routing;
+ const {distributeBalances,reconcileAccounts}=await real,{paymentAccountsFromSale}=await routing;
  const totals={cash:closed?1030:1000,card:closed?230:200,bank:330,cardDebt:0};
- return new Function('distributeBalances','reconcileAccounts','paymentAccountFromSale','accountBalancesForDate','financialAccounts','sales','manualMovements','isFinanceDayClosed',`const selectedDate='${date}',FINANCE_START_DATE='2026-08-13',HISTORY_START_DATE='2026-08-01';${functions};return {rows:realBalances(),pending:pendingAccountCollections('cash2')}`)(distributeBalances,reconcileAccounts,paymentAccountFromSale,()=>totals,docs,records,[],()=>closed);
+ return new Function('distributeBalances','reconcileAccounts','paymentAccountsFromSale','accountBalancesForDate','financialAccounts','sales','manualMovements','isFinanceDayClosed',`const selectedDate='${date}',FINANCE_START_DATE='2026-08-13',HISTORY_START_DATE='2026-08-01';${functions};return {rows:realBalances(),pending:pendingAccountCollections('cash2')}`)(distributeBalances,reconcileAccounts,paymentAccountsFromSale,()=>totals,docs,records,[],()=>closed);
 }
 
 test('nakit ve POS kapanışta seçili hesaplara geçer, havale açık günde kullanılabilir',async()=>{
@@ -32,4 +32,11 @@ test('nakit ve POS kapanışta seçili hesaplara geçer, havale açık günde ku
 test('iptal edilen nakit tahsilatı kapanış bekleyen tutardan çıkar',async()=>{
  const result=await project(false,sales.map(s=>({...s,reversed:s.financeAccountId==='cash2'})));
  assert.equal(result.pending,0);
+});
+
+test('one mixed quick sale allocates each share once across open and closed real accounts',async()=>{
+ const quick={salesMode:'quick',businessDate:date,cashMovementApplied:true,cashAmount:30,cardAmount:30,transferAmount:30,paymentAllocations:sales.map(s=>({...s,type:s.paymentType}))};
+ const open=await project(false,[quick]),closed=await project(true,[quick]),get=(data,id)=>data.rows.find(r=>r.id===id).balanceCents;
+ assert.equal(open.pending,3000);assert.equal(get(open,'bank2'),3000);
+ assert.equal(get(closed,'cash2'),3000);assert.equal(get(closed,'pos2'),3000);assert.equal(get(closed,'bank2'),3000);assert.equal(closed.pending,0);
 });

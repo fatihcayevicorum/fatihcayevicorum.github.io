@@ -1229,3 +1229,54 @@
   #internalConsumptionDialog .order-item>div:first-child{min-width:0;overflow-wrap:anywhere}
   #internalConsumptionDialog .qty button{width:32px!important;height:32px!important}
 }
+
+/* R581 — Hızlı Satış; masalı görünümün kuralları korunur. */
+body.quick-sale #tableGrid,body.quick-sale #tableRegionTabs,body.quick-sale #tableSettings,
+body.quick-sale #recentPaymentsButton,body.quick-sale #backToTables,body.quick-sale #orderMore,
+body.quick-sale #orderInfoButton,body.quick-sale .active-table,body.quick-sale #orderConnectionText,
+body.quick-sale .open-total-card,body.quick-sale #currentAccountBar{display:none!important}
+body.quick-sale #orderDialog{position:static;inset:auto;width:100%;max-width:none;max-height:none;margin:0;border-radius:18px;overflow:visible}
+body.quick-sale #orderDialog>.view{display:block;height:auto;max-height:none;overflow:visible;padding:0;background:transparent;border-radius:18px}
+body.quick-sale .order-toolbar{display:none}
+body.quick-sale #orderDialog .pos-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);height:clamp(490px,70dvh,820px);min-height:0;gap:14px}
+body.quick-sale #orderDialog .products,body.quick-sale #orderDialog .order{height:100%;min-height:0;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+body.quick-sale #orderDialog .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));min-height:0;max-height:none;flex:1;overflow:auto;align-content:start;gap:9px}
+body.quick-sale #orderDialog .product{aspect-ratio:1;min-height:100px;padding:8px;overflow:hidden;overflow-wrap:anywhere}
+body.quick-sale #orderDialog .product strong{font-size:.83rem}
+body.quick-sale #orderDialog .order-items{display:grid!important;flex:1;min-height:0;max-height:none;overflow:auto;grid-auto-rows:minmax(76px,max-content);align-content:start}
+body.quick-sale #orderDialog .order-item{height:auto;min-height:76px;max-height:none;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;overflow:visible}
+body.quick-sale #orderDialog .order-item strong{font-size:.8rem;overflow-wrap:anywhere}
+body.quick-sale #orderDialog .order-item small{font-size:.64rem}
+body.quick-sale #orderDialog .item-side{grid-column:auto;display:block}
+body.quick-sale #orderDialog .qty button{width:32px;height:36px}
+body.quick-sale #orderDialog .order-bottom{display:block!important;position:static;flex:none}
+body.quick-sale #orderDialog .totals{display:grid!important}
+body.quick-sale #orderDialog .checkout{display:flex!important;flex-wrap:wrap}
+body.quick-sale #orderDialog .checkout>button{flex:1;min-width:100px;min-height:46px}
+body.quick-sale #orderDialog .order-title{pointer-events:none}
+body.quick-sale #orderDialog .order-mobile-meta i{display:none}
+body.quick-sale #orderDialog .order-title-note{display:none}
+.quick-payment-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.quick-payment-fields input,.quick-payment-fields select{width:100%;min-width:0}
+.quick-payment-fields .quick-current-account{grid-column:1/-1}
+#quickCheckoutSummary{display:grid;gap:5px;font-size:.8rem;white-space:pre-line}
+#quickCheckoutMessage{color:var(--red);font-size:.8rem;min-height:1.3em}
+#quickCheckoutDialog .dialog-card{width:min(94vw,600px)}
+body.quick-sale #quickSaleNotice{margin:8px 0}
+@media(max-width:720px){
+ body.quick-sale #orderDialog .pos-layout{height:auto;grid-template-columns:minmax(0,1fr);gap:10px}
+ body.quick-sale #orderDialog .products{height:360px;min-height:0}
+ body.quick-sale #orderDialog .order{height:auto;min-height:310px}
+ body.quick-sale #orderDialog .product-grid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
+ body.quick-sale #orderDialog .product{min-height:88px}
+ body.quick-sale #orderDialog .order-items{max-height:310px;min-height:80px;flex:auto}
+ body.quick-sale #orderDialog .order-bottom{position:sticky;bottom:0;background:var(--paper);padding-bottom:8px}
+ body.quick-sale #orderDialog .order-item{grid-template-columns:minmax(0,1fr) auto auto}
+ .quick-payment-fields{gap:0 8px}
+}
+
+body.quick-sale #orderDialog .product-grid{grid-auto-rows:auto}
+body.quick-sale #orderDialog .product{height:auto}
+body.quick-sale #orderDialog #orderEmpty:not([hidden]){display:block!important}
+body.quick-sale #orderDialog .totals>div:not([hidden]){display:flex}
+@media(max-width:720px){body.quick-sale #orderDialog .pos-layout{grid-template-rows:auto auto;overflow:visible;flex:none}}

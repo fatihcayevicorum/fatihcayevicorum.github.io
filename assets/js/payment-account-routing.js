@@ -15,3 +15,10 @@ export function paymentAccountFromSale(sale){
  const type=TYPE[method],amount=Number(sale[type==="bank"?"transferAmount":type==="card"?"cardAmount":"cashAmount"])||0;
  return amount>0?{type:"income",account:type,accountId:sale.financeAccountId,amount,businessDate:sale.businessDate,automatic:true}:null;
 }
+
+// R581: tek hızlı satışın yöntemlere dağıtılmış tahsilat hesapları.
+export function paymentAccountsFromSale(sale){
+ if(sale?.salesMode!=='quick')return [paymentAccountFromSale(sale)].filter(Boolean);
+ if(sale.reversed===true||sale.cancelled===true||sale.cashMovementApplied!==true)return [];
+ return (sale.paymentAllocations||[]).map(part=>paymentAccountFromSale({...sale,...part,paymentType:part.type})).filter(Boolean);
+}
