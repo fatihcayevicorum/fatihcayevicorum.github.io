@@ -1,0 +1,14 @@
+FATİH ÇAY EVİ — R590
+R589 üzerine uygulanacak değişen dosyalar paketidir.
+
+Satış türü değişikliğinde teknik Google servis hesabının kullanıcı gibi kabul edilmesi düzeltildi.
+Sunucu üzerinden yapılan işlemde kaydın updatedBy kullanıcı kimliği kullanılır.
+Gerçek kullanıcı oturumuyla yapılan işlemlerde oturum kimliğinin önceliği korunur.
+Satış türü değişikliği Masalı Satış → Hızlı Satış veya tersi şeklinde gösterilir.
+İşlem ayrıntısında Satış türü alanının eski ve yeni değerleri Türkçe gösterilir.
+
+Yeni kayıtlar için sunucu functions/operation-history.js değişikliğinin Cloud Functions'a dağıtılması gerekir.
+Sadece Hosting dosyalarını yüklemek kişi adındaki sorunu düzeltmez.
+Mevcut functions dağıtım yöntemiyle captureOperationHistory fonksiyonunu güncelleyin.
+Eski geçmiş kayıtları topluca değiştirilmez; önceden kaydedilmiş kişi adı geriye dönük düzeltilmez.
+Canlı dağıtım veya veri değişikliği yapılmadı. Fiziksel cihaz testi yapılmadı.

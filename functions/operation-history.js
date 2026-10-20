@@ -55,6 +55,10 @@ function historyMeta(row){
   groupKey=`ödeme-yöntemi:${row.eventId||row.eventAtMs}`;
   visible=descriptions.length>0;
  }
+ else if(row.source==="adminAppSettings"&&row.recordId==="pos"&&after&&before?.salesMode!==after.salesMode&&['table','quick'].includes(after.salesMode)){
+  const mode=value=>value==='quick'?'Hızlı Satış':'Masalı Satış';
+  row.title=`Satış türü: ${mode(before?.salesMode)} → ${mode(after.salesMode)}`;row.reason=row.title;groupKey=`satış-türü:${row.eventId||at}`;
+ }
  else if(row.source==="adminFinancialAccounts"){
   const name=String(after?.name||before?.name||"Hesap");
   row.title=!after?`${name} hesabı silindi`:!before?`${name} hesabı oluşturuldu`:before.name!==after.name?`${before.name} hesabının adı ${name} oldu`:before.status!==after.status?`${name} hesabı ${after.status==="archived"?"arşivlendi":after.status==="passive"?"pasife alındı":"aktif edildi"}`:`${name} hesabı güncellendi`;
@@ -73,7 +77,7 @@ function makeRecord({source,id,before,after,eventId,time,authId,authType}){
  const old=clean(before),next=clean(after),keys=[...new Set([...Object.keys(old||{}),...Object.keys(next||{})])];
  const changes=keys.filter(k=>!META.has(k)&&JSON.stringify(old?.[k]??null)!==JSON.stringify(next?.[k]??null)).map(field=>({field,before:compact(old?.[field]??null),after:compact(next?.[field]??null)}));
  if(!changes.length)return null;
- const d=after||before||{},trusted=Boolean(authId)&&!["service_account","system","api_key"].includes(authType);
+ const d=after||before||{},technicalActor=/\.gserviceaccount\.com$/i.test(String(authId||'')),trusted=Boolean(authId)&&!technicalActor&&!["service_account","service-account","system","api_key"].includes(authType);
  // For deletes, never attribute the action to the record's previous editor.
  const reportedActor=after?(after.actor||after.actorUid||after.reversedBy||after.cancelledBy||after.updatedBy||(!before?after.createdBy:"")||""):"";
  const actorUid=trusted?authId:String(reportedActor),eventAtMs=Date.parse(time);

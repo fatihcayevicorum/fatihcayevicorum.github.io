@@ -1,6 +1,15 @@
 "use strict";
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {makeRecord,clean,eventKey,buildHistory,SOURCES,historyMeta,teaActivities}=require('../operation-history');
+test('sales mode server write resolves the initiating user rather than the technical service account',async()=>{
+ const f=fixture(),before={salesMode:'table'},after={salesMode:'quick',updatedBy:'owner'};
+ await f.api.capture({id:'sales-mode-server',params:{source:'adminAppSettings',recordId:'pos'},time:'2026-10-21T01:51:11+03:00',authId:'511481308540-compute@developer.gserviceaccount.com',authType:'unknown',data:{before:{exists:true,data:()=>before},after:{exists:true,data:()=>after}}});
+ const row=f.db.data.get('adminOperationHistory/'+eventKey('sales-mode-server'));
+ assert.equal(row.actorUid,'owner');assert.equal(row.actorName,'Fatih Ali Altınlı');assert.equal(row.actorVerified,false);
+ assert.equal(row.title,'Satış türü: Masalı Satış → Hızlı Satış');assert.equal(row.changes.find(c=>c.field==='salesMode').before,'table');
+ const reverse=makeRecord({source:'adminAppSettings',id:'pos',before:after,after:{salesMode:'table',updatedBy:'owner'},authId:'owner',authType:'unknown'});
+ assert.equal(reverse.title,'Satış türü: Hızlı Satış → Masalı Satış');assert.equal(reverse.actorVerified,true);
+});
 class HttpsError extends Error{constructor(code,msg){super(msg);this.code=code}}
 class DB{
  constructor(){this.data=new Map();this.tail=Promise.resolve()}
