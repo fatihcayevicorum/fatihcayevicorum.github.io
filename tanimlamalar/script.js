@@ -345,7 +345,7 @@ $("salesModeForm").onsubmit=async event=>{
 // R584: kayıtlı kullanım ile henüz kaydedilmemiş seçimi ayrı ve açık göster.
 function salesModeName(mode){return mode==='quick'?'Hızlı Satış':'Adisyon'}
 function setSalesModeChoice(mode){
- const quick=mode==='quick';$("salesModeToggle").checked=quick;$("salesModeValue").value=quick?'quick':'table';
+ const quick=mode==='quick';$("salesModeToggle").checked=quick;$("salesModeTableToggle").checked=!quick;$("salesModeValue").value=quick?'quick':'table';
 }
 function renderSalesModeCurrent(){
  $("salesModeCurrent").textContent=`Şu anda kullanılan: ${salesModeName(posSalesMode)}`;
@@ -356,3 +356,5 @@ function renderSalesModeSelection(){
  $("salesModeSelection").textContent=selected===posSalesMode?`${salesModeName(selected)} seçili ve kullanımda.`:`${salesModeName(selected)} seçildi. Uygulamak için Kaydet'e basın.`;
 }
 $("salesModeToggle").addEventListener('change',()=>{setSalesModeChoice($("salesModeToggle").checked?'quick':'table');renderSalesModeSelection()});
+
+$("salesModeTableToggle").addEventListener("change",()=>{setSalesModeChoice($("salesModeTableToggle").checked?"table":"quick");renderSalesModeSelection()});

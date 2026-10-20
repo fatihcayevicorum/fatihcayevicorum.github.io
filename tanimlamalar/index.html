@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=586">
+  <link rel="stylesheet" href="style.css?v=587">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=564">
   <script src="../assets/js/theme.js?v=564"></script>
@@ -88,7 +88,8 @@
       <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-cash-register"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2>Satış Türü</h2></div></div>
       <p id="salesModeCurrent" class="sales-mode-current" role="status">Kullanılan ekran yükleniyor…</p>
       <fieldset class="setting-group sales-mode-options"><legend>İşletmenin satış ekranı</legend>
-        <label class="setting-toggle sales-mode-toggle"><span><b>Hızlı Satış ekranını kullan</b><small>Kapalıyken masa ve adisyon ekranı kullanılır.</small></span><input id="salesModeToggle" type="checkbox" role="switch"><i aria-hidden="true"></i></label>
+        <label class="setting-toggle sales-mode-toggle"><span><b>Adisyon</b><small>Masa üzerinden satış</small></span><input id="salesModeTableToggle" type="checkbox" role="switch"><i aria-hidden="true"></i></label>
+        <label class="setting-toggle sales-mode-toggle"><span><b>Hızlı Satış</b><small>Masa açmadan doğrudan satış</small></span><input id="salesModeToggle" type="checkbox" role="switch"><i aria-hidden="true"></i></label>
         <input id="salesModeValue" type="hidden" name="salesMode" value="table">
       </fieldset>
       <p id="salesModeSelection" class="sales-mode-selection" aria-live="polite"></p>
@@ -290,7 +291,7 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=586"></script>
+  <script type="module" src="script.js?v=587"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

@@ -330,3 +330,6 @@ html:root .cash-settings-host{width:min(var(--cash-panel-width,760px),calc(100vw
 #salesModeDialog .sales-mode-toggle span{font-size:.72rem}
 #salesModeDialog .sales-mode-toggle span small{font-size:.58rem}
 #salesModeDialog .sales-mode-selection{min-height:2.8em;margin:12px 0;color:var(--ink);font-size:.75rem;line-height:1.5;font-weight:600}
+
+/* R587 — aynı anda yalnızca bir satış türü açık. */
+#salesModeDialog .sales-mode-toggle input:checked+i{background:#27864a}

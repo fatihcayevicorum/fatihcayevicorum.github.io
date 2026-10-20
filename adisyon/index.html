@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=525"><link rel="stylesheet" href="polish.css?v=509"><link rel="stylesheet" href="enhancements.css?v=586"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
+  <link rel="stylesheet" href="style.css?v=525"><link rel="stylesheet" href="polish.css?v=509"><link rel="stylesheet" href="enhancements.css?v=587"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=548">
   <script src="../assets/js/theme.js?v=541"></script>
@@ -91,27 +91,7 @@
 
 <dialog id="orgDiscountDialog"><section class="dialog-card"><div class="dialog-head"><h2>İndirim Uygula</h2><button type="button" data-close="orgDiscountDialog">×</button></div><div class="org-discount-choices"><button type="button" id="orgDiscountAll" class="secondary">Tümüne Uygula</button><button type="button" id="orgDiscountProduct" class="secondary">Ürün Bazlı</button></div><div id="orgAllDiscountEntry" hidden><label>Tüm hesaba indirim %<input id="orgAllPercent" type="number" min="0" max="100" step="0.01" inputmode="decimal" value="0"></label><button type="button" id="orgApplyAllDiscount" class="primary">İndirimi Kaydet</button></div><button type="button" id="orgClearDiscount" class="secondary org-clear-discount">İndirimi Kaldır</button></section></dialog>
 <dialog id="newCurrentAccountDialog"><form id="newCurrentAccountForm" class="dialog-card current-account-create-form"><div class="dialog-head"><div><p class="current-account-create-kicker">Cari kartı</p><h2>Yeni Cari Oluştur</h2></div><button id="closeNewCurrentAccount" type="button" aria-label="Kapat">×</button></div><label>Cari Adı<input id="newCurrentAccountName" maxlength="80" autocomplete="off" required placeholder="Örn. Ahmet"></label><label>Telefon <small>(isteğe bağlı)</small><input id="newCurrentAccountPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="off" placeholder="05xx xxx xx xx"></label><label>Not <small>(isteğe bağlı)</small><textarea id="newCurrentAccountNote" maxlength="240" rows="3" placeholder="Cari hakkında kısa not"></textarea></label><p class="notice">Yeni cari 0 TL borçla açılır ve kaydedildiğinde bu adisyona otomatik bağlanır.</p><p id="newCurrentAccountMessage" class="current-account-create-message" aria-live="polite"></p><div class="dialog-actions"><button id="cancelNewCurrentAccount" type="button" class="secondary">Vazgeç</button><button id="saveNewCurrentAccount" class="primary"><i class="fa-solid fa-floppy-disk"></i> Oluştur ve Bağla</button></div></form></dialog>
-<dialog id="quickCheckoutDialog"><form id="quickCheckoutForm" class="dialog-card wide">
- <div class="dialog-head"><h2>Hızlı Satış • Ödeme Al</h2><button type="button" data-close="quickCheckoutDialog" aria-label="Kapat">×</button></div>
- <div class="payment-summary"><div><span>Satış toplamı</span><b id="quickCheckoutTotal"></b></div><div><span>Dağıtılan</span><b id="quickCheckoutAllocated"></b></div><div class="remaining"><span>Kalan</span><b id="quickCheckoutRemaining"></b></div></div>
- <div class="quick-payment-workspace">
-  <section class="quick-payment-entry" aria-label="Ödeme ekle">
-   <div class="quick-payment-methods" role="radiogroup" aria-label="Ödeme türü">
-    <label><input type="radio" name="quickPayMethod" value="cash" checked><span><i class="fa-solid fa-money-bill-wave"></i>Nakit</span></label>
-    <label><input type="radio" name="quickPayMethod" value="card"><span><i class="fa-solid fa-credit-card"></i>Kart / POS</span></label>
-    <label><input type="radio" name="quickPayMethod" value="transfer"><span><i class="fa-solid fa-building-columns"></i>Havale</span></label>
-    <label class="quick-current-method"><input type="radio" name="quickPayMethod" value="current"><span><i class="fa-solid fa-address-book"></i>Cari Hesaba Aktar</span></label>
-   </div>
-   <label id="quickCurrentAccountField" class="quick-current-account" hidden>Cari Hesap<select id="quickPayAccount"><option value="">Cari hesap seçin</option></select></label>
-   <div class="quick-payment-amount-row"><label>Tutar<input id="quickPayEntry" type="number" min="0.01" step="0.01" inputmode="decimal" autocomplete="off"></label><button id="quickPayAdd" type="button" class="primary"><i class="fa-solid fa-plus"></i> Ödemeye Ekle</button></div>
-   <input id="quickPayCash" type="hidden" value="0"><input id="quickPayCard" type="hidden" value="0"><input id="quickPayTransfer" type="hidden" value="0"><input id="quickPayCurrent" type="hidden" value="0">
-  </section>
-  <section class="quick-payment-breakdown" aria-label="Ödeme dağılımı"><div class="quick-payment-breakdown-head"><h3>Ödeme Dağılımı</h3><small>Eklenen tutarlar</small></div><div id="quickPaymentAllocations" class="quick-payment-allocations"></div><p id="quickPaymentEmpty" class="quick-payment-empty">Henüz ödeme eklenmedi.</p></section>
- </div>
- <p class="notice" id="quickCheckoutSummary">Ödeme paylarını girin. Toplam tamamlanınca tek satış kaydedilir.</p>
- <p id="quickCheckoutMessage" role="alert"></p>
- <div class="dialog-actions checkout-actions"><button type="button" class="secondary" data-close="quickCheckoutDialog">Vazgeç</button><button type="button" id="quickPrintAccount" class="secondary"><i class="fa-solid fa-print"></i> Hesap Yazdır</button><button type="submit" id="confirmQuickCheckout" class="primary">Satışı Tamamla</button></div>
-</form></dialog>
+
 <dialog id="checkoutDialog"><form id="checkoutForm" class="dialog-card wide">
   <div class="dialog-head"><h2>Ödeme Al</h2><button type="button" data-close="checkoutDialog">×</button></div>
   <div class="payment-summary"><div><span>Mevcut borç</span><b id="checkoutBase">₺0</b></div><div><span>Bu ödeme</span><b id="checkoutPaid">₺0</b></div><div class="remaining"><span>Kalan</span><b id="checkoutRemaining">₺0</b></div></div>
@@ -166,7 +146,7 @@
 </dialog>
 <div id="toast" class="toast" role="status"></div>
 <script src="../assets/js/management-forms.js?v=488"></script>
-<script type="module" src="script.js?v=586"></script>
+<script type="module" src="script.js?v=587"></script>
 <script type="module" src="internal-consumption.js?v=460"></script>
 <script type="module" src="quick-cash.js?v=405"></script>
 <script type="module" src="history-modal.js?v=1861"></script>

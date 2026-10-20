@@ -1256,33 +1256,6 @@ body.quick-sale #orderDialog .checkout>button{flex:1;min-width:100px;min-height:
 body.quick-sale #orderDialog .order-title{pointer-events:none}
 body.quick-sale #orderDialog .order-mobile-meta i{display:none}
 body.quick-sale #orderDialog .order-title-note{display:none}
-.quick-payment-workspace{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(230px,.75fr);gap:14px;min-height:0}
-.quick-payment-entry,.quick-payment-breakdown{min-width:0;padding:12px;border:1px solid var(--line);border-radius:15px;background:var(--paper)}
-.quick-payment-methods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-.quick-payment-methods label{position:relative;min-width:0;margin:0;cursor:pointer}
-.quick-payment-methods input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.quick-payment-methods span{display:flex;min-height:46px;align-items:center;justify-content:center;gap:6px;padding:7px;border:1px solid var(--line);border-radius:11px;color:var(--ink);background:#fff;font-size:.7rem;font-weight:700;text-align:center}
-.quick-payment-methods input:checked+span{border-color:var(--red);color:#fff;background:linear-gradient(135deg,var(--red),var(--red2))}
-.quick-payment-methods input:disabled+span{opacity:.45;cursor:not-allowed}
-.quick-payment-methods input:focus-visible+span{outline:3px solid rgba(116,23,34,.18);outline-offset:2px}
-.quick-payment-methods .quick-current-method{grid-column:1/-1}
-.quick-payment-methods .quick-current-method span{min-height:42px;color:var(--red);background:#f8eee8}
-.quick-payment-methods .quick-current-method input:checked+span{color:#fff;background:linear-gradient(135deg,var(--red),var(--red2))}
-.quick-current-account{display:grid;gap:5px;margin:10px 0 0;font-size:.68rem;font-weight:700}
-.quick-current-account[hidden],.quick-payment-empty[hidden]{display:none!important}
-.quick-current-account select{width:100%;min-width:0;height:44px;padding:0 10px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink)}
-.quick-payment-amount-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;margin-top:10px}
-.quick-payment-amount-row label{display:grid;gap:5px;margin:0;font-size:.68rem;font-weight:700}
-.quick-payment-amount-row input{width:100%;min-width:0;height:48px;padding:0 12px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:1.05rem;font-weight:800;text-align:center}
-.quick-payment-amount-row button{min-height:48px;white-space:nowrap}
-.quick-payment-breakdown{display:flex;flex-direction:column}
-.quick-payment-breakdown-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
-.quick-payment-breakdown-head h3{margin:0;font-size:.78rem}.quick-payment-breakdown-head small{color:var(--muted);font-size:.58rem}
-.quick-payment-allocations{display:grid;gap:7px}.quick-payment-allocations article{display:grid;grid-template-columns:minmax(0,1fr) auto 32px;align-items:center;gap:7px;padding:9px;border:1px solid var(--line);border-radius:11px;background:#fff}.quick-payment-allocations article span{display:flex;min-width:0;align-items:center;gap:7px}.quick-payment-allocations article span i{color:var(--red)}.quick-payment-allocations article b{min-width:0;overflow-wrap:anywhere;font-size:.65rem}.quick-payment-allocations article strong{font-size:.72rem}.quick-payment-allocations article button{display:grid;width:32px;height:32px;place-items:center;padding:0;border:0;border-radius:8px;color:var(--red);background:#f5e9e3}
-.quick-payment-empty{margin:auto;color:var(--muted);font-size:.66rem;text-align:center}
-#quickCheckoutSummary{display:grid;gap:5px;font-size:.8rem;white-space:pre-line}
-#quickCheckoutMessage{color:var(--red);font-size:.8rem;min-height:1.3em}
-#quickCheckoutDialog .dialog-card{width:min(94vw,820px)}
 @media(max-width:720px){
  body.quick-sale #orderDialog .pos-layout{height:auto;grid-template-columns:minmax(0,1fr);gap:10px}
  body.quick-sale #orderDialog .products{height:360px;min-height:0}
@@ -1292,10 +1265,7 @@ body.quick-sale #orderDialog .order-title-note{display:none}
  body.quick-sale #orderDialog .order-items{max-height:310px;min-height:80px;flex:auto}
  body.quick-sale #orderDialog .order-bottom{position:sticky;bottom:0;background:var(--paper);padding-bottom:8px}
  body.quick-sale #orderDialog .order-item{grid-template-columns:minmax(0,1fr) auto auto}
- .quick-payment-workspace{grid-template-columns:minmax(0,1fr)}
- .quick-payment-breakdown{min-height:120px}
- .quick-payment-amount-row{grid-template-columns:minmax(0,1fr)}
- .quick-payment-amount-row button{width:100%}
+
 }
 
 body.quick-sale #orderDialog .product-grid{grid-auto-rows:auto}
