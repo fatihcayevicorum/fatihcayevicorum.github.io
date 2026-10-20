@@ -1338,3 +1338,15 @@ body.quick-sale.quick-header-collapsed #posAppHeader{display:none!important}
 }
 @media(max-width:420px){body.quick-sale #posControlPanel .quick-actions{justify-content:flex-start}}
 @supports(justify-content:safe center){body.quick-sale #posControlPanel .quick-actions{justify-content:safe center}}
+
+/* R589 — Hızlı Satış: geniş ürün alanı ve ortalı ürün kartları. */
+body.quick-sale>main{width:calc(100% - 32px)!important;max-width:none!important}
+body.quick-sale #orderDialog .product{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px}
+body.quick-sale #orderDialog .product strong{width:100%;display:block;overflow:visible;-webkit-line-clamp:unset;line-clamp:unset;line-height:1.3}
+body.quick-sale #orderDialog .product span{width:100%;margin-top:0;text-align:center}
+@media(min-width:721px){
+ body.quick-sale #orderDialog .pos-layout{grid-template-columns:minmax(0,1.85fr) minmax(320px,1fr)}
+ body.quick-sale #orderDialog .product-grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
+ body.quick-sale #orderDialog .product{aspect-ratio:auto;min-height:104px;padding:10px}
+}
+@media(max-width:720px){body.quick-sale>main{width:calc(100% - 18px)!important}}
