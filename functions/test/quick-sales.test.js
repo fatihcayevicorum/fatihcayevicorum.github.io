@@ -121,3 +121,19 @@ test('existing checkout rejects unavailable method, invalid precision and discon
   await f.checkoutQuickWithExistingDialog({});assert.equal(f.commits.length,0);assert.equal(f.quickDraft.payments.length,0);
  }
 });
+test('quick current transfer assigns exactly the unpaid remainder and replaces an earlier current share',async()=>{
+ const f=await existingDialogFixture();f.quickDraft.payments=[{type:'cash',amount:40}];
+ const first=f.quickCurrentTransferDraft(f.quickDraft,'customer');
+ assert.equal(first.currentAccountId,'customer');assert.deepEqual(JSON.parse(JSON.stringify(first.payments)),[{type:'cash',amount:40},{type:'current',amount:60}]);
+ const replaced=f.quickCurrentTransferDraft(first,'other');
+ assert.equal(replaced.currentAccountId,'other');assert.deepEqual(JSON.parse(JSON.stringify(replaced.payments)),[{type:'cash',amount:40},{type:'current',amount:60}]);
+ assert.throws(()=>f.quickCurrentTransferDraft({...f.quickDraft,payments:[{type:'cash',amount:100}]},'customer'),/no-current-balance/);
+ assert.throws(()=>f.quickCurrentTransferDraft(f.quickDraft,''),/no-current-balance/);
+});
+test('quick checkout hides merchant marka and removes duplicated receipt detail while normal preview remains intact',()=>{
+ const quickPreview=source.slice(source.indexOf('function renderCashPreview(){'),source.indexOf('function compactCheckoutItems'));
+ const normalPreview=source.slice(source.indexOf('function renderCashPreviewBase(){'),source.indexOf('function renderCashPreview(){'));
+ const css=fs.readFileSync(path.join(root,'adisyon/enhancements.css'),'utf8'),html=fs.readFileSync(path.join(root,'adisyon/index.html'),'utf8');
+ assert.doesNotMatch(quickPreview,/Adisyon İçeriği|Ödenecek toplam/);assert.match(normalPreview,/Adisyon İçeriği/);assert.match(normalPreview,/Ödenecek toplam/);
+ assert.match(css,/quick-checkout \.merchant-marka-toggle\{display:none!important\}/);assert.match(html,/id="quickCurrentTransferButton"/);assert.match(html,/id="quickCurrentAccountSelect"/);
+});

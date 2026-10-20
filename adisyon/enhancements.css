@@ -9,6 +9,18 @@
 #checkoutDialog .notice{margin:7px 0;padding:8px}
 #checkoutDialog .payment-confirm{margin-top:7px}
 #checkoutDialog .dialog-actions{margin-top:10px}
+#checkoutForm.quick-checkout .merchant-marka-toggle{display:none!important}
+#checkoutForm.quick-checkout .payment-confirm{grid-template-columns:minmax(0,1fr);gap:3px;margin-top:5px;padding:8px 10px;font-size:.69rem}
+#checkoutForm.quick-checkout .payment-confirm-info{gap:3px}
+#checkoutForm.quick-checkout .payment-confirm-info b,
+#checkoutForm.quick-checkout .payment-confirm-info em{display:none}
+#checkoutForm.quick-checkout .payment-confirm-products{display:none!important}
+.quick-current-transfer-button{display:flex;width:100%;min-height:42px;align-items:center;justify-content:center;gap:7px;margin-top:7px;color:#276da9;background:#edf6ff;border:1px solid #b6d0e8}
+.quick-current-transfer-button[hidden]{display:none!important}
+.quick-current-transfer-dialog-card{width:min(92vw,430px)}
+.quick-current-account-field{display:grid;gap:6px;margin:0;color:var(--ink);font-size:.7rem;font-weight:700;text-align:left}
+.quick-current-account-field select{width:100%;height:46px;padding:0 10px;border:1px solid var(--line);border-radius:11px;color:var(--ink);background:#fff;font:inherit}
+#quickCurrentTransferMessage{min-height:18px;margin:0;color:var(--red);font-size:.67rem}
 @media(max-width:700px){.category-report-grid{grid-template-columns:1fr 1fr}.table-name-settings>div{grid-template-columns:1fr}}
 @media(max-width:460px){.category-report-grid{grid-template-columns:1fr}}
 @media(min-width:700px) and (max-width:1180px){#checkoutDialog .dialog-card.wide{width:min(calc(100vw - 32px),430px)}}
