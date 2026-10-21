@@ -20,7 +20,16 @@ export const PERMISSION_DEFINITIONS=[...PANEL_DEFINITIONS.slice(0,3),...ACTION_D
 export const ALL_PANEL_IDS=PERMISSION_DEFINITIONS.map(x=>x.id).filter(id=>id!=="personnel");
 export function isOwner(user){return user?.uid===ADMIN_UID}
 export function isPersonnelAccessLocked(profile,now=Date.now()){return Boolean(profile?.permissions?.includes("personnel")&&Number(profile.personnelAccessLockedUntilMs)>now)}
-export async function getManagementProfile(user,db){
+const profileReadsKey=Symbol.for('fatih.managementProfile.pending.r592');
+const profileReads=globalThis[profileReadsKey]||(globalThis[profileReadsKey]=new WeakMap());
+export function getManagementProfile(user,db){
+  if(!user)return Promise.resolve(null);
+  let reads=profileReads.get(db);if(!reads){reads=new Map();profileReads.set(db,reads)}
+  if(reads.has(user.uid))return reads.get(user.uid);
+  const pending=readManagementProfile(user,db).finally(()=>{if(reads.get(user.uid)===pending)reads.delete(user.uid)});
+  reads.set(user.uid,pending);return pending;
+}
+async function readManagementProfile(user,db){
   if(!user)return null;
   if(isOwner(user)){
     const snap=await getDoc(doc(db,"staffUsers",user.uid)).catch(()=>null);
