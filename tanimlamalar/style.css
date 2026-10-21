@@ -47,6 +47,9 @@ button{-webkit-tap-highlight-color:transparent}
 .tea-number-input:focus-within{border-color:#b86d73;box-shadow:0 0 0 3px rgba(116,23,34,.08)}
 .tea-number-input input{width:100%;min-width:0;height:48px;padding:0 10px;border:0!important;border-radius:0!important;box-shadow:none!important;color:var(--ink);background:#fff;font-size:.88rem;font-weight:800;outline:0}
 .tea-number-input b{display:grid;align-self:stretch;place-items:center;padding:0 9px;color:var(--wine);background:#f5ece3;font-size:.56rem;white-space:nowrap}
+.printer-setup-group p{margin:0 0 9px;font-size:.74rem;line-height:1.5;color:var(--ink)}
+.printer-setup-group>small{display:block;margin-top:9px;font-size:.66rem;line-height:1.5;color:var(--muted)}
+.printer-setup-group>button{width:100%;min-height:44px}
 .receipt-settings-dialog{width:min(960px,calc(100% - 24px));max-height:calc(100dvh - 24px)}
 .receipt-settings-dialog form{gap:16px}
 .receipt-settings-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;min-height:0}

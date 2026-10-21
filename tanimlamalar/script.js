@@ -45,6 +45,7 @@ $("closeReceiptSettings").onclick=closeReceiptSettings;
 $("cancelReceiptSettings").onclick=closeReceiptSettings;
 $("receiptSettingsForm").onsubmit=saveReceiptSettings;
 $("receiptSettingsForm").addEventListener("input",renderReceiptSettingsPreview);
+$("printTestReceipt").onclick=printTestReceipt;
 $("closeTeaSettings").onclick=closeTeaSettings;
 $("cancelTeaSettings").onclick=closeTeaSettings;
 $("teaSettingsForm").onsubmit=saveTeaSettings;
@@ -151,6 +152,15 @@ function openReceiptSettings(){
   $("receiptPaperWidth").value=String(settings.paperWidthMm);$("receiptTopMessage").value=settings.topMessage;$("receiptBottomMessage").value=settings.bottomMessage;$("receiptFormMessage").textContent="";renderReceiptSettingsPreview();$("receiptSettingsDialog").showModal()
 }
 function closeReceiptSettings(){if(!receiptSaving)$("receiptSettingsDialog").close()}
+function printTestReceipt(){
+  renderReceiptSettingsPreview();
+  const popup=window.open('','_blank','width=460,height=760');
+  if(!popup){$('receiptFormMessage').textContent='Deneme fişi açılamadı. Tarayıcıdaki açılır pencere iznini kontrol edin.';return}
+  const width=receiptSettingsFromForm().paperWidthMm,stylesheet=new URL('style.css?v=593',location.href).href;
+  const markup=$('settingsReceiptPreview').outerHTML;
+  popup.document.write(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Deneme Fişi</title><link rel="stylesheet" href="${text(stylesheet)}"><style>@page{size:${width}mm auto;margin:4mm}html,body{width:${width-8}mm;min-height:0;margin:0;padding:0;background:white;color:#111}.settings-receipt-paper,.settings-receipt-paper.is-58{width:100%;min-height:0;margin:0;padding:0;box-shadow:none}.print-test-label{text-align:center;border-bottom:1px dashed #222;padding:6px 0;font:bold 11px Arial}.print-test-help{font:11px Arial;padding:10px 0}.print-test-help button{padding:9px 12px}@media print{.print-test-help{display:none}}</style></head><body><div class="print-test-label">DENEME FİŞİ • ${width} mm</div>${markup}<div class="print-test-help"><p>Satış kaydı oluşturulmadı. Yazdırma ekranında kâğıt ölçüsünü kontrol edin; üstbilgi ve altbilgiyi kapatın.</p><button onclick="window.print()">Yazdır / PDF Kaydet</button></div><script>window.addEventListener('load',()=>window.print());<\/script></body></html>`);
+  popup.document.close();
+}
 function receiptSettingsFromForm(){return{paperWidthMm:Number($("receiptPaperWidth").value)===58?58:80,showLogo:$("receiptShowLogo").checked,showBusinessName:$("receiptShowBusinessName").checked,showAddress:$("receiptShowAddress").checked,showPhone:$("receiptShowPhone").checked,showInstagram:$("receiptShowInstagram").checked,showDate:$("receiptShowDate").checked,showTime:$("receiptShowTime").checked,showItemTimes:$("receiptShowItemTimes").checked,topMessage:$("receiptTopMessage").value.trim(),bottomMessage:$("receiptBottomMessage").value.trim()}}
 function previewDateParts(){const now=new Date;return{date:new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"Europe/Istanbul"}).format(now),time:new Intl.DateTimeFormat("tr-TR",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Europe/Istanbul"}).format(now)}}
 function text(value){return String(value??"").replace(/[&<>'"]/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[character]))}
