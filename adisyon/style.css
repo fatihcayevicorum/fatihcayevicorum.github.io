@@ -106,3 +106,11 @@ html[data-current-account-transfer="false"] #tableCurrentAccountField,html[data-
 #dailyDialog .daily-group-row b{flex:none;color:var(--ink);font-size:.66rem}
 @media(max-width:900px){#dailyDialog .daily-group-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){#dailyDialog .daily-group-grid{grid-template-columns:minmax(0,1fr)}#dailyDialog .daily-group-card{height:224px}}
+
+/* R600 — Bugünün Durumu: ortalı ödeme ve kompakt bilgi kartları. */
+#dailyDialog .daily-money-card{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#dailyDialog .daily-money-card span,#dailyDialog .daily-money-card b{max-width:100%;text-align:center}
+#dailyDialog .daily-money-card span{white-space:normal}
+#dailyDialog .daily-detail-item{padding:8px 9px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+#dailyDialog .daily-detail-item span{min-height:0;line-height:1.25;max-width:100%;text-align:center}
+#dailyDialog .daily-detail-item b{margin-top:0;max-width:100%;text-align:center}

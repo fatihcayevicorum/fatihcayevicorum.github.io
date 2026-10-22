@@ -254,9 +254,9 @@ function openDailyStatus(){
     <section class="daily-money-section" aria-label="Bugünkü para girişi">
       <p class="daily-money-caption">Bugünkü gerçek para girişi</p>
       <div class="daily-money-grid">
-        <article class="daily-money-card is-cash"><span>Nakit Gelir</span><b>${money(statusCash)}</b></article>
-        <article class="daily-money-card is-bank"><span>Havale</span><b>${money(statusBank)}</b></article>
-        <article class="daily-money-card is-card"><span>Kart</span><b>${money(statusCard)}</b></article>
+        <article class="daily-money-card is-cash"><span>NAKİT</span><b>${money(statusCash)}</b></article>
+        <article class="daily-money-card is-bank"><span>HAVALE</span><b>${money(statusBank)}</b></article>
+        <article class="daily-money-card is-card"><span>KREDİ KARTI</span><b>${money(statusCard)}</b></article>
       </div>
     </section>
     <section class="daily-detail-section">
