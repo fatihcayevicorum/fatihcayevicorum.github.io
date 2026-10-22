@@ -211,3 +211,14 @@ body.definitions-product-settings{background:#fffaf4}.definitions-product-settin
     min-width:0;
   }
 }
+
+/* R594 — Ürün grupları: mevcut yönetim penceresi ile ortak görünüm. */
+#productGroupsFields{border:0;padding:0;margin:0;min-width:0}
+#productGroupProducts{max-height: min(320px,38dvh);overflow:auto;border:1px solid #eadfd2;border-radius:12px}
+#productGroupProducts .cost-product>label:first-child{min-width:0;overflow-wrap:anywhere}
+#productGroupTags{display:flex;flex-wrap:wrap;gap:6px;max-height:90px;overflow:auto}
+#productGroupTags span{background:#fcf1df;color:#741722;border-radius:12px;padding:5px 9px;font-size:.72rem;overflow-wrap:anywhere}
+#productGroupsDialog{width:min(660px,calc(100vw - 24px))}
+#productGroupsDialog .cost-full{display:grid;gap:5px;font-size:.8rem}
+#productGroupsStatus{margin-bottom:0}
+#productGroupsDialog [hidden]{display:none!important}
