@@ -1,0 +1,17 @@
+/* R599 — Günün Özeti: kompakt, ortak tasarımlı grup kartları. */
+.product-group-summary .daily-group-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
+.product-group-summary .daily-group-card{min-width:0;height:236px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:11px;background:var(--paper);overflow:hidden}
+.product-group-summary .daily-group-card header{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:42px;padding:9px 10px;border-bottom:1px solid var(--line);background:transparent}
+.product-group-summary .daily-group-card h3{margin:0;font-size:.76rem;color:var(--ink);overflow-wrap:anywhere}
+.product-group-summary .daily-group-card header strong{flex:none;color:var(--red);font-size:1rem}
+.product-group-summary .daily-group-rows{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.product-group-summary .daily-group-rows:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+.product-group-summary .daily-group-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px;padding:6px 10px;border-bottom:1px solid var(--line);font-size:.66rem}
+.product-group-summary .daily-group-row>span{min-width:0;overflow-wrap:anywhere;color:var(--ink)}
+.product-group-summary .daily-group-row b{flex:none;color:var(--ink);font-size:.66rem}
+@media(max-width:900px){.product-group-summary .daily-group-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.product-group-summary .daily-group-grid{grid-template-columns:minmax(0,1fr)}.product-group-summary .daily-group-card{height:224px}}
+
+
+.product-group-summary{--line:var(--theme-border,#eadfd2);--paper:var(--theme-surface,#fffdf9);--ink:var(--theme-text,#302725);--red:var(--theme-primary,#8f2028)}
+@media print{.product-group-summary .daily-group-card{height:auto;break-inside:avoid}.product-group-summary .daily-group-rows{overflow:visible}.product-group-summary .daily-group-grid{display:block}.product-group-summary .daily-group-card{margin-bottom:10px}}
