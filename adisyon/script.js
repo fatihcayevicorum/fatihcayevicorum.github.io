@@ -264,7 +264,6 @@ function openDailyStatus(){
     </section>
     <section class="daily-products-section">
       <div class="daily-products-head"><span>Ürün Gruplarına Göre Adet</span></div>
-      <p class="daily-group-note">Kapanmış adisyonlar • Üst toplamlar katsayılıdır; alt satırlar gerçek ürün adedidir. Açık adisyonlar dahil değildir.</p>
       ${dailyGroupCards(buildDailyGroupSummary(sales,catalog.productGroups||[],businessDate,businessDayStartedAtMs,saleTimeValue))}
     </section>`;
   el.dailyDialog.showModal()
@@ -824,5 +823,11 @@ function buildDailyGroupSummary(records,definitions,date,startedAt,timeOf){
 }
 function dailyGroupCards(groups){
  const number=v=>Number(v).toLocaleString('tr-TR',{maximumFractionDigits:2});
- return '<div class="daily-group-grid">'+(groups.map(g=>`<article class="daily-group-card"><header><h3>${esc(g.name)}</h3><strong>${number(g.total)}<small>toplam karşılık</small></strong></header><p class="daily-group-counts">Satış: ${number(g.sold)} · İkram: ${number(g.gift)}${g.marka?' · Marka: '+number(g.marka):''}</p><div class="daily-group-rows">${g.rows.map(p=>`<div class="daily-group-row"><div><span>${esc(p.name)}</span><small>${p.factor!==1?'Katsayı: '+number(p.factor)+' · ':''}Satış: ${number(p.sold)}${p.gift?' · İkram: '+number(p.gift):''}${p.marka?' · Marka: '+number(p.marka):''}</small></div><b>${number(p.total)} adet</b></div>`).join('')||'<p class="daily-products-empty">Bu grupta henüz kayıt yok.</p>'}</div></article>`).join('')||'<p class="daily-products-empty">Henüz ürün kaydı yok.</p>')+'</div>';
+ const row=(name,qty)=>`<div class="daily-group-row"><span>${esc(name)}</span><b>${number(qty)} adet</b></div>`;
+ return '<div class="daily-group-grid">'+(groups.map(g=>{
+  const regular=g.rows.filter(p=>p.sold>0).map(p=>row(p.name,p.sold)).join('');
+  const gifts=g.rows.filter(p=>p.gift>0).map(p=>row('İkram '+p.name,p.gift)).join('');
+  const marka=g.marka>0?row('Marka',g.marka):'';
+  return `<article class="daily-group-card"><header><h3>${esc(g.name)}</h3><strong>${number(g.total)}</strong></header><div class="daily-group-rows" tabindex="0" aria-label="${esc(g.name)} ürün listesi">${regular+gifts+marka||'<p class="daily-products-empty">Henüz ürün yok.</p>'}</div></article>`;
+ }).join('')||'<p class="daily-products-empty">Henüz ürün kaydı yok.</p>')+'</div>';
 }
