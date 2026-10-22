@@ -1,3 +1,4 @@
+import {buildProductGroupSummary,productGroupCards} from "../assets/js/product-group-summary.js?v=601";
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{collection,doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -53,7 +54,7 @@ function subscribe(){
   onSnapshot(salesCol,s=>{sales=s.docs.map(d=>({id:d.id,...d.data()}));ready()},fail);
   onSnapshot(closingsCol,s=>{closings=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(b.businessDate||b.id).localeCompare(String(a.businessDate||a.id)));ready()},fail);
   onSnapshot(cashMovementsCol,s=>{cashMovements=s.docs.map(d=>({id:d.id,...d.data()}));ready()},fail);onSnapshot(cashSettingsRef,s=>{cashCategorySettings=s.data()||{};ready()},fail);
-  onSnapshot(menuRef,s=>{const d=s.data()||{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[]};ready()},fail);
+  onSnapshot(menuRef,s=>{const d=s.data()||{};catalog={categories:Array.isArray(d.categories)?d.categories:[],items:Array.isArray(d.items)?d.items:[],productGroups:Array.isArray(d.productGroups)?d.productGroups:[]};ready()},fail);
   onSnapshot(teaStateRef,s=>{const d=s.data()||{};teaState={activeBrews:Array.isArray(d.activeBrews)?d.activeBrews:[],history:Array.isArray(d.history)?d.history:[]};ready()},fail);
   onSnapshot(stocksCol,s=>{stocks=s.docs.map(d=>({id:d.id,...d.data()}));ready()},fail);
   onSnapshot(stockMovesCol,s=>{stockMovements=s.docs.map(d=>({id:d.id,...d.data()}));ready()},fail);
@@ -114,7 +115,7 @@ function render(){
   report=buildReport();
   el.periodLabel.textContent=`${formatDate(range.start)}${range.start===range.end?"":` – ${formatDate(range.end)}`}`;
   el.salesTotal.textContent=money(report.salesTotal);el.cashTotal.textContent=money(report.cashTotal);el.transferTotal.textContent=money(report.transferTotal);el.cardTotal.textContent=money(report.cardTotal||0);el.cashExpenseTotal.textContent=money(report.cashExpenseTotal||0);el.bankExpenseTotal.textContent=money(report.bankExpenseTotal||0);el.creditCardExpenseTotal.textContent=money(report.creditCardExpenseTotal||0);el.posExpenseTotal.textContent=money(report.posExpenseTotal||0);el.expenseTotal.textContent=money(report.expenseTotal||0);el.itemCount.textContent=formatNumber(report.itemCount);el.orderCount.textContent=formatNumber(report.orderCount);el.giftCount.textContent=formatNumber(report.giftCount);el.merchantTeaCount.textContent=formatNumber(report.merchantTeaCount);el.tipTotal.textContent=money(report.tipTotal);el.roundingTotal.textContent=money(report.roundingTotal);
-  renderHourlyAnalysis();renderExpenseCategories();renderPersonnelReport();renderPersonnelPerformance();renderTabs();renderProducts();renderRanking();renderCategories();renderPurchases();renderInternalConsumptions();renderStockOptions();renderStockReport();renderCurrentAccounts();renderClosings();
+  renderHourlyAnalysis();renderExpenseCategories();renderPersonnelReport();renderPersonnelPerformance();renderTabs();renderProducts();renderRanking();renderCategories();renderProductGroups();renderPurchases();renderInternalConsumptions();renderStockOptions();renderStockReport();renderCurrentAccounts();renderClosings();
   if(selectedExpenseGroup&&el.expenseDetailDialog.open){const selected=selectedExpenseCategory;openExpenseDetail(selectedExpenseGroup);if(selected)openExpenseCategory(selected)}
   if(selectedFinanceDetail&&el.financeDetailDialog.open)openFinanceDetail(selectedFinanceDetail);
   if(selectedCurrentAccountId&&el.currentAccountDetailDialog.open)openCurrentAccountDetail(selectedCurrentAccountId);
@@ -322,3 +323,5 @@ function openCorporatePdf(title,body,totals){const popup=window.open("","_blank"
 
 import{attachSavingsSummary}from"../assets/js/savings.js?v=419";
 attachSavingsSummary(document.querySelector("main"));
+
+function renderProductGroups(){document.getElementById('reportProductGroups').innerHTML=productGroupCards(buildProductGroupSummary(reportSalesInRange(),catalog.productGroups||[]));}
