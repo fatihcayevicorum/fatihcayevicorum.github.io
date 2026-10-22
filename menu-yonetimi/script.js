@@ -351,7 +351,7 @@ if(document.body.classList.contains("definitions-product-settings"))document.add
 function setupProductGroups(){
  const $=id=>document.getElementById(id),dialog=$('productGroupsDialog');
  if(dialog.dataset.initialized)return;dialog.dataset.initialized='true';
- let saved=[],draft=[],revision=0,openedRevision=0,index=-1,ready=false,busy=false;
+ let saved=[],draft=[],revision=0,openedRevision=0,index=-1,ready=false,busy=false,editorBefore=null;
  const status=message=>{$('productGroupsStatus').textContent=message;};
  onSnapshot(catalogReference,s=>{const d=s.data()||{};saved=d.productGroups||[];revision=Number(d.productGroupsRevision)||0;ready=true;},()=>{ready=false;status('Grup bilgileri okunamadı. Pencereyi kapatıp tekrar deneyin.');});
  const group=()=>draft[index];
@@ -363,23 +363,24 @@ function setupProductGroups(){
   $('productGroupProducts').innerHTML=!g?'':items.filter(p=>!taken(p.id)&&(!p.archived||g.products.some(x=>x.id===p.id))&&p.name.toLocaleLowerCase('tr-TR').includes(q)).map(p=>{const link=g.products.find(x=>x.id===p.id),other=taken(p.id);return `<div class="cost-product" data-group-product="${escapeHtml(p.id)}"><label><input type="checkbox" ${link?'checked':''} ${other?'disabled':''}><span>${escapeHtml(p.name)}${p.archived?' · Arşiv':p.available===false?' · Pasif':''}${other?' · '+escapeHtml(other.name)+' grubunda':''}</span></label><label class="cost-factor"><span>Kaç sayılsın?</span><input type="number" inputmode="decimal" min="0.01" max="10000" step="any" required aria-label="${escapeHtml(p.name)} katsayısı" value="${escapeHtml(link?.factor??1)}" ${!link?'disabled':''}></label></div>`;}).join('')||'<p class="cost-help">Ürün bulunamadı.</p>';tags();
  }
  function renderCards(){ $('productGroupCards').innerHTML=draft.map((g,i)=>`<button type="button" class="price-product-card product-group-card" data-open-product-group="${i}"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><strong>${escapeHtml(g.name||'Yeni grup')}</strong><small>${g.products.length} ürün</small></button>`).join(''); }
- function render(){const g=group();renderCards();$('productGroupList').hidden=!!g;$('deleteProductGroup').disabled=!g;$('productGroupsEmpty').hidden=!!draft.length;$('productGroupEditor').hidden=!g;$('productGroupName').value=g?.name||'';products();}
+ function render(){const g=group();renderCards();$('productGroupList').hidden=!!g;$('deleteProductGroup').disabled=!g;$('deleteProductGroup').hidden=!g;$('productGroupsEmpty').hidden=!!draft.length;$('productGroupEditor').hidden=!g;$('productGroupName').value=g?.name||'';products();}
  $('productGroupsButton').onclick=()=>{if(!ready||menuConnectionFromCache)return showToast('Menü bağlantısı hazır değil. İnternet bağlantısını kontrol edin.');draft=structuredClone(saved);openedRevision=revision;index=-1;$('productGroupSearch').value='';status('');render();dialog.showModal();(group()?$('productGroupName'):$('newProductGroup')).focus();};
- const close=()=>{if(!busy)dialog.close();};$('closeProductGroups').onclick=$('cancelProductGroups').onclick=close;dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
- $('newProductGroup').onclick=()=>{draft.push({id:crypto.randomUUID(),name:'',products:[]});index=draft.length-1;$('productGroupSearch').value='';render();$('productGroupName').focus();};
- $('productGroupCards').onclick=e=>{const card=e.target.closest('[data-open-product-group]');if(!card)return;index=Number(card.dataset.openProductGroup);$('productGroupSearch').value='';status('');render();$('productGroupName').focus();};
- $('backProductGroups').onclick=()=>{if(group()&&!group().name.trim()){status('Grup adını yazın veya boş grubu silin.');$('productGroupName').focus();return;}index=-1;status('');render();$('newProductGroup').focus();};
+ function leaveEditor(){if(busy)return;if(group()){if(editorBefore)draft[index]=structuredClone(editorBefore);else draft.splice(index,1);index=-1;status('');render();$('newProductGroup').focus();}else dialog.close();}
+ $('closeProductGroups').onclick=$('cancelProductGroups').onclick=leaveEditor;
+ dialog.addEventListener('cancel',e=>{e.preventDefault();leaveEditor();});
+ $('newProductGroup').onclick=()=>{editorBefore=null;draft.push({id:crypto.randomUUID(),name:'',products:[]});index=draft.length-1;$('productGroupSearch').value='';render();$('productGroupName').focus();};
+ $('productGroupCards').onclick=e=>{const card=e.target.closest('[data-open-product-group]');if(!card)return;index=Number(card.dataset.openProductGroup);editorBefore=structuredClone(group());$('productGroupSearch').value='';status('');render();$('productGroupName').focus();};
  $('productGroupName').oninput=e=>{if(group())group().name=e.target.value;};
  $('productGroupSearch').oninput=products;
  $('productGroupProducts').onchange=e=>{const row=e.target.closest('[data-group-product]'),g=group();if(!row||!g)return;const id=row.dataset.groupProduct;if(e.target.type==='checkbox'){g.products=g.products.filter(p=>p.id!==id);if(e.target.checked&&!taken(id)){const p=catalog.items.find(p=>p.id===id);g.products.push({id,name:p?.name||'',factor:1});}products();}else{const link=g.products.find(p=>p.id===id);if(link)link.factor=Number(e.target.value);tags();}};
- $('deleteProductGroup').onclick=async()=>{const target=group();if(!target)return;if(!await systemConfirm({title:'Ürün grubu silinsin mi?',message:'Yalnızca grup tanımı kaldırılacak. Ürünler ve geçmiş satışlar korunacak. Değişiklik Kaydet ile uygulanır.',confirmText:'Grubu Sil',danger:true}))return;draft=draft.filter(g=>g.id!==target.id);index=-1;render();};
+ $('deleteProductGroup').onclick=async()=>{const target=group();if(busy||!target)return;if(!await systemConfirm({title:'Ürün grubu silinsin mi?',message:'Yalnızca grup tanımı kaldırılacak. Ürünler ve geçmiş satışlar korunacak. Değişiklik Kaydet ile uygulanır.',confirmText:'Grubu Sil',danger:true}))return;draft=draft.filter(g=>g.id!==target.id);index=-1;render();};
  $('productGroupsForm').onsubmit=async e=>{
   e.preventDefault();if(busy)return;const names=new Set(),ids=new Set();
   for(const g of draft){g.name=g.name.trim();const key=g.name.toLocaleLowerCase('tr-TR');if(!g.name||names.has(key)){status('Her gruba farklı ve boş olmayan bir ad verin.');return;}names.add(key);for(const p of g.products){if(ids.has(p.id)||!Number.isFinite(p.factor)||p.factor<0.01||p.factor>10000){status('Ürün tek grupta olmalı; katsayı 0,01–10.000 arasında olmalıdır.');return;}ids.add(p.id);}}
   if(!navigator.onLine){status('Kaydetmek için internet bağlantısı gerekiyor. Seçimleriniz bu pencerede korunuyor.');return;}
-  const payload=structuredClone(draft);busy=true;$('productGroupsFields').disabled=true;$('saveProductGroups').disabled=true;status('Kaydediliyor…');
+  const payload=structuredClone(draft);busy=true;$('productGroupsFields').disabled=true;$('saveProductGroups').disabled=true;$('deleteProductGroup').disabled=true;status('Kaydediliyor…');
   try{await runOnlineTransaction(database,async tx=>{const snap=await tx.get(catalogReference),data=snap.data()||{};if((Number(data.productGroupsRevision)||0)!==openedRevision)throw new Error('group-conflict');tx.set(catalogReference,{productGroups:payload,productGroupsRevision:openedRevision+1},{merge:true});});saved=payload;revision=openedRevision+1;openedRevision=revision;index=-1;status('');render();showToast('Ürün grupları kaydedildi.');}
   catch(error){status(error.message==='group-conflict'?'Gruplar başka bir cihazda değişti. Pencereyi kapatıp yeniden açın.':error.code==='permission-denied'?'Grup kaydetme yetkisi yok veya sistem geçici olarak yazmaya kapalı.':'Kaydedilemedi. Bağlantıyı kontrol edip tekrar deneyin.');}
-  finally{busy=false;$('productGroupsFields').disabled=false;$('saveProductGroups').disabled=false;if(index===-1)$('newProductGroup').focus();}
+  finally{busy=false;$('productGroupsFields').disabled=false;$('saveProductGroups').disabled=false;$('deleteProductGroup').disabled=!group();if(index===-1)$('newProductGroup').focus();}
  };
 }

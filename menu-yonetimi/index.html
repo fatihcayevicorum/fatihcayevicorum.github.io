@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=595">
+    <link rel="stylesheet" href="style.css?v=597">
     <link rel="stylesheet" href="../assets/css/management-forms.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
     <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
@@ -128,11 +128,11 @@
 <fieldset id="productGroupsFields">
 <div id="productGroupList"><div class="product-group-toolbar"><button id="newProductGroup" type="button" class="primary-button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Yeni Grup Oluştur</button></div><div id="productGroupCards" class="price-card-grid"></div>
 <p id="productGroupsEmpty" class="cost-help">Henüz grup yok. Yeni grup oluşturarak ürünleri seçebilirsiniz.</p>
-</div><div id="productGroupEditor"><div class="product-group-toolbar"><button id="backProductGroups" type="button" class="secondary-button">‹ Gruplar</button><button id="deleteProductGroup" type="button" class="icon-button is-danger" aria-label="Grubu sil"><i class="fa-solid fa-trash"></i></button></div><label class="cost-full"><span>Grup adı</span><input id="productGroupName" maxlength="60" placeholder="Örn. Çay, Oralet, Atıştırmalıklar"></label>
+</div><div id="productGroupEditor"><label class="cost-full"><span>Grup adı</span><input id="productGroupName" maxlength="60" placeholder="Örn. Çay, Oralet, Atıştırmalıklar"></label>
 <p class="cost-help">Bu gruptaki ürünler ve hiçbir gruba eklenmemiş ürünler listelenir. Ürünleri işaretleyin ve grup toplamında kaç sayılacağını belirleyin. Normal çay: 1 · Duble çay: 2.</p>
 <div id="productGroupTags" aria-live="polite"></div>
 <div class="cost-product-tools"><input id="productGroupSearch" type="search" placeholder="Ürün ara" aria-label="Grup için ürün ara"></div><div id="productGroupProducts"></div></div>
-</fieldset><div class="cost-actions"><button id="cancelProductGroups" type="button" class="secondary-button">Vazgeç</button><button id="saveProductGroups" class="primary-button" type="submit">Kaydet</button></div><p id="productGroupsStatus" class="cost-help" role="status"></p>
+</fieldset><div class="product-groups-footer"><div class="cost-actions"><button id="deleteProductGroup" type="button" class="secondary-button is-danger">Sil</button><button id="cancelProductGroups" type="button" class="secondary-button">Vazgeç</button><button id="saveProductGroups" class="primary-button" type="submit">Kaydet</button></div><p id="productGroupsStatus" class="cost-help" role="status"></p></div>
 </form></dialog>
 <dialog id="costGroupsDialog" class="management-form-dialog cost-groups-dialog"><form id="costGroupForm">
 <div class="management-dialog-heading"><div><p class="kicker">Ürün ve maliyet</p><h2>Tahmini Maliyet Grupları</h2></div><button id="closeCostGroups" class="management-dialog-close" type="button" aria-label="Kapat">×</button></div>
@@ -166,7 +166,7 @@
 <dialog id="singlePriceDialog"><form id="singlePriceForm" class="price-dialog-card"><h2 id="singlePriceTitle"></h2><p id="singlePriceOld"></p><input id="singlePriceId" type="hidden"><label>Yeni fiyat (TL)<input id="singlePriceValue" type="number" min="0" max="99999" step="0.01" required></label><div class="form-actions"><button id="cancelSinglePrice" type="button" class="secondary-button">Vazgeç</button><button class="primary-button">Fiyatı Güncelle</button></div><section class="product-price-history"><h3>Fiyat Geçmişi</h3><div id="priceHistoryRows" aria-live="polite"></div></section></form></dialog>
 <dialog id="pricePreviewDialog"><section class="price-dialog-card"><h2>Fiyat Değişikliği Önizleme</h2><p>Onaylamadan fiyatlar değişmez. Açık adisyonlardaki fiyatlar korunur.</p><div class="price-preview-scroll"><table><thead><tr><th>Ürün</th><th>Eski fiyat</th><th>Yeni fiyat</th></tr></thead><tbody id="pricePreviewRows"></tbody></table></div><div class="form-actions"><button id="cancelPricePreview" class="secondary-button" type="button">Vazgeç</button><button id="confirmPricePreview" class="primary-button" type="button">Onayla ve Uygula</button></div></section></dialog>
 
-    <script type="module" src="script.js?v=596"></script>
+    <script type="module" src="script.js?v=597"></script>
     
     <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>

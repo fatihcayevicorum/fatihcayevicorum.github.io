@@ -232,3 +232,15 @@ body.definitions-product-settings{background:#fffaf4}.definitions-product-settin
 .product-group-card:active{background:#f7eee8}
 .product-group-card:focus-visible{outline:2px solid #741722;outline-offset:-3px}
 @media(max-width:380px){#productGroupCards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* R597 — Başlık ve alt işlemler sabit, yalnızca içerik kayar. */
+#productGroupsDialog{max-height:calc(100dvh - 24px);overflow:hidden}
+#productGroupsDialog #productGroupsForm{display:flex;flex-direction:column;max-height:calc(100dvh - 24px);overflow:hidden;margin:0}
+#productGroupsDialog .management-dialog-heading{flex:0 0 auto}
+#productGroupsDialog #productGroupsFields{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:4px 2px}
+#productGroupsDialog .product-groups-footer{flex:0 0 auto;background:var(--theme-surface,#fffdf9);padding-top:10px;padding-bottom:env(safe-area-inset-bottom,0px);border-top:1px solid #eadfd2}
+#productGroupsDialog .cost-actions{margin-top:0;display:flex;gap:8px}
+#productGroupsDialog .cost-actions button{flex:1 1 0;min-width:0;width:auto;min-height:44px;padding:8px}
+#productGroupsDialog #deleteProductGroup{color:#a0202b;border-color:#e2bdc0}
+#productGroupsDialog #productGroupProducts,#productGroupsDialog #productGroupCards,#productGroupsDialog #productGroupTags{max-height:none;overflow:visible}
+#productGroupsStatus:empty{display:none}
