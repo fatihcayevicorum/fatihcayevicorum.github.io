@@ -92,3 +92,19 @@ html[data-current-account-transfer="false"] #tableCurrentAccountField,html[data-
 @media(prefers-reduced-motion:reduce){.table-region-tabs button.needs-attention{animation:none;border-color:#af2733;box-shadow:inset 0 -2px #af2733}}
 
 .payment-type-switch label.payment-method-disabled{opacity:.43;cursor:not-allowed}.payment-type-switch label.payment-method-disabled span{filter:grayscale(1)}
+
+/* R598 — Günün Özeti ürün grupları */
+#dailyDialog .daily-group-note{font-size:.65rem;color:var(--muted);line-height:1.5;margin:0 0 10px}
+#dailyDialog .daily-group-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+#dailyDialog .daily-group-card{min-width:0;border:1px solid var(--line);border-radius:13px;background:var(--paper);overflow:hidden}
+#dailyDialog .daily-group-card header{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff2e2;padding:12px}
+#dailyDialog .daily-group-card h3{margin:0;font-size:.83rem;overflow-wrap:anywhere}
+#dailyDialog .daily-group-card header strong{flex:none;color:var(--red);text-align:right;font-size:1.15rem}
+#dailyDialog .daily-group-card header small{display:block;font-size:.55rem;font-weight:500;color:var(--muted)}
+#dailyDialog .daily-group-counts{font-size:.62rem;padding:8px 12px;margin:0;border-bottom:1px solid var(--line)}
+#dailyDialog .daily-group-rows{max-height:230px;overflow-y:auto;overscroll-behavior:contain}
+#dailyDialog .daily-group-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:.67rem}
+#dailyDialog .daily-group-row>div{min-width:0;overflow-wrap:anywhere}
+#dailyDialog .daily-group-row small{display:block;color:var(--muted);font-size:.56rem;margin-top:3px}
+#dailyDialog .daily-group-row b{flex:none;color:var(--red)}
+@media(max-width:520px){#dailyDialog .daily-group-grid{grid-template-columns:minmax(0,1fr)}}
