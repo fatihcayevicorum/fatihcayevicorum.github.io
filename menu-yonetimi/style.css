@@ -222,3 +222,13 @@ body.definitions-product-settings{background:#fffaf4}.definitions-product-settin
 #productGroupsDialog .cost-full{display:grid;gap:5px;font-size:.8rem}
 #productGroupsStatus{margin-bottom:0}
 #productGroupsDialog [hidden]{display:none!important}
+
+/* R595 — Ürün grubu seçimi mevcut kare kart görünümünü kullanır. */
+.product-group-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:12px 0}
+#productGroupCards{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));max-height:55dvh;overflow:auto;padding:2px}
+#productGroupCards .product-group-card{align-items:center;justify-content:center;gap:10px;padding:14px;border:1px solid #eadfd2;background:#fff;color:#741722;text-align:center;cursor:pointer;font:inherit;aspect-ratio:1/1}
+.product-group-card strong{max-width:100%;overflow-wrap:anywhere;font-size:.88rem}
+.product-group-card>i{font-size:1.4rem}
+.product-group-card:active{background:#f7eee8}
+.product-group-card:focus-visible{outline:2px solid #741722;outline-offset:-3px}
+@media(max-width:380px){#productGroupCards{grid-template-columns:repeat(2,minmax(0,1fr))}}
