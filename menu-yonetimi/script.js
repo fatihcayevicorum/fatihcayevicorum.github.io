@@ -378,8 +378,8 @@ function setupProductGroups(){
   for(const g of draft){g.name=g.name.trim();const key=g.name.toLocaleLowerCase('tr-TR');if(!g.name||names.has(key)){status('Her gruba farklı ve boş olmayan bir ad verin.');return;}names.add(key);for(const p of g.products){if(ids.has(p.id)||!Number.isFinite(p.factor)||p.factor<0.01||p.factor>10000){status('Ürün tek grupta olmalı; katsayı 0,01–10.000 arasında olmalıdır.');return;}ids.add(p.id);}}
   if(!navigator.onLine){status('Kaydetmek için internet bağlantısı gerekiyor. Seçimleriniz bu pencerede korunuyor.');return;}
   const payload=structuredClone(draft);busy=true;$('productGroupsFields').disabled=true;$('saveProductGroups').disabled=true;status('Kaydediliyor…');
-  try{await runOnlineTransaction(database,async tx=>{const snap=await tx.get(catalogReference),data=snap.data()||{};if((Number(data.productGroupsRevision)||0)!==openedRevision)throw new Error('group-conflict');tx.set(catalogReference,{productGroups:payload,productGroupsRevision:openedRevision+1},{merge:true});});saved=payload;revision=openedRevision+1;dialog.close();showToast('Ürün grupları kaydedildi.');}
+  try{await runOnlineTransaction(database,async tx=>{const snap=await tx.get(catalogReference),data=snap.data()||{};if((Number(data.productGroupsRevision)||0)!==openedRevision)throw new Error('group-conflict');tx.set(catalogReference,{productGroups:payload,productGroupsRevision:openedRevision+1},{merge:true});});saved=payload;revision=openedRevision+1;openedRevision=revision;index=-1;status('');render();showToast('Ürün grupları kaydedildi.');}
   catch(error){status(error.message==='group-conflict'?'Gruplar başka bir cihazda değişti. Pencereyi kapatıp yeniden açın.':error.code==='permission-denied'?'Grup kaydetme yetkisi yok veya sistem geçici olarak yazmaya kapalı.':'Kaydedilemedi. Bağlantıyı kontrol edip tekrar deneyin.');}
-  finally{busy=false;$('productGroupsFields').disabled=false;$('saveProductGroups').disabled=false;}
+  finally{busy=false;$('productGroupsFields').disabled=false;$('saveProductGroups').disabled=false;if(index===-1)$('newProductGroup').focus();}
  };
 }
