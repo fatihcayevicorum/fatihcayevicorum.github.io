@@ -539,3 +539,7 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 .financial-archive-row button{flex:none;min-height:38px;padding:7px 12px;border:0;border-radius:10px;background:var(--theme-primary);color:var(--theme-on-primary);font:inherit;font-size:.66rem}
 @media(max-width:500px){#paymentMethodsList{gap:6px}.collection-method-card{padding:8px}#paymentMethodsList .payment-method-switch{font-size:.7rem;gap:3px}.payment-switch-track{transform:scale(.8);transform-origin:right center;flex-basis:38px;width:44px}#paymentMethodsList select{font-size:.57rem;padding-left:4px}.financial-account-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.financial-account-row{min-height:160px;padding:11px}.financial-account-row>b{font-size:.78rem}}
 .financial-account-row .pending-account-collection{display:block;margin-top:5px;font-size:.56rem;font-weight:500;white-space:normal;color:var(--theme-muted)}
+
+/* R602 monthly report */
+#reportDialog .report-note{font-size:.7rem;color:var(--muted);margin:3px 0 8px}#reportDialog .expense-group{margin-top:12px}#reportDialog .expense-group-title{background:#f1ebe5;font-weight:700;padding:9px;border-radius:7px}#reportDialog .expense-detail{padding-left:12px}#reportDialog .report-toolbar label{min-width:0}#reportDialog .report-toolbar button{white-space:nowrap}
+@media(max-width:760px){#reportDialog .report-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}#reportDialog .report-toolbar label{grid-column:1/-1}}
