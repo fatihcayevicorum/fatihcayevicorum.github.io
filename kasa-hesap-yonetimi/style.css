@@ -543,3 +543,27 @@ dialog{border:0;background:transparent;padding:0}dialog::backdrop{background:#24
 /* R602 monthly report */
 #reportDialog .report-note{font-size:.7rem;color:var(--muted);margin:3px 0 8px}#reportDialog .expense-group{margin-top:12px}#reportDialog .expense-group-title{background:#f1ebe5;font-weight:700;padding:9px;border-radius:7px}#reportDialog .expense-detail{padding-left:12px}#reportDialog .report-toolbar label{min-width:0}#reportDialog .report-toolbar button{white-space:nowrap}
 @media(max-width:760px){#reportDialog .report-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}#reportDialog .report-toolbar label{grid-column:1/-1}}
+
+/* R603 compact monthly report */
+
+.report-charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:4px 0 14px;align-items:start}
+.report-chart{min-width:0;padding:12px;border:1px solid #e8dfd5;border-radius:10px;background:#fffdf9;break-inside:avoid;color:#302725}
+.report-chart h3{font-size:14px;margin:0;text-align:center}
+.report-donut{position:relative;width:156px;height:156px;margin:5px auto}
+.report-donut svg{display:block;width:100%;height:100%}
+.report-donut-total{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;pointer-events:none}
+.report-donut-total span{font-size:10px;color:#756a63}.report-donut-total b{font-size:13px;font-variant-numeric:tabular-nums}
+.report-chart-legend>div{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:7px;align-items:baseline;padding:3px 0;font-size:11px;line-height:1.4}
+.report-chart-legend i{width:8px;height:8px;border-radius:50%;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.report-chart-legend span{overflow-wrap:anywhere}.report-chart-legend b{white-space:nowrap;font-variant-numeric:tabular-nums}
+@media screen and (max-width:560px){.report-charts{grid-template-columns:1fr}}
+
+#reportDialog .report-section{margin-top:14px}#reportDialog .report-section>h3{font-size:.85rem;margin-bottom:5px}
+#reportDialog .report-row{padding:5px 0;gap:10px;border-bottom:1px solid #eee8e2;line-height:1.45}
+#reportDialog .report-row>span{min-width:0;overflow-wrap:anywhere}#reportDialog .report-row>b{flex:none;font-variant-numeric:tabular-nums}
+#reportDialog .expense-group{margin-top:8px}#reportDialog .expense-group-title{padding:6px 9px;border:0;border-radius:5px;background:#f1ebe5}#reportDialog .expense-detail{padding-left:12px}
+#reportDialog .product-group-summary .daily-group-grid{align-items:start}
+#reportDialog .product-group-summary .daily-group-card{height:auto;overflow:visible}
+#reportDialog .product-group-summary .daily-group-rows{overflow:visible}
+#reportDialog .product-group-summary .daily-group-card header{min-height:34px;padding:6px 8px}
+#reportDialog .product-group-summary .daily-group-row{min-height:27px;padding:4px 8px;border-bottom-color:#eee8e2}
