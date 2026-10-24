@@ -1,4 +1,4 @@
-import {stockLinks} from "../assets/js/stock-recipe.js?v=363";
+import {stockLinks} from "../assets/js/stock-recipe.js?v=604";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, doc, getFirestore, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -56,7 +56,7 @@ async function saveConsumption(){
       const costByItem=new Map();
       for(const d of deductions){
         tx.update(d.sr,{quantity:d.after,updatedAt:serverTimestamp()});
-        tx.set(doc(stockMovesCol),{stockItemId:d.stock.id,stockName:d.stock.name||d.line.name,type:"out",amount:d.amount,previousQuantity:d.before,resultingQuantity:d.after,unit:d.stock.unit||"adet",unitCost:d.unitCost,totalCost:d.totalCost,operationDate:date,note:`Dahili Tüketim: ${d.line.name}`,source:"internal-consumption",consumptionId:ref.id,createdAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
+        tx.set(doc(stockMovesCol),{stockItemId:d.stock.id,stockName:d.stock.name||d.line.name,type:"out",amount:d.amount,recipeAmount:d.stock.recipeIngredient?d.amount:0,previousQuantity:d.before,resultingQuantity:d.after,unit:d.stock.unit||"adet",unitCost:d.unitCost,totalCost:d.totalCost,operationDate:date,note:`Dahili Tüketim: ${d.line.name}`,source:"internal-consumption",consumptionId:ref.id,createdAtMs,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
         costByItem.set(d.line.id,(costByItem.get(d.line.id)||0)+d.totalCost);
       }
       const savedItems=submittedCart.map(x=>({...x,totalCost:costByItem.get(x.id)||0,unitCost:x.quantity>0?(costByItem.get(x.id)||0)/x.quantity:0})),totalCost=savedItems.reduce((sum,x)=>sum+Number(x.totalCost||0),0);

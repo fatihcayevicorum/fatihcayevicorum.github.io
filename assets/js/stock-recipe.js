@@ -14,7 +14,7 @@ export function stockRequirements(items,catalog,stocks){
   const amount=stock.recipeIngredient?Number(stock.deductionAmount):(Number(stock.deductionAmount)||1);
   if(!Number.isFinite(amount)||amount<=0||stock.unavailable)throw new Error('recipe-stock-unavailable');
   const qty=amount*(Number(line.quantity)||0);if(qty<=0)continue;
-  const old=result.get(stock.id);result.set(stock.id,{stock,qty:Math.round(((old?.qty||0)+qty)*1e8)/1e8});
+  const old=result.get(stock.id);result.set(stock.id,{stock:{...stock,recipeDeductionAmount:Math.round(((old?.stock.recipeDeductionAmount||0)+(stock.recipeIngredient?qty:0))*1e8)/1e8},qty:Math.round(((old?.qty||0)+qty)*1e8)/1e8});
  }
  return [...result.values()];
 }
