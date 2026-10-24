@@ -20,13 +20,13 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r605-gun-sonu-urun-gruplari",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r606-tahsilat-raporlari",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./assets/js/product-group-summary.js","./assets/css/product-group-summary.css",
   "./assets/js/product-pricing.js","./assets/js/current-account-pricing.js","./assets/js/current-account-pricing-store.js",
   "./assets/js/sales-mode.js","./assets/js/table-layout.js","./assets/js/theme.js","./assets/js/finance-account-compat.js","./assets/js/finance-real-accounts.js","./assets/js/payment-methods.js","./assets/js/payment-account-routing.js","./assets/css/theme.css",
   "./islem-gecmisi/","./islem-gecmisi/index.html","./islem-gecmisi/style.css","./islem-gecmisi/script.js",
-  "./birikim-hesaplari/","./birikim-hesaplari/index.html","./birikim-hesaplari/style.css","./birikim-hesaplari/script.js","./assets/js/savings.js","./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js",
+  "./birikim-hesaplari/","./birikim-hesaplari/index.html","./birikim-hesaplari/style.css","./birikim-hesaplari/script.js","./assets/js/savings.js","./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js","./assets/js/collection-summary.js",
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
   "./assets/js/home.js","./assets/js/tea-live.js","./assets/js/site-dynamic.js","./assets/js/admin-push.js","./assets/js/customer-push.js","./assets/js/merchant-push.js","./assets/js/admin-notifications.js","./assets/js/notification-sounds.js",
   "./menu.html","./assets/css/menu.css","./assets/js/menu.js","./yonetici-giris.html","./assets/css/yonetici-giris.css","./assets/js/yonetici-giris.js","./esnaf-giris.html","./assets/css/esnaf-giris.css","./assets/js/esnaf-giris.js",

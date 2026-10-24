@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=473">
+  <link rel="stylesheet" href="style.css?v=606">
 <link rel="stylesheet" href="../birikim-hesaplari/style.css?v=419"><script type="module" src="../assets/js/connection-status.js?v=481"></script>  <link rel="stylesheet" href="../assets/css/theme.css?v=548">
   <script src="../assets/js/theme.js?v=541"></script>
 <link rel="stylesheet" href="../assets/css/product-group-summary.css?v=601">
@@ -71,7 +71,7 @@
     </nav>
 
     <section id="reportPanelSales" class="report-tab-panel" data-report-panel="sales">
-    <section class="panel sales-finance-panel" aria-label="Satış raporu"><div class="section-heading"><div><p class="kicker">Seçilen dönem</p><h2>Satış Raporu</h2></div><div class="export-actions"><button id="exportPdf" class="secondary" type="button"><i class="fa-solid fa-file-pdf"></i> PDF</button><button id="exportExcel" class="secondary" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button></div></div><div class="finance-report-grid sales-summary-grid"><button class="finance-detail-card" type="button" data-finance-detail="cash-sales"><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Satış</span><strong id="cashTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="bank-sales"><i class="fa-solid fa-building-columns"></i><span>Havale Satış</span><strong id="transferTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="card-sales"><i class="fa-solid fa-credit-card"></i><span>Kart / POS Satış</span><strong id="cardTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="tips"><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="rounding"><i class="fa-solid fa-scale-balanced"></i><span>Eksi Yuvarlama</span><strong id="roundingTotal">₺0</strong></button><button class="finance-detail-card total-card" type="button" data-finance-detail="sales-total"><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="salesTotal">₺0</strong></button></div></section>
+    <section class="panel sales-finance-panel" aria-label="Satış raporu"><div class="section-heading"><div><p class="kicker">Seçilen dönem</p><h2>Satış Raporu</h2></div><div class="export-actions"><button id="exportPdf" class="secondary" type="button"><i class="fa-solid fa-file-pdf"></i> PDF</button><button id="exportExcel" class="secondary" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button></div></div><div class="finance-report-grid sales-summary-grid"><button class="finance-detail-card total-card" type="button" data-finance-detail="collection-total"><i class="fa-solid fa-wallet"></i><span>Toplam Tahsilat</span><strong id="collectionTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="current-collections"><i class="fa-solid fa-address-book"></i><span>Cari Tahsilatı</span><strong id="currentCollectionTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="cash-sales"><i class="fa-solid fa-money-bill-wave"></i><span>Nakit Satış Tahsilatı</span><strong id="cashTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="bank-sales"><i class="fa-solid fa-building-columns"></i><span>Havale Satış Tahsilatı</span><strong id="transferTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="card-sales"><i class="fa-solid fa-credit-card"></i><span>Kart / POS Satış Tahsilatı</span><strong id="cardTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="tips"><i class="fa-solid fa-hand-holding-dollar"></i><span>Bahşiş</span><strong id="tipTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="rounding"><i class="fa-solid fa-scale-balanced"></i><span>Eksi Yuvarlama</span><strong id="roundingTotal">₺0</strong></button><button class="finance-detail-card" type="button" data-finance-detail="sales-total"><i class="fa-solid fa-chart-line"></i><span>Toplam Satış</span><strong id="salesTotal">₺0</strong></button></div><p class="notice">Toplam tahsilat: satış ve cari ödemeler, bahşiş dahil. Cariye yazılan borçlar bu toplama dahil değildir.</p></section>
 
     <section class="summary-grid operational-summary" aria-label="Satış özeti">
       <article><i class="fa-solid fa-mug-hot"></i><span>Satılan Ürün</span><strong id="itemCount">0</strong></article>
@@ -335,7 +335,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=601"></script>
+  <script type="module" src="script.js?v=606"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
