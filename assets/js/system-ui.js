@@ -1,3 +1,5 @@
+// R609: Yalnızca yerel demo; cihaz veya işletme kaydı yazılmaz.
+if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=609").catch(error=>console.error("Kazan ön izlemesi açılamadı:",error));
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -9,7 +11,7 @@ import("./pwa.js?v=566").catch(error=>console.error("PWA başlatılamadı:",erro
 import("./management-forms.js?v=526").catch(error=>console.error("Fatih Çay Evi tuş takımı başlatılamadı:",error));
 if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js?v=388").then(module=>module.startForegroundAdminPush()).catch(error=>console.error("Yönetici bildirimi başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-const adminPageFolders=["adisyon","adisyon-gecmisi","ana-sayfa-yonetimi","bildirim-merkezi","esnaf-yonetimi","kasa-hesap-yonetimi","birikim-hesaplari","kullanici-yonetimi","menu-yonetimi","personel-yonetimi","raporlar","siparis-listesi","stok-yonetimi","tanimlamalar","taze-dem-paneli","veri-yonetimi","yonetim-merkezi"],isAdminPage=adminPageFolders.some(folder=>location.pathname.includes(`/${folder}/`));
+const adminPageFolders=["akilli-kazan","adisyon","adisyon-gecmisi","ana-sayfa-yonetimi","bildirim-merkezi","esnaf-yonetimi","kasa-hesap-yonetimi","birikim-hesaplari","kullanici-yonetimi","menu-yonetimi","personel-yonetimi","raporlar","siparis-listesi","stok-yonetimi","tanimlamalar","taze-dem-paneli","veri-yonetimi","yonetim-merkezi"],isAdminPage=adminPageFolders.some(folder=>location.pathname.includes(`/${folder}/`));
 if(isAdminPage)import("./admin-notifications.js?v=342").catch(error=>console.error("Uygulama içi bildirimler başlatılamadı:",error));
 ensureFooter();
 installGlobalInteractionStyle();
