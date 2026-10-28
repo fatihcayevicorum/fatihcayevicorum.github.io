@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=605"><link rel="stylesheet" href="polish.css?v=509"><link rel="stylesheet" href="enhancements.css?v=589"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
+  <link rel="stylesheet" href="style.css?v=605"><link rel="stylesheet" href="polish.css?v=608"><link rel="stylesheet" href="enhancements.css?v=589"><link rel="stylesheet" href="quick-cash.css?v=405"><link rel="stylesheet" href="history-modal.css?v=1710"><link rel="stylesheet" href="../assets/css/panel-header.css?v=10"><link rel="stylesheet" href="personnel-mode.css?v=438">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=548">
   <script src="../assets/js/theme.js?v=541"></script>
@@ -58,12 +58,14 @@
       <section class="order card">
         <div id="orgBottomActions" class="org-bottom-actions" hidden><button id="orgSummaryButton" type="button" class="secondary org-summary-button"><i class="fa-solid fa-list-check"></i> Eklenen Ürünler <b id="orgItemCount">0</b></button><button id="orgAccountButton" type="button" class="secondary org-summary-button"><i class="fa-solid fa-receipt"></i> Hesap Özeti</button><button id="orgCancelButton" type="button" class="danger org-summary-button">İptal Et</button></div>
         <button id="orderDetailsToggle" class="order-title" type="button" aria-expanded="true"><h3>Siparişler</h3><span class="order-title-note">Her ekleme ayrı satırdır</span><span class="order-mobile-meta"><b id="orderItemCount">0</b> ürün <i class="fa-solid fa-chevron-up"></i></span></button>
+        <div class="order-details-scroll">
         <section id="currentAccountBar" class="current-account-bar" hidden>
           <div><span><i class="fa-solid fa-address-book"></i> Bağlı Cari</span><strong id="currentAccountName">—</strong></div>
           <div class="current-account-debt"><span>Önceki Cari Borcu</span><strong id="currentAccountPreviousDebt">₺0</strong></div>
           <label id="includePreviousDebtLabel"><input id="includePreviousDebt" type="checkbox"><span>Önceki borcu ödemeye dahil et</span></label>
         </section>
         <div id="orderItems" class="order-items"></div><p id="orderEmpty" class="empty">Ürünlere dokunarak Adisyonu başlatın.</p>
+        </div>
         <div class="order-bottom">
           <div class="totals"><div><span>Ara toplam</span><b id="subtotal">₺0</b></div><div><span>İkram</span><b id="complimentaryTotal">−₺0</b></div><div id="previousPaidRow" hidden><span>Önceden ödenen</span><b id="previousPaid">−₺0</b></div><div class="grand"><span id="grandTotalLabel">Kalan hesap</span><b id="grandTotal">₺0</b></div></div>
           <div class="checkout"><button id="clearOrder" class="danger ghost"><i class="fa-solid fa-trash"></i> İptal</button><button id="roundAccount" class="secondary round-account" hidden><i class="fa-solid fa-scale-balanced"></i> Hesabı Sıfırla</button><button id="transferToCurrentAccount" class="current-account-transfer" type="button" hidden><i class="fa-solid fa-address-book"></i> Cari Hesaba Aktar</button><button id="checkoutButton" class="primary"><i class="fa-solid fa-wallet"></i> Ödeme Al</button></div>
