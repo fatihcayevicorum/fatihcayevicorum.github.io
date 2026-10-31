@@ -10,10 +10,12 @@ function buildWidgetTea({db,FieldValue,HttpsError,ownerUid,clock=Date.now}){
  return async request=>{
   const uid=request.auth?.uid;if(!uid)fail('unauthenticated','Giriş yapmanız gerekiyor.');
   const p=request.data||{},action=p.action||'read';
-  if(!['read','start','ready','finish'].includes(action))fail('invalid-argument','İşlem geçersiz.');
+  if(!['read','start','ready','finish','serviceStart','serviceStop','registerPush','disablePush'].includes(action))fail('invalid-argument','İşlem geçersiz.');
   if(!/^[a-f0-9]{36}$/.test(p.deviceId||''))fail('invalid-argument','Cihaz kimliği geçersiz.');
-  if(action!=='read'&&(!/^[a-f0-9-]{36}$/.test(p.operationId||'')||!/^[a-f0-9]{64}$/.test(p.expectedRevision||'')))fail('invalid-argument','İşlem kimliği veya sürümü geçersiz.');
+  const pushAction=['registerPush','disablePush'].includes(action);
+  if(action!=='read'&&!pushAction&&(!/^[a-f0-9-]{36}$/.test(p.operationId||'')||!/^[a-f0-9]{64}$/.test(p.expectedRevision||'')))fail('invalid-argument','İşlem kimliği veya sürümü geçersiz.');
   if(['ready','finish'].includes(action)&&(typeof p.brewId!=='string'||p.brewId.length>128||!p.brewId))fail('invalid-argument','Demlik kimliği geçersiz.');
+  if(pushAction&&(typeof p.token!=='string'||p.token.length<20||p.token.length>4096))fail('invalid-argument','Bildirim cihazı geçersiz.');
   const fingerprint=revision({action,brewId:p.brewId||'',expectedRevision:p.expectedRevision});
   return db.runTransaction(async tx=>{
    const now=clock();
@@ -28,11 +30,21 @@ function buildWidgetTea({db,FieldValue,HttpsError,ownerUid,clock=Date.now}){
    const state=snap.data(),data=view(state);
    const response=()=>({state:view(state),revision:revision(view(state)),serverNowMs:now});
    if(action==='read')return response();
+   if(pushAction){
+    const tokenId=crypto.createHash('sha256').update(p.token).digest('hex');
+    tx.set(db.doc(`adminTeaPushDevices/${tokenId}`),{
+     token:p.token,active:action==='registerPush',client:'android-widget',uid,deviceId:p.deviceId,
+     updatedAtMs:now,updatedAt:FieldValue.serverTimestamp()
+    },{merge:true});
+    return{...response(),registered:action==='registerPush'};
+   }
    const receiptRef=db.doc(`adminWidgetOperations/${uid}_${p.operationId}`),receipt=await tx.get(receiptRef);
    if(receipt.exists){if(receipt.data().fingerprint!==fingerprint)fail('already-exists','İşlem kimliği farklı bir istek için kullanılmış.');return{...response(),applied:true,replayed:true}}
    if(p.expectedRevision!==revision(data))fail('aborted','Demlik bilgisi başka cihazda değişti. Yenileyip tekrar kontrol edin.');
    const active=data.activeBrews.map(x=>({...x}));
-   if(action==='start'){
+   if(action==='serviceStart'||action==='serviceStop'){
+    state.serviceOpen=action==='serviceStart';
+   }else if(action==='start'){
     if(active.length>=data.maxActiveBrews)fail('resource-exhausted','Bütün demlikler dolu.');
     const businessDate=pos.data()?.currentBusinessDate;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(businessDate||''))fail('failed-precondition','İş günü bilgisi bulunamadı.');
@@ -49,7 +61,9 @@ function buildWidgetTea({db,FieldValue,HttpsError,ownerUid,clock=Date.now}){
     }
    }
    state.activeBrews=active;
-   const update={activeBrews:active,updatedAt:FieldValue.serverTimestamp()};if(action==='finish')update.history=state.history;
+   const update={activeBrews:active,updatedAt:FieldValue.serverTimestamp()};
+   if(action==='finish')update.history=state.history;
+   if(action==='serviceStart'||action==='serviceStop')update.serviceOpen=state.serviceOpen;
    tx.set(stateRef,update,{merge:true});
    tx.set(db.doc('publicTea/status'),{...view(state),orderingOpen:state.serviceOpen!==false,updatedAt:FieldValue.serverTimestamp()});
    tx.set(receiptRef,{uid,deviceId:p.deviceId,action,brewId:p.brewId||'',fingerprint,createdAtMs:now,createdAt:FieldValue.serverTimestamp()});

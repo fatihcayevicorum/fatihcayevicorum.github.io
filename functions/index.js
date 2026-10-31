@@ -213,6 +213,20 @@ async function sendAdminTeaPush(message){
   return result
 }
 
+async function sendAndroidWidgetRefresh(){
+  const documents=(await activeAdminTeaDevices()).filter(item=>item.data().client==="android-widget"),unique=[...new Set(documents.map(item=>item.data().token))];
+  if(!unique.length)return{deviceCount:0,successCount:0,failureCount:0};
+  const result={deviceCount:unique.length,successCount:0,failureCount:0};
+  for(let offset=0;offset<unique.length;offset+=500){
+    const response=await getMessaging().sendEachForMulticast({
+      tokens:unique.slice(offset,offset+500),data:{type:"widget-tea-refresh"},
+      android:{priority:"high",ttl:5*60*1000}
+    });
+    result.successCount+=response.successCount;result.failureCount+=response.failureCount;
+  }
+  return result
+}
+
 function cleanPushToken(value){
   const token=String(value||"").trim();
   if(token.length<20||token.length>4096)throw new HttpsError("invalid-argument","Bildirim cihazı geçersiz.");
@@ -411,8 +425,8 @@ exports.notifyAdminTeaOnStateChange=onDocumentUpdated({document:"adminTea/state"
   if(before.customerNotificationsEnabled===false&&state.customerNotificationsEnabled!==false&&active.length){
     await Promise.allSettled(active.map(brew=>brew?.id?db.doc(`${ADMIN_TEA_EVENT_COLLECTION}/customer-ready-${brew.id}`).delete():Promise.resolve()));
   }
-  const results=await Promise.allSettled(active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now,settings)));
-  results.forEach((result,index)=>{if(result.status==="rejected")logger.error("Yönetici çay bildirimi gönderilemedi.",{brewId:active[index]?.id||"",position:index+1,error:String(result.reason?.message||result.reason)})})
+  const results=await Promise.allSettled([sendAndroidWidgetRefresh(),...active.map((brew,index)=>checkAdminTeaBrew(brew,index+1,now,settings))]);
+  results.forEach((result,index)=>{if(result.status==="rejected")logger.error("Yönetici çay bildirimi gönderilemedi.",{channel:index===0?"android-widget":"tea-alert",brewId:active[index-1]?.id||"",position:index,error:String(result.reason?.message||result.reason)})})
 });
 
 exports.checkAdminTeaNotifications=onSchedule({schedule:"every 1 minutes",region:"europe-west1",timeZone:"Europe/Istanbul"},async()=>{
