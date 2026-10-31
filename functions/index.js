@@ -581,3 +581,6 @@ exports.rollbackFullSystemRestore=firebaseOnCall(backupDataOptions,multipartBack
 exports.continueFullSystemBackup=firebaseOnCall(backupDataOptions,multipartBackup.continueBackup);
 exports.fullSystemBackupPackage=firebaseOnCall(backupDataOptions,multipartBackup.packageInfo);
 exports.finishFullSystemBackupUpload=firebaseOnCall(backupDataOptions,multipartBackup.finishUpload);
+
+// R610 candidate: Android W1.1 tea commands; existing PWA flow is preserved.
+exports.widgetTea=onCall({region:"europe-west1",cors:true},require('./widget-tea').buildWidgetTea({db,FieldValue,HttpsError,ownerUid:OWNER_UID}));
