@@ -46,10 +46,20 @@ test('email: provider failure preserves non-financial audit and hides secrets',a
  const job=[...f.store.entries()].find(([p])=>p.startsWith('adminEmailSendJobs/'))[1];assert.equal(job.status,'unknown_or_failed');assert.equal(JSON.stringify(job).includes('test-only-placeholder'),false);
 });
 test('email: passive recipients cannot receive and settings preserve preferences',async()=>{
- const f=fixture();let s=await f.call('settings',{});s=await f.call('settings',{action:'preferences',revision:s.revision,detailed:false,pdf:false});assert.equal(s.detailed,false);
+ const f=fixture();let s=await f.call('settings',{});s=await f.call('settings',{action:'preferences',revision:s.revision,detailed:false,pdf:false,automaticEnabled:false});assert.equal(s.detailed,false);
  s=await f.call('settings',{action:'recipient',revision:s.revision,email:s.recipients[0].email,active:false});await assert.rejects(f.call('send',{action:'verification',id:s.recipients[0].id}),{code:'failed-precondition'});
 });
 test('email: client rule fallback excludes all private email collections',()=>{
  const fs=require('node:fs'),path=require('node:path');const rules=fs.readFileSync(path.join(__dirname,'../../firestore.rules'),'utf8');const fallback=rules.slice(rules.indexOf('match /{collection}/{document=**}'));
  for(const name of ['adminEmailReport','adminEmailVerification','adminEmailSendJobs'])assert.equal(fallback.split("'"+name+"'").length-1,2);
+});
+
+test('email: enabling requires verification; edits keep enable epoch and unrelated recipient updates keep automatic on',async()=>{
+ const f=fixture();let s=await f.call('settings',{}),id=s.recipients[0].id;
+ await assert.rejects(f.call('settings',{action:'preferences',revision:s.revision,detailed:true,pdf:true,automaticEnabled:true}),{code:'failed-precondition'});
+ await f.call('send',{action:'verification',id});s=await f.call('settings',{action:'verify',id,code:'123456',revision:s.revision});
+ s=await f.call('settings',{action:'preferences',revision:s.revision,detailed:true,pdf:true,automaticEnabled:true});assert.equal(s.automaticAvailable,true);assert.equal(s.automaticEnabled,true);const epoch=f.store.get('adminEmailReport/settings').enabledSinceMs;
+ f.advance();s=await f.call('settings',{action:'preferences',revision:s.revision,detailed:false,pdf:false,automaticEnabled:true});assert.equal(f.store.get('adminEmailReport/settings').enabledSinceMs,epoch);
+ s=await f.call('settings',{action:'recipient',revision:s.revision,email:'other@example.com',active:true});assert.equal(s.automaticEnabled,true);
+ s=await f.call('settings',{action:'preferences',revision:s.revision,detailed:true,pdf:true,automaticEnabled:false});s=await f.call('settings',{action:'preferences',revision:s.revision,detailed:true,pdf:true,automaticEnabled:true});assert.ok(f.store.get('adminEmailReport/settings').enabledSinceMs>epoch);
 });

@@ -15,6 +15,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install Functions test dependencies
+        working-directory: functions
+        run: npm ci
       - name: Check and test R419 savings
         working-directory: functions
         run: |

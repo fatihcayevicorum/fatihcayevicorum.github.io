@@ -1,5 +1,5 @@
 'use strict';
-// R611: configuration and non-financial test mail. Finance closing is not connected yet.
+// R612: owner settings; daily finance reports are queued separately on the server.
 const crypto = require('node:crypto');
 const DEFAULT_EMAIL = 'fatihalialtinli19@gmail.com';
 const FROM = 'Fatih Çay Evi <rapor@fatihcayevi.com.tr>';
@@ -14,7 +14,7 @@ function buildEmailReport({db, FieldValue, HttpsError, requireOwner, fetchImpl =
   };
   const initial = () => ({revision: 0, automaticEnabled: false, detailed: true, pdf: true, recipients: [{id: hash(DEFAULT_EMAIL), email: DEFAULT_EMAIL, active: true, verified: false}]});
   const read = snap => snap.exists ? snap.data() : initial();
-  const publicState = state => ({revision: state.revision, automaticEnabled: false, detailed: state.detailed, pdf: state.pdf, automaticAvailable: false, recipients: state.recipients.filter(r => !r.removedAtMs).map(({id,email,active,verified,verifiedAtMs}) => ({id,email,active,verified,verifiedAtMs: verifiedAtMs || null})), lastSend: state.lastSend || null});
+  const publicState = state => ({revision: state.revision, automaticEnabled: state.automaticEnabled === true, detailed: state.detailed, pdf: state.pdf, automaticAvailable: true, recipients: state.recipients.filter(r => !r.removedAtMs).map(({id,email,active,verified,verifiedAtMs}) => ({id,email,active,verified,verifiedAtMs: verifiedAtMs || null})), lastSend: state.lastSend || null, lastDaily: state.lastDaily || null});
   async function settings(request) {
     requireOwner(request);
     const input = request.data || {}, action = input.action || 'get';
@@ -25,7 +25,10 @@ function buildEmailReport({db, FieldValue, HttpsError, requireOwner, fetchImpl =
       if (input.revision !== state.revision) fail('aborted', 'Ayarlar başka bir cihazda değişti. Yenileyip tekrar deneyin.');
       let codeRef;
       if (action === 'preferences') {
-        if (input.automaticEnabled === true) fail('failed-precondition', 'Otomatik günlük rapor bağlantısı henüz hazır değil.');
+        if (typeof input.automaticEnabled !== 'boolean') fail('invalid-argument', 'Otomatik gönderim tercihi geçersiz.');
+        if (input.automaticEnabled && !state.recipients.some(r => r.active && r.verified && !r.removedAtMs)) fail('failed-precondition', 'Önce en az bir aktif alıcıyı doğrulayın.');
+        if (input.automaticEnabled && !state.automaticEnabled) state.enabledSinceMs = now();
+        state.automaticEnabled = input.automaticEnabled;
         if (typeof input.detailed !== 'boolean' || typeof input.pdf !== 'boolean') fail('invalid-argument', 'Rapor tercihleri geçersiz.');
         state.detailed = input.detailed; state.pdf = input.pdf;
       } else if (action === 'recipient') {
@@ -53,7 +56,7 @@ function buildEmailReport({db, FieldValue, HttpsError, requireOwner, fetchImpl =
           recipient.verified = true; recipient.verifiedAtMs = now();
         }
       }
-      state.revision++; state.automaticEnabled = false; state.updatedBy = request.auth.uid; state.updatedAt = FieldValue.serverTimestamp();
+      state.revision++; state.updatedBy = request.auth.uid; state.updatedAt = FieldValue.serverTimestamp();
       tx.set(configRef, state);
       return publicState(state);
     }).then(result => { if (result.invalidCode) fail('permission-denied', 'Doğrulama kodu yanlış.'); return result; });
@@ -83,7 +86,7 @@ function buildEmailReport({db, FieldValue, HttpsError, requireOwner, fetchImpl =
     try {
       const response = await fetchImpl('https://api.resend.com/emails', {
         method:'POST', headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`fce-${jobId}`},
-        body:JSON.stringify({from:FROM,to:[recipient.email],subject:input.action === 'verification' ? 'Fatih Çay Evi — Alıcı Doğrulama Kodu' : 'Fatih Çay Evi — Test E-postası',text: input.action === 'verification' ? `Fatih Çay Evi rapor alıcısı doğrulama kodunuz: ${code}\nKod 10 dakika geçerlidir. Bu işlem finansal bilgi içermez.` : 'Fatih Çay Evi e-posta bağlantısı için test mesajıdır. Bu e-posta finansal bilgi içermez. Otomatik günlük rapor henüz etkin değildir.'}),
+        body:JSON.stringify({from:FROM,to:[recipient.email],subject:input.action === 'verification' ? 'Fatih Çay Evi — Alıcı Doğrulama Kodu' : 'Fatih Çay Evi — Test E-postası',text: input.action === 'verification' ? `Fatih Çay Evi rapor alıcısı doğrulama kodunuz: ${code}\nKod 10 dakika geçerlidir. Bu işlem finansal bilgi içermez.` : 'Fatih Çay Evi e-posta bağlantısı için test mesajıdır. Bu e-posta finansal bilgi içermez. Bu bir test mesajıdır; günlük finans raporu değildir.'}),
         signal:AbortSignal.timeout(15000)
       });
       if (!response.ok) throw new Error('provider');

@@ -11,6 +11,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install Functions test dependencies
+        working-directory: functions
+        run: npm ci
       - name: Syntax and savings tests
         working-directory: functions
         run: |

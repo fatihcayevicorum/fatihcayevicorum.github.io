@@ -374,9 +374,9 @@ $("salesModeTableToggle").addEventListener("change",()=>{setSalesModeChoice($("s
 const emailSettingsCall=httpsCallable(getFunctions(app,"europe-west1"),"emailReportSettings"),emailSendCall=httpsCallable(getFunctions(app,"europe-west1"),"emailReportSend");
 let emailState=null,emailBusy=false;
 function emailMessage(text){$("emailReportMessage").textContent=text}
-function emailBusyState(busy){emailBusy=busy;$("emailReportDialog").querySelectorAll("button,input").forEach(el=>{el.disabled=busy||el.dataset.emailUnavailable==="true"});$("emailReportDialog").querySelector('input[type="checkbox"]').disabled=true}
+function emailBusyState(busy){emailBusy=busy;$("emailReportDialog").querySelectorAll("button,input").forEach(el=>{el.disabled=busy||el.dataset.emailUnavailable==="true"})}
 function renderEmailSettings(){
-  $("emailDetailed").checked=emailState.detailed;$("emailPdf").checked=emailState.pdf;
+  $("emailAutomatic").checked=emailState.automaticEnabled;$("emailDetailed").checked=emailState.detailed;$("emailPdf").checked=emailState.pdf;
   const host=$("emailRecipients");host.replaceChildren();
   for(const r of emailState.recipients){
     const row=document.createElement('div');row.className='email-recipient';
@@ -393,6 +393,7 @@ function renderEmailSettings(){
     }else button('Test E-postası Gönder',()=>emailDelivery(r.id,'test'),!r.active);
     row.append(actions);host.append(row);
   }
+  const daily=emailState.lastDaily;const labels={pending:'Sırada',retry:'Tekrar denenecek',sending:'Gönderiliyor',accepted:'Gönderim hizmeti kabul etti',skipped:'Gönderim kapalı / uygun alıcı yok',failed:'Gönderilemedi',review:'Sonuç belirsiz; kontrol gerekiyor'};$('emailDailyStatus').textContent=daily?`Son günlük rapor: ${daily.businessDate} · ${labels[daily.status]||daily.status}${daily.atMs?' · '+new Date(daily.atMs).toLocaleString('tr-TR'):''}`:'Henüz günlük rapor oluşturulmadı.';
   const last=emailState.lastSend;$("emailLastSend").textContent=last?`Son gönderim: ${last.email} · ${new Date(last.atMs).toLocaleString('tr-TR')} · Gönderim hizmeti kabul etti (teslimat doğrulaması değildir).`:'';
 }
 async function emailLoad(){
@@ -418,4 +419,4 @@ for(const id of ['closeEmailReport','cancelEmailReport'])$(id).onclick=()=>{if(!
 $("emailReportDialog").addEventListener('cancel',e=>{if(emailBusy)e.preventDefault()});
 $("emailRefresh").onclick=emailLoad;
 $("emailAdd").onclick=()=>{const input=$("emailNewAddress");if(!input.value.trim()||!input.checkValidity()){input.reportValidity();emailMessage('Geçerli bir e-posta adresi yazın.');return}emailMutation({action:'recipient',email:input.value,active:true})};
-$("emailReportForm").onsubmit=e=>{e.preventDefault();emailMutation({action:'preferences',detailed:$("emailDetailed").checked,pdf:$("emailPdf").checked,automaticEnabled:false})};
+$("emailReportForm").onsubmit=e=>{e.preventDefault();emailMutation({action:'preferences',detailed:$("emailDetailed").checked,pdf:$("emailPdf").checked,automaticEnabled:$("emailAutomatic").checked})};

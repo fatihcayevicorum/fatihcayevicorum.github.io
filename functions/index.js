@@ -603,3 +603,9 @@ exports.widgetTea=onCall({region:"europe-west1",cors:true},require('./widget-tea
 const emailReport=require('./email-report').buildEmailReport({db,FieldValue,HttpsError,requireOwner});
 exports.emailReportSettings=onCall({region:"europe-west1",cors:true},emailReport.settings);
 exports.emailReportSend=onCall({region:"europe-west1",cors:true,secrets:["RESEND_API_KEY"],timeoutSeconds:60,maxInstances:2},emailReport.send);
+
+// R612: finance close stays independent from email. Jobs contain immutable report snapshots.
+const dailyEmail=require('./email-daily').buildDailyEmail({db,FieldValue});
+exports.queueFinanceDailyEmail=onDocumentCreated({document:"adminFinanceDays/{businessDate}",region:"europe-west1",retry:true,timeoutSeconds:120,memory:"512MiB",maxInstances:2},dailyEmail.onFinanceClosed);
+exports.sendFinanceDailyEmail=onDocumentCreated({document:"adminEmailDailyJobs/{businessDate}",region:"europe-west1",retry:true,secrets:["RESEND_API_KEY"],timeoutSeconds:300,memory:"512MiB",maxInstances:1,concurrency:1},dailyEmail.onJobCreated);
+exports.retryFinanceDailyEmails=onSchedule({schedule:"every 15 minutes",region:"europe-west1",timeZone:"Europe/Istanbul",secrets:["RESEND_API_KEY"],timeoutSeconds:300,memory:"512MiB",maxInstances:1,retryCount:1},dailyEmail.retryPending);

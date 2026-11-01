@@ -7,11 +7,12 @@
   },
   "dependencies": {
     "firebase-admin": "14.2.0",
-    "firebase-functions": "7.3.0"
+    "firebase-functions": "7.3.0",
+    "pdfkit": "0.17.2"
   },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "check": "node --check index.js && node --check savings.js && node --check savings-core.js && node --check savings-rates.js && node --check operation-history.js && node --check system-backup.js && node --check system-backup-core.js && node --check system-backup-parts.js && node --check pos-sales-mode.js && node --check email-report.js",
+    "check": "node --check index.js && node --check savings.js && node --check savings-core.js && node --check savings-rates.js && node --check operation-history.js && node --check system-backup.js && node --check system-backup-core.js && node --check system-backup-parts.js && node --check pos-sales-mode.js && node --check email-report.js && node --check email-daily.js && node --check email-daily-report.js",
     "test:backup-emulator": "node --test test/system-backup-emulator.cjs",
     "test:backup-large": "node --test test/system-backup-large.cjs"
   }
