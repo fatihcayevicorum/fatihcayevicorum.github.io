@@ -336,3 +336,15 @@ html:root .cash-settings-host{width:min(var(--cash-panel-width,760px),calc(100vw
 
 /* R587 — aynı anda yalnızca bir satış türü açık. */
 #salesModeDialog .sales-mode-toggle input:checked+i{background:#27864a}
+
+/* R611: email settings reuse existing modal, form and theme primitives. */
+.email-report-dialog{width:min(780px,calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:auto}
+.email-report-dialog form{gap:14px;min-width:0}
+.email-recipient{display:grid;gap:8px;min-width:0;padding:12px 0;border-bottom:1px solid var(--line)}
+.email-recipient strong{overflow-wrap:anywhere;color:var(--ink);font-size:.8rem}
+.email-recipient small{color:var(--muted);font-size:.7rem}
+.email-recipient-actions{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.email-recipient-actions input{width:135px;min-width:0;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--theme-input,#fff);color:var(--theme-text,var(--ink))}
+.email-add{grid-template-columns:minmax(0,1fr) auto;align-items:end}
+.email-report-dialog .dialog-actions{flex-wrap:wrap}
+@media(max-width:540px){.email-add{grid-template-columns:1fr}.email-recipient-actions>*{flex:1 1 130px}.email-report-dialog .dialog-actions>*{flex:1 1 120px}}

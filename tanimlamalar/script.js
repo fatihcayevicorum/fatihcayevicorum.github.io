@@ -25,6 +25,7 @@ onAuthStateChanged(auth,async user=>{
   if(!isOwner(user)){location.replace(await hasPanelAccess(user,db,"menu")?"../menu-yonetimi/":"../yonetim-merkezi/");return}
   onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});posSalesMode=salesMode(snapshot.data());layoutLoaded=true;updateLayoutCard();$('salesModeCard').disabled=false;$('salesModeDescription').textContent=`Şu an: ${salesModeName(posSalesMode)}`;renderSalesModeCurrent()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
   onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
+  $("emailReportCard").disabled=false;
   $("applicationSoundsCard").disabled=false;
   $("cashSettingsCard").disabled=false;
   if("requestIdleCallback" in window)requestIdleCallback(preloadCashSettings,{timeout:1200});else setTimeout(preloadCashSettings,300);
@@ -368,3 +369,53 @@ function renderSalesModeSelection(){
 $("salesModeToggle").addEventListener('change',()=>{setSalesModeChoice($("salesModeToggle").checked?'quick':'table');renderSalesModeSelection()});
 
 $("salesModeTableToggle").addEventListener("change",()=>{setSalesModeChoice($("salesModeTableToggle").checked?"table":"quick");renderSalesModeSelection()});
+
+// R611: all reads/writes go through owner-authorized callable functions.
+const emailSettingsCall=httpsCallable(getFunctions(app,"europe-west1"),"emailReportSettings"),emailSendCall=httpsCallable(getFunctions(app,"europe-west1"),"emailReportSend");
+let emailState=null,emailBusy=false;
+function emailMessage(text){$("emailReportMessage").textContent=text}
+function emailBusyState(busy){emailBusy=busy;$("emailReportDialog").querySelectorAll("button,input").forEach(el=>{el.disabled=busy||el.dataset.emailUnavailable==="true"});$("emailReportDialog").querySelector('input[type="checkbox"]').disabled=true}
+function renderEmailSettings(){
+  $("emailDetailed").checked=emailState.detailed;$("emailPdf").checked=emailState.pdf;
+  const host=$("emailRecipients");host.replaceChildren();
+  for(const r of emailState.recipients){
+    const row=document.createElement('div');row.className='email-recipient';
+    const title=document.createElement('strong');title.textContent=r.email;row.append(title);
+    const status=document.createElement('small');status.textContent=`${r.active?'Aktif':'Pasif'} · ${r.verified?'Doğrulandı':'Doğrulama bekliyor'}`;row.append(status);
+    const actions=document.createElement('div');actions.className='email-recipient-actions';
+    const button=(label,fn,unavailable=false)=>{const b=document.createElement('button');b.type='button';b.className='secondary-button';b.textContent=label;b.onclick=fn;b.disabled=unavailable;b.dataset.emailUnavailable=String(unavailable);actions.append(b)};
+    button(r.active?'Pasife Al':'Aktife Al',()=>emailMutation({action:'recipient',email:r.email,active:!r.active}));
+    button('Kaldır',async()=>{if(await systemConfirm({title:"Alıcıyı Kaldır",message:`${r.email} rapor alıcılarından kaldırılsın mı?`,confirmText:"Kaldır",danger:true}))emailMutation({action:'remove',id:r.id})});
+    if(!r.verified){
+      button('Kod Gönder',()=>emailDelivery(r.id,'verification'),!r.active);
+      const input=document.createElement('input');input.type='text';input.inputMode='numeric';input.maxLength=6;input.placeholder='6 haneli kod';input.autocomplete='one-time-code';input.setAttribute('aria-label',`${r.email} doğrulama kodu`);actions.append(input);
+      button('Kodu Doğrula',()=>emailMutation({action:'verify',id:r.id,code:input.value.trim()}),!r.active);
+    }else button('Test E-postası Gönder',()=>emailDelivery(r.id,'test'),!r.active);
+    row.append(actions);host.append(row);
+  }
+  const last=emailState.lastSend;$("emailLastSend").textContent=last?`Son gönderim: ${last.email} · ${new Date(last.atMs).toLocaleString('tr-TR')} · Gönderim hizmeti kabul etti (teslimat doğrulaması değildir).`:'';
+}
+async function emailLoad(){
+  if(emailBusy)return;emailBusyState(true);emailMessage('Ayarlar yükleniyor…');
+  try{emailState=(await emailSettingsCall({action:'get'})).data;renderEmailSettings();emailMessage('')}
+  catch(e){emailMessage(e.message||'Ayarlar yüklenemedi.')}
+  finally{emailBusyState(false);if(!emailState)$("emailSave").disabled=true}
+}
+async function emailMutation(data){
+  if(emailBusy||!emailState)return;emailBusyState(true);emailMessage('İşlem yapılıyor…');
+  try{emailState=(await emailSettingsCall({...data,revision:emailState.revision})).data;renderEmailSettings();$("emailNewAddress").value='';emailMessage(data.action==='verify'?'Alıcı adresi doğrulandı.':'Ayarlar kaydedildi.')}
+  catch(e){emailMessage(e.message||'İşlem tamamlanamadı.');}
+  finally{emailBusyState(false)}
+}
+async function emailDelivery(id,action){
+  if(emailBusy)return;emailBusyState(true);emailMessage('Gönderiliyor…');
+  try{await emailSendCall({id,action});emailMessage(action==='verification'?'Kod gönderim hizmetine iletildi. Gelen kutusu ve spam klasörünü kontrol edin. Kod 10 dakika geçerlidir.':'Test e-postası gönderim hizmetine iletildi. Gelen kutusu ve spam klasörünü kontrol edin.')}
+  catch(e){emailMessage(e.message||'Gönderim tamamlanamadı.')}
+  finally{emailBusyState(false)}
+}
+$("emailReportCard").onclick=()=>{if(!isOwner(auth.currentUser))return;$("emailReportDialog").showModal();emailState=null;emailLoad();setTimeout(()=>$('emailNewAddress').focus(),80)};
+for(const id of ['closeEmailReport','cancelEmailReport'])$(id).onclick=()=>{if(!emailBusy)$("emailReportDialog").close()};
+$("emailReportDialog").addEventListener('cancel',e=>{if(emailBusy)e.preventDefault()});
+$("emailRefresh").onclick=emailLoad;
+$("emailAdd").onclick=()=>{const input=$("emailNewAddress");if(!input.value.trim()||!input.checkValidity()){input.reportValidity();emailMessage('Geçerli bir e-posta adresi yazın.');return}emailMutation({action:'recipient',email:input.value,active:true})};
+$("emailReportForm").onsubmit=e=>{e.preventDefault();emailMutation({action:'preferences',detailed:$("emailDetailed").checked,pdf:$("emailPdf").checked,automaticEnabled:false})};

@@ -598,3 +598,8 @@ exports.finishFullSystemBackupUpload=firebaseOnCall(backupDataOptions,multipartB
 
 // R610 candidate: Android W1.1 tea commands; existing PWA flow is preserved.
 exports.widgetTea=onCall({region:"europe-west1",cors:true},require('./widget-tea').buildWidgetTea({db,FieldValue,HttpsError,ownerUid:OWNER_UID}));
+
+// R611: owner-only email settings and safe test delivery.
+const emailReport=require('./email-report').buildEmailReport({db,FieldValue,HttpsError,requireOwner});
+exports.emailReportSettings=onCall({region:"europe-west1",cors:true},emailReport.settings);
+exports.emailReportSend=onCall({region:"europe-west1",cors:true,secrets:["RESEND_API_KEY"],timeoutSeconds:60,maxInstances:2},emailReport.send);

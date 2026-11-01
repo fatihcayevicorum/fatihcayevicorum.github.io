@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=593">
+  <link rel="stylesheet" href="style.css?v=611">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=564">
   <script src="../assets/js/theme.js?v=564"></script>
@@ -73,6 +73,10 @@
           <span class="card-icon"><i class="fa-solid fa-palette"></i></span>
           <span class="card-copy"><strong>Tema ve Görünüm</strong><small>Açık, karanlık veya otomatik modu ve sistem renk temasını seç</small></span>
         </button>
+        <button id="emailReportCard" class="center-card definition-card" type="button" disabled aria-haspopup="dialog">
+          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i><span class="card-icon"><i class="fa-solid fa-envelope"></i></span>
+          <span class="card-copy"><strong>Günlük E-posta Raporu Ayarları</strong><small>Alıcılar, adres doğrulama ve test e-postası</small></span>
+        </button>
         <button id="applicationSoundsCard" class="center-card definition-card" type="button" disabled>
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
           <span class="card-icon"><i class="fa-solid fa-volume-high"></i></span>
@@ -81,6 +85,26 @@
       </div>
     </section>
   </main>
+
+  <dialog id="emailReportDialog" class="settings-dialog email-report-dialog" aria-labelledby="emailReportHeading">
+    <form id="emailReportForm">
+      <button id="closeEmailReport" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
+      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-envelope"></i></div><div><p class="dialog-kicker">Tanımlamalar · R611 Deneme</p><h2 id="emailReportHeading">Günlük E-posta Raporu</h2></div></div>
+      <p class="tea-settings-copy">Gönderici: rapor@fatihcayevi.com.tr<br>Alıcıları doğrulayabilir ve test e-postası gönderebilirsiniz. Otomatik finans raporu henüz bağlı değildir.</p>
+      <fieldset class="setting-group"><legend>Rapor tercihleri</legend>
+        <label class="setting-toggle"><span>Otomatik günlük gönderim<small>Finans kapanışı bağlantısı sonraki aşamada açılacak.</small></span><input type="checkbox" disabled><i aria-hidden="true"></i></label>
+        <label class="setting-toggle"><span>Ayrıntılı rapor tercihi</span><input id="emailDetailed" type="checkbox"><i aria-hidden="true"></i></label>
+        <label class="setting-toggle"><span>PDF eki tercihi<small>Tercihler kaydedilir; bu aşamada test e-postası PDF içermez.</small></span><input id="emailPdf" type="checkbox"><i aria-hidden="true"></i></label>
+      </fieldset>
+      <fieldset class="setting-group"><legend>Rapor alıcıları</legend><div id="emailRecipients"></div>
+        <div class="email-add system-fields"><label>Yeni e-posta adresi<input id="emailNewAddress" type="email" maxlength="254" autocomplete="email" placeholder="ornek@adres.com"></label><button id="emailAdd" class="secondary-button" type="button">Alıcı Ekle</button></div>
+        <p class="tea-settings-copy">Adresi değiştirmek için yeni adresi ekleyip doğrulayın, önceki adresi kaldırın. En fazla 10 alıcı eklenebilir.</p>
+      </fieldset>
+      <p id="emailLastSend" class="tea-settings-copy"></p>
+      <p id="emailReportMessage" class="form-message" role="status" aria-live="polite"></p>
+      <div class="dialog-actions"><button id="emailRefresh" class="secondary-button" type="button">Yenile</button><button id="cancelEmailReport" class="secondary-button" type="button">Kapat</button><button id="emailSave" class="primary-button" type="submit">Tercihleri Kaydet</button></div>
+    </form>
+  </dialog>
 
   <dialog id="salesModeDialog" class="settings-dialog">
     <form id="salesModeForm">
@@ -298,7 +322,7 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=593"></script>
+  <script type="module" src="script.js?v=611"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>

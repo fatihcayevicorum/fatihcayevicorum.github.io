@@ -554,15 +554,15 @@ service cloud.firestore {
     // Savings collections use callable APIs even for the owner; PIN is server verified.
     match /{collection}/{document=**} {
       allow read: if isOwner()
-        && !(collection in ['adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
+        && !(collection in ['adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminEmailReport', 'adminEmailVerification', 'adminEmailSendJobs', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminWidgetOperations']);
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']);
       allow write: if backupWritable() && (isOwner()
-        && !(collection in ['adminAppSettings', 'adminOrders', 'adminSales', 'adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
+        && !(collection in ['adminEmailReport', 'adminEmailVerification', 'adminEmailSendJobs', 'adminAppSettings', 'adminOrders', 'adminSales', 'adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminWidgetOperations']));
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']));
     }
   }
 }
