@@ -54,14 +54,14 @@ function render(){
   $("monthTitle").textContent=monthName(selectedMonth);$("nextMonth").disabled=selectedMonth>=today().slice(0,7);$("monthPicker").value=selectedMonth;
   const active=personnel.filter(x=>x.active!==false),monthAttendance=attendance.filter(x=>String(x.businessDate||"").startsWith(selectedMonth)),monthPayments=payments.filter(x=>String(x.businessDate||"").startsWith(selectedMonth));
   const worked=monthAttendance.filter(x=>x.status==="worked"),earned=worked.reduce((sum,x)=>sum+attendanceWage(x,personnel.find(p=>p.id===x.personnelId)),0),paid=monthPayments.reduce((sum,x)=>sum+number(x.amount),0);
-  $("activePersonnelCount").textContent=formatNumber(active.length);$("workedDayTotal").textContent=formatNumber(worked.length);$("earnedTotal").textContent=money(earned);$("paidTotal").textContent=money(paid);$("remainingTotal").textContent=money(earned-paid);
+  $("activePersonnelCount").textContent=formatNumber(active.length);$("workedDayTotal").textContent=formatNumber(worked.length);$("earnedTotal").textContent=money(earned);$("paidTotal").textContent=money(paid);$("remainingTotal").textContent=money([...new Set([...personnel.map(x=>x.id),...attendance.map(x=>x.personnelId),...payments.map(x=>x.personnelId)])].reduce((sum,id)=>sum+personMonth(id).remaining,0));
   $("personnelList").innerHTML=personnel.map(personnelCard).join("");$("personnelEmpty").hidden=personnel.length>0;
   renderDetail();
 }
 function personnelCard(person){
   const data=personMonth(person.id),linked=linkedUser(person),badge=person.isOwnerProfile?'<span class="owner-badge">SİSTEM SAHİBİ</span>':person.active===false?'<span class="inactive-badge">PASİF</span>':"";
   const wageText=person.wageTrackingEnabled===false?"Ücret takibi kapalı":`${money(person.dailyWage)}/${person.wageType==="hourly"?"saat":"gün"}`;
-  return`<button class="personnel-card ${selectedPersonnelId===person.id?"selected":""} ${person.active===false?"inactive":""}" type="button" data-personnel-id="${esc(person.id)}">${badge}<span class="personnel-avatar"><i class="fa-solid ${person.isOwnerProfile?"fa-user-shield":"fa-user-tie"}"></i></span><span><strong>${esc(person.displayName||"Personel")}</strong><small>${esc(person.roleTitle||"Çalışan")} • ${wageText}</small><small class="account-state ${linked?"linked":""}"><i class="fa-solid ${linked?"fa-link":"fa-link-slash"}"></i>${linked?`${esc(linked.displayName||"Kullanıcı")} hesabı bağlı`:"Kullanıcı hesabı bağlı değil"}</small></span><span class="card-stats"><span>Çalıştı<b>${data.workedDays} Gün</b></span><span>Hak Etti<b>${money(data.earned)}</b></span><span>Ödendi<b>${money(data.paid)}</b></span><span>Kalan<b>${money(data.remaining)}</b></span></span></button>`
+  return`<button class="personnel-card ${selectedPersonnelId===person.id?"selected":""} ${person.active===false?"inactive":""}" type="button" data-personnel-id="${esc(person.id)}">${badge}<span class="personnel-avatar"><i class="fa-solid ${person.isOwnerProfile?"fa-user-shield":"fa-user-tie"}"></i></span><span><strong>${esc(person.displayName||"Personel")}</strong><small>${esc(person.roleTitle||"Çalışan")} • ${wageText}</small><small class="account-state ${linked?"linked":""}"><i class="fa-solid ${linked?"fa-link":"fa-link-slash"}"></i>${linked?`${esc(linked.displayName||"Kullanıcı")} hesabı bağlı`:"Kullanıcı hesabı bağlı değil"}</small></span><span class="card-stats"><span>Çalıştı<b>${data.workedDays} Gün</b></span><span>Hak Etti<b>${money(data.earned)}</b></span><span>Ayda Ödenen<b>${money(data.paid)}</b></span><span>Kalan<b>${money(data.remaining)}</b></span></span></button>`
 }
 function renderDetail(){
   const person=selectedPerson(),panel=$("detailPanel");panel.hidden=!person;if(!person)return;
@@ -71,9 +71,37 @@ function renderDetail(){
   $("personnelPermissionsButton").disabled=!linked;$("personnelPermissionsButton").title=linked?"Personel kullanıcısının panel yetkilerini yönet":"Önce personele bir kullanıcı hesabı bağlayın";
   renderCalendar(person);renderPayments(person);
 }
+// R610: Payment dates remain cash-flow dates. Settle the oldest earned month first.
+// Calendar payments stay assigned to their work month; no stored records are rewritten.
 function personMonth(id){
-  const rows=attendance.filter(x=>x.personnelId===id&&String(x.businessDate||"").startsWith(selectedMonth)&&x.status==="worked"),paid=payments.filter(x=>x.personnelId===id&&String(x.businessDate||"").startsWith(selectedMonth)).reduce((sum,x)=>sum+number(x.amount),0),person=personnel.find(x=>x.id===id),earned=rows.reduce((sum,x)=>sum+attendanceWage(x,person),0);
-  return{workedDays:rows.length,earned,paid,remaining:earned-paid}
+  const person=personnel.find(x=>x.id===id),months=new Map(),cents=value=>Math.round(number(value)*100);
+  const monthRow=month=>{if(!months.has(month))months.set(month,{workedDays:0,earned:0,paid:0,settled:0});return months.get(month)};
+  for(const row of attendance.filter(x=>x.personnelId===id&&x.status==="worked")){
+    const month=String(row.businessDate||"").slice(0,7);if(!month)continue;
+    const entry=monthRow(month);entry.workedDays++;entry.earned+=cents(attendanceWage(row,person));
+  }
+  let available=0,lastPaymentMonth="";
+  for(const payment of payments.filter(x=>x.personnelId===id)){
+    const month=String(payment.businessDate||"").slice(0,7);if(!month)continue;
+    const amount=cents(payment.amount);monthRow(month).paid+=amount;
+    if(payment.automaticAttendancePayment===true){
+      const work=attendance.find(x=>x.personnelId===id&&x.id===payment.attendanceId);
+      monthRow(String(work?.businessDate||payment.businessDate).slice(0,7)).settled+=amount;
+    }else{available+=amount;if(month>lastPaymentMonth)lastPaymentMonth=month}
+  }
+  // Excess calendar payments also remain credit, rather than disappearing.
+  for(const [month,entry] of months){
+    const excess=Math.max(0,entry.settled-entry.earned);
+    if(excess){entry.settled-=excess;available+=excess;if(month>lastPaymentMonth)lastPaymentMonth=month}
+  }
+  for(const month of [...months.keys()].sort()){
+    const entry=months.get(month),applied=Math.min(Math.max(0,entry.earned-entry.settled),available);
+    entry.settled+=applied;available-=applied;
+  }
+  // A genuine advance is retained, including across months with no attendance.
+  if(available&&lastPaymentMonth)monthRow(lastPaymentMonth).settled+=available;
+  const entry=monthRow(selectedMonth);
+  return{workedDays:entry.workedDays,earned:entry.earned/100,paid:entry.paid/100,remaining:(entry.earned-entry.settled)/100}
 }
 function renderCalendar(person){
   const [year,month]=selectedMonth.split("-").map(Number),days=new Date(Date.UTC(year,month,0)).getUTCDate(),first=(new Date(Date.UTC(year,month-1,1)).getUTCDay()+6)%7,rows=new Map(attendance.filter(x=>x.personnelId===person.id&&String(x.businessDate||"").startsWith(selectedMonth)).map(x=>[x.businessDate,x]));

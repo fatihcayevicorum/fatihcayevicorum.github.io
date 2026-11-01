@@ -57,9 +57,11 @@
       <article><i class="fa-solid fa-users"></i><span>Aktif Personel</span><strong id="activePersonnelCount">0</strong></article>
       <article><i class="fa-solid fa-calendar-check"></i><span>Çalışılan Gün</span><strong id="workedDayTotal">0</strong></article>
       <article><i class="fa-solid fa-coins"></i><span>Hak Edilen</span><strong id="earnedTotal">₺0</strong></article>
-      <article class="paid"><i class="fa-solid fa-hand-holding-dollar"></i><span>Ödenen</span><strong id="paidTotal">₺0</strong></article>
+      <article class="paid"><i class="fa-solid fa-hand-holding-dollar"></i><span>Ayda Ödenen</span><strong id="paidTotal">₺0</strong></article>
       <article class="remaining"><i class="fa-solid fa-scale-balanced"></i><span>Kalan / Alacak</span><strong id="remainingTotal">₺0</strong></article>
     </section>
+
+    <div class="cash-note"><i class="fa-solid fa-circle-info"></i><span>Ödemeler kendi tarihinde listelenir; normal ödemeler önce en eski açık hak edişi kapatır. Kalan / Alacak, seçili ayın henüz ödenmemiş tutarıdır. Eksi tutar kalan avanstır.</span></div>
 
     <section class="panel personnel-panel">
       <div class="section-heading">
@@ -88,9 +90,11 @@
       <div class="person-summary">
         <article><span>Çalışılan Gün</span><strong id="detailWorkedDays">0 Gün</strong></article>
         <article><span>Hak Edilen</span><strong id="detailEarned">₺0</strong></article>
-        <article><span>Ödenen</span><strong id="detailPaid">₺0</strong></article>
+        <article><span>Ayda Ödenen</span><strong id="detailPaid">₺0</strong></article>
         <article class="remaining"><span>Kalan / Alacak</span><strong id="detailRemaining">₺0</strong></article>
       </div>
+
+      <div class="cash-note"><i class="fa-solid fa-circle-info"></i><span>Ödemeler kendi tarihinde listelenir; normal ödemeler önce en eski açık hak edişi kapatır. Kalan / Alacak, seçili ayın henüz ödenmemiş tutarıdır. Eksi tutar kalan avanstır.</span></div>
 
       <div class="detail-layout">
         <section class="attendance-card">
@@ -206,7 +210,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script type="module" src="script.js?v=437"></script>
+<script type="module" src="script.js?v=610"></script>
   <script type="module" src="../assets/js/system-ui.js?v=265"></script>
 </body>
 </html>
