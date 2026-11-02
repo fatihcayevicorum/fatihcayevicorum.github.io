@@ -29,7 +29,7 @@ test('daily: off switch, old closes and unknown current breakdown are explicit',
 });
 test('daily: enqueue race creates one immutable snapshot and sends only verified active recipients',async()=>{
  const f=fixture(),financeBefore=JSON.stringify(f.store.get(`adminFinanceDays/${date}`));await Promise.all([f.queue(),f.queue()]);assert.equal(f.job().recipients.length,1);
- f.store.get('adminDailyClosings/close1').products[0].name='changed later';await Promise.all([f.api.processJob(date),f.api.processJob(date)]);assert.equal(f.mails.length,1);assert.equal(f.job().status,'accepted');assert.match(JSON.parse(f.mails[0].body).text,/Çay/);assert.doesNotMatch(JSON.parse(f.mails[0].body).text,/changed later/);await f.api.processJob(date);await f.queue();assert.equal(f.mails.length,1);assert.equal(JSON.stringify(f.store.get(`adminFinanceDays/${date}`)),financeBefore);
+ f.store.get('adminDailyClosings/close1').products[0].name='changed later';await Promise.all([f.api.processJob(date),f.api.processJob(date)]);assert.equal(f.mails.length,1);assert.equal(f.job().status,'accepted');assert.equal(f.job().report.products[0].name,'Çay');assert.ok(JSON.parse(f.mails[0].body).html);assert.doesNotMatch(JSON.parse(f.mails[0].body).text,/changed later/);await f.api.processJob(date);await f.queue();assert.equal(f.mails.length,1);assert.equal(JSON.stringify(f.store.get(`adminFinanceDays/${date}`)),financeBefore);
 });
 test('daily: unknown outcome retries identical body/key; accepted recipient is never resent',async()=>{
  const f=fixture();f.config.recipients[1].verified=true;await f.queue();let calls=0;f.mode('timeout');await f.api.processJob(date);assert.equal(f.job().status,'retry');assert.equal(f.mails.length,2);f.mode('ok');f.advance(16*60000);await f.api.retryPending();assert.equal(f.job().status,'accepted');assert.equal(f.mails.length,4);assert.equal(f.mails[0].body,f.mails[2].body);assert.equal(f.mails[0].headers['Idempotency-Key'],f.mails[2].headers['Idempotency-Key']);await f.api.retryPending();assert.equal(f.mails.length,4);
@@ -62,4 +62,12 @@ test('daily: PDF attachment and retry body remain identical; recipients never se
 });
 test('daily: enabling again does not release jobs from an earlier enable period',async()=>{
  const f=fixture();await f.queue();f.config.enabledSinceMs=stamp+1000;await f.api.processJob(date);assert.equal(f.mails.length,0);assert.equal(f.job().status,'skipped');
+});
+
+test('daily: new queue freezes catalog grouping, sends only summary and HTML, and honors PDF switch',async()=>{
+ const f=fixture();f.store.set('publicMenu/catalog',{categories:[{id:'hot',name:'Sıcak İçecekler',order:1}],items:[{name:'Çay',categoryId:'hot',price:999}]});await f.queue();assert.equal(f.job().templateVersion,613);assert.equal(f.job().report.products[0].categoryName,'Sıcak İçecekler');assert.equal(f.job().report.products[0].unitPrice,1500);f.store.get('publicMenu/catalog').categories[0].name='Sonraki değişiklik';await f.api.processJob(date);const body=JSON.parse(f.mails[0].body);assert.ok(body.html);assert.ok(body.text.length<600);assert.doesNotMatch(body.text,/SATILAN ÜRÜNLER|FİNANS HAREKETLERİ/);assert.equal(body.attachments,undefined);assert.match(body.text,/PDF eki kapalı/);assert.equal(f.job().report.products[0].categoryName,'Sıcak İçecekler');
+});
+test('daily: pre-R613 queued jobs preserve legacy text, PDF bytes and request fields',async()=>{
+ const f=fixture({pdf:true});await f.queue();delete f.job().templateVersion;
+ const {renderLegacyDailyPdf,reportText}=require('../email-daily-report');const expected=await renderLegacyDailyPdf(f.job().report,f.job().detailed,f.job().createdAtMs);await f.api.processJob(date);const body=JSON.parse(f.mails[0].body);assert.equal(body.html,undefined);assert.equal(body.text,reportText(f.job().report,true));assert.equal(body.attachments[0].content,expected.toString('base64'));
 });

@@ -1,10 +1,10 @@
 'use strict';
 const crypto=require('node:crypto');
-const {buildDailyReport,reportText,renderDailyPdf}=require('./email-daily-report');
+const {buildDailyReport,reportText,renderDailyPdf,renderLegacyDailyPdf,decorateReport,emailSummaryText,emailSummaryHtml}=require('./email-daily-report');
 const FROM='Fatih Çay Evi <rapor@fatihcayevi.com.tr>';
 const active=r=>r.active===true&&r.verified===true&&!r.removedAtMs;
 const terminal=new Set(['accepted','skipped','failed','review']);
-function buildDailyEmail({db,FieldValue,fetchImpl=global.fetch,now=Date.now,pdf=renderDailyPdf,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms))}){
+function buildDailyEmail({db,FieldValue,fetchImpl=global.fetch,now=Date.now,pdf=renderDailyPdf,legacyPdf=renderLegacyDailyPdf,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms))}){
  const settingsRef=db.doc('adminEmailReport/settings');
  async function publish(date,status){
   await db.runTransaction(async tx=>{
@@ -28,13 +28,13 @@ function buildDailyEmail({db,FieldValue,fetchImpl=global.fetch,now=Date.now,pdf=
   const recipients=(config.recipients||[]).filter(active).slice(0,10);
   if(!recipients.length){await publish(date,'skipped');return}
   let report,error;
-  try{const [closings,movements]=await Promise.all([dayRows('adminDailyClosings',date),dayRows('adminCashMovements',date)]);report=buildDailyReport(date,closings,movements);if(Buffer.byteLength(JSON.stringify(report))>650000)throw Error('report-limit')}
+  try{const [closings,movements,catalogSnap]=await Promise.all([dayRows('adminDailyClosings',date),dayRows('adminCashMovements',date),db.doc('publicMenu/catalog').get()]);report=decorateReport(buildDailyReport(date,closings,movements),catalogSnap.data()||{});if(Buffer.byteLength(JSON.stringify(report))>650000)throw Error('report-limit')}
   catch(e){if(e.message!=='report-limit')throw e;error='report-limit'}
   const created=await db.runTransaction(async tx=>{
    if((await tx.get(ref)).exists)return false;
    const latest=(await tx.get(settingsRef)).data()||{};
    if(!latest.automaticEnabled||latest.enabledSinceMs!==config.enabledSinceMs)return false;
-   tx.set(ref,{businessDate:date,status:error?'failed':'pending',error:error||null,createdAtMs:closedAt,enabledSinceMs:config.enabledSinceMs,closedBy:String(snap.data().closedBy||''),detailed:config.detailed!==false,pdf:config.pdf!==false,report:report||null,recipients:recipients.map(r=>({id:r.id,email:r.email,status:'pending',attempts:0})),nextAtMs:0,leaseUntilMs:0});return true;
+   tx.set(ref,{businessDate:date,templateVersion:613,status:error?'failed':'pending',error:error||null,createdAtMs:closedAt,enabledSinceMs:config.enabledSinceMs,closedBy:String(snap.data().closedBy||''),detailed:config.detailed!==false,pdf:config.pdf!==false,report:report||null,recipients:recipients.map(r=>({id:r.id,email:r.email,status:'pending',attempts:0})),nextAtMs:0,leaseUntilMs:0});return true;
   });if(created)await publish(date,error?'failed':'pending');
  }
  async function processJob(date){
@@ -45,7 +45,7 @@ function buildDailyEmail({db,FieldValue,fetchImpl=global.fetch,now=Date.now,pdf=
   const save=async patch=>db.runTransaction(async tx=>{const j=(await tx.get(ref)).data();if(j?.leaseToken!==token)throw Error('lease-lost');tx.set(ref,{...j,...patch})});
   let attachment;
   try{
-   if(job.pdf)attachment=(await pdf(job.report,job.detailed,job.createdAtMs)).toString('base64');
+   if(job.pdf)attachment=(await (job.templateVersion===613?pdf:legacyPdf)(job.report,job.detailed,job.createdAtMs)).toString('base64');
    for(const r of job.recipients){
     if(terminal.has(r.status))continue;
     const config=(await settingsRef.get()).data()||{};
@@ -54,7 +54,8 @@ function buildDailyEmail({db,FieldValue,fetchImpl=global.fetch,now=Date.now,pdf=
     if(now()-job.createdAtMs>=20*3600000||r.attempts>=12){r.status=r.attempts?'review':'failed';await save({recipients:job.recipients});continue}
     if(!process.env.RESEND_API_KEY)throw Error('mail-not-configured');
     r.attempts++;await save({recipients:job.recipients});
-    const payload={from:FROM,to:[r.email],subject:`Fatih Çay Evi - ${date} Günlük Finans Raporu`,text:reportText(job.report,job.detailed)};
+    const payload={from:FROM,to:[r.email],subject:`Fatih Çay Evi - ${date} Günlük Finans Raporu`,text:job.templateVersion===613?emailSummaryText(job.report,!!attachment):reportText(job.report,job.detailed)};
+    if(job.templateVersion===613)payload.html=emailSummaryHtml(job.report,!!attachment);
     if(attachment)payload.attachments=[{filename:`Fatih_Cay_Evi_Gunluk_Rapor_${date}.pdf`,content:attachment}];
     try{
      const response=await fetchImpl('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`fce-daily-${date}-${r.id}`},body:JSON.stringify(payload),signal:AbortSignal.timeout(15000)});
