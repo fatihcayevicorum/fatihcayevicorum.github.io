@@ -4,12 +4,15 @@ const DEVICE='kazan-1';
 const hash=v=>crypto.createHash('sha256').update(v).digest('hex');
 function problem(status,message){const e=new Error(message);e.status=status;throw e;}
 function parseSample(b,now){
- if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion'].includes(k)))problem(400,'Geçersiz ölçüm.');
+ if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion','targetTemperatureC','targetAgeMs'].includes(k)))problem(400,'Geçersiz ölçüm.');
  if(b.deviceId!==DEVICE||!Number.isSafeInteger(b.sentAtMs)||Math.abs(now-b.sentAtMs)>30000)problem(400,'Cihaz veya saat geçersiz.');
  if(typeof b.endaConnected!=='boolean'||typeof b.firmwareVersion!=='string'||!/^[\w .-]{1,48}$/.test(b.firmwareVersion))problem(400,'Geçersiz durum.');
  if(b.endaConnected){if(!Number.isFinite(b.temperatureC)||b.temperatureC< -50||b.temperatureC>200||!Number.isSafeInteger(b.measuredAgeMs)||b.measuredAgeMs<0||b.measuredAgeMs>10000)problem(400,'Ölçüm geçersiz veya eski.');}
  else if(b.temperatureC!==null||b.measuredAgeMs!==null)problem(400,'Bağlantısız cihaz ölçüm gönderemez.');
- return {deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
+ const hasTarget=b.targetTemperatureC!=null;
+ if(hasTarget&&(!b.endaConnected||!Number.isFinite(b.targetTemperatureC)||b.targetTemperatureC< -50||b.targetTemperatureC>200||!Number.isSafeInteger(b.targetAgeMs)||b.targetAgeMs<0||b.targetAgeMs>10000))problem(400,'Hedef geçersiz veya eski.');
+ if(!hasTarget&&b.targetAgeMs!=null)problem(400,'Hedef zamanı geçersiz.');
+ return {targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
 }
 function buildSmartBoiler({db,HttpsError,ownerUid,projectId,now=Date.now}){
  const credentials=db.doc('adminBoilerDevices/'+DEVICE),state=db.doc('adminBoilerState/'+DEVICE),maintenance=db.doc('adminBackupControl/state');

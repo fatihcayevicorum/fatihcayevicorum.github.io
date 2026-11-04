@@ -18,7 +18,9 @@ export function startLive(update){emit=update;const db=getFirestore(firebaseApp)
 function view(){const at=Date.now(),age=data?.measuredAtMs?at-data.measuredAtMs:Infinity,seen=data?.lastSeenAtMs?at-data.lastSeenAtMs:Infinity;
  const fresh=online&&navigator.onLine&&data?.paired===true&&data.endaConnected===true&&Number.isFinite(data.temperatureC)&&age>=-30000&&age<=45000&&seen>=-30000&&seen<=45000;
  let status=message||(!data?.paired?'Cihaz henüz bağlanmadı.':!online||!navigator.onLine?'Sunucu bağlantısı yok.':seen>45000?'Cihazdan güncel veri alınamıyor.':!data.endaConnected?'ENDA bağlantısı yok.':!fresh?'Sıcaklık verisi güncel değil.':'Canlı sıcaklık · Isıtma durumu okunmuyor.');
- return{fresh,temperature:fresh?data.temperatureC:null,status,last:data?.lastSeenAtMs||null,owner,paired:!!data?.paired};
+ const targetAge=data?.targetMeasuredAtMs?at-data.targetMeasuredAtMs:Infinity;
+ const targetFresh=fresh&&Number.isFinite(data?.targetTemperatureC)&&targetAge>=-30000&&targetAge<=45000;
+ return{targetFresh,target:targetFresh?data.targetTemperatureC:null,fresh,temperature:fresh?data.temperatureC:null,status,last:data?.lastSeenAtMs||null,owner,paired:!!data?.paired};
 }
 export function mountPairing(root){
  root.innerHTML='<h3>Cihaz bağlantısı</h3><p class="boiler-note">ESP32 bağlantı dosyasını indirip cihaz yazılımına ekleyin. Yenileme mevcut cihaz anahtarını geçersiz kılar.</p><div class="boiler-actions"><button type="button" data-pair>Bağlantı dosyası oluştur</button><button type="button" data-revoke>Bağlantıyı iptal et</button></div><p class="boiler-note" data-pair-status role="status"></p><a hidden data-download>boiler_cloud.h dosyasını indir</a>';
