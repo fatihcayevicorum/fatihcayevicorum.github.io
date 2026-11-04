@@ -551,18 +551,25 @@ service cloud.firestore {
       allow update, delete: if backupWritable() && (false);
     }
 
+    // R615: ölçüm yalnız sunucudan, okuma mevcut Taze Dem yetkisinden.
+    match /adminBoilerDevices/{device} { allow read: if false; allow write: if backupWritable() && (false); }
+    match /adminBoilerState/{device} {
+      allow read: if hasPanel('tea');
+      allow write: if backupWritable() && (false);
+    }
+
     // Savings collections use callable APIs even for the owner; PIN is server verified.
     match /{collection}/{document=**} {
       allow read: if isOwner()
         && !(collection in ['adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminEmailReport', 'adminEmailVerification', 'adminEmailSendJobs', 'adminEmailDailyJobs', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']);
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState']);
       allow write: if backupWritable() && (isOwner()
         && !(collection in ['adminEmailReport', 'adminEmailVerification', 'adminEmailSendJobs', 'adminEmailDailyJobs', 'adminAppSettings', 'adminOrders', 'adminSales', 'adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents']));
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState']));
     }
   }
 }

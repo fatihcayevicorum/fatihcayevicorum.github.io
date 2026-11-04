@@ -1,7 +1,7 @@
 "use strict";
 const crypto=require('node:crypto');
 const MAX_BYTES=100*1024*1024,MAX_DOCUMENTS=50000;
-const EXCLUDED=Object.freeze(['adminSecurity','sensitivePinAttempts','adminSavingsSessions','adminHistorySessions','adminHistoryAttempts','adminTeaPushDevices','merchantPushDevices','customerPushDevices','publicPresence','accountDevices','adminBackupControl','adminBackupJobs','adminBackupLeases']);
+const EXCLUDED=Object.freeze(['adminBoilerDevices','adminSecurity','sensitivePinAttempts','adminSavingsSessions','adminHistorySessions','adminHistoryAttempts','adminTeaPushDevices','merchantPushDevices','customerPushDevices','publicPresence','accountDevices','adminBackupControl','adminBackupJobs','adminBackupLeases']);
 function fail(message){const e=Error(message);e.code='invalid-argument';throw e;}
 // Feed the canonical representation incrementally instead of allocating another
 // complete JSON copy of every document and asset for each checksum.

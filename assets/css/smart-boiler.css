@@ -14,3 +14,10 @@
 body:has(.boiler-dialog[open]){overflow:hidden}
 @media(max-width:600px){.boiler-columns{grid-template-columns:1fr}.boiler-card{padding:1rem}.boiler-summary th,.boiler-summary td{padding:.5rem .3rem;font-size:.67rem}}
 @media(prefers-reduced-motion:reduce){.boiler-header::before{animation:none!important}}
+
+/* R615 */
+.boiler-page [hidden],.boiler-dialog [hidden]{display:none!important}.boiler-header[data-mode=live]{background:#215b98!important}.boiler-page [data-download]{overflow-wrap:anywhere;color:var(--theme-primary,#741722)}
+
+.boiler-page[hidden]{display:none!important}
+
+.boiler-columns:has(>[data-controls][hidden]){grid-template-columns:1fr}

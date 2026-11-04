@@ -1,5 +1,5 @@
 // R609: Yalnızca yerel demo; cihaz veya işletme kaydı yazılmaz.
-if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=609").catch(error=>console.error("Kazan ön izlemesi açılamadı:",error));
+if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=615").catch(error=>console.error("Kazan ön izlemesi açılamadı:",error));
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
