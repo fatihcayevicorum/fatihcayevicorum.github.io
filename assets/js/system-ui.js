@@ -12,7 +12,7 @@ import("./management-forms.js?v=526").catch(error=>console.error("Fatih Çay Evi
 if("Notification"in window&&Notification.permission==="granted")import("./admin-push.js?v=388").then(module=>module.startForegroundAdminPush()).catch(error=>console.error("Yönetici bildirimi başlatılamadı:",error));
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const adminPageFolders=["akilli-kazan","adisyon","adisyon-gecmisi","ana-sayfa-yonetimi","bildirim-merkezi","esnaf-yonetimi","kasa-hesap-yonetimi","birikim-hesaplari","kullanici-yonetimi","menu-yonetimi","personel-yonetimi","raporlar","siparis-listesi","stok-yonetimi","tanimlamalar","taze-dem-paneli","veri-yonetimi","yonetim-merkezi"],isAdminPage=adminPageFolders.some(folder=>location.pathname.includes(`/${folder}/`));
-if(isAdminPage)import("./admin-notifications.js?v=342").catch(error=>console.error("Uygulama içi bildirimler başlatılamadı:",error));
+if(isAdminPage)import("./admin-notifications.js?v=623").catch(error=>console.error("Uygulama içi bildirimler başlatılamadı:",error));
 ensureFooter();
 installGlobalInteractionStyle();
 installKeyboardScrollSupport();
