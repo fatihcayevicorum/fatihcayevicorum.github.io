@@ -13,7 +13,7 @@ const daily=[
   {permission:"pos",name:"Adisyon",description:"Masaları, siparişleri ve ödemeleri yönet",path:"adisyon/",icon:"fa-receipt"}
 ];
 const management=[
-  {permission:"tea",name:"Akıllı Kazan",description:"Demo / Ön İzleme · Sıcaklık ve çalışma özeti",path:"akilli-kazan/",icon:"fa-temperature-half"},
+  {permission:"tea",name:"Akıllı Kazan",description:"Canlı sıcaklık ve çalışma özeti",path:"akilli-kazan/",icon:"fa-temperature-half"},
   {ownerOnly:true,sensitiveHistory:true,name:"İşlem Geçmişi Merkezi",description:"Silinen, iptal edilen ve değiştirilen işlemleri incele",path:"islem-gecmisi/",icon:"fa-clock-rotate-left"},
   {permission:"currentAccounts",name:"Cari Hesaplar",description:"Cari müşterileri ve alacak durumlarını yönet",path:"cari-hesaplar/",icon:"fa-address-book"},
   {permission:"stock",name:"Stok Takibi",description:"Stok miktarlarını ve hareketlerini izle",path:"stok-yonetimi/",icon:"fa-boxes-stacked"},
@@ -25,7 +25,7 @@ const management=[
   {ownerOnly:true,permission:"menu",name:"Tanımlamalar",description:"Temel sistem ve işletme bilgilerini yönet",path:"tanimlamalar/",icon:"fa-sliders"},
   {ownerOnly:true,name:"Personel Yönetimi",description:"Çalışma günlerini, hak edişleri ve ödemeleri takip et",path:"personel-yonetimi/",icon:"fa-people-roof"},
   {permission:"home",name:"Ana Sayfa Yönetimi",description:"Duyuru ve kampanya alanlarını düzenle",path:"ana-sayfa-yonetimi/",icon:"fa-house"},
-  {ownerOnly:true,name:"Bildirim Merkezi",description:"Yeni yapı için ayrılan yönetim alanı",path:"bildirim-merkezi/",icon:"fa-bell"},
+  {ownerOnly:true,name:"Bildirim Merkezi",description:"Bildirimleri, cihazları ve gönderim ayarlarını yönet",path:"bildirim-merkezi/",icon:"fa-bell"},
   {ownerOnly:true,name:"Veri ve Yedekleme",description:"Verileri dışa aktar ve yedekleri yönet",path:"veri-yonetimi/",icon:"fa-database"},
   {ownerOnly:true,name:"Kullanıcı Yönetimi",description:"Kullanıcı oluştur ve panel yetkilerini belirle",path:"kullanici-yonetimi/",icon:"fa-users-gear"}
 ];
