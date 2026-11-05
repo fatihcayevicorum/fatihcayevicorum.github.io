@@ -614,3 +614,5 @@ exports.retryFinanceDailyEmails=onSchedule({schedule:"every 15 minutes",region:"
 const boiler=require('./smart-boiler').buildSmartBoiler({db,HttpsError,ownerUid:OWNER_UID,projectId:process.env.GCLOUD_PROJECT||db.projectId});
 exports.configureBoilerDevice=onCall({region:'europe-west1',cors:true},boiler.configure);
 exports.receiveBoilerTemperature=require('firebase-functions/v2/https').onRequest({region:'europe-west1',cors:false,invoker:'public',maxInstances:2,timeoutSeconds:15},boiler.receive);
+
+exports.setBoilerTarget=onCall({region:'europe-west1',cors:true},boiler.setTarget);
