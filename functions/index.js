@@ -617,14 +617,14 @@ exports.receiveBoilerTemperature=require('firebase-functions/v2/https').onReques
 
 exports.setBoilerTarget=onCall({region:'europe-west1',cors:true},boiler.setTarget);
 
-// R620: Kazan telemetrisi değiştiğinde Android widget'ını en fazla 30 saniyede bir yenile.
+// R621: Kazan telemetrisi değiştiğinde Android widget'ını en fazla 5 saniyede bir yenile.
 exports.refreshAndroidWidgetOnBoilerState=onDocumentUpdated({document:'adminBoilerState/kazan-1',region:'europe-west1'},async event=>{
   const after=event.data?.after?.data()||{};
   if(after.paired!==true)return null;
   const now=Date.now(),ref=db.doc('adminWidgetRefreshControl/boiler');
   const claimed=await db.runTransaction(async tx=>{
     const snap=await tx.get(ref),last=Number(snap.data()?.lastSentAtMs)||0;
-    if(now-last<30000)return false;
+    if(now-last<5000)return false;
     tx.set(ref,{lastSentAtMs:now,updatedAt:FieldValue.serverTimestamp()},{merge:true});
     return true;
   });

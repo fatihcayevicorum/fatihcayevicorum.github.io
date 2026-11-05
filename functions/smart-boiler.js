@@ -62,7 +62,14 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,now=Date.now}){
      }
     }
    }
-   tx.set(state,{...sample,paired:true,...(command?{command}:{})});return wire?{accepted:true,command:wire}:{accepted:true};
+   let temperaturePhase='offline';
+   if(sample.endaConnected&&Number.isFinite(sample.temperatureC)){
+    const reached=Number.isFinite(sample.targetTemperatureC)&&sample.temperatureC>=sample.targetTemperatureC-0.5;
+    const rising=Number.isFinite(old.temperatureC)&&sample.temperatureC>Number(old.temperatureC)+0.1;
+    const recentlyHeating=old.temperaturePhase==='heating'&&Number.isFinite(old.temperatureC)&&sample.temperatureC>=Number(old.temperatureC)-0.1&&now()-Number(old.lastSeenAtMs||0)<=20000;
+    temperaturePhase=reached?'reached':(rising||recentlyHeating)?'heating':'cold';
+   }
+   tx.set(state,{...sample,paired:true,temperaturePhase,...(command?{command}:{})});return wire?{accepted:true,command:wire}:{accepted:true};
   });
  }
  async function receive(req,res){

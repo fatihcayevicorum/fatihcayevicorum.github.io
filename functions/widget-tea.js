@@ -8,10 +8,27 @@ function view(s){return{activeBrews:Array.isArray(s.activeBrews)?s.activeBrews:[
 function boilerView(s,now){
  const temperature=Number(s.temperatureC),measured=Number(s.measuredAtMs),seen=Number(s.lastSeenAtMs);
  const fresh=s.paired===true&&s.endaConnected===true&&Number.isFinite(temperature)&&Number.isFinite(measured)&&Number.isFinite(seen)&&now-measured>=-30000&&now-measured<=45000&&now-seen>=-30000&&now-seen<=45000;
+ const target=Number(s.targetTemperatureC),targetMeasured=Number(s.targetMeasuredAtMs);
+ const targetFresh=fresh&&Number.isFinite(target)&&Number.isFinite(targetMeasured)&&now-targetMeasured>=-30000&&now-targetMeasured<=45000;
+ const control=s.control&&Number.isFinite(Number(s.control.min))&&Number.isFinite(Number(s.control.max))?{
+  min:Number(s.control.min),max:Number(s.control.max)
+ }:null;
+ const phase=fresh?(targetFresh&&temperature>=target-0.5?'reached':s.temperaturePhase==='heating'?'heating':'cold'):'offline';
+ const command=s.command&&typeof s.command==='object'?{
+  id:typeof s.command.id==='string'?s.command.id:'',
+  status:typeof s.command.status==='string'?s.command.status:'',
+  target:Number.isFinite(Number(s.command.target))?Number(s.command.target):null
+ }:null;
  return{
   fresh,
   temperatureC:fresh?temperature:null,
   temperatureText:fresh?`${Math.round(temperature)} °C`:'— °C',
+  targetTemperatureC:targetFresh?target:null,
+  targetMin:control?control.min:20,
+  targetMax:control?control.max:100,
+  phase,
+  color:phase==='reached'?'#2d8a57':phase==='heating'?'#b32635':phase==='cold'?'#4ea3d8':'#334155',
+  command,
   status:s.paired!==true?'Cihaz bekleniyor':s.endaConnected!==true?'ENDA bağlantısı yok':fresh?'Canlı':'Veri güncel değil'
  };
 }
