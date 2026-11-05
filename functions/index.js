@@ -215,12 +215,13 @@ async function sendAdminTeaPush(message){
 
 async function sendAndroidWidgetRefresh(){
   const documents=(await activeAdminTeaDevices()).filter(item=>item.data().client==="android-widget"),unique=[...new Set(documents.map(item=>item.data().token))];
-  if(!unique.length)return{deviceCount:0,successCount:0,failureCount:0};
-  const result={deviceCount:unique.length,successCount:0,failureCount:0};
+  const payload={data:{type:"widget-tea-refresh"},android:{priority:"high",ttl:5*60*1000}};
+  const topicMessageId=await getMessaging().send({topic:"fatih-widget-refresh",...payload});
+  if(!unique.length)return{deviceCount:0,successCount:1,failureCount:0,topicMessageId};
+  const result={deviceCount:unique.length,successCount:1,failureCount:0,topicMessageId};
   for(let offset=0;offset<unique.length;offset+=500){
     const response=await getMessaging().sendEachForMulticast({
-      tokens:unique.slice(offset,offset+500),data:{type:"widget-tea-refresh"},
-      android:{priority:"high",ttl:5*60*1000}
+      tokens:unique.slice(offset,offset+500),...payload
     });
     result.successCount+=response.successCount;result.failureCount+=response.failureCount;
   }
