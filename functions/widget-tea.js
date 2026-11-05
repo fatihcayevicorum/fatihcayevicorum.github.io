@@ -5,6 +5,16 @@ function canonical(x){if(Array.isArray(x))return x.map(canonical);if(x&&typeof x
 const clamp=(n,min,max,d)=>Number.isFinite(Number(n))?Math.max(min,Math.min(max,Math.floor(Number(n)))):d;
 function settings(s){return{maxActiveBrews:clamp(s.maxActiveBrews,1,8,3),brewingMinutes:clamp(s.brewingMinutes,1,120,20),freshnessMinutes:clamp(s.freshnessMinutes,1,240,60),customerNotificationsEnabled:s.customerNotificationsEnabled!==false,merchantNotificationsEnabled:s.merchantNotificationsEnabled!==false,teaSettingsVersion:'r390'}}
 function view(s){return{activeBrews:Array.isArray(s.activeBrews)?s.activeBrews:[],serviceOpen:s.serviceOpen!==false,...settings(s)}}
+function boilerView(s,now){
+ const temperature=Number(s.temperatureC),measured=Number(s.measuredAtMs),seen=Number(s.lastSeenAtMs);
+ const fresh=s.paired===true&&s.endaConnected===true&&Number.isFinite(temperature)&&Number.isFinite(measured)&&Number.isFinite(seen)&&now-measured>=-30000&&now-measured<=45000&&now-seen>=-30000&&now-seen<=45000;
+ return{
+  fresh,
+  temperatureC:fresh?temperature:null,
+  temperatureText:fresh?`${Math.round(temperature)} °C`:'— °C',
+  status:s.paired!==true?'Cihaz bekleniyor':s.endaConnected!==true?'ENDA bağlantısı yok':fresh?'Canlı':'Veri güncel değil'
+ };
+}
 function buildWidgetTea({db,FieldValue,HttpsError,ownerUid,clock=Date.now}){
  const fail=(code,msg)=>{throw new HttpsError(code,msg)};
  return async request=>{
@@ -20,15 +30,15 @@ function buildWidgetTea({db,FieldValue,HttpsError,ownerUid,clock=Date.now}){
   return db.runTransaction(async tx=>{
    const now=clock();
    const stateRef=db.doc('adminTea/state');
-   const refs=[db.doc(`staffUsers/${uid}`),db.doc(`accountDevices/${uid}`),db.doc('adminBackupControl/state'),stateRef,db.doc('adminAppSettings/pos')];
-   const [staff,devices,gate,snap,pos]=await Promise.all(refs.map(ref=>tx.get(ref)));
+   const refs=[db.doc(`staffUsers/${uid}`),db.doc(`accountDevices/${uid}`),db.doc('adminBackupControl/state'),stateRef,db.doc('adminAppSettings/pos'),db.doc('adminBoilerState/kazan-1')];
+   const [staff,devices,gate,snap,pos,boilerSnap]=await Promise.all(refs.map(ref=>tx.get(ref)));
    const profile=staff.data()||{},perms=Array.isArray(profile.permissions)?profile.permissions:[];
    if(uid!==ownerUid&&(profile.active!==true||!perms.some(x=>['tea','pos','personnel'].includes(x))||(perms.includes('personnel')&&Number(profile.personnelAccessLockedUntilMs)>now)))fail('permission-denied','Taze Dem yetkiniz bulunmuyor.');
    if(!(devices.data()?.deviceIds||[]).includes(p.deviceId))fail('permission-denied','Bu cihazın yetkisi kaldırılmış. Yeniden giriş gerekli.');
    if(gate.data()?.active===true)fail('failed-precondition','Yedekleme veya geri yükleme devam ediyor.');
    if(!snap.exists)fail('failed-precondition','Taze Dem kaydı yok. Önce mevcut sistemi açın.');
-   const state=snap.data(),data=view(state);
-   const response=()=>({state:view(state),revision:revision(view(state)),serverNowMs:now});
+   const state=snap.data(),data=view(state),boiler=boilerView(boilerSnap.data()||{},now);
+   const response=()=>({state:{...view(state),boiler},revision:revision(view(state)),serverNowMs:now});
    if(action==='read')return response();
    if(pushAction){
     const tokenId=crypto.createHash('sha256').update(p.token).digest('hex');
@@ -71,4 +81,4 @@ function buildWidgetTea({db,FieldValue,HttpsError,ownerUid,clock=Date.now}){
   });
  };
 }
-module.exports={buildWidgetTea,revision,view};
+module.exports={buildWidgetTea,revision,view,boilerView};
