@@ -105,10 +105,10 @@ bool installOta(const String &wire) {
   if(code!=200||length!=(int)expectedSize){http.end();setOtaReport(requestId.c_str(),4,"Firmware boyutu veya HTTP yaniti gecersiz.");return false;}
   if(!Update.begin(expectedSize)){http.end();setOtaReport(requestId.c_str(),4,"OTA bolumu yetersiz.");return false;}
   setOtaReport(requestId.c_str(),3);WiFiClient *stream=http.getStreamPtr();uint8_t buffer[1024],digest[32];size_t written=0;
-  mbedtls_sha256_context sha;mbedtls_sha256_init(&sha);mbedtls_sha256_starts_ret(&sha,0);
+  mbedtls_sha256_context sha;mbedtls_sha256_init(&sha);mbedtls_sha256_starts(&sha,0);
   uint32_t lastData=millis();
-  while(written<expectedSize&&millis()-lastData<30000){size_t available=stream->available();if(!available){delay(5);continue;}size_t want=min(available,sizeof(buffer));int got=stream->readBytes(buffer,want);if(got<=0)continue;lastData=millis();mbedtls_sha256_update_ret(&sha,buffer,got);if(Update.write(buffer,got)!=(size_t)got)break;written+=got;}
-  mbedtls_sha256_finish_ret(&sha,digest);mbedtls_sha256_free(&sha);http.end();
+  while(written<expectedSize&&millis()-lastData<30000){size_t available=stream->available();if(!available){delay(5);continue;}size_t want=min(available,sizeof(buffer));int got=stream->readBytes(buffer,want);if(got<=0)continue;lastData=millis();mbedtls_sha256_update(&sha,buffer,got);if(Update.write(buffer,got)!=(size_t)got)break;written+=got;}
+  mbedtls_sha256_finish(&sha,digest);mbedtls_sha256_free(&sha);http.end();
   if(written!=expectedSize||bytesToHex(digest,32)!=expectedSha){Update.abort();setOtaReport(requestId.c_str(),4,"Firmware SHA-256 dogrulamasi basarisiz.");return false;}
   if(!Update.end(true)){setOtaReport(requestId.c_str(),4,"Firmware kurulumu tamamlanamadi.");return false;}
   Serial.printf("OTA %s kuruluyor; cihaz yeniden baslatiliyor.\n",version.c_str());delay(500);ESP.restart();return true;
