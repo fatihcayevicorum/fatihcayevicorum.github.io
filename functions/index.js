@@ -611,12 +611,18 @@ exports.queueFinanceDailyEmail=onDocumentCreated({document:"adminFinanceDays/{bu
 exports.sendFinanceDailyEmail=onDocumentCreated({document:"adminEmailDailyJobs/{businessDate}",region:"europe-west1",retry:true,secrets:["RESEND_API_KEY"],timeoutSeconds:300,memory:"512MiB",maxInstances:1,concurrency:1},dailyEmail.onJobCreated);
 exports.retryFinanceDailyEmails=onSchedule({schedule:"every 15 minutes",region:"europe-west1",timeZone:"Europe/Istanbul",secrets:["RESEND_API_KEY"],timeoutSeconds:300,memory:"512MiB",maxInstances:1,retryCount:1},dailyEmail.retryPending);
 
-// R615: salt okunur kazan telemetrisi; finans ve cihaz kontrol komutu içermez.
-const boiler=require('./smart-boiler').buildSmartBoiler({db,HttpsError,ownerUid:OWNER_UID,projectId:process.env.GCLOUD_PROJECT||db.projectId});
+// R624: güvenli ESP32 firmware dağıtımı ve mevcut kazan telemetrisi.
+const boilerProjectId=process.env.GCLOUD_PROJECT||db.projectId;
+const boilerOta=require('./smart-boiler-ota').buildBoilerOta({db,bucket:getStorage().bucket(),FieldValue,HttpsError,ownerUid:OWNER_UID,projectId:boilerProjectId});
+const boiler=require('./smart-boiler').buildSmartBoiler({db,HttpsError,ownerUid:OWNER_UID,projectId:boilerProjectId,ota:boilerOta});
 exports.configureBoilerDevice=onCall({region:'europe-west1',cors:true},boiler.configure);
 exports.receiveBoilerTemperature=require('firebase-functions/v2/https').onRequest({region:'europe-west1',cors:false,invoker:'public',maxInstances:2,timeoutSeconds:15},boiler.receive);
 
 exports.setBoilerTarget=onCall({region:'europe-west1',cors:true},boiler.setTarget);
+exports.publishBoilerFirmware=onCall({region:'europe-west1',cors:true,timeoutSeconds:120,memory:'512MiB'},boilerOta.publish);
+exports.startBoilerFirmwareUpdate=onCall({region:'europe-west1',cors:true},boilerOta.start);
+exports.cancelBoilerFirmwareUpdate=onCall({region:'europe-west1',cors:true},boilerOta.cancel);
+exports.downloadBoilerFirmware=require('firebase-functions/v2/https').onRequest({region:'europe-west1',cors:false,invoker:'public',maxInstances:2,timeoutSeconds:300,memory:'512MiB'},boilerOta.download);
 
 // R621: Kazan telemetrisi değiştiğinde Android widget'ını en fazla 5 saniyede bir yenile.
 exports.refreshAndroidWidgetOnBoilerState=onDocumentUpdated({document:'adminBoilerState/kazan-1',region:'europe-west1'},async event=>{

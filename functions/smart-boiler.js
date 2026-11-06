@@ -4,7 +4,7 @@ const DEVICE='kazan-1';
 const hash=v=>crypto.createHash('sha256').update(v).digest('hex');
 function problem(status,message){const e=new Error(message);e.status=status;throw e;}
 function parseSample(b,now){
- if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion','targetTemperatureC','targetAgeMs','control','bootId','result'].includes(k)))problem(400,'Geçersiz ölçüm.');
+ if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion','targetTemperatureC','targetAgeMs','control','bootId','result','heaterOutputKnown','heaterOn','ota'].includes(k)))problem(400,'Geçersiz ölçüm.');
  if(b.deviceId!==DEVICE||!Number.isSafeInteger(b.sentAtMs)||Math.abs(now-b.sentAtMs)>30000)problem(400,'Cihaz veya saat geçersiz.');
  if(typeof b.endaConnected!=='boolean'||typeof b.firmwareVersion!=='string'||!/^[\w .-]{1,48}$/.test(b.firmwareVersion))problem(400,'Geçersiz durum.');
  if(b.endaConnected){if(!Number.isFinite(b.temperatureC)||b.temperatureC< -50||b.temperatureC>200||!Number.isSafeInteger(b.measuredAgeMs)||b.measuredAgeMs<0||b.measuredAgeMs>10000)problem(400,'Ölçüm geçersiz veya eski.');}
@@ -16,9 +16,12 @@ function parseSample(b,now){
  if(b.control!=null){const c=b.control;if(!c||typeof c!=='object'||Array.isArray(c)||Object.keys(c).some(k=>!['min','max','register','decimal'].includes(k))||!hasTarget||!Number.isFinite(c.min)||!Number.isFinite(c.max)||c.min<20||c.max>100||c.min>c.max||![0,1].includes(c.register)||![0,1].includes(c.decimal)||typeof b.bootId!=='string'||!/^[a-f0-9]{32}$/.test(b.bootId))problem(400,'Kontrol bilgisi geçersiz.');control=c;}
  let result=null;
  if(b.result!=null){const r=b.result;if(!r||typeof r!=='object'||!(/^[a-f0-9]{32}$/.test(r.id))||!['confirmed','rejected','unknown'].includes(r.status)||Object.keys(r).some(k=>!['id','status'].includes(k)))problem(400,'Komut sonucu geçersiz.');result={id:r.id,status:r.status};}
- return {control,bootId:typeof b.bootId==='string'&&/^[a-f0-9]{32}$/.test(b.bootId)?b.bootId:null,result,targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
+ const heaterOutputKnown=b.heaterOutputKnown===true,heaterOn=heaterOutputKnown&&typeof b.heaterOn==='boolean'?b.heaterOn:null;
+ if((b.heaterOutputKnown!=null&&typeof b.heaterOutputKnown!=='boolean')||(heaterOutputKnown&&typeof b.heaterOn!=='boolean')||(!heaterOutputKnown&&b.heaterOn!=null))problem(400,'Isıtma çıkışı geçersiz.');
+ let otaReport=null;if(b.ota!=null){const o=b.ota;if(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).some(k=>!['requestId','status','error'].includes(k))||!/^[a-f0-9]{32}$/.test(o.requestId)||!['offered','downloading','installing','failed'].includes(o.status)||typeof(o.error||'')!=='string'||String(o.error||'').length>160)problem(400,'OTA sonucu geçersiz.');otaReport={requestId:o.requestId,status:o.status,error:String(o.error||'')};}
+ return {control,bootId:typeof b.bootId==='string'&&/^[a-f0-9]{32}$/.test(b.bootId)?b.bootId:null,result,otaReport,heaterOutputKnown,heaterOn,targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
 }
-function buildSmartBoiler({db,HttpsError,ownerUid,projectId,now=Date.now}){
+function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.now}){
  const credentials=db.doc('adminBoilerDevices/'+DEVICE),state=db.doc('adminBoilerState/'+DEVICE),maintenance=db.doc('adminBackupControl/state');
  async function configure(r){
   if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','Yalnızca ana yönetici cihaz bağlayabilir.');
@@ -45,7 +48,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,now=Date.now}){
  async function ingest(token,body){
   if(typeof token!=='string'||!/^Bearer [a-f0-9]{64}$/.test(token))problem(401,'Cihaz kimliği doğrulanamadı.');
   const sample=parseSample(body,now()),digest=hash(token.slice(7));
-  return db.runTransaction(async tx=>{
+  const result=await db.runTransaction(async tx=>{
    const [c,s,g]=await Promise.all([tx.get(credentials),tx.get(state),tx.get(maintenance)]),key=c.data()||{},old=s.data()||{};
    if(!key.enabled||typeof key.tokenHash!=='string'||key.tokenHash.length!==64||!crypto.timingSafeEqual(Buffer.from(digest),Buffer.from(key.tokenHash)))problem(401,'Cihaz kimliği doğrulanamadı.');
    if(g.data()?.active)problem(503,'Bakım sürüyor.');
@@ -67,16 +70,20 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,now=Date.now}){
     const reached=Number.isFinite(sample.targetTemperatureC)&&sample.temperatureC>=sample.targetTemperatureC-0.5;
     const rising=Number.isFinite(old.temperatureC)&&sample.temperatureC>Number(old.temperatureC)+0.1;
     const recentlyHeating=old.temperaturePhase==='heating'&&Number.isFinite(old.temperatureC)&&sample.temperatureC>=Number(old.temperatureC)-0.1&&now()-Number(old.lastSeenAtMs||0)<=20000;
-    temperaturePhase=reached?'reached':(rising||recentlyHeating)?'heating':'cold';
+    temperaturePhase=sample.heaterOutputKnown?(sample.heaterOn?'heating':reached?'reached':'cold'):reached?'reached':(rising||recentlyHeating)?'heating':'cold';
    }
-   tx.set(state,{...sample,paired:true,temperaturePhase,...(command?{command}:{})});return wire?{accepted:true,command:wire}:{accepted:true};
+   let next={...old,...sample,paired:true,temperaturePhase,...(command?{command}:{})};delete next.otaReport;
+   if(ota){next=await ota.applyReport(next,sample.otaReport);next=await ota.markSeen(next,sample.firmwareVersion);}
+   tx.set(state,next);return wire?{accepted:true,command:wire}:{accepted:true};
   });
+  if(ota&&result.accepted){const current=(await state.get()).data()||{},instruction=await ota.instruction(current);if(instruction){await state.set({ota:{...current.ota,status:'offered',offeredAtMs:now()}},{merge:true});result.ota=instruction;}}
+  return result;
  }
  async function receive(req,res){
   res.set('Cache-Control','no-store');
   if(req.method!=='POST')return res.status(405).json({error:'POST gerekli.'});
   if(!req.is('application/json')||(req.rawBody?.length||0)>2048)return res.status(400).json({error:'Geçersiz istek.'});
-  try{const result=await ingest(req.get('Authorization'),req.body);if(result.command)res.set('X-Boiler-Command',result.command);return res.status(200).json(result);}
+  try{const result=await ingest(req.get('Authorization'),req.body);if(result.command)res.set('X-Boiler-Command',result.command);if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
   catch(e){return res.status(e.status||503).json({error:e.status?e.message:'Gönderim tamamlanamadı.'});}
  }
  return{configure,receive,ingest,setTarget};

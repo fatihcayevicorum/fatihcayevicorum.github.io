@@ -13,7 +13,8 @@ function boilerView(s,now){
  const control=s.control&&Number.isFinite(Number(s.control.min))&&Number.isFinite(Number(s.control.max))?{
   min:Number(s.control.min),max:Number(s.control.max)
  }:null;
- const phase=fresh?(targetFresh&&temperature>=target-0.5?'reached':s.temperaturePhase==='heating'?'heating':'cold'):'offline';
+ const heaterKnown=fresh&&s.heaterOutputKnown===true&&typeof s.heaterOn==='boolean',heaterOn=heaterKnown&&s.heaterOn===true;
+ const phase=fresh?(heaterKnown?(heaterOn?'heating':targetFresh&&temperature>=target-0.5?'reached':'cold'):(targetFresh&&temperature>=target-0.5?'reached':s.temperaturePhase==='heating'?'heating':'cold')):'offline';
  const command=s.command&&typeof s.command==='object'?{
   id:typeof s.command.id==='string'?s.command.id:'',
   status:typeof s.command.status==='string'?s.command.status:'',
@@ -27,9 +28,11 @@ function boilerView(s,now){
   targetMin:control?control.min:20,
   targetMax:control?control.max:100,
   phase,
+  heaterKnown,
+  heaterOn,
   color:phase==='reached'?'#2d8a57':phase==='heating'?'#b32635':phase==='cold'?'#4ea3d8':'#334155',
   command,
-  status:s.paired!==true?'Cihaz bekleniyor':s.endaConnected!==true?'ENDA bağlantısı yok':fresh?'Canlı':'Veri güncel değil'
+  status:s.paired!==true?'Cihaz bekleniyor':s.endaConnected!==true?'ENDA bağlantısı yok':fresh?(heaterKnown?(heaterOn?'Isıtma aktif':'Isıtma kapalı'):'Canlı · çıkış bekleniyor'):'Veri güncel değil'
  };
 }
 function buildWidgetTea({db,FieldValue,HttpsError,ownerUid,clock=Date.now}){

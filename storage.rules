@@ -38,6 +38,19 @@ service firebase.storage {
         && request.resource.size <= 16 * 1024 * 1024
         && request.resource.contentType.matches('application/(json|octet-stream)'));
     }
+    // R624: firmware yüklemesi yalnız ana yönetici; cihaz indirmesi sunucu
+    // fonksiyonu üzerinden cihaz anahtarı ve bekleyen istek doğrulanarak yapılır.
+    match /boiler-firmware/releases/{firmwareFile} {
+      allow read: if false;
+      allow create, update: if backupWritable() && (request.auth != null
+        && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02'
+        && firmwareFile.matches('[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?\\.bin')
+        && request.resource.size >= 64 * 1024
+        && request.resource.size <= 4 * 1024 * 1024
+        && request.resource.contentType == 'application/octet-stream');
+      allow delete: if backupWritable() && (request.auth != null
+        && request.auth.uid == 'obuZLQXuPAWsHE20bZxcAxCNsO02');
+    }
     match /{allPaths=**} {
       allow read: if false;
       allow write: if backupWritable() && (false);

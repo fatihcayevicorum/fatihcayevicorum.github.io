@@ -557,6 +557,10 @@ service cloud.firestore {
       allow read: if hasPanel('tea');
       allow write: if backupWritable() && (false);
     }
+    match /adminBoilerFirmware/{version} {
+      allow read: if isOwner();
+      allow write: if backupWritable() && (false);
+    }
 
     // Savings collections use callable APIs even for the owner; PIN is server verified.
     match /{collection}/{document=**} {
@@ -564,12 +568,14 @@ service cloud.firestore {
         && !(collection in ['adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminEmailReport', 'adminEmailVerification', 'adminEmailSendJobs', 'adminEmailDailyJobs', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState']);
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState'])
+        && collection != 'adminBoilerFirmware';
       allow write: if backupWritable() && (isOwner()
         && !(collection in ['adminEmailReport', 'adminEmailVerification', 'adminEmailSendJobs', 'adminEmailDailyJobs', 'adminAppSettings', 'adminOrders', 'adminSales', 'adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState']));
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState'])
+        && collection != 'adminBoilerFirmware');
     }
   }
 }

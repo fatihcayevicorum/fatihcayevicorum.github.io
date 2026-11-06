@@ -53,6 +53,11 @@
           <span class="card-icon"><i class="fa-solid fa-mug-hot"></i></span>
           <span class="card-copy"><strong>Taze Dem Ayarları</strong><small>Demlik sayısını, demlenme süresini ve tazelik süresini düzenle</small></span>
         </button>
+        <button id="smartBoilerSettingsCard" class="center-card definition-card" type="button" disabled aria-haspopup="dialog">
+          <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
+          <span class="card-icon"><i class="fa-solid fa-fire-flame-curved"></i></span>
+          <span class="card-copy"><strong>Akıllı Kazan</strong><small>ESP32 bağlantısı, firmware sürümü ve güvenli uzaktan güncelleme</small></span>
+        </button>
         <button type="button" class="center-card definition-card" id="productPriceSettingsCard" aria-haspopup="dialog" disabled><i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i><span class="card-icon"><i class="fa-solid fa-tags"></i></span><span class="card-copy"><strong>Ürün ve Fiyat Ayarları</strong><small>Ürünleri, kategorileri, fiyatları ve fiyat geçmişini yönet</small></span></button>
         <button id="cashSettingsCard" class="center-card definition-card" type="button" disabled>
           <i class="fa-solid fa-arrow-right arrow" aria-hidden="true"></i>
@@ -85,6 +90,18 @@
       </div>
     </section>
   </main>
+
+  <dialog id="smartBoilerSettingsDialog" class="settings-dialog smart-boiler-settings-dialog" aria-labelledby="smartBoilerSettingsHeading">
+    <form method="dialog">
+      <button id="closeSmartBoilerSettings" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
+      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-fire-flame-curved"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2 id="smartBoilerSettingsHeading">Akıllı Kazan</h2></div></div>
+      <section class="boiler-settings-section"><h3>Cihaz bağlantısı</h3><div class="boiler-settings-facts"><p><small>Cihaz kimliği</small><strong id="boilerDeviceId">kazan-1</strong></p><p><small>Bağlantı</small><strong id="boilerConnectionState">Kontrol ediliyor…</strong></p><p><small>Mevcut firmware</small><strong id="boilerFirmwareCurrent">—</strong></p><p><small>Son bağlantı</small><strong id="boilerLastSeen">—</strong></p></div><div class="boiler-settings-actions"><button id="pairBoilerDevice" class="secondary-button" type="button">Bağlantı Dosyası Oluştur</button><button id="revokeBoilerDevice" class="secondary-button danger-button" type="button">Bağlantıyı Kes</button></div><p id="boilerSettingsStatus" class="tea-settings-copy"></p></section>
+      <section class="boiler-settings-section"><h3>Yeni firmware hazırla</h3><div class="boiler-firmware-fields"><label>Sürüm<input id="boilerFirmwareVersion" inputmode="decimal" maxlength="48" placeholder="0.6.0"></label><label>ESP32 firmware (.bin)<input id="boilerFirmwareFile" type="file" accept=".bin,application/octet-stream"></label></div><button id="uploadBoilerFirmware" class="secondary-button" type="button">Dosyayı Doğrula ve Hazırla</button><p class="tea-settings-copy">Dosya SHA-256 ile doğrulanır. Hazırlamak cihazı güncellemez.</p></section>
+      <section class="boiler-settings-section"><h3>Uzaktan güncelleme</h3><label class="boiler-release-select">Sunucudaki sürüm<select id="boilerFirmwareSelect"><option value="">Sürüm seçin</option></select></label><div class="boiler-settings-actions"><button id="startBoilerUpdate" class="primary-button" type="button" disabled>Güncellemeyi Başlat</button><button id="cancelBoilerUpdate" class="secondary-button" type="button" disabled>Bekleyen İsteği İptal Et</button></div><p id="boilerOtaStatus" class="boiler-ota-state">Bekleyen güncelleme yok</p><p id="boilerOtaResult" class="tea-settings-copy">Henüz güncelleme sonucu yok</p></section>
+      <p id="boilerSettingsMessage" class="form-message" role="status" aria-live="polite"></p>
+      <div class="dialog-actions"><button id="doneSmartBoilerSettings" class="primary-button" type="button">Tamam</button></div>
+    </form>
+  </dialog>
 
   <dialog id="emailReportDialog" class="settings-dialog email-report-dialog" aria-labelledby="emailReportHeading">
     <form id="emailReportForm">
@@ -324,6 +341,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="script.js?v=612"></script>
+  <script type="module" src="../assets/js/smart-boiler-settings.js?v=624"></script>
   <script type="module" src="../assets/js/system-ui.js?v=496"></script>
 </body>
 </html>
