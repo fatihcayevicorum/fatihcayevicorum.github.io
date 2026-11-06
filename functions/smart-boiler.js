@@ -4,7 +4,7 @@ const DEVICE='kazan-1';
 const hash=v=>crypto.createHash('sha256').update(v).digest('hex');
 function problem(status,message){const e=new Error(message);e.status=status;throw e;}
 function parseSample(b,now){
- if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion','targetTemperatureC','targetAgeMs','control','bootId','result','heaterOutputKnown','heaterOn','ota'].includes(k)))problem(400,'Geçersiz ölçüm.');
+ if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion','targetTemperatureC','targetAgeMs','control','bootId','result','hysteresis','hysteresisResult','heaterOutputKnown','heaterOn','ota'].includes(k)))problem(400,'Geçersiz ölçüm.');
  if(b.deviceId!==DEVICE||!Number.isSafeInteger(b.sentAtMs)||Math.abs(now-b.sentAtMs)>30000)problem(400,'Cihaz veya saat geçersiz.');
  if(typeof b.endaConnected!=='boolean'||typeof b.firmwareVersion!=='string'||!/^[\w .-]{1,48}$/.test(b.firmwareVersion))problem(400,'Geçersiz durum.');
  if(b.endaConnected){if(!Number.isFinite(b.temperatureC)||b.temperatureC< -50||b.temperatureC>200||!Number.isSafeInteger(b.measuredAgeMs)||b.measuredAgeMs<0||b.measuredAgeMs>10000)problem(400,'Ölçüm geçersiz veya eski.');}
@@ -16,10 +16,14 @@ function parseSample(b,now){
  if(b.control!=null){const c=b.control;if(!c||typeof c!=='object'||Array.isArray(c)||Object.keys(c).some(k=>!['min','max','register','decimal'].includes(k))||!hasTarget||!Number.isFinite(c.min)||!Number.isFinite(c.max)||c.min<20||c.max>100||c.min>c.max||![0,1].includes(c.register)||![0,1].includes(c.decimal)||typeof b.bootId!=='string'||!/^[a-f0-9]{32}$/.test(b.bootId))problem(400,'Kontrol bilgisi geçersiz.');control=c;}
  let result=null;
  if(b.result!=null){const r=b.result;if(!r||typeof r!=='object'||!(/^[a-f0-9]{32}$/.test(r.id))||!['confirmed','rejected','unknown'].includes(r.status)||Object.keys(r).some(k=>!['id','status'].includes(k)))problem(400,'Komut sonucu geçersiz.');result={id:r.id,status:r.status};}
+ let hysteresis=null;
+ if(b.hysteresis!=null){const h=b.hysteresis;if(!h||typeof h!=='object'||Array.isArray(h)||Object.keys(h).some(k=>!['onOff','value'].includes(k))||typeof h.onOff!=='boolean'||!Number.isInteger(h.value)||h.value<1||h.value>50||!b.endaConnected||typeof b.bootId!=='string'||!/^[a-f0-9]{32}$/.test(b.bootId))problem(400,'ON/OFF farkı geçersiz.');hysteresis={onOff:h.onOff,value:h.value};}
+ let hysteresisResult=null;
+ if(b.hysteresisResult!=null){const r=b.hysteresisResult;if(!r||typeof r!=='object'||!(/^[a-f0-9]{32}$/.test(r.id))||!['confirmed','rejected','unknown'].includes(r.status)||Object.keys(r).some(k=>!['id','status'].includes(k)))problem(400,'ON/OFF komut sonucu geçersiz.');hysteresisResult={id:r.id,status:r.status};}
  const heaterOutputKnown=b.heaterOutputKnown===true,heaterOn=heaterOutputKnown&&typeof b.heaterOn==='boolean'?b.heaterOn:null;
  if((b.heaterOutputKnown!=null&&typeof b.heaterOutputKnown!=='boolean')||(heaterOutputKnown&&typeof b.heaterOn!=='boolean')||(!heaterOutputKnown&&b.heaterOn!=null))problem(400,'Isıtma çıkışı geçersiz.');
  let otaReport=null;if(b.ota!=null){const o=b.ota;if(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).some(k=>!['requestId','status','error'].includes(k))||!/^[a-f0-9]{32}$/.test(o.requestId)||!['offered','downloading','installing','failed'].includes(o.status)||typeof(o.error||'')!=='string'||String(o.error||'').length>160)problem(400,'OTA sonucu geçersiz.');otaReport={requestId:o.requestId,status:o.status,error:String(o.error||'')};}
- return {control,bootId:typeof b.bootId==='string'&&/^[a-f0-9]{32}$/.test(b.bootId)?b.bootId:null,result,otaReport,heaterOutputKnown,heaterOn,targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
+ return {control,bootId:typeof b.bootId==='string'&&/^[a-f0-9]{32}$/.test(b.bootId)?b.bootId:null,result,hysteresisResult,hysteresisOnOff:hysteresis?.onOff??null,hysteresisC:hysteresis?.value??null,hysteresisMeasuredAtMs:hysteresis?b.sentAtMs-b.measuredAgeMs:null,otaReport,heaterOutputKnown,heaterOn,targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
 }
 function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.now}){
  const credentials=db.doc('adminBoilerDevices/'+DEVICE),state=db.doc('adminBoilerState/'+DEVICE),maintenance=db.doc('adminBackupControl/state');
@@ -38,11 +42,27 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
    const [s,c,g]=await Promise.all([tx.get(state),tx.get(credentials),tx.get(maintenance)]),old=s.data()||{},at=now();
    if(g.data()?.active||!c.data()?.enabled)throw new HttpsError('unavailable','Cihaz şu an kullanılamıyor.');
    if(old.command?.id===b.id)return {id:b.id,status:old.command.status};
+   if(old.hysteresisCommand&&['pending','dispatched'].includes(old.hysteresisCommand.status)&&old.hysteresisCommand.expiresAtMs>at)throw new HttpsError('aborted','ON/OFF farkı işleminin sonucunu bekleyin.');
    if(old.command&&['pending','dispatched'].includes(old.command.status)&&old.command.expiresAtMs>at)throw new HttpsError('aborted','Önceki işlemin sonucunu bekleyin.');
    if(!old.paired||!old.endaConnected||!old.control||at-old.lastSeenAtMs>20000||at-old.targetMeasuredAtMs>20000||old.targetMeasuredAtMs>at+30000||old.targetTemperatureC!==b.expected)throw new HttpsError('failed-precondition','Cihaz verisi güncel değil veya hedef değişti. Yeniden deneyin.');
    if(b.target<old.control.min||b.target>old.control.max)throw new HttpsError('out-of-range','Hedef cihaz sınırlarının dışında.');
    const command={id:b.id,target:b.target,expected:b.expected,register:old.control.register,decimal:old.control.decimal,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
    tx.set(state,{...old,command});return{id:b.id,status:'pending'};
+  });
+ }
+ async function setHysteresis(r){
+  if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','ON/OFF farkını yalnızca ana yönetici değiştirebilir.');
+  const b=r.data||{};
+  if(Object.keys(b).some(k=>!['id','value','expected','sentAtMs'].includes(k))||!(/^[a-f0-9]{32}$/.test(b.id))||!Number.isInteger(b.value)||b.value<1||b.value>10||!Number.isInteger(b.expected)||b.expected<1||b.expected>50||!Number.isSafeInteger(b.sentAtMs)||Math.abs(now()-b.sentAtMs)>15000)throw new HttpsError('invalid-argument','ON/OFF farkı veya istek zamanı geçersiz.');
+  return db.runTransaction(async tx=>{
+   const [s,c,g]=await Promise.all([tx.get(state),tx.get(credentials),tx.get(maintenance)]),old=s.data()||{},at=now();
+   if(g.data()?.active||!c.data()?.enabled)throw new HttpsError('unavailable','Cihaz şu an kullanılamıyor.');
+   if(old.hysteresisCommand?.id===b.id)return{id:b.id,status:old.hysteresisCommand.status};
+   if(old.command&&['pending','dispatched'].includes(old.command.status)&&old.command.expiresAtMs>at)throw new HttpsError('aborted','Hedef sıcaklık işleminin sonucunu bekleyin.');
+   if(old.hysteresisCommand&&['pending','dispatched'].includes(old.hysteresisCommand.status)&&old.hysteresisCommand.expiresAtMs>at)throw new HttpsError('aborted','Önceki ON/OFF farkı işleminin sonucunu bekleyin.');
+   if(!old.paired||!old.endaConnected||old.hysteresisOnOff!==true||!Number.isInteger(old.hysteresisC)||at-old.lastSeenAtMs>20000||at-old.hysteresisMeasuredAtMs>20000||old.hysteresisMeasuredAtMs>at+30000||old.hysteresisC!==b.expected||typeof old.bootId!=='string'||!/^[a-f0-9]{32}$/.test(old.bootId))throw new HttpsError('failed-precondition','Cihaz ON/OFF modunda değil, veri güncel değil veya fark değeri değişti.');
+   const hysteresisCommand={id:b.id,value:b.value,expected:b.expected,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
+   tx.set(state,{...old,hysteresisCommand});return{id:b.id,status:'pending'};
   });
  }
  async function ingest(token,body){
@@ -65,6 +85,15 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
      }
     }
    }
+   let hysteresisCommand=old.hysteresisCommand||null,hysteresisWire=null;
+   if(hysteresisCommand){hysteresisCommand={...hysteresisCommand};
+    if(hysteresisCommand.status==='dispatched'&&sample.hysteresisResult?.id===hysteresisCommand.id){hysteresisCommand.status=sample.hysteresisResult.status==='confirmed'&&sample.hysteresisOnOff===true&&sample.hysteresisC===hysteresisCommand.value?'confirmed':sample.hysteresisResult.status==='rejected'?'rejected':'unknown';}
+    if(['pending','dispatched'].includes(hysteresisCommand.status)&&hysteresisCommand.expiresAtMs<=now())hysteresisCommand.status=hysteresisCommand.status==='pending'?'expired':'unknown';
+    if(hysteresisCommand.status==='pending'){
+     if(sample.bootId!==hysteresisCommand.bootId||sample.hysteresisOnOff!==true||sample.hysteresisC!==hysteresisCommand.expected)hysteresisCommand.status='rejected';
+     else if(now()-sample.hysteresisMeasuredAtMs<=5000&&now()-sample.hysteresisMeasuredAtMs>=-30000){hysteresisCommand.status='dispatched';hysteresisWire=[hysteresisCommand.id,hysteresisCommand.value,hysteresisCommand.expected,Math.floor(hysteresisCommand.expiresAtMs/1000)].join(',');}
+    }
+   }
    let temperaturePhase='offline';
    if(sample.endaConnected&&Number.isFinite(sample.temperatureC)){
     const reached=Number.isFinite(sample.targetTemperatureC)&&sample.temperatureC>=sample.targetTemperatureC-0.5;
@@ -72,9 +101,9 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
     const recentlyHeating=old.temperaturePhase==='heating'&&Number.isFinite(old.temperatureC)&&sample.temperatureC>=Number(old.temperatureC)-0.1&&now()-Number(old.lastSeenAtMs||0)<=20000;
     temperaturePhase=sample.heaterOutputKnown?(sample.heaterOn?'heating':reached?'reached':'cold'):reached?'reached':(rising||recentlyHeating)?'heating':'cold';
    }
-   let next={...old,...sample,paired:true,temperaturePhase,...(command?{command}:{})};delete next.otaReport;
+   let next={...old,...sample,paired:true,temperaturePhase,...(command?{command}:{}),...(hysteresisCommand?{hysteresisCommand}:{})};delete next.otaReport;
    if(ota){next=await ota.applyReport(next,sample.otaReport);next=await ota.markSeen(next,sample.firmwareVersion);}
-   tx.set(state,next);return wire?{accepted:true,command:wire}:{accepted:true};
+   tx.set(state,next);return{accepted:true,...(wire?{command:wire}:{}),...(hysteresisWire?{hysteresisCommand:hysteresisWire}:{})};
   });
   if(ota&&result.accepted){const current=(await state.get()).data()||{},instruction=await ota.instruction(current);if(instruction){await state.set({ota:{...current.ota,status:'offered',offeredAtMs:now()}},{merge:true});result.ota=instruction;}}
   return result;
@@ -83,9 +112,9 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
   res.set('Cache-Control','no-store');
   if(req.method!=='POST')return res.status(405).json({error:'POST gerekli.'});
   if(!req.is('application/json')||(req.rawBody?.length||0)>2048)return res.status(400).json({error:'Geçersiz istek.'});
-  try{const result=await ingest(req.get('Authorization'),req.body);if(result.command)res.set('X-Boiler-Command',result.command);if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
+  try{const result=await ingest(req.get('Authorization'),req.body);if(result.command)res.set('X-Boiler-Command',result.command);if(result.hysteresisCommand)res.set('X-Boiler-Hysteresis',result.hysteresisCommand);if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
   catch(e){return res.status(e.status||503).json({error:e.status?e.message:'Gönderim tamamlanamadı.'});}
  }
- return{configure,receive,ingest,setTarget};
+ return{configure,receive,ingest,setTarget,setHysteresis};
 }
 module.exports={buildSmartBoiler,parseSample};

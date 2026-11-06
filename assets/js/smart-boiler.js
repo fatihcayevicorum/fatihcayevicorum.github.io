@@ -1,13 +1,13 @@
-/* R633 — tek başlık göstergesi, kompakt kazan ekranı ve yalnız Celsius. */
+/* R634 — doğrulanmış ENDA ON/OFF farkı okuma ve güvenli ayar. */
 let liveInfo={fresh:false,temperature:null,status:"Cihaz bağlantısı bekleniyor.",last:null,owner:false,phase:"offline",heaterKnown:false,heaterOn:false},liveModule=null,liveStarted=false;
 let page=null,headerButton=null,dialog=null;
 const HEADER_ID="smartBoilerHeaderButton",DIALOG_ID="smartBoilerQuickDialog";
-const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=633",import.meta.url);document.head.append(css);
+const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=634",import.meta.url);document.head.append(css);
 
 function temperature(c){return `${Math.round(c)}°C`}
-function startLive(){if(liveStarted)return;liveStarted=true;import("./smart-boiler-live.js?v=633").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});if(page)mountConnection();mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
+function startLive(){if(liveStarted)return;liveStarted=true;import("./smart-boiler-live.js?v=634").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});if(page)mountConnection();mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
 function mountConnection(){const root=page?.querySelector("[data-pairing]");if(root&&liveModule&&!root.dataset.mounted){root.dataset.mounted="true";liveModule.mountPairing(root)}}
-function mountEditors(){if(!liveModule)return;for(const root of [page,dialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor)}}}
+function mountEditors(){if(!liveModule)return;for(const root of [page,dialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor)}const hysteresis=root?.querySelector("[data-hysteresis-editor]");if(hysteresis&&!hysteresis.dataset.mounted){hysteresis.dataset.mounted="true";liveModule.mountHysteresisEditor(hysteresis)}}}
 function heaterLabel(){
  if(!liveInfo.fresh)return["Bağlantı yok","Güncel veri alınamadı"];
  if(!liveInfo.heaterKnown)return["Durum bilinmiyor","ENDA çıkışı doğrulanamadı"];
@@ -31,7 +31,7 @@ function renderLive(){
   root.querySelectorAll("[data-firmware]").forEach(element=>element.textContent=liveInfo.firmwareVersion||"Doğrulanmadı");
  }
 }
-function render(){const pairing=page?.querySelector("[data-pairing]");if(pairing)pairing.hidden=!liveInfo.owner;renderLive();for(const root of [page,dialog])root?.querySelector("[data-target-editor]")?.refreshTarget?.()}
+function render(){const pairing=page?.querySelector("[data-pairing]");if(pairing)pairing.hidden=!liveInfo.owner;renderLive();for(const root of [page,dialog]){root?.querySelector("[data-target-editor]")?.refreshTarget?.();root?.querySelector("[data-hysteresis-editor]")?.refreshHysteresis?.()}}
 function createQuickDialog(){
  dialog=document.getElementById(DIALOG_ID);if(dialog)return;
  dialog=document.createElement("dialog");dialog.id=DIALOG_ID;dialog.className="boiler-dialog";dialog.setAttribute("aria-labelledby","boilerQuickTitle");
@@ -51,7 +51,7 @@ function openQuick(){if(!dialog)return;dialog.querySelector("[data-target-editor
 
 export function mountBoilerPage(root){
  if(root.dataset.mounted)return;root.dataset.mounted="true";page=root;startLive();root.classList.add("boiler-page");
- root.innerHTML=`<section class="boiler-device-strip"><div><p class="boiler-kicker">Akıllı Kazan</p><h2>ENDA ET4420-230-RS</h2></div><dl><div><dt>ENDA bağlantısı</dt><dd data-enda>Bağlantı yok</dd></div><div><dt>ESP32 bağlantısı</dt><dd data-esp>Bağlantı yok</dd></div><div><dt>ESP32 firmware</dt><dd data-firmware>Doğrulanmadı</dd></div></dl></section><div class="boiler-dashboard"><section class="boiler-card"><small>Anlık Sıcaklık</small><strong data-current>—</strong><span>Son veri: <time data-last>Henüz veri yok</time></span></section><section class="boiler-card"><small>Hedef Sıcaklık</small><strong data-target>—</strong><span data-target-status></span></section><section class="boiler-card boiler-status-card"><small>Canlı Isıtma Durumu</small><div class="boiler-heater" data-heater></div></section></div><div class="boiler-controls-grid"><section class="boiler-card boiler-control-card" data-target-editor></section><section class="boiler-card boiler-hysteresis-card"><div><small>ON/OFF Farkı</small><h3>Doğrulama bekliyor</h3></div><div class="boiler-adjust boiler-adjust-disabled" aria-label="ON/OFF farkı cihaz doğrulamasına kadar kapalı"><button type="button" disabled aria-label="Farkı azalt">−</button><output>— °C</output><button type="button" disabled aria-label="Farkı artır">+</button></div><p class="boiler-note">ENDA kontrol modu ve H5/C.HyS değeri gerçek cihazdan okunmadan değiştirme kapalıdır.</p><p class="boiler-reheat-example">Örnek: 90°C hedef ve 3°C fark için yeniden ısıtma 87°C’de başlar.</p></section></div><section class="boiler-card" data-pairing hidden></section>`;
+ root.innerHTML=`<section class="boiler-device-strip"><div><p class="boiler-kicker">Akıllı Kazan</p><h2>ENDA ET4420-230-RS</h2></div><dl><div><dt>ENDA bağlantısı</dt><dd data-enda>Bağlantı yok</dd></div><div><dt>ESP32 bağlantısı</dt><dd data-esp>Bağlantı yok</dd></div><div><dt>ESP32 firmware</dt><dd data-firmware>Doğrulanmadı</dd></div></dl></section><div class="boiler-dashboard"><section class="boiler-card"><small>Anlık Sıcaklık</small><strong data-current>—</strong><span>Son veri: <time data-last>Henüz veri yok</time></span></section><section class="boiler-card"><small>Hedef Sıcaklık</small><strong data-target>—</strong><span data-target-status></span></section><section class="boiler-card boiler-status-card"><small>Canlı Isıtma Durumu</small><div class="boiler-heater" data-heater></div></section></div><div class="boiler-controls-grid"><section class="boiler-card boiler-control-card" data-target-editor></section><section class="boiler-card boiler-hysteresis-card" data-hysteresis-editor></section></div><section class="boiler-card" data-pairing hidden></section>`;
  mountConnection();mountEditors();render();
 }
 installHeader();
