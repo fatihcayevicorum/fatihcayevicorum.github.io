@@ -619,6 +619,7 @@ exports.configureBoilerDevice=onCall({region:'europe-west1',cors:true},boiler.co
 exports.receiveBoilerTemperature=require('firebase-functions/v2/https').onRequest({region:'europe-west1',cors:false,invoker:'public',maxInstances:2,timeoutSeconds:15},boiler.receive);
 
 exports.setBoilerTarget=onCall({region:'europe-west1',cors:true},boiler.setTarget);
+exports.setBoilerHysteresis=onCall({region:'europe-west1',cors:true},boiler.setHysteresis);
 exports.publishBoilerFirmware=onCall({region:'europe-west1',cors:true,timeoutSeconds:120,memory:'512MiB'},boilerOta.publish);
 exports.startBoilerFirmwareUpdate=onCall({region:'europe-west1',cors:true},boilerOta.start);
 exports.cancelBoilerFirmwareUpdate=onCall({region:'europe-west1',cors:true},boilerOta.cancel);

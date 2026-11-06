@@ -24,8 +24,12 @@ function view(){const at=Date.now(),age=data?.measuredAtMs?at-data.measuredAtMs:
  let status=message||(!data?.paired?'Cihaz henüz bağlanmadı.':!online||!navigator.onLine?'Sunucu bağlantısı yok.':seen>45000?'Cihazdan güncel veri alınamıyor.':!data.endaConnected?'ENDA bağlantısı yok.':!fresh?'Sıcaklık verisi güncel değil.':heaterKnown?(heaterOn?'ENDA ısıtma çıkışı aktif.':'ENDA ısıtma çıkışı kapalı.'):'Canlı sıcaklık · Isıtma çıkışı yeni ESP32 yazılımını bekliyor.');
  const command=data?.command||null;
  const waiting=command&&['pending','dispatched'].includes(command.status)&&command.expiresAtMs>at;
+ const hysteresisAge=data?.hysteresisMeasuredAtMs?at-data.hysteresisMeasuredAtMs:Infinity;
+ const hysteresisFresh=fresh&&typeof data?.hysteresisOnOff==='boolean'&&Number.isInteger(data?.hysteresisC)&&data.hysteresisC>=1&&data.hysteresisC<=50&&hysteresisAge>=-30000&&hysteresisAge<=45000;
+ const hysteresisCommand=data?.hysteresisCommand||null;
+ const hysteresisWaiting=hysteresisCommand&&['pending','dispatched'].includes(hysteresisCommand.status)&&hysteresisCommand.expiresAtMs>at;
  const control=targetFresh&&owner&&data?.control&&seen<=20000?data.control:null;
- return{control,command,waiting,targetFresh,target:targetFresh?data.targetTemperatureC:null,fresh,temperature:fresh?data.temperatureC:null,status,last:data?.lastSeenAtMs||null,owner,paired:!!data?.paired,endaConnected:fresh&&data?.endaConnected===true,espConnected:fresh,phase,heaterKnown,heaterOn,firmwareVersion:data?.firmwareVersion||'',ota:data?.ota||null};
+ return{control,command,waiting,hysteresis:hysteresisFresh?{onOff:data.hysteresisOnOff,value:data.hysteresisC}:null,hysteresisCommand,hysteresisWaiting,targetFresh,target:targetFresh?data.targetTemperatureC:null,fresh,temperature:fresh?data.temperatureC:null,status,last:data?.lastSeenAtMs||null,owner,paired:!!data?.paired,endaConnected:fresh&&data?.endaConnected===true,espConnected:fresh,phase,heaterKnown,heaterOn,firmwareVersion:data?.firmwareVersion||'',ota:data?.ota||null};
 }
 export function mountPairing(root){
  root.innerHTML='<h3>Cihaz bağlantısı</h3><p class="boiler-note">ESP32 bağlantı dosyasını indirip cihaz yazılımına ekleyin. Yenileme mevcut cihaz anahtarını geçersiz kılar.</p><div class="boiler-actions"><button type="button" data-pair>Bağlantı dosyası oluştur</button><button type="button" data-revoke>Bağlantıyı iptal et</button></div><p class="boiler-note" data-pair-status role="status"></p><a hidden data-download>boiler_cloud.h dosyasını indir</a>';
@@ -69,4 +73,36 @@ export function mountTargetEditor(root){
   finally{sending=false;paint();}
  };
  root.refreshTarget=()=>{if(view().command)notice='';paint()};root.resetTarget=reset;paint();
+}
+
+export function mountHysteresisEditor(root){
+ root.innerHTML='<div><small>ON/OFF Farkı</small><h3 data-hysteresis-mode>Doğrulanıyor</h3></div><p class="boiler-editor-current">Mevcut fark: <strong data-hysteresis-current>—</strong></p><div class="boiler-adjust"><button type="button" data-hysteresis-down aria-label="Farkı azalt">−</button><output data-hysteresis-draft>—</output><button type="button" data-hysteresis-up aria-label="Farkı artır">+</button></div><div class="boiler-actions"><button type="button" data-hysteresis-save>Kaydet</button><button type="button" data-hysteresis-cancel>İptal</button></div><p class="boiler-note" data-hysteresis-status role="status"></p><p class="boiler-reheat-example" data-hysteresis-example>Yeniden ısıtma başlangıcı hesaplanıyor.</p>';
+ let draft=null,expected=null,dirty=false,sending=false,notice='',awaitedId=null,awaitedUntil=0;
+ const q=s=>root.querySelector(s);
+ function reset(){draft=null;expected=null;dirty=false;notice='';paint()}
+ function paint(){const v=view(),h=v.hysteresis;root.hidden=!v.owner;if(!v.owner){draft=null;expected=null;dirty=false;return;}
+  if(!dirty&&!sending){draft=h?.value??null;expected=h?.value??null;}
+  if(awaitedId===v.hysteresisCommand?.id||Date.now()>awaitedUntil)awaitedId=null;
+  const localWaiting=!!awaitedId,modeReady=!!h?.onOff,allowed=modeReady&&!v.hysteresisWaiting&&!v.waiting&&!sending&&!localWaiting;
+  q('[data-hysteresis-mode]').textContent=!h?'Cihaz verisi bekleniyor':modeReady?'ON/OFF modu aktif':'PID modu aktif';
+  q('[data-hysteresis-current]').textContent=h?h.value+' °C':'—';q('[data-hysteresis-draft]').textContent=draft===null?'—':draft+' °C';
+  q('[data-hysteresis-down]').disabled=!allowed||draft===null||draft<=1;q('[data-hysteresis-up]').disabled=!allowed||draft===null||draft>=10;
+  q('[data-hysteresis-save]').disabled=!allowed||!dirty||draft<1||draft>10;q('[data-hysteresis-cancel]').disabled=sending||!dirty;
+  const c=v.hysteresisCommand;const status=c&&c.expiresAtMs<=Date.now()&&['pending','dispatched'].includes(c.status)?(c.status==='pending'?'expired':'unknown'):c?.status;
+  const messages={pending:'İstek alındı; cihaz bekleniyor.',dispatched:'Cihaza iletildi; ENDA doğrulaması bekleniyor.',confirmed:'ENDA ON/OFF farkını doğruladı.',rejected:'Uygulanmadı: cihaz modu veya değer değişti.',expired:'İstek zaman aşımına uğradı; uygulanmadı.',unknown:'Sonuç doğrulanamadı. ENDA’daki C.HYS değerini kontrol edin.'};
+  q('[data-hysteresis-status]').textContent=notice||(sending?'Gönderiliyor…':localWaiting?'İstek gönderildi; sunucu durumu bekleniyor.':v.hysteresisWaiting?messages[status]:!h?'Değişiklik için ESP32 0.6.2 ve güncel ENDA verisi gerekiyor.':!modeReady?'C.Pb sıfır olmadığı için güvenlik gereği C.HYS değiştirilemez.':(messages[status]||'')+' Güvenli kullanıcı aralığı: 1–10 °C.');
+  q('[data-hysteresis-example]').textContent=v.targetFresh&&draft!==null?`${Math.round(v.target)}°C hedef ve ${draft}°C fark için yeniden ısıtma yaklaşık ${Math.round(v.target)-draft}°C’de başlar.`:'Hedef ve fark bilgisi geldiğinde yeniden başlama sıcaklığı gösterilir.';
+ }
+ q('[data-hysteresis-down]').onclick=()=>{if(view().hysteresis?.onOff&&draft!==null){draft=Math.max(1,draft-1);dirty=true;notice='';paint()}};
+ q('[data-hysteresis-up]').onclick=()=>{if(view().hysteresis?.onOff&&draft!==null){draft=Math.min(10,draft+1);dirty=true;notice='';paint()}};
+ q('[data-hysteresis-cancel]').onclick=reset;
+ q('[data-hysteresis-save]').onclick=async()=>{const v=view();if(!v.owner||!v.hysteresis?.onOff||sending||!dirty||v.hysteresisWaiting||v.waiting)return;
+  if(v.hysteresis.value!==expected){notice='ON/OFF farkı başka yerden değişti. İptal’e basıp güncel değer üzerinden ayarlayın.';paint();return;}
+  const accepted=await systemConfirm({title:'ON/OFF farkı değiştirilsin mi?',message:`ENDA C.HYS değeri ${expected}°C’den ${draft}°C’ye değiştirilecek.`,confirmText:'Kaydet'});if(!accepted)return;
+  sending=true;notice='';paint();const id=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
+  try{await httpsCallable(getFunctions(firebaseApp,'europe-west1'),'setBoilerHysteresis')({id,value:draft,expected,sentAtMs:Date.now()});dirty=false;awaitedId=id;awaitedUntil=Date.now()+35000;notice='';}
+  catch(e){notice=e.code?.includes('failed-precondition')?'ENDA ON/OFF modunda değil veya fark değeri değişti. İptal’e basıp yeniden kontrol edin.':e.code?.includes('permission-denied')?'Yalnızca ana yönetici değiştirebilir.':'İstek tamamlanamadı. Cihaz bağlantısını ve C.HYS değerini kontrol edin.';}
+  finally{sending=false;paint();}
+ };
+ root.refreshHysteresis=()=>{if(view().hysteresisCommand)notice='';paint()};root.resetHysteresis=reset;paint();
 }

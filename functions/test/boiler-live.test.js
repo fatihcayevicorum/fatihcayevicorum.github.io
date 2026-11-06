@@ -31,3 +31,24 @@ test('control: dispatch once, explicit readback acknowledgement, duplicate reque
 test('control: manual change or reboot rejects pending command',async()=>{for(const patch of [{targetTemperatureC:96},{bootId:'c'.repeat(32)}]){const f=await pairedControl();await f.api.setTarget(command());f.tick(15000);assert.equal((await f.api.ingest(f.token,controlSample({sentAtMs:NOW+15000,...patch}))).command,undefined);assert.equal(f.records.get('adminBoilerState/kazan-1').command.status,'rejected')}});
 test('control: expired pending never delivered and lost reply stays unknown',async()=>{for(const dispatch of [false,true]){const f=await pairedControl();await f.api.setTarget(command());if(dispatch){f.tick(15000);await f.api.ingest(f.token,controlSample({sentAtMs:NOW+15000}));f.tick(16000)}else f.tick(31000);assert.equal((await f.api.ingest(f.token,controlSample({sentAtMs:NOW+31000}))).command,undefined);assert.equal(f.records.get('adminBoilerState/kazan-1').command.status,dispatch?'unknown':'expired')}});
 test('control: maintenance and revoke prevent writes',async()=>{const f=await pairedControl();f.records.set('adminBackupControl/state',{active:true});await assert.rejects(f.api.setTarget(command()));f.records.set('adminBackupControl/state',{active:false});await f.api.configure({auth:{uid:'owner'},data:{action:'revoke'}});await assert.rejects(f.api.setTarget(command()));});
+
+function hysteresisSample(extra={}){return controlSample({hysteresis:{onOff:true,value:3},...extra})}
+async function pairedHysteresis(extra={}){const f=fixture(),r=await f.api.configure({auth:{uid:'owner'},data:{action:'pair'}});f.token='Bearer '+r.token;await f.api.ingest(f.token,hysteresisSample(extra));return f}
+function hysteresisCommand(extra={}){return{auth:{uid:'owner'},data:{id:'d'.repeat(32),value:4,expected:3,sentAtMs:NOW,...extra}}}
+test('hysteresis telemetry: validates mode and official 1-50 device range',()=>{
+ const valid=parseSample(hysteresisSample(),NOW);assert.equal(valid.hysteresisOnOff,true);assert.equal(valid.hysteresisC,3);
+ for(const hysteresis of [{onOff:true,value:0},{onOff:true,value:51},{onOff:'yes',value:3},{onOff:false,value:2,extra:true}])assert.throws(()=>parseSample(hysteresisSample({hysteresis}),NOW));
+});
+test('hysteresis control: owner, 1-10 UI range, ON/OFF and current-value guards',async()=>{
+ const f=await pairedHysteresis();await assert.rejects(f.api.setHysteresis({...hysteresisCommand(),auth:{uid:'staff'}}));
+ for(const patch of [{value:0},{value:11},{value:4.5},{expected:2},{sentAtMs:NOW-20000}])await assert.rejects(f.api.setHysteresis(hysteresisCommand(patch)));
+ const pid=await pairedHysteresis({hysteresis:{onOff:false,value:3}});await assert.rejects(pid.api.setHysteresis(hysteresisCommand()));
+});
+test('hysteresis control: dispatches once and confirms only after ENDA readback',async()=>{
+ const f=await pairedHysteresis();await f.api.setHysteresis(hysteresisCommand());await f.api.setHysteresis(hysteresisCommand());await assert.rejects(f.api.setTarget(command({id:'e'.repeat(32)})));
+ f.tick(15000);const r=await f.api.ingest(f.token,hysteresisSample({sentAtMs:NOW+15000}));assert.match(r.hysteresisCommand,/^d{32},4,3,/);assert.equal(f.records.get('adminBoilerState/kazan-1').hysteresisCommand.status,'dispatched');
+ f.tick(5000);await f.api.ingest(f.token,hysteresisSample({sentAtMs:NOW+20000,hysteresis:{onOff:true,value:4},hysteresisResult:{id:'d'.repeat(32),status:'confirmed'}}));assert.equal(f.records.get('adminBoilerState/kazan-1').hysteresisCommand.status,'confirmed');
+});
+test('hysteresis control: mode change, reboot and stale command fail closed',async()=>{
+ for(const patch of [{hysteresis:{onOff:false,value:3}},{bootId:'c'.repeat(32)}]){const f=await pairedHysteresis();await f.api.setHysteresis(hysteresisCommand());f.tick(15000);assert.equal((await f.api.ingest(f.token,hysteresisSample({sentAtMs:NOW+15000,...patch}))).hysteresisCommand,undefined);assert.equal(f.records.get('adminBoilerState/kazan-1').hysteresisCommand.status,'rejected');}
+});
