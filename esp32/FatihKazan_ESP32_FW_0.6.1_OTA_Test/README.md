@@ -1,4 +1,4 @@
-# Fatih Kazan ESP32 0.6.1 OTA — test
+# Fatih Kazan ESP32 0.6.1 OTA — onaylı
 
 R633 web sistemiyle 0.6.0 sürümünden güvenli OTA güncelleme denemesi içindir. İşlevler 0.6.0 ile aynıdır; sürüm numarası OTA sonucunun açıkça doğrulanabilmesi için 0.6.1-ota-test olarak değiştirilmiştir.
 
@@ -26,4 +26,13 @@ Sadece aktif hedef yazılır. ENDA'nın ısıtma, PID, histerezis veya röle aya
 
 ## Kontrol durumu
 
-Bu ESP32 sürümü henüz gerçek cihazda OTA ile yüklenmedi. Bölümleme düzeni, OTA alanı, ENDA çıkış okuması ve yeniden başlatma cihaz başında doğrulanmalıdır. Geri dönüş desteği kartın gerçek bölümleme düzeni görülmeden onaylanmış sayılmaz. Çalışan 0.6.0 ve önceki firmware dosyalarını saklayın.
+07.11.2026 tarihinde gerçek ESP32 üzerinde kullanıcı tarafından test edilip onaylandı:
+
+- 0.6.0 sürümü USB ile kuruldu ve cihaz Firebase'e bağlandı.
+- 0.6.1-ota-test firmware dosyası web yönetiminden hazırlandı.
+- OTA indirme, SHA-256 doğrulama, kurulum, yeniden başlatma ve Firebase'e yeniden bağlanma başarılı oldu.
+- Cihaz yeni sürümü `KazanFW 0.6.1-ota-test` olarak bildirdi.
+- Canlı sıcaklık ve kayıtlı hedef yeniden geldi.
+- Hedef sıcaklığı sistemden düşürme ve yükseltme ENDA üzerinde ayrı ayrı doğrulandı.
+
+ON/OFF sıcaklık farkı yazma işlevi etkin değildir. ENDA histerezis parametresi ve güvenli yazma aralığı doğrulanmadan açılmayacaktır. ENDA çıkış komutunun fiziksel rezistans tüketimiyle doğrulanması ve başarısız OTA sonrası otomatik geri dönüş ayrıca test edilmemiştir. Çalışan 0.6.0 ve önceki firmware dosyalarını saklayın.
