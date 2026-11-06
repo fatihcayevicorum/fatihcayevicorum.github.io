@@ -20,13 +20,12 @@ function view(){const at=Date.now(),age=data?.measuredAtMs?at-data.measuredAtMs:
  const targetAge=data?.targetMeasuredAtMs?at-data.targetMeasuredAtMs:Infinity;
  const targetFresh=fresh&&Number.isFinite(data?.targetTemperatureC)&&targetAge>=-30000&&targetAge<=45000;
  const heaterKnown=fresh&&data?.heaterOutputKnown===true&&typeof data?.heaterOn==='boolean',heaterOn=heaterKnown&&data.heaterOn===true;
- const savedPhase=data?.temperaturePhase==='cold'?'waiting':data?.temperaturePhase;
- const phase=!fresh?'offline':heaterKnown?(heaterOn?'heating':targetFresh&&data.temperatureC>=data.targetTemperatureC-.5?'reached':'waiting'):(savedPhase||'unknown');
+ const phase=!fresh?'offline':heaterKnown?(heaterOn?'heating':targetFresh&&data.temperatureC>=data.targetTemperatureC-.5?'reached':'waiting'):'unknown';
  let status=message||(!data?.paired?'Cihaz henüz bağlanmadı.':!online||!navigator.onLine?'Sunucu bağlantısı yok.':seen>45000?'Cihazdan güncel veri alınamıyor.':!data.endaConnected?'ENDA bağlantısı yok.':!fresh?'Sıcaklık verisi güncel değil.':heaterKnown?(heaterOn?'ENDA ısıtma çıkışı aktif.':'ENDA ısıtma çıkışı kapalı.'):'Canlı sıcaklık · Isıtma çıkışı yeni ESP32 yazılımını bekliyor.');
  const command=data?.command||null;
  const waiting=command&&['pending','dispatched'].includes(command.status)&&command.expiresAtMs>at;
  const control=targetFresh&&owner&&data?.control&&seen<=20000?data.control:null;
- return{control,command,waiting,targetFresh,target:targetFresh?data.targetTemperatureC:null,fresh,temperature:fresh?data.temperatureC:null,status,last:data?.lastSeenAtMs||null,owner,paired:!!data?.paired,phase,heaterKnown,heaterOn,firmwareVersion:data?.firmwareVersion||'',ota:data?.ota||null};
+ return{control,command,waiting,targetFresh,target:targetFresh?data.targetTemperatureC:null,fresh,temperature:fresh?data.temperatureC:null,status,last:data?.lastSeenAtMs||null,owner,paired:!!data?.paired,endaConnected:fresh&&data?.endaConnected===true,espConnected:fresh,phase,heaterKnown,heaterOn,firmwareVersion:data?.firmwareVersion||'',ota:data?.ota||null};
 }
 export function mountPairing(root){
  root.innerHTML='<h3>Cihaz bağlantısı</h3><p class="boiler-note">ESP32 bağlantı dosyasını indirip cihaz yazılımına ekleyin. Yenileme mevcut cihaz anahtarını geçersiz kılar.</p><div class="boiler-actions"><button type="button" data-pair>Bağlantı dosyası oluştur</button><button type="button" data-revoke>Bağlantıyı iptal et</button></div><p class="boiler-note" data-pair-status role="status"></p><a hidden data-download>boiler_cloud.h dosyasını indir</a>';
@@ -41,7 +40,7 @@ export function mountPairing(root){
 }
 
 export function mountTargetEditor(root){
- root.innerHTML='<h3>Hedefi değiştir</h3><div class="boiler-adjust"><button type="button" data-down aria-label="Hedefi azalt">▼</button><output data-draft>—</output><button type="button" data-up aria-label="Hedefi artır">▲</button></div><div class="boiler-actions"><button type="button" data-save>Kaydet</button><button type="button" data-cancel>İptal</button></div><p class="boiler-note" data-command-status role="status"></p>';
+ root.innerHTML='<h3>Hedef Sıcaklık</h3><p class="boiler-editor-current">Mevcut hedef: <strong data-editor-target>—</strong></p><div class="boiler-adjust"><button type="button" data-down aria-label="Hedefi azalt">−</button><output data-draft>—</output><button type="button" data-up aria-label="Hedefi artır">+</button></div><div class="boiler-actions"><button type="button" data-save>Kaydet</button><button type="button" data-cancel>İptal</button></div><p class="boiler-note" data-command-status role="status"></p>';
  let draft=null,expected=null,dirty=false,sending=false,notice='',awaitedId=null,awaitedUntil=0;
  const q=s=>root.querySelector(s);
  function reset(){draft=null;expected=null;dirty=false;notice='';paint()}
@@ -50,6 +49,7 @@ export function mountTargetEditor(root){
   if(awaitedId===v.command?.id||Date.now()>awaitedUntil)awaitedId=null;
   const localWaiting=!!awaitedId;
   const min=Math.ceil(v.control?.min??20),max=Math.floor(v.control?.max??100),allowed=!!v.control&&!v.waiting&&!sending&&!localWaiting;
+  q('[data-editor-target]').textContent=v.targetFresh?Math.round(v.target)+' °C':'—';
   q('[data-draft]').textContent=draft===null?'—':draft+' °C';
   q('[data-down]').disabled=!allowed||draft===null||draft<=min;q('[data-up]').disabled=!allowed||draft===null||draft>=max;
   q('[data-save]').disabled=!allowed||!dirty||draft<min||draft>max;q('[data-cancel]').disabled=sending||!dirty;
