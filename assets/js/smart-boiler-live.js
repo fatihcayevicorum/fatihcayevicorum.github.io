@@ -43,23 +43,24 @@ export function mountPairing(root){
  root.querySelector('[data-pair]').onclick=()=>run('pair');root.querySelector('[data-revoke]').onclick=()=>run('revoke');
 }
 
-export function mountTargetEditor(root){
- root.innerHTML='<h3>Hedef Sıcaklık</h3><p class="boiler-editor-current">Mevcut hedef: <strong data-editor-target>—</strong></p><div class="boiler-adjust"><button type="button" data-down aria-label="Hedefi azalt">−</button><output data-draft>—</output><button type="button" data-up aria-label="Hedefi artır">+</button></div><div class="boiler-actions"><button type="button" data-save>Kaydet</button><button type="button" data-cancel>İptal</button></div><p class="boiler-note" data-command-status role="status"></p>';
- let draft=null,expected=null,dirty=false,sending=false,notice='',awaitedId=null,awaitedUntil=0;
+export function mountTargetEditor(root,{onConfirmed=null}={}){
+ root.innerHTML='<h3>Hedef Sıcaklık</h3><p class="boiler-editor-current">Mevcut hedef: <strong data-editor-target>—</strong></p><div class="boiler-adjust"><button type="button" data-down aria-label="Hedefi azalt">−</button><output data-draft>—</output><button type="button" data-up aria-label="Hedefi artır">+</button></div><div class="boiler-actions"><button type="button" data-save>Uygula</button><button type="button" data-cancel>İptal</button></div><p class="boiler-note" data-command-status role="status"></p><p class="boiler-target-hysteresis-note" data-target-hysteresis-note></p>';
+ let draft=null,expected=null,dirty=false,sending=false,notice='',awaitedId=null,awaitedUntil=0,confirmedId=null;
  const q=s=>root.querySelector(s);
  function reset(){draft=null;expected=null;dirty=false;notice='';paint()}
  function paint(){const v=view();root.hidden=!v.owner;if(!v.owner){draft=null;expected=null;dirty=false;return;}
   if(!dirty&&!sending){draft=v.targetFresh?Math.round(v.target):null;expected=v.target;}
-  if(awaitedId===v.command?.id||Date.now()>awaitedUntil)awaitedId=null;
+  const c=v.command;if(awaitedId&&c?.id===awaitedId&&c.status==='confirmed'){const id=awaitedId;awaitedId=null;notice='ENDA hedefi doğruladı.';if(confirmedId!==id){confirmedId=id;setTimeout(()=>onConfirmed?.(),500)}}else if(Date.now()>awaitedUntil||awaitedId&&c?.id===awaitedId&&['rejected','expired','unknown'].includes(c.status))awaitedId=null;
   const localWaiting=!!awaitedId;
   const min=Math.ceil(v.control?.min??20),max=Math.floor(v.control?.max??100),allowed=!!v.control&&!v.waiting&&!sending&&!localWaiting;
   q('[data-editor-target]').textContent=v.targetFresh?Math.round(v.target)+' °C':'—';
   q('[data-draft]').textContent=draft===null?'—':draft+' °C';
   q('[data-down]').disabled=!allowed||draft===null||draft<=min;q('[data-up]').disabled=!allowed||draft===null||draft>=max;
   q('[data-save]').disabled=!allowed||!dirty||draft<min||draft>max;q('[data-cancel]').disabled=sending||!dirty;
-  const c=v.command;const status=c&&c.expiresAtMs<=Date.now()&&['pending','dispatched'].includes(c.status)?(c.status==='pending'?'expired':'unknown'):c?.status;
+  const status=c&&c.expiresAtMs<=Date.now()&&['pending','dispatched'].includes(c.status)?(c.status==='pending'?'expired':'unknown'):c?.status;
   const messages={pending:'İstek alındı; cihaz bekleniyor.',dispatched:'Cihaza iletildi; ENDA doğrulaması bekleniyor.',confirmed:'ENDA hedefi doğruladı.',rejected:'Uygulanmadı: cihaz ayarı değişmiş veya koşullar uygun değil.',expired:'İstek zaman aşımına uğradı; uygulanmadı.',unknown:'Sonuç doğrulanamadı. ENDA’daki hedefi kontrol edin.'};
   q('[data-command-status]').textContent=notice|| (sending?'Gönderiliyor…':localWaiting?'İstek gönderildi; sunucu durumu bekleniyor.':v.waiting?messages[status]:!v.control?'Değişiklik için güncel cihaz verisi ve ESP32 0.4.0 gerekiyor.':(messages[status]||'')+' Ayar aralığı: '+min+'–'+max+' °C.');
+  const h=v.hysteresis;q('[data-target-hysteresis-note]').textContent=h?.onOff&&draft!==null?`ON/OFF farkı ${h.value}°C. Isıtma yaklaşık ${draft-h.value}°C’de yeniden başlar.`:h?'ON/OFF modu aktif değil.':'ON/OFF farkı bilgisi alınamadı.';
  }
  q('[data-down]').onclick=()=>{const c=view().control;if(c&&draft!==null){draft=Math.max(Math.ceil(c.min),Math.min(Math.floor(c.max),draft-1));dirty=true;notice='';paint()}};
  q('[data-up]').onclick=()=>{const c=view().control;if(c&&draft!==null){draft=Math.min(Math.floor(c.max),Math.max(Math.ceil(c.min),draft+1));dirty=true;notice='';paint()}};
@@ -75,12 +76,12 @@ export function mountTargetEditor(root){
  root.refreshTarget=()=>{if(view().command)notice='';paint()};root.resetTarget=reset;paint();
 }
 
-export function mountHysteresisEditor(root){
+export function mountHysteresisEditor(root,{read=()=>view()}={}){
  root.innerHTML='<div><small>ON/OFF Farkı</small><h3 data-hysteresis-mode>Doğrulanıyor</h3></div><p class="boiler-editor-current">Mevcut fark: <strong data-hysteresis-current>—</strong></p><div class="boiler-adjust"><button type="button" data-hysteresis-down aria-label="Farkı azalt">−</button><output data-hysteresis-draft>—</output><button type="button" data-hysteresis-up aria-label="Farkı artır">+</button></div><div class="boiler-actions"><button type="button" data-hysteresis-save>Kaydet</button><button type="button" data-hysteresis-cancel>İptal</button></div><p class="boiler-note" data-hysteresis-status role="status"></p><p class="boiler-reheat-example" data-hysteresis-example>Yeniden ısıtma başlangıcı hesaplanıyor.</p>';
  let draft=null,expected=null,dirty=false,sending=false,notice='',awaitedId=null,awaitedUntil=0;
  const q=s=>root.querySelector(s);
  function reset(){draft=null;expected=null;dirty=false;notice='';paint()}
- function paint(){const v=view(),h=v.hysteresis;root.hidden=!v.owner;if(!v.owner){draft=null;expected=null;dirty=false;return;}
+ function paint(){const v=read(),h=v.hysteresis;root.hidden=!v.owner;if(!v.owner){draft=null;expected=null;dirty=false;return;}
   if(!dirty&&!sending){draft=h?.value??null;expected=h?.value??null;}
   if(awaitedId===v.hysteresisCommand?.id||Date.now()>awaitedUntil)awaitedId=null;
   const localWaiting=!!awaitedId,modeReady=!!h?.onOff,allowed=modeReady&&!v.hysteresisWaiting&&!v.waiting&&!sending&&!localWaiting;
@@ -93,10 +94,10 @@ export function mountHysteresisEditor(root){
   q('[data-hysteresis-status]').textContent=notice||(sending?'Gönderiliyor…':localWaiting?'İstek gönderildi; sunucu durumu bekleniyor.':v.hysteresisWaiting?messages[status]:!h?'Değişiklik için ESP32 0.6.2 ve güncel ENDA verisi gerekiyor.':!modeReady?'C.Pb sıfır olmadığı için güvenlik gereği C.HYS değiştirilemez.':(messages[status]||'')+' Güvenli kullanıcı aralığı: 1–10 °C.');
   q('[data-hysteresis-example]').textContent=v.targetFresh&&draft!==null?`${Math.round(v.target)}°C hedef ve ${draft}°C fark için yeniden ısıtma yaklaşık ${Math.round(v.target)-draft}°C’de başlar.`:'Hedef ve fark bilgisi geldiğinde yeniden başlama sıcaklığı gösterilir.';
  }
- q('[data-hysteresis-down]').onclick=()=>{if(view().hysteresis?.onOff&&draft!==null){draft=Math.max(1,draft-1);dirty=true;notice='';paint()}};
- q('[data-hysteresis-up]').onclick=()=>{if(view().hysteresis?.onOff&&draft!==null){draft=Math.min(10,draft+1);dirty=true;notice='';paint()}};
+ q('[data-hysteresis-down]').onclick=()=>{if(read().hysteresis?.onOff&&draft!==null){draft=Math.max(1,draft-1);dirty=true;notice='';paint()}};
+ q('[data-hysteresis-up]').onclick=()=>{if(read().hysteresis?.onOff&&draft!==null){draft=Math.min(10,draft+1);dirty=true;notice='';paint()}};
  q('[data-hysteresis-cancel]').onclick=reset;
- q('[data-hysteresis-save]').onclick=async()=>{const v=view();if(!v.owner||!v.hysteresis?.onOff||sending||!dirty||v.hysteresisWaiting||v.waiting)return;
+ q('[data-hysteresis-save]').onclick=async()=>{const v=read();if(!v.owner||!v.hysteresis?.onOff||sending||!dirty||v.hysteresisWaiting||v.waiting)return;
   if(v.hysteresis.value!==expected){notice='ON/OFF farkı başka yerden değişti. İptal’e basıp güncel değer üzerinden ayarlayın.';paint();return;}
   const accepted=await systemConfirm({title:'ON/OFF farkı değiştirilsin mi?',message:`ENDA C.HYS değeri ${expected}°C’den ${draft}°C’ye değiştirilecek.`,confirmText:'Kaydet'});if(!accepted)return;
   sending=true;notice='';paint();const id=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -104,5 +105,5 @@ export function mountHysteresisEditor(root){
   catch(e){notice=e.code?.includes('failed-precondition')?'ENDA ON/OFF modunda değil veya fark değeri değişti. İptal’e basıp yeniden kontrol edin.':e.code?.includes('permission-denied')?'Yalnızca ana yönetici değiştirebilir.':'İstek tamamlanamadı. Cihaz bağlantısını ve C.HYS değerini kontrol edin.';}
   finally{sending=false;paint();}
  };
- root.refreshHysteresis=()=>{if(view().hysteresisCommand)notice='';paint()};root.resetHysteresis=reset;paint();
+ root.refreshHysteresis=()=>{if(read().hysteresisCommand)notice='';paint()};root.resetHysteresis=reset;paint();
 }

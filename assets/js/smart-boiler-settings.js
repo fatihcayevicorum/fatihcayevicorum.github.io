@@ -4,6 +4,7 @@ import{getFunctions,httpsCallable}from'https://www.gstatic.com/firebasejs/12.16.
 import{getStorage,ref,uploadBytes}from'https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js';
 import{firebaseApp,ADMIN_UID}from'./firebase-config.js';
 import{systemConfirm}from'./system-confirm.js';
+import{mountHysteresisEditor}from'./smart-boiler-live.js?v=635';
 
 const $=id=>document.getElementById(id),card=$('smartBoilerSettingsCard'),dialog=$('smartBoilerSettingsDialog');
 if(card&&dialog){
@@ -12,12 +13,20 @@ if(card&&dialog){
  const text=value=>String(value??'').replace(/[<>]/g,'');
  const time=value=>Number(value)?new Date(Number(value)).toLocaleString('tr-TR'):'—';
  function message(value,error=false){$('boilerSettingsMessage').textContent=value;$('boilerSettingsMessage').dataset.error=error?'true':'false'}
+ function controlView(){const now=Date.now(),seen=now-Number(state?.lastSeenAtMs||0),fresh=!!state?.paired&&state?.endaConnected===true&&seen<=45000;
+  const targetAge=now-Number(state?.targetMeasuredAtMs||0),hysteresisAge=now-Number(state?.hysteresisMeasuredAtMs||0),targetFresh=fresh&&Number.isFinite(state?.targetTemperatureC)&&targetAge<=45000;
+  const hysteresis=fresh&&typeof state?.hysteresisOnOff==='boolean'&&Number.isInteger(state?.hysteresisC)&&hysteresisAge<=45000?{onOff:state.hysteresisOnOff,value:state.hysteresisC}:null;
+  const command=state?.command||null,hysteresisCommand=state?.hysteresisCommand||null;
+  return{owner:true,targetFresh,target:targetFresh?state.targetTemperatureC:null,hysteresis,command,waiting:!!command&&['pending','dispatched'].includes(command.status)&&command.expiresAtMs>now,hysteresisCommand,hysteresisWaiting:!!hysteresisCommand&&['pending','dispatched'].includes(hysteresisCommand.status)&&hysteresisCommand.expiresAtMs>now};
+ }
+ const hysteresisEditor=$('boilerHysteresisSettings');if(hysteresisEditor)mountHysteresisEditor(hysteresisEditor,{read:controlView});
  function paint(){
   const fresh=state&&Date.now()-Number(state.lastSeenAtMs||0)<=45000;
   $('boilerDeviceId').textContent=state?.deviceId||'kazan-1';$('boilerConnectionState').textContent=state?.paired?(fresh?'Bağlı ve canlı':'Bağlı, cihaz bekleniyor'):'Bağlı değil';
   $('boilerFirmwareCurrent').textContent=state?.firmwareVersion||'—';$('boilerLastSeen').textContent=time(state?.lastSeenAtMs);
   const ota=state?.ota||{};$('boilerOtaStatus').textContent=ota.status?`${ota.version||''} · ${ota.status}`:'Bekleyen güncelleme yok';$('boilerOtaResult').textContent=ota.finishedAtMs?`Sonuç: ${time(ota.finishedAtMs)}${ota.error?' · '+ota.error:''}`:'Henüz güncelleme sonucu yok';
   $('startBoilerUpdate').disabled=!state?.paired||!firmwareSelect.value||['pending','offered','downloading','installing'].includes(ota.status);$('cancelBoilerUpdate').disabled=!['pending','offered'].includes(ota.status);
+  hysteresisEditor?.refreshHysteresis?.();
  }
  async function loadReleases(){const snap=await getDocs(collection(db,'adminBoilerFirmware')),rows=snap.docs.map(x=>x.data()).filter(x=>x.status==='ready').sort((a,b)=>Number(b.createdAtMs)-Number(a.createdAtMs));firmwareSelect.innerHTML='<option value="">Sürüm seçin</option>'+rows.map(x=>`<option value="${text(x.version)}">${text(x.version)} · ${(Number(x.size)/1024).toFixed(0)} KB</option>`).join('');paint()}
  async function pair(action){const accepted=await systemConfirm({title:action==='pair'?'ESP32 bağlantısı oluşturulsun mu?':'ESP32 bağlantısı kesilsin mi?',message:action==='pair'?'Yeni bağlantı dosyası mevcut cihaz anahtarını değiştirir. Dosyayı güvenli saklayın.':'Cihaz yeni bağlantı dosyası yüklenene kadar sıcaklık ve güncelleme gönderemez.',confirmText:action==='pair'?'Oluştur':'Bağlantıyı Kes',danger:action!=='pair'});if(!accepted)return;
