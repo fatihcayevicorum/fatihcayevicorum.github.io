@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=637">
+  <link rel="stylesheet" href="style.css?v=638">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=564">
   <script src="../assets/js/theme.js?v=564"></script>
@@ -97,7 +97,7 @@
       <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-fire-flame-curved"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2 id="smartBoilerSettingsHeading">Akıllı Kazan</h2></div></div>
       <section class="boiler-settings-section boiler-device-section"><h3>Cihaz Bağlantısı</h3><div class="boiler-settings-facts"><p><small>Cihaz Kimliği</small><strong id="boilerDeviceId">kazan-1</strong></p><p><small>Bağlantı</small><strong id="boilerConnectionState">Kontrol Ediliyor…</strong></p><p><small>Mevcut Firmware</small><strong id="boilerFirmwareCurrent">—</strong></p><p><small>Son Bağlantı</small><strong id="boilerLastSeen">—</strong></p></div><div class="boiler-settings-actions"><button id="pairBoilerDevice" class="secondary-button boiler-system-button" type="button">Bağlantı Dosyası Oluştur</button><button id="revokeBoilerDevice" class="secondary-button danger-button boiler-system-button" type="button">Bağlantıyı Kes</button></div><p id="boilerSettingsStatus" class="tea-settings-copy"></p></section>
       <div class="boiler-settings-grid boiler-control-grid">
-        <section class="boiler-settings-section boiler-square-card boiler-target-range"><h3>Hedef Sıcaklık Aralığı</h3><div class="boiler-range-fields"><label>Alt Sınır<div><input id="boilerTargetMin" type="number" inputmode="numeric" min="20" max="99" step="1"><span>°C</span></div></label><label>Üst Sınır<div><input id="boilerTargetMax" type="number" inputmode="numeric" min="21" max="100" step="1"><span>°C</span></div></label></div><button id="saveBoilerTargetRange" class="primary-button boiler-system-button" type="button">Aralığı Kaydet</button><p id="boilerTargetRangeStatus" class="tea-settings-copy">Geçerli Aralık Yükleniyor…</p></section>
+        <section class="boiler-settings-section boiler-square-card boiler-target-range"><h3>Hedef Sıcaklık Aralığı</h3><div class="boiler-range-fields"><label>Alt Sınır<div><input id="boilerTargetMin" type="number" inputmode="numeric" min="20" max="99" step="1"><span>°C</span></div></label><label>Üst Sınır<div><input id="boilerTargetMax" type="number" inputmode="numeric" min="21" max="100" step="1"><span>°C</span></div></label></div><button id="saveBoilerTargetRange" class="primary-button boiler-system-button" type="button">Aralığı Kaydet</button><div id="boilerTargetRangeConfirm" class="boiler-range-confirm" hidden><p id="boilerTargetRangeConfirmText"></p><div><button id="confirmBoilerTargetRange" class="primary-button boiler-system-button" type="button">Değişikliği Onayla</button><button id="cancelBoilerTargetRange" class="secondary-button boiler-system-button" type="button">Vazgeç</button></div></div><p id="boilerTargetRangeStatus" class="tea-settings-copy">Geçerli Aralık Yükleniyor…</p></section>
         <section id="boilerHysteresisSettings" class="boiler-settings-section boiler-square-card boiler-settings-hysteresis" data-hysteresis-editor></section>
       </div>
       <div class="boiler-settings-grid boiler-update-grid">
@@ -347,7 +347,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="script.js?v=612"></script>
-  <script type="module" src="../assets/js/smart-boiler-settings.js?v=637"></script>
+  <script type="module" src="../assets/js/smart-boiler-settings.js?v=638"></script>
   <script type="module" src="../assets/js/system-ui.js?v=634"></script>
 </body>
 </html>
