@@ -1,5 +1,5 @@
-// R633: Ortak başlıkta tek Akıllı Kazan sıcaklık düğmesi.
-if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=634").catch(error=>console.error("Kazan sıcaklığı açılamadı:",error));
+// R636: Ortak başlıkta tek Akıllı Kazan sıcaklık düğmesi.
+if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=636").catch(error=>console.error("Kazan sıcaklığı açılamadı:",error));
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
