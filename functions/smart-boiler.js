@@ -27,11 +27,13 @@ function parseSample(b,now){
 }
 function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.now}){
  const credentials=db.doc('adminBoilerDevices/'+DEVICE),state=db.doc('adminBoilerState/'+DEVICE),maintenance=db.doc('adminBackupControl/state');
+ const savedRange=old=>{const min=old?.targetRange?.min,max=old?.targetRange?.max;return Number.isInteger(min)&&Number.isInteger(max)&&min>=20&&max<=100&&min<max?{min,max}:null};
+ const effectiveRange=old=>{const configured=savedRange(old),device=old?.control;return{min:Math.max(Number(device?.min??20),configured?.min??20),max:Math.min(Number(device?.max??100),configured?.max??100)}};
  async function configure(r){
   if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','Yalnızca ana yönetici cihaz bağlayabilir.');
   if(!['pair','revoke'].includes(r.data?.action))throw new HttpsError('invalid-argument','İşlem geçersiz.');
   const token=crypto.randomBytes(32).toString('hex'),enabled=r.data.action==='pair';
-  await db.runTransaction(async tx=>{const gate=await tx.get(maintenance);if(gate.data()?.active)throw new HttpsError('unavailable','Yedekleme işleminin tamamlanmasını bekleyin.');tx.set(credentials,{enabled,tokenHash:enabled?hash(token):'',updatedAtMs:now(),updatedBy:r.auth.uid});tx.set(state,{deviceId:DEVICE,paired:enabled,temperatureC:null,endaConnected:false,measuredAtMs:null,lastSeenAtMs:null,sentAtMs:0,firmwareVersion:''});});
+  await db.runTransaction(async tx=>{const [gate,current]=await Promise.all([tx.get(maintenance),tx.get(state)]);if(gate.data()?.active)throw new HttpsError('unavailable','Yedekleme işleminin tamamlanmasını bekleyin.');const targetRange=savedRange(current.data());tx.set(credentials,{enabled,tokenHash:enabled?hash(token):'',updatedAtMs:now(),updatedBy:r.auth.uid});tx.set(state,{deviceId:DEVICE,paired:enabled,temperatureC:null,endaConnected:false,measuredAtMs:null,lastSeenAtMs:null,sentAtMs:0,firmwareVersion:'',...(targetRange?{targetRange}:{})});});
   return enabled?{deviceId:DEVICE,token,endpoint:`https://europe-west1-${projectId}.cloudfunctions.net/receiveBoilerTemperature`}:{revoked:true};
  }
  async function setTarget(r){
@@ -45,9 +47,18 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
    if(old.hysteresisCommand&&['pending','dispatched'].includes(old.hysteresisCommand.status)&&old.hysteresisCommand.expiresAtMs>at)throw new HttpsError('aborted','ON/OFF farkı işleminin sonucunu bekleyin.');
    if(old.command&&['pending','dispatched'].includes(old.command.status)&&old.command.expiresAtMs>at)throw new HttpsError('aborted','Önceki işlemin sonucunu bekleyin.');
    if(!old.paired||!old.endaConnected||!old.control||at-old.lastSeenAtMs>20000||at-old.targetMeasuredAtMs>20000||old.targetMeasuredAtMs>at+30000||old.targetTemperatureC!==b.expected)throw new HttpsError('failed-precondition','Cihaz verisi güncel değil veya hedef değişti. Yeniden deneyin.');
-   if(b.target<old.control.min||b.target>old.control.max)throw new HttpsError('out-of-range','Hedef cihaz sınırlarının dışında.');
+   const range=effectiveRange(old);if(b.target<range.min||b.target>range.max)throw new HttpsError('out-of-range','Hedef belirlenen sıcaklık aralığının dışında.');
    const command={id:b.id,target:b.target,expected:b.expected,register:old.control.register,decimal:old.control.decimal,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
    tx.set(state,{...old,command});return{id:b.id,status:'pending'};
+  });
+ }
+ async function setTargetRange(r){
+  if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','Hedef sıcaklık aralığını yalnızca ana yönetici değiştirebilir.');
+  const b=r.data||{};if(Object.keys(b).some(k=>!['min','max'].includes(k))||!Number.isInteger(b.min)||!Number.isInteger(b.max)||b.min<20||b.max>100||b.min>=b.max)throw new HttpsError('invalid-argument','Sıcaklık aralığı 20–100°C içinde olmalıdır.');
+  return db.runTransaction(async tx=>{const [s,g]=await Promise.all([tx.get(state),tx.get(maintenance)]),old=s.data()||{};if(g.data()?.active)throw new HttpsError('unavailable','Yedekleme işleminin tamamlanmasını bekleyin.');
+   if(old.control&&(b.min<old.control.min||b.max>old.control.max))throw new HttpsError('out-of-range','Seçilen aralık ENDA sınırlarının dışında.');
+   if(Number.isFinite(old.targetTemperatureC)&&(old.targetTemperatureC<b.min||old.targetTemperatureC>b.max))throw new HttpsError('failed-precondition','Mevcut hedef seçilen aralığın dışında kalıyor. Önce hedef sıcaklığı değiştirin.');
+   tx.set(state,{...old,targetRange:{min:b.min,max:b.max,updatedAtMs:now(),updatedBy:r.auth.uid}});return{min:b.min,max:b.max};
   });
  }
  async function setHysteresis(r){
@@ -115,6 +126,6 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
   try{const result=await ingest(req.get('Authorization'),req.body);if(result.command)res.set('X-Boiler-Command',result.command);if(result.hysteresisCommand)res.set('X-Boiler-Hysteresis',result.hysteresisCommand);if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
   catch(e){return res.status(e.status||503).json({error:e.status?e.message:'Gönderim tamamlanamadı.'});}
  }
- return{configure,receive,ingest,setTarget,setHysteresis};
+ return{configure,receive,ingest,setTarget,setTargetRange,setHysteresis};
 }
 module.exports={buildSmartBoiler,parseSample};

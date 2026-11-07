@@ -1,12 +1,12 @@
-/* R635 — sade Akıllı Kazan ekranı ve karttan açılan hedef sıcaklık ayarı. */
+/* R636 — ortalanmış kazan kartları ve sade hedef sıcaklık ayarı. */
 let liveInfo={fresh:false,temperature:null,status:"Cihaz bağlantısı bekleniyor.",last:null,owner:false,phase:"offline",heaterKnown:false,heaterOn:false},liveModule=null,liveStarted=false;
 let page=null,headerButton=null,dialog=null,targetDialog=null;
 const HEADER_ID="smartBoilerHeaderButton",DIALOG_ID="smartBoilerQuickDialog",TARGET_DIALOG_ID="smartBoilerTargetDialog";
-const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=635",import.meta.url);document.head.append(css);
+const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=636",import.meta.url);document.head.append(css);
 
 function temperature(c){return `${Math.round(c)}°C`}
-function startLive(){if(liveStarted)return;liveStarted=true;import("./smart-boiler-live.js?v=635").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
-function mountEditors(){if(!liveModule)return;for(const root of [dialog,targetDialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor,{onConfirmed:root===targetDialog?()=>targetDialog.close():null})}}}
+function startLive(){if(liveStarted)return;liveStarted=true;import("./smart-boiler-live.js?v=636").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
+function mountEditors(){if(!liveModule)return;for(const root of [dialog,targetDialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor,{simple:root===targetDialog,onConfirmed:root===targetDialog?()=>targetDialog.close():null,onCancel:root===targetDialog?()=>targetDialog.close():null})}}}
 function heaterLabel(){
  if(!liveInfo.fresh)return["Bağlantı yok","Güncel veri alınamadı"];
  if(!liveInfo.heaterKnown)return["Durum bilinmiyor","ENDA çıkışı doğrulanamadı"];
@@ -23,7 +23,6 @@ function renderLive(){
   root.querySelectorAll("[data-mode]").forEach(element=>{element.textContent=liveInfo.status;element.dataset.mode=liveInfo.fresh?"live":"offline"});
   root.querySelectorAll("[data-target]").forEach(element=>element.textContent=liveInfo.targetFresh?temperature(liveInfo.target):"—");
   root.querySelectorAll("[data-target-status]").forEach(element=>element.textContent=liveInfo.targetFresh?"ENDA’da kayıtlı aktif hedef":"Güncel hedef bilgisi alınamadı.");
-  root.querySelectorAll("[data-target-hysteresis-summary]").forEach(element=>element.textContent=liveInfo.hysteresis?.onOff?`ON/OFF farkı: ${liveInfo.hysteresis.value}°C`:liveInfo.hysteresis?"ON/OFF modu aktif değil":"ON/OFF farkı alınamadı");
   root.querySelectorAll("[data-last]").forEach(element=>element.textContent=liveInfo.last?new Date(liveInfo.last).toLocaleString("tr-TR"):"Henüz veri yok");
   root.querySelectorAll("[data-heater]").forEach(renderHeater);
   root.querySelectorAll("[data-enda]").forEach(element=>{element.textContent=liveInfo.endaConnected?"Bağlı":"Bağlantı yok";element.dataset.state=liveInfo.endaConnected?"online":"offline"});
@@ -41,7 +40,7 @@ function createQuickDialog(){
 function createTargetDialog(){
  targetDialog=document.getElementById(TARGET_DIALOG_ID);if(targetDialog)return;
  targetDialog=document.createElement("dialog");targetDialog.id=TARGET_DIALOG_ID;targetDialog.className="boiler-dialog boiler-target-dialog";targetDialog.setAttribute("aria-labelledby","boilerTargetTitle");
- targetDialog.innerHTML=`<button type="button" class="boiler-close" aria-label="Kapat">×</button><h2 id="boilerTargetTitle">Hedef Sıcaklık Ayarı</h2><div class="boiler-target-editor" data-target-editor></div>`;
+ targetDialog.innerHTML=`<div class="boiler-target-heading"><h2 id="boilerTargetTitle">Hedef Sıcaklık Ayarı</h2><button type="button" class="boiler-close" aria-label="Kapat">×</button></div><div class="boiler-target-editor" data-target-editor></div>`;
  document.body.append(targetDialog);targetDialog.querySelector(".boiler-close").onclick=()=>targetDialog.close();targetDialog.addEventListener("click",event=>{if(event.target!==targetDialog)return;const rect=targetDialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)targetDialog.close()});
 }
 function installHeader(){
@@ -58,7 +57,7 @@ function openTarget(){if(!targetDialog)return;targetDialog.querySelector("[data-
 
 export function mountBoilerPage(root){
  if(root.dataset.mounted)return;root.dataset.mounted="true";page=root;startLive();root.classList.add("boiler-page");
- root.innerHTML=`<section class="boiler-device-strip"><div><p class="boiler-kicker">Akıllı Kazan</p><h2>ENDA ET4420-230-RS</h2></div><dl><div><dt>ENDA bağlantısı</dt><dd data-enda>Bağlantı yok</dd></div><div><dt>ESP32 bağlantısı</dt><dd data-esp>Bağlantı yok</dd></div><div><dt>ESP32 firmware</dt><dd data-firmware>Doğrulanmadı</dd></div></dl></section><div class="boiler-dashboard"><section class="boiler-card boiler-temperature-card"><small>Anlık Sıcaklık</small><strong data-current>—</strong><span>Son veri: <time data-last>Henüz veri yok</time></span></section><button class="boiler-card boiler-target-card" type="button" aria-label="Hedef sıcaklığı değiştir"><small>Hedef Sıcaklık</small><strong data-target>—</strong><span data-target-hysteresis-summary>ON/OFF farkı alınamadı</span></button><section class="boiler-card boiler-status-card"><small>Canlı Isıtma Durumu</small><div class="boiler-heater" data-heater></div></section></div>`;
+ root.innerHTML=`<section class="boiler-device-strip"><div><p class="boiler-kicker">Akıllı Kazan</p><h2>ENDA ET4420-230-RS</h2></div><dl><div><dt>ENDA bağlantısı</dt><dd data-enda>Bağlantı yok</dd></div><div><dt>ESP32 bağlantısı</dt><dd data-esp>Bağlantı yok</dd></div><div><dt>ESP32 firmware</dt><dd data-firmware>Doğrulanmadı</dd></div><div><dt>Son veri</dt><dd><time data-last>Henüz veri yok</time></dd></div></dl></section><div class="boiler-dashboard"><section class="boiler-card boiler-temperature-card"><small>Anlık Sıcaklık</small><strong data-current>—</strong></section><button class="boiler-card boiler-target-card" type="button" aria-label="Hedef sıcaklığı değiştir"><small>Hedef Sıcaklık</small><strong data-target>—</strong></button><section class="boiler-card boiler-status-card"><small>Canlı Isıtma Durumu</small><div class="boiler-heater" data-heater></div></section></div>`;
  root.querySelector(".boiler-target-card").onclick=openTarget;mountEditors();render();
 }
 installHeader();
