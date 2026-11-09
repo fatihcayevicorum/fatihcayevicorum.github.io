@@ -68,6 +68,7 @@ const HISTORY_START_DATE="2026-08-01",FINANCE_START_DATE="2026-08-13";
 const defaultIncome=["İşletmeye Para Girişi","PET Şişe Dönüşüm İadesi","Diğer Gelir"];
 const defaultExpense=["Toptancı / Ürün Alımı","Faturalar","Kira","Elektrik","Su","İnternet","Demirbaş","Temizlik","Market","Manav","Bakım ve Onarım","Maaş Ödemesi","Diğer Gider"];
 const defaultTransfer=["Hesap Aktarımı","Kredi Kartı Borç Ödeme","Banka Kredisi Taksit Ödemesi"];
+let expenseCategoriesReady=false;
 let categoryPanelMode="",manualMovements=[],closings=[],sales=[],staffUsers=[],reminders=[],financeDays=[],currentAccounts=[],currentAccountMovements=[],settings=normalizeSettings({}),selectedDate=today(),calendarMonth=selectedDate.slice(0,7),pendingDeleteId="",pendingReminderPaidId="",accountSummaryView="bank-all",started=false,settingsPromptShown=false,toastTimer;
 
 $("stockPurchaseEditForm").onsubmit=saveStockPurchaseEdit;$("closeStockPurchaseEdit").onclick=()=>$("stockPurchaseEditDialog").close();$("cancelStockPurchaseEdit").onclick=()=>$("stockPurchaseEditDialog").close();
@@ -130,7 +131,7 @@ onAuthStateChanged(auth,async user=>{
   onSnapshot(currentAccountsCol,s=>{currentAccounts=s.docs.map(d=>({id:d.id,...d.data()}));render()},loadError);
   onSnapshot(currentAccountMovementsCol,s=>{currentAccountMovements=s.docs.map(d=>({id:d.id,...d.data()}));render()},loadError);
   onSnapshot(remindersCol,s=>{reminders=s.docs.map(d=>({id:d.id,...d.data()}));renderReminders();renderReminderBadge()},loadError);
-  onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});render();renderSettings();if(!settings.openingConfigured&&!settingsPromptShown){settingsPromptShown=true;setTimeout(()=>location.href="../tanimlamalar/?kasa=1",250)}},loadError);
+  onSnapshot(settingsRef,s=>{settings=normalizeSettings(s.exists()?s.data():{});expenseCategoriesReady=true;if($("movementDialog").open&&$("movementType").value==="expense"){const selectedId=$("category").value,pickerExpanded=!$("movementCategoryPicker").hidden;renderMovementCategoryPicker("expense",selectedId?{categoryId:selectedId}:null);if(pickerExpanded)positionMovementCategoryPicker()}render();renderSettings();if(!settings.openingConfigured&&!settingsPromptShown){settingsPromptShown=true;setTimeout(()=>location.href="../tanimlamalar/?kasa=1",250)}},loadError);
 });
 function ensureDefinitionsBalanceStreams(){
  if(!definitionsSettingsMode||definitionsBalanceStreamsStarted)return;
@@ -200,9 +201,11 @@ function resetTransferAccounts(m=null){
  $("fromAccount").innerHTML=accountOptions(ACCOUNT_TYPES,m?.fromAccountId||legacyId(m?.fromAccount||"cash"),true);
  $("toAccount").innerHTML=accountOptions(ACCOUNT_TYPES,m?.toAccountId||legacyId(m?.toAccount||"bank"))+'<option value="bankLoan">Banka Kredisi Taksit Ödeme</option>';
 }
-function openDialog(type,m=null){
+async function openDialog(type,m=null){
  if(m?.source==="savings"){openSavingsMovement({operationId:m.transactionId,businessDate:selectedDate}).catch(e=>toast(savingsError(e)));return}
  if(!canEditSelectedDate())return toast(selectedDate===today()?"Bu finans günü kapalı; kayıt eklenemez veya değiştirilemez.":"Geçmiş gün kayıtları değiştirilemez.");
+ if(type==="expense"&&!expenseCategoriesReady){try{const snapshot=await getDoc(settingsRef);settings=normalizeSettings(snapshot.exists()?snapshot.data():{});expenseCategoriesReady=true}catch(error){console.error(error);return toast("Gider kategorileri yüklenemedi. Lütfen tekrar deneyin.")}}
+ if($("movementDialog").open)return;
  $("movementForm").reset();$("movementType").value=type;$("movementId").value=m?.id||"";
  $("dialogTitle").textContent=m?"Hareketi Düzenle":type==="income"?"Gelir Ekle":type==="expense"?"Gider Ekle":"Hesap Aktarımı";
  $("saveMovementButton").textContent=m?"Değişikliği Kaydet":"Kaydet";$("movementDateText").textContent=`İşlem tarihi: ${formatBusinessDate(selectedDate)}`;
@@ -217,7 +220,7 @@ function openDialog(type,m=null){
  $("movementDialog").showModal();setTimeout(()=>{$("amount").focus();$("amount").select()},50)
 }
 const movementCategoryOrder=new Intl.Collator("tr",{numeric:true,sensitivity:"base"});
-function renderMovementCategoryPicker(type,m=null){const selected=categoryItems(type).find(x=>x.id===m?.categoryId)||categoryItems(type).find(x=>x.name===m?.category),groups=groupItems(type).filter(g=>g.active||g.id===selected?.groupId).sort((a,b)=>movementCategoryOrder.compare(a.name,b.name)),items=activeCategories(type);$("category").value=selected?.id||"";$("movementCategoryText").textContent=selected?.name||"Kategori seçin";$("movementCategoryButton").classList.toggle("is-selected",!!selected);$("movementCategoryPicker").innerHTML=groups.map(group=>{const children=items.filter(item=>groupForCategory(type,item).id===group.id);if(selected&&groupForCategory(type,selected).id===group.id&&!children.some(x=>x.id===selected.id))children.push(selected);children.sort((a,b)=>movementCategoryOrder.compare(a.name,b.name));return `<div class="movement-category-group">${esc(group.name)}</div>${children.length?children.map(item=>`<button type="button" role="option" data-movement-category="${esc(item.id)}" class="movement-category-option" aria-selected="${item.id===selected?.id}">${esc(item.name)}</button>`).join(""):'<p class="movement-category-empty">Bu grupta aktif kategori yok.</p>'}`}).join("")||'<p class="movement-category-empty">Kategori bulunamadı.</p>'}
+function renderMovementCategoryPicker(type,m=null){const selected=categoryItems(type).find(x=>x.id===m?.categoryId)||categoryItems(type).find(x=>x.name===m?.category),groups=groupItems(type).filter(g=>g.active||g.id===selected?.groupId).sort((a,b)=>type==="expense"?(Number(a.id==="expense-legacy")-Number(b.id==="expense-legacy")||movementCategoryOrder.compare(a.name,b.name)):movementCategoryOrder.compare(a.name,b.name)),items=activeCategories(type);$("category").value=selected?.id||"";$("movementCategoryText").textContent=selected?.name||"Kategori seçin";$("movementCategoryButton").classList.toggle("is-selected",!!selected);$("movementCategoryPicker").innerHTML=groups.map(group=>{const children=items.filter(item=>groupForCategory(type,item).id===group.id);if(selected&&groupForCategory(type,selected).id===group.id&&!children.some(x=>x.id===selected.id))children.push(selected);children.sort((a,b)=>movementCategoryOrder.compare(a.name,b.name));return `<div class="movement-category-group">${esc(group.name)}</div>${children.length?children.map(item=>`<button type="button" role="option" data-movement-category="${esc(item.id)}" class="movement-category-option" aria-selected="${item.id===selected?.id}">${esc(item.name)}</button>`).join(""):'<p class="movement-category-empty">Bu grupta aktif kategori yok.</p>'}`}).join("")||'<p class="movement-category-empty">Kategori bulunamadı.</p>'}
 function positionMovementCategoryPicker(){const field=$("movementCategoryButton").getBoundingClientRect(),box=$("movementDialog").getBoundingClientRect(),picker=$("movementCategoryPicker");picker.style.left=`${field.left-box.left}px`;picker.style.top=`${field.bottom-box.top+4}px`;picker.style.width=`${field.width}px`;picker.style.maxHeight=`${Math.max(80,Math.min(360,window.innerHeight-field.bottom-12))}px`}
 function openMovementCategoryPicker(){positionMovementCategoryPicker();$("movementCategoryPicker").hidden=false;$("movementCategoryButton").setAttribute("aria-expanded","true");$("movementCategoryPicker").scrollTop=0}
 function closeMovementCategoryPicker(){$("movementCategoryPicker").hidden=true;$("movementCategoryButton").setAttribute("aria-expanded","false")}
