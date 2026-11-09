@@ -35,6 +35,39 @@ jobs:
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
           GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" npx --yes firebase-tools deploy --only firestore:rules,storage --project fatihcayevi --non-interactive
+      # R638: Bu dosya depoda tutulmaz; konfigurasyon eksikse izleme pasif kalir.
+      # GitHub Actions secret POSTHOG_EU_CONFIG_JSON ornegi:
+      # {"projectToken":"phc_...","apiHost":"https://eu.i.posthog.com"}
+      - name: Prepare optional PostHog EU browser configuration
+        env:
+          POSTHOG_EU_CONFIG_JSON: ${{ secrets.POSTHOG_EU_CONFIG_JSON }}
+        run: |
+          if [ -z "$POSTHOG_EU_CONFIG_JSON" ]; then
+            echo "PostHog EU configuration is absent; error tracking remains disabled."
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import re
+
+          data = json.loads(os.environ["POSTHOG_EU_CONFIG_JSON"])
+          token = data.get("projectToken")
+          host = data.get("apiHost")
+          if not isinstance(token, str) or not re.fullmatch(r"phc_[A-Za-z0-9_-]+", token):
+              raise SystemExit("PostHog EU project token is invalid.")
+          if host != "https://eu.i.posthog.com":
+              raise SystemExit("PostHog project must use EU cloud.")
+          payload = {"projectToken": token, "apiHost": host}
+          target = pathlib.Path("assets/js/posthog-runtime-config.js")
+          target.write_text(
+              "window.FATIH_POSTHOG_CONFIG = "
+              + json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
+              + ";\n",
+              encoding="utf-8",
+          )
+          PY
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
