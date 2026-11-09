@@ -79,42 +79,58 @@
     enqueue("promise", "Error", "", 0);
   });
 
-  const sdk = document.createElement("script");
-  sdk.async = true;
-  sdk.crossOrigin = "anonymous";
-  sdk.src = "https://eu-assets.i.posthog.com/static/array.js";
-  sdk.onload = function () {
-    if (!window.posthog || typeof window.posthog.init !== "function") return;
-    try {
-      window.posthog.init(token, {
-        api_host: host.replace(/\/+$/, ""),
-        defaults: "2026-08-30",
-        autocapture: false,
-        capture_pageview: false,
-        capture_pageleave: false,
-        capture_exceptions: false,
-        disable_session_recording: true,
-        disable_surveys: true,
-        person_profiles: "never",
-        persistence: "memory",
-        advanced_disable_decide: true,
-        before_send: function (event) {
-          if (!event || event.event !== "$exception") return null;
-          const properties = { $geoip_disable: true };
-          const input = event.properties || {};
-          ["$exception_list", "$exception_type", "$exception_message", "$exception_stack_trace", "$exception_fingerprint", "app_area", "error_kind", "source_file", "source_line"].forEach(function (key) {
-            if (Object.prototype.hasOwnProperty.call(input, key)) properties[key] = input[key];
-          });
-          return Object.assign({}, event, { properties: properties });
-        },
-        loaded: function (posthog) {
-          client = posthog;
-          pending.splice(0).forEach(report);
-        }
-      });
-    } catch (_) {
-      // SDK sorunu satış uygulamasını durdurmamalı.
+  // PostHog'un resmî tarayıcı kod parçacığıyla uyumlu kuyruklu başlatma.
+  try {
+    const ph = window.posthog || [];
+    if (!ph.__SV && !ph.__loaded) {
+      window.posthog = ph;
+      ph._i = [];
+      ph.init = function (key, settings, namespace) {
+        const label = namespace || "posthog";
+        const target = namespace ? (ph[namespace] = []) : ph;
+        target.people = target.people || [];
+        "init capture register register_once unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" ").forEach(function (name) {
+          target[name] = function () {
+            target.push([name].concat(Array.prototype.slice.call(arguments, 0)));
+          };
+        });
+        ph._i.push([key, settings, label]);
+        const script = document.createElement("script");
+        script.type = "text/javascript";
+        script.async = true;
+        script.crossOrigin = "anonymous";
+        script.src = settings.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js";
+        document.head.appendChild(script);
+      };
+      ph.__SV = 1;
     }
-  };
-  document.head.appendChild(sdk);
+    window.posthog.init(token, {
+      api_host: host.replace(/\/+$/, ""),
+      defaults: "2026-08-30",
+      autocapture: false,
+      capture_pageview: false,
+      capture_pageleave: false,
+      capture_exceptions: false,
+      disable_session_recording: true,
+      disable_surveys: true,
+      person_profiles: "never",
+      persistence: "memory",
+      advanced_disable_decide: true,
+      before_send: function (event) {
+        if (!event || event.event !== "$exception") return null;
+        const properties = { $geoip_disable: true };
+        const input = event.properties || {};
+        ["$exception_list", "$exception_type", "$exception_message", "$exception_stack_trace", "$exception_fingerprint", "app_area", "error_kind", "source_file", "source_line"].forEach(function (key) {
+          if (Object.prototype.hasOwnProperty.call(input, key)) properties[key] = input[key];
+        });
+        return Object.assign({}, event, { properties: properties });
+      },
+      loaded: function (posthog) {
+        client = posthog;
+        pending.splice(0).forEach(report);
+      }
+    });
+  } catch (_) {
+    // Hata izleme durursa, çalışan adisyon etkilenmez.
+  }
 })();
