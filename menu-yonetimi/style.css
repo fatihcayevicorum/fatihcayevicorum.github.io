@@ -245,17 +245,22 @@ body.definitions-product-settings{background:#fffaf4}.definitions-product-settin
 #productGroupsDialog #productGroupProducts,#productGroupsDialog #productGroupCards,#productGroupsDialog #productGroupTags{max-height:none;overflow:visible}
 #productGroupsStatus:empty{display:none}
 
-/* R640 — Tanımlamalar içinde açılan Ürün/Fiyat pencereleri üst üste binmez: ana pencerenin içini tam doldurur. */
+/* R641 — Tanımlamalar içinde açılan Ürün/Fiyat pencereleri: sayfanın ortasında, kendi kartıyla açılan modal. */
 .definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog,#productListDialog,#priceSettingsDialog){
-  position:fixed;inset:0;margin:0;width:100%;max-width:100%;height:100%;max-height:100%;
-  border:0;border-radius:0;box-shadow:none;box-sizing:border-box;background:var(--theme-surface,#fffaf4);
+  position:fixed;inset:0;margin:auto;box-sizing:border-box;
+  width:min(760px,calc(100% - 24px));max-width:calc(100% - 24px);
+  height:fit-content;max-height:calc(100% - 24px);
+  border:0;border-radius:18px;overflow:hidden;
+  box-shadow:0 22px 60px rgba(37,9,12,.4);
 }
-.definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog,#productListDialog,#priceSettingsDialog)::backdrop{background:transparent;backdrop-filter:none}
-.definitions-product-settings :is(#productGroupsForm,#costGroupForm){max-height:100%;height:100%;box-sizing:border-box}
-.definitions-product-settings #priceSettingsDialog>.price-dialog-card{width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0;box-sizing:border-box}
-.definitions-product-settings #productListDialog .product-list-panel{min-height:100%;border-radius:0}
-.definitions-product-settings :is(#bulkPriceDialog,#singlePriceDialog,#pricePreviewDialog)::backdrop{background:#2a171466;backdrop-filter:none}
-.definitions-product-settings :is(#bulkPriceDialog,#singlePriceDialog,#pricePreviewDialog){max-width:calc(100% - 16px);max-height:calc(100% - 16px)}
-.definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog).management-form-dialog{width:100%!important;max-width:100%!important;height:100%!important;max-height:100%!important;border-radius:0!important;box-shadow:none!important;background:var(--theme-surface,#fffaf4)!important}
-.definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog).management-form-dialog::backdrop{background:transparent!important;backdrop-filter:none!important}
-.definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog).management-form-dialog>form{height:100%!important;max-height:100%!important;box-sizing:border-box}
+.definitions-product-settings :is(#productListDialog,#priceSettingsDialog){width:min(1050px,calc(100% - 24px))}
+.definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog).management-form-dialog{
+  width:min(760px,calc(100% - 24px))!important;max-width:calc(100% - 24px)!important;
+  height:fit-content!important;max-height:calc(100% - 24px)!important;border-radius:18px!important;
+  background:var(--theme-surface,#fffaf4)!important;
+}
+.definitions-product-settings :is(#productListDialog,#priceSettingsDialog)::backdrop{background:#2a1714a8!important;backdrop-filter:blur(3px)!important}
+.definitions-product-settings :is(#productGroupsForm,#costGroupForm){max-height:calc(100dvh - 24px)!important;overflow-y:auto!important;box-sizing:border-box}
+.definitions-product-settings #priceSettingsDialog>.price-dialog-card{width:100%;max-width:100%;max-height:calc(100dvh - 24px);box-sizing:border-box}
+.definitions-product-settings :is(#bulkPriceDialog,#singlePriceDialog,#pricePreviewDialog){max-width:calc(100% - 24px);max-height:calc(100% - 24px)}
+.definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog,#productListDialog,#priceSettingsDialog,#bulkPriceDialog,#singlePriceDialog,#pricePreviewDialog)::backdrop{background:#2a1714a8!important;backdrop-filter:blur(3px)!important}

@@ -385,3 +385,6 @@ html:root .cash-settings-host{width:min(var(--cash-panel-width,760px),calc(100vw
 @media(min-width:701px){.boiler-control-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.boiler-control-grid .boiler-range-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.boiler-heading-actions{flex:1 1 100%;justify-content:stretch}.smart-boiler-settings-dialog .boiler-heading-actions .boiler-system-button{flex:1 1 0}.boiler-calibration-card>.boiler-system-button,.boiler-device-name-section>.boiler-system-button{width:100%}}
 #boilerUpdateMessage[data-error=true],#boilerDeviceMessage[data-error=true]{color:var(--theme-danger,#a11825)}
+
+/* R642: Alt pencere açıkken üst pencerenin başlığı arka planla birlikte flürlenir. */
+.product-settings-host-heading{transition:filter .15s,opacity .15s}.product-settings-host.product-modal-open .product-settings-host-heading{filter:blur(3px);opacity:.45;pointer-events:none}
