@@ -8,6 +8,8 @@ function view(s){return{activeBrews:Array.isArray(s.activeBrews)?s.activeBrews:[
 function boilerView(s,now){
  const temperature=Number(s.temperatureC),measured=Number(s.measuredAtMs),seen=Number(s.lastSeenAtMs);
  const fresh=s.paired===true&&s.endaConnected===true&&Number.isFinite(temperature)&&Number.isFinite(measured)&&Number.isFinite(seen)&&now-measured>=-30000&&now-measured<=45000&&now-seen>=-30000&&now-seen<=45000;
+ // R639: gösterilen sıcaklık kalibrasyonla düzeltilir; ısıtma durumu (phase) ENDA'nın ham ölçümüyle hesaplanmaya devam eder.
+ const correction=Number.isFinite(Number(s.calibration?.valueC))&&Math.abs(Number(s.calibration.valueC))<=5?Number(s.calibration.valueC):0,shown=Math.round((temperature+correction)*10)/10;
  const target=Number(s.targetTemperatureC),targetMeasured=Number(s.targetMeasuredAtMs);
  const targetFresh=fresh&&Number.isFinite(target)&&Number.isFinite(targetMeasured)&&now-targetMeasured>=-30000&&now-targetMeasured<=45000;
  const control=s.control&&Number.isFinite(Number(s.control.min))&&Number.isFinite(Number(s.control.max))?{
@@ -22,8 +24,8 @@ function boilerView(s,now){
  }:null;
  return{
   fresh,
-  temperatureC:fresh?temperature:null,
-  temperatureText:fresh?`${Math.round(temperature)} °C`:'— °C',
+  temperatureC:fresh?shown:null,
+  temperatureText:fresh?`${Math.round(shown)} °C`:'— °C',
   targetTemperatureC:targetFresh?target:null,
   targetMin:control?control.min:20,
   targetMax:control?control.max:100,

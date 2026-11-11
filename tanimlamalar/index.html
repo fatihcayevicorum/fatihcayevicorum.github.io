@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=637">
+  <link rel="stylesheet" href="style.css?v=639">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=564">
   <script src="../assets/js/theme.js?v=564"></script>
@@ -94,18 +94,39 @@
   <dialog id="smartBoilerSettingsDialog" class="settings-dialog smart-boiler-settings-dialog" aria-labelledby="smartBoilerSettingsHeading">
     <form method="dialog">
       <button id="closeSmartBoilerSettings" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
-      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-fire-flame-curved"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2 id="smartBoilerSettingsHeading">Akıllı Kazan</h2></div></div>
-      <section class="boiler-settings-section boiler-device-section"><h3>Cihaz Bağlantısı</h3><div class="boiler-settings-facts"><p><small>Cihaz Kimliği</small><strong id="boilerDeviceId">kazan-1</strong></p><p><small>Bağlantı</small><strong id="boilerConnectionState">Kontrol Ediliyor…</strong></p><p><small>Mevcut Firmware</small><strong id="boilerFirmwareCurrent">—</strong></p><p><small>Son Bağlantı</small><strong id="boilerLastSeen">—</strong></p></div><div class="boiler-settings-actions"><button id="pairBoilerDevice" class="secondary-button boiler-system-button" type="button">Bağlantı Dosyası Oluştur</button><button id="revokeBoilerDevice" class="secondary-button danger-button boiler-system-button" type="button">Bağlantıyı Kes</button></div><p id="boilerSettingsStatus" class="tea-settings-copy"></p></section>
+      <div class="dialog-heading boiler-settings-heading"><div class="dialog-icon"><i class="fa-solid fa-fire-flame-curved"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2 id="smartBoilerSettingsHeading">Akıllı Kazan</h2></div><div class="boiler-heading-actions"><button id="openBoilerUpdateDialog" class="secondary-button boiler-system-button" type="button" aria-haspopup="dialog"><i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i> Yazılım Güncelleme</button><button id="openBoilerDeviceDialog" class="secondary-button boiler-system-button" type="button" aria-haspopup="dialog"><i class="fa-solid fa-plug" aria-hidden="true"></i> Cihaz</button></div></div>
       <div class="boiler-settings-grid boiler-control-grid">
-        <section class="boiler-settings-section boiler-square-card boiler-target-range"><h3>Hedef Sıcaklık Aralığı</h3><div class="boiler-range-fields"><label>Alt Sınır<div><input id="boilerTargetMin" type="number" inputmode="numeric" min="20" max="99" step="1"><span>°C</span></div></label><label>Üst Sınır<div><input id="boilerTargetMax" type="number" inputmode="numeric" min="21" max="100" step="1"><span>°C</span></div></label></div><button id="saveBoilerTargetRange" class="primary-button boiler-system-button" type="button">Aralığı Kaydet</button><p id="boilerTargetRangeStatus" class="tea-settings-copy">Geçerli Aralık Yükleniyor…</p></section>
+        <section class="boiler-settings-section boiler-square-card boiler-target-range"><h3>Hedef Sıcaklık</h3><p class="boiler-target-now"><small>Kazanın Hedefi</small><strong id="boilerTargetNow">—</strong></p><div class="boiler-range-fields"><label>Alt Sınır<div><input id="boilerTargetMin" type="number" inputmode="numeric" min="20" max="99" step="1"><span>°C</span></div></label><label>Üst Sınır<div><input id="boilerTargetMax" type="number" inputmode="numeric" min="21" max="100" step="1"><span>°C</span></div></label></div><button id="saveBoilerTargetRange" class="primary-button boiler-system-button" type="button">Aralığı Kaydet</button><p id="boilerTargetRangeStatus" class="tea-settings-copy">Geçerli Aralık Yükleniyor…</p></section>
         <section id="boilerHysteresisSettings" class="boiler-settings-section boiler-square-card boiler-settings-hysteresis" data-hysteresis-editor></section>
+        <section id="boilerCalibrationSettings" class="boiler-settings-section boiler-square-card boiler-calibration-card"><h3>Sıcaklık Kalibrasyonu</h3><div class="boiler-calibration-readout"><p><small>Cihaz Ölçümü</small><strong id="boilerCalibrationRaw">—</strong></p><p><small>Gösterilen</small><strong id="boilerCalibrationShown">—</strong></p></div><label class="boiler-calibration-field">Düzeltme Değeri<div><input id="boilerCalibrationValue" type="number" inputmode="decimal" min="-5" max="5" step="0.1"><span>°C</span></div></label><button id="saveBoilerCalibration" class="primary-button boiler-system-button" type="button">Kalibrasyonu Kaydet</button><p id="boilerCalibrationStatus" class="tea-settings-copy">Geçerli Düzeltme Yükleniyor…</p></section>
       </div>
+      <p id="boilerSettingsMessage" class="form-message" role="status" aria-live="polite"></p>
+      <div class="dialog-actions"><button id="doneSmartBoilerSettings" class="primary-button" type="button">Tamam</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="boilerUpdateDialog" class="settings-dialog smart-boiler-settings-dialog" aria-labelledby="boilerUpdateHeading">
+    <form method="dialog">
+      <button id="closeBoilerUpdateDialog" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
+      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div><div><p class="dialog-kicker">Akıllı Kazan</p><h2 id="boilerUpdateHeading">Yazılım Güncelleme</h2></div></div>
+      <section class="boiler-settings-section boiler-current-firmware"><h3>Mevcut Firmware</h3><div class="boiler-settings-facts boiler-firmware-facts"><p><small>Cihazdaki Sürüm</small><strong id="boilerFirmwareCurrent">—</strong></p></div><p class="tea-settings-copy">Sürüm Bilgisi, ESP32 Sunucuya Bağlandığında Güncellenir.</p></section>
       <div class="boiler-settings-grid boiler-update-grid">
         <section class="boiler-settings-section boiler-square-card boiler-firmware-card"><h3>Yeni Firmware Hazırla</h3><div class="boiler-firmware-fields"><label>Sürüm<input id="boilerFirmwareVersion" inputmode="decimal" maxlength="48" placeholder="0.6.0"></label><label>ESP32 Firmware (.bin)<input id="boilerFirmwareFile" type="file" accept=".bin,application/octet-stream"></label></div><button id="uploadBoilerFirmware" class="primary-button boiler-system-button" type="button">Dosyayı Doğrula ve Hazırla</button><p class="tea-settings-copy">Dosya SHA-256 İle Doğrulanır. Hazırlamak Cihazı Güncellemez.</p></section>
         <section class="boiler-settings-section boiler-square-card boiler-remote-update"><h3>Uzaktan Güncelleme</h3><label class="boiler-release-select">Sunucudaki Sürüm<select id="boilerFirmwareSelect"><option value="">Sürüm Seçin</option></select></label><div class="boiler-settings-actions"><button id="startBoilerUpdate" class="primary-button boiler-system-button" type="button" disabled>Güncellemeyi Başlat</button><button id="cancelBoilerUpdate" class="secondary-button boiler-system-button" type="button" disabled>Bekleyen İsteği İptal Et</button></div><p id="boilerOtaStatus" class="boiler-ota-state">Bekleyen Güncelleme Yok</p><p id="boilerOtaResult" class="tea-settings-copy">Henüz Güncelleme Sonucu Yok</p></section>
       </div>
-      <p id="boilerSettingsMessage" class="form-message" role="status" aria-live="polite"></p>
-      <div class="dialog-actions"><button id="doneSmartBoilerSettings" class="primary-button" type="button">Tamam</button></div>
+      <p id="boilerUpdateMessage" class="form-message" role="status" aria-live="polite"></p>
+      <div class="dialog-actions"><button id="doneBoilerUpdateDialog" class="primary-button" type="button">Tamam</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="boilerDeviceDialog" class="settings-dialog smart-boiler-settings-dialog boiler-device-dialog" aria-labelledby="boilerDeviceHeading">
+    <form method="dialog">
+      <button id="closeBoilerDeviceDialog" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
+      <div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid fa-plug"></i></div><div><p class="dialog-kicker">Akıllı Kazan</p><h2 id="boilerDeviceHeading">Cihaz</h2></div></div>
+      <section class="boiler-settings-section boiler-device-section"><h3>Cihaz Bağlantısı</h3><div class="boiler-settings-facts"><p><small>Cihaz Adı</small><strong id="boilerDeviceNameCurrent">kazan-1</strong></p><p><small>Cihaz Kimliği</small><strong id="boilerDeviceId">kazan-1</strong></p><p><small>Bağlantı</small><strong id="boilerConnectionState">Kontrol Ediliyor…</strong></p><p><small>Son Bağlantı</small><strong id="boilerLastSeen">—</strong></p></div><div class="boiler-settings-actions"><button id="pairBoilerDevice" class="secondary-button boiler-system-button" type="button">Bağlantı Dosyası Oluştur</button><button id="revokeBoilerDevice" class="secondary-button danger-button boiler-system-button" type="button">Bağlantıyı Kes</button></div><p class="tea-settings-copy">Cihazı Bağlamak İçin Bağlantı Dosyasını Oluşturup ESP32 Yazılımına Ekleyin.</p><p id="boilerSettingsStatus" class="tea-settings-copy"></p></section>
+      <section class="boiler-settings-section boiler-device-name-section"><h3>Cihaz Adını Değiştir</h3><label class="boiler-name-field">Yeni Ad<div><input id="boilerDeviceName" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="kazan-1"></div></label><button id="saveBoilerDeviceName" class="primary-button boiler-system-button" type="button">Adı Kaydet</button><p id="boilerDeviceNameStatus" class="tea-settings-copy">Ad Yalnızca Ekranda Görünür. Bağlantı Ve Cihaz Kimliği Değişmez.</p></section>
+      <p id="boilerDeviceMessage" class="form-message" role="status" aria-live="polite"></p>
+      <div class="dialog-actions"><button id="doneBoilerDeviceDialog" class="primary-button" type="button">Tamam</button></div>
     </form>
   </dialog>
 
@@ -347,7 +368,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="script.js?v=612"></script>
-  <script type="module" src="../assets/js/smart-boiler-settings.js?v=637"></script>
+  <script type="module" src="../assets/js/smart-boiler-settings.js?v=639"></script>
   <script type="module" src="../assets/js/system-ui.js?v=634"></script>
 </body>
 </html>

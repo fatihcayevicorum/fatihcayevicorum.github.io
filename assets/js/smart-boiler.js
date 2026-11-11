@@ -5,7 +5,7 @@ const HEADER_ID="smartBoilerHeaderButton",DIALOG_ID="smartBoilerQuickDialog",TAR
 const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=636",import.meta.url);document.head.append(css);
 
 function temperature(c){return `${Math.round(c)}°C`}
-function startLive(){if(liveStarted)return;liveStarted=true;import("./smart-boiler-live.js?v=636").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
+function startLive(){if(liveStarted)return;liveStarted=true;import("./smart-boiler-live.js?v=639").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
 function mountEditors(){if(!liveModule)return;for(const root of [dialog,targetDialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor,{simple:root===targetDialog,onConfirmed:root===targetDialog?()=>targetDialog.close():null,onCancel:root===targetDialog?()=>targetDialog.close():null})}}}
 function heaterLabel(){
  if(!liveInfo.fresh)return["Bağlantı yok","Güncel veri alınamadı"];

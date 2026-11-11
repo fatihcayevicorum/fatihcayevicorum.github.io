@@ -10,7 +10,7 @@ test('boiler: duplicate and old payload do not refresh last seen; rate limit',as
 test('boiler: rotation, revoke and maintenance fail closed',async()=>{const f=fixture(),r=await f.api.configure({auth:{uid:'owner'},data:{action:'pair'}});await f.api.configure({auth:{uid:'owner'},data:{action:'pair'}});await assert.rejects(f.api.ingest('Bearer '+r.token,sample()),{status:401});const r2=await f.api.configure({auth:{uid:'owner'},data:{action:'pair'}});f.records.set('adminBackupControl/state',{active:true});await assert.rejects(f.api.ingest('Bearer '+r2.token,sample()),{status:503});f.records.set('adminBackupControl/state',{active:false});await f.api.configure({auth:{uid:'owner'},data:{action:'revoke'}});await assert.rejects(f.api.ingest('Bearer '+r2.token,sample()),{status:401});});
 test('boiler: browser rejects cache, stale data, lost ENDA and network',()=>{let source=fs.readFileSync(path.join(__dirname,'../../assets/js/smart-boiler-live.js'),'utf8').replace(/^import.*;$/gm,'').replaceAll('export function','function');const context={Date:{now:()=>NOW},navigator:{onLine:true},URL};vm.createContext(context);vm.runInContext(source+'\nthis.api={view,set:(d,o)=>{data=d;online=o;message="";}};',context);const d={paired:true,temperatureC:28,endaConnected:true,measuredAtMs:NOW-1000,lastSeenAtMs:NOW-1000};context.api.set(d,true);assert.equal(context.api.view().temperature,28);context.api.set(d,false);assert.equal(context.api.view().fresh,false);context.api.set({...d,measuredAtMs:NOW-46000},true);assert.equal(context.api.view().temperature,null);context.api.set({...d,endaConnected:false},true);assert.equal(context.api.view().fresh,false);context.api.set(d,true);context.navigator.onLine=false;assert.equal(context.api.view().temperature,null);});
 test('boiler: explicit rules prohibit client writes and credential fallback',()=>{const rules=fs.readFileSync(path.join(__dirname,'../../firestore.rules'),'utf8');assert.match(rules,/match \/adminBoilerState\/\{device\} \{\s*allow read: if hasPanel\('tea'\);\s*allow write: if backupWritable\(\) && \(false\);/);assert.equal((rules.match(/'adminBoilerDevices', 'adminBoilerState'\]/g)||[]).length,2);assert.equal(require('../system-backup-core').excluded('adminBoilerDevices/kazan-1'),true);});
-test('boiler settings: tablet cards and themed action buttons stay scoped to the boiler dialog',()=>{const base=path.join(__dirname,'../..'),html=fs.readFileSync(path.join(base,'tanimlamalar/index.html'),'utf8'),css=fs.readFileSync(path.join(base,'tanimlamalar/style.css'),'utf8'),js=fs.readFileSync(path.join(base,'assets/js/smart-boiler-settings.js'),'utf8');assert.equal((html.match(/class="boiler-settings-grid/g)||[]).length,2);for(const id of ['pairBoilerDevice','revokeBoilerDevice','saveBoilerTargetRange','uploadBoilerFirmware','startBoilerUpdate','cancelBoilerUpdate'])assert.match(html,new RegExp(`id="${id}"[^>]*boiler-system-button|id="${id}"[^>]*class="[^"]*boiler-system-button`));assert.match(html,/smart-boiler-settings\.js\?v=637/);assert.match(css,/\.smart-boiler-settings-dialog/);assert.match(css,/input\[type=file\]::file-selector-button/);assert.match(css,/var\(--theme-primary/);assert.match(js,/rangeSave\.disabled=rangeSaving/);assert.doesNotMatch(js,/rangeSave\.disabled=!rangeDirty/);});
+test('boiler settings: tablet cards and themed action buttons stay scoped to the boiler dialog',()=>{const base=path.join(__dirname,'../..'),html=fs.readFileSync(path.join(base,'tanimlamalar/index.html'),'utf8'),css=fs.readFileSync(path.join(base,'tanimlamalar/style.css'),'utf8'),js=fs.readFileSync(path.join(base,'assets/js/smart-boiler-settings.js'),'utf8');assert.equal((html.match(/class="boiler-settings-grid/g)||[]).length,2);for(const id of ['pairBoilerDevice','revokeBoilerDevice','saveBoilerTargetRange','uploadBoilerFirmware','startBoilerUpdate','cancelBoilerUpdate'])assert.match(html,new RegExp(`id="${id}"[^>]*boiler-system-button|id="${id}"[^>]*class="[^"]*boiler-system-button`));assert.match(html,/smart-boiler-settings\.js\?v=639/);assert.match(css,/\.smart-boiler-settings-dialog/);assert.match(css,/input\[type=file\]::file-selector-button/);assert.match(css,/var\(--theme-primary/);assert.match(js,/rangeSave\.disabled=rangeSaving/);assert.doesNotMatch(js,/rangeSave\.disabled=!rangeDirty/);});
 
 test('boiler target: legacy firmware, separate freshness and invalid payloads',()=>{
  const old=parseSample(sample(),NOW);assert.equal(old.targetTemperatureC,null);
@@ -54,4 +54,74 @@ test('hysteresis control: dispatches once and confirms only after ENDA readback'
 });
 test('hysteresis control: mode change, reboot and stale command fail closed',async()=>{
  for(const patch of [{hysteresis:{onOff:false,value:3}},{bootId:'c'.repeat(32)}]){const f=await pairedHysteresis();await f.api.setHysteresis(hysteresisCommand());f.tick(15000);assert.equal((await f.api.ingest(f.token,hysteresisSample({sentAtMs:NOW+15000,...patch}))).hysteresisCommand,undefined);assert.equal(f.records.get('adminBoilerState/kazan-1').hysteresisCommand.status,'rejected');}
+});
+
+// R639 — kalibrasyon, cihaz adı ve yeni Akıllı Kazan pencereleri.
+test('boiler calibration: owner-only, validated, concurrency-safe, kept after pairing and device samples',async()=>{
+ const f=fixture(),owner={auth:{uid:'owner'}};
+ await assert.rejects(f.api.setCalibration({auth:{uid:'staff'},data:{value:1,expected:0}}),{code:'permission-denied'});
+ for(const bad of [{value:6,expected:0},{value:-5.1,expected:0},{value:0.25,expected:0},{value:'1',expected:0},{value:NaN,expected:0},{value:1},{value:1,expected:0,extra:1}])await assert.rejects(f.api.setCalibration({...owner,data:bad}),{code:'invalid-argument'});
+ assert.deepEqual(await f.api.setCalibration({...owner,data:{value:-1.5,expected:0}}),{value:-1.5});
+ assert.equal(f.records.get('adminBoilerState/kazan-1').calibration.valueC,-1.5);
+ await assert.rejects(f.api.setCalibration({...owner,data:{value:2,expected:0}}),{code:'failed-precondition'});
+ assert.deepEqual(await f.api.setCalibration({...owner,data:{value:5,expected:-1.5}}),{value:5});
+ assert.deepEqual(await f.api.setCalibration({...owner,data:{value:-0,expected:5}}),{value:0});
+ await f.api.setCalibration({...owner,data:{value:2.5,expected:0}});
+ const r=await f.api.configure({...owner,data:{action:'pair'}});
+ assert.equal(f.records.get('adminBoilerState/kazan-1').calibration.valueC,2.5);
+ await f.api.ingest('Bearer '+r.token,sample());
+ const saved=f.records.get('adminBoilerState/kazan-1');
+ assert.equal(saved.calibration.valueC,2.5);assert.equal(saved.temperatureC,27);
+ f.records.set('adminBackupControl/state',{active:true});
+ await assert.rejects(f.api.setCalibration({...owner,data:{value:1,expected:2.5}}),{code:'unavailable'});
+});
+test('boiler device name: owner-only, safe characters; device id, token and records stay untouched',async()=>{
+ const f=fixture(),owner={auth:{uid:'owner'}},r=await f.api.configure({...owner,data:{action:'pair'}});
+ await assert.rejects(f.api.setDeviceName({auth:{uid:'staff'},data:{name:'Ocak'}}),{code:'permission-denied'});
+ for(const bad of [{name:''},{name:'   '},{name:'<b>x</b>'},{name:'a'.repeat(33)},{name:'-ilk'},{name:12},{name:'x',extra:1},{}])await assert.rejects(f.api.setDeviceName({...owner,data:bad}),{code:'invalid-argument'});
+ assert.deepEqual(await f.api.setDeviceName({...owner,data:{name:'  Çay   Ocağı 1 '}}),{name:'Çay Ocağı 1'});
+ let saved=f.records.get('adminBoilerState/kazan-1');
+ assert.equal(saved.deviceName,'Çay Ocağı 1');assert.equal(saved.deviceId,'kazan-1');assert.equal(saved.paired,true);
+ assert.deepEqual(await f.api.ingest('Bearer '+r.token,sample()),{accepted:true});
+ saved=f.records.get('adminBoilerState/kazan-1');
+ assert.equal(saved.deviceName,'Çay Ocağı 1');assert.equal(saved.deviceId,'kazan-1');assert.equal(saved.temperatureC,27);
+ await f.api.configure({...owner,data:{action:'revoke'}});
+ assert.equal(f.records.get('adminBoilerState/kazan-1').deviceName,'Çay Ocağı 1');
+ f.records.set('adminBackupControl/state',{active:true});
+ await assert.rejects(f.api.setDeviceName({...owner,data:{name:'Yeni'}}),{code:'unavailable'});
+});
+test('boiler calibration: shown temperature is corrected, heating phase keeps the raw reading, invalid values ignored',()=>{
+ const source=fs.readFileSync(path.join(__dirname,'../../assets/js/smart-boiler-live.js'),'utf8').replace(/^import.*;$/gm,'').replaceAll('export function','function');
+ const context={Date:{now:()=>NOW},navigator:{onLine:true},URL};vm.createContext(context);vm.runInContext(source+'\nthis.api={view,set:(d,o)=>{data=d;online=o;message="";}};',context);
+ const d={paired:true,temperatureC:90,endaConnected:true,measuredAtMs:NOW-1000,lastSeenAtMs:NOW-1000,targetTemperatureC:90.4,targetMeasuredAtMs:NOW-1000,heaterOutputKnown:true,heaterOn:false};
+ context.api.set(d,true);assert.equal(context.api.view().temperature,90);assert.equal(context.api.view().calibration,0);
+ context.api.set({...d,calibration:{valueC:-2.5}},true);const v=context.api.view();
+ assert.equal(v.temperature,87.5);assert.equal(v.rawTemperature,90);assert.equal(v.calibration,-2.5);assert.equal(v.phase,'reached');
+ for(const bad of [9,-6,'x',NaN,null,undefined]){context.api.set({...d,calibration:{valueC:bad}},true);assert.equal(context.api.view().temperature,90);assert.equal(context.api.view().calibration,0)}
+ context.api.set({...d,measuredAtMs:NOW-60000,calibration:{valueC:1}},true);assert.equal(context.api.view().temperature,null);
+});
+test('tea widget: shown boiler temperature is corrected, phase uses the raw reading',()=>{
+ const {boilerView}=require('../widget-tea');
+ const s={paired:true,endaConnected:true,temperatureC:90,measuredAtMs:NOW-1000,lastSeenAtMs:NOW-1000,targetTemperatureC:90.4,targetMeasuredAtMs:NOW-1000,heaterOutputKnown:true,heaterOn:false};
+ assert.equal(boilerView(s,NOW).temperatureC,90);
+ const v=boilerView({...s,calibration:{valueC:-2.5}},NOW);
+ assert.equal(v.temperatureC,87.5);assert.equal(v.temperatureText,'88 °C');assert.equal(v.phase,'reached');
+ assert.equal(boilerView({...s,calibration:{valueC:12}},NOW).temperatureC,90);
+ assert.equal(boilerView({...s,calibration:{valueC:1},measuredAtMs:NOW-60000},NOW).temperatureC,null);
+});
+test('boiler settings page: header buttons, three side-by-side cards, firmware card and device tools in their own windows',()=>{
+ const base=path.join(__dirname,'../..'),html=fs.readFileSync(path.join(base,'tanimlamalar/index.html'),'utf8'),css=fs.readFileSync(path.join(base,'tanimlamalar/style.css'),'utf8'),js=fs.readFileSync(path.join(base,'assets/js/smart-boiler-settings.js'),'utf8'),index=fs.readFileSync(path.join(base,'functions/index.js'),'utf8');
+ const block=id=>{const start=html.indexOf(`<dialog id="${id}"`);assert.ok(start>=0,id);return html.slice(start,html.indexOf('</dialog>',start))};
+ const main=block('smartBoilerSettingsDialog'),update=block('boilerUpdateDialog'),device=block('boilerDeviceDialog');
+ for(const id of ['openBoilerUpdateDialog','openBoilerDeviceDialog'])assert.ok(main.indexOf(`id="${id}"`)>0&&main.indexOf(`id="${id}"`)<main.indexOf('boiler-control-grid'),id);
+ assert.equal((main.match(/boiler-square-card/g)||[]).length,3);
+ assert.ok(main.indexOf('boiler-target-range')<main.indexOf('id="boilerHysteresisSettings"')&&main.indexOf('id="boilerHysteresisSettings"')<main.indexOf('id="boilerCalibrationSettings"'));
+ for(const id of ['boilerFirmwareCurrent','boilerFirmwareFile','boilerFirmwareVersion','boilerFirmwareSelect','pairBoilerDevice','revokeBoilerDevice','boilerDeviceName'])assert.doesNotMatch(main,new RegExp(`id="${id}"`),`${id} ana pencerede kalmamalı`);
+ for(const id of ['boilerFirmwareCurrent','boilerFirmwareVersion','boilerFirmwareFile','uploadBoilerFirmware','boilerFirmwareSelect','startBoilerUpdate','cancelBoilerUpdate'])assert.match(update,new RegExp(`id="${id}"`),id);
+ for(const id of ['pairBoilerDevice','revokeBoilerDevice','boilerConnectionState','boilerLastSeen','boilerDeviceId','boilerDeviceName','saveBoilerDeviceName'])assert.match(device,new RegExp(`id="${id}"`),id);
+ assert.match(css,/@media\(min-width:701px\)\{\.boiler-control-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)\}/);
+ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(ids.length,new Set(ids).size,'yinelenen kimlik var');
+ for(const m of js.matchAll(/\$\('([A-Za-z]+)'\)/g))assert.ok(ids.includes(m[1]),`JS'in beklediği kimlik sayfada yok: ${m[1]}`);
+ assert.match(js,/setBoilerCalibration/);assert.match(js,/renameBoilerDevice/);assert.match(index,/exports\.setBoilerCalibration=/);assert.match(index,/exports\.renameBoilerDevice=/);
+ assert.match(js,/key==='Enter'&&event\.target\.tagName==='INPUT'/);
 });
