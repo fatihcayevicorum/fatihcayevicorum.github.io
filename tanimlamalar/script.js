@@ -334,7 +334,7 @@ $("addRegionTable").onclick=()=>{
 $("productPriceSettingsCard").onclick=()=>{const frame=$("productSettingsFrame");if(!frame.getAttribute("src"))frame.src=frame.dataset.src;$("productPriceSettingsDialog").showModal()};
 $("closeProductSettings").onclick=()=>$("productPriceSettingsDialog").close();
 $("productPriceSettingsDialog").addEventListener("close",()=>$("productSettingsFrame").removeAttribute("src"));
-window.addEventListener("message",event=>{if(event.origin===location.origin&&event.source===$("productSettingsFrame").contentWindow&&event.data?.type==="fatih-product-settings-close")$("productPriceSettingsDialog").close()});
+window.addEventListener("message",event=>{if(event.origin===location.origin&&event.source===$("productSettingsFrame").contentWindow){if(event.data?.type==="fatih-product-settings-close")$("productPriceSettingsDialog").close();if(event.data?.type==="fatih-product-settings-modal")$("productPriceSettingsDialog").classList.toggle("product-modal-open",event.data.open===true)}});
 
 renderPageState();updateLayoutCard();
 
