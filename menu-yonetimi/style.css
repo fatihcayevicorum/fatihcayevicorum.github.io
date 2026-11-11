@@ -259,8 +259,8 @@ body.definitions-product-settings{background:#fffaf4}.definitions-product-settin
   height:fit-content!important;max-height:calc(100% - 24px)!important;border-radius:18px!important;
   background:var(--theme-surface,#fffaf4)!important;
 }
-.definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog)::backdrop,
-.definitions-product-settings :is(#productListDialog,#priceSettingsDialog)::backdrop{background:rgba(37,9,12,.5)!important;backdrop-filter:none!important}
+.definitions-product-settings :is(#productListDialog,#priceSettingsDialog)::backdrop{background:#2a1714a8!important;backdrop-filter:blur(3px)!important}
 .definitions-product-settings :is(#productGroupsForm,#costGroupForm){max-height:calc(100dvh - 24px)!important;overflow-y:auto!important;box-sizing:border-box}
 .definitions-product-settings #priceSettingsDialog>.price-dialog-card{width:100%;max-width:100%;max-height:calc(100dvh - 24px);box-sizing:border-box}
 .definitions-product-settings :is(#bulkPriceDialog,#singlePriceDialog,#pricePreviewDialog){max-width:calc(100% - 24px);max-height:calc(100% - 24px)}
+.definitions-product-settings :is(#productGroupsDialog,#costGroupsDialog,#productListDialog,#priceSettingsDialog,#bulkPriceDialog,#singlePriceDialog,#pricePreviewDialog)::backdrop{background:#2a1714a8!important;backdrop-filter:blur(3px)!important}
