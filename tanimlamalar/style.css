@@ -363,3 +363,25 @@ html:root .cash-settings-host{width:min(var(--cash-panel-width,760px),calc(100vw
 .email-add{grid-template-columns:minmax(0,1fr) auto;align-items:end}
 .email-report-dialog .dialog-actions{flex-wrap:wrap}
 @media(max-width:540px){.email-add{grid-template-columns:1fr}.email-recipient-actions>*{flex:1 1 130px}.email-report-dialog .dialog-actions>*{flex:1 1 120px}}
+
+/* R639 — Akıllı Kazan: üst butonlar, üç sıcaklık kartı yan yana, Yazılım Güncelleme ve Cihaz pencereleri. */
+.boiler-settings-heading{flex-wrap:wrap}
+.boiler-heading-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-left:auto}
+.smart-boiler-settings-dialog .boiler-heading-actions .boiler-system-button{width:auto;min-width:0;min-height:38px;white-space:nowrap}
+.boiler-heading-actions .boiler-system-button i{margin-right:4px}
+.boiler-target-now,.boiler-calibration-readout p{display:grid;gap:3px;min-width:0;margin:0;padding:8px 9px;border:1px solid var(--theme-border,var(--line));border-radius:11px;background:var(--theme-surface,#fffdf9)}
+.boiler-target-now small,.boiler-calibration-readout small{color:var(--theme-muted,var(--muted));font-size:.54rem}
+.boiler-target-now strong,.boiler-calibration-readout strong{overflow-wrap:anywhere;color:var(--theme-text,var(--ink));font-size:.95rem;font-weight:800}
+.boiler-calibration-readout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.boiler-calibration-card{align-content:start}
+.boiler-calibration-field,.boiler-name-field{display:grid;gap:5px;color:var(--theme-text,var(--ink));font-size:.64rem;font-weight:700}
+.boiler-calibration-field>div,.boiler-name-field>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;border:1px solid var(--theme-border,var(--line));border-radius:10px;background:var(--theme-input,var(--theme-surface,#fff))}
+.boiler-calibration-field input,.boiler-name-field input{width:100%;min-height:40px;padding:7px 9px;border:0;background:transparent;color:var(--theme-text,var(--ink));font:inherit;outline:0}
+.boiler-calibration-field span{padding-right:9px;color:var(--theme-muted,var(--muted));font-size:.66rem;font-weight:700}
+.boiler-calibration-card>.boiler-system-button{width:100%;margin-top:auto}
+.boiler-device-name-section>.boiler-system-button{width:auto;min-width:145px;justify-self:start}
+.boiler-firmware-facts{grid-template-columns:minmax(0,1fr)}
+.boiler-device-dialog{width:min(760px,calc(100% - 24px))}
+@media(min-width:701px){.boiler-control-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.boiler-control-grid .boiler-range-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.boiler-heading-actions{flex:1 1 100%;justify-content:stretch}.smart-boiler-settings-dialog .boiler-heading-actions .boiler-system-button{flex:1 1 0}.boiler-calibration-card>.boiler-system-button,.boiler-device-name-section>.boiler-system-button{width:100%}}
+#boilerUpdateMessage[data-error=true],#boilerDeviceMessage[data-error=true]{color:var(--theme-danger,#a11825)}

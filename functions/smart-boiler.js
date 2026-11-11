@@ -1,6 +1,7 @@
 'use strict';
 const crypto=require('node:crypto');
 const DEVICE='kazan-1';
+const DEVICE_NAME=/^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,31}$/u;
 const hash=v=>crypto.createHash('sha256').update(v).digest('hex');
 function problem(status,message){const e=new Error(message);e.status=status;throw e;}
 function parseSample(b,now){
@@ -29,11 +30,14 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
  const credentials=db.doc('adminBoilerDevices/'+DEVICE),state=db.doc('adminBoilerState/'+DEVICE),maintenance=db.doc('adminBackupControl/state');
  const savedRange=old=>{const min=old?.targetRange?.min,max=old?.targetRange?.max;return Number.isInteger(min)&&Number.isInteger(max)&&min>=20&&max<=100&&min<max?{min,max}:null};
  const effectiveRange=old=>{const configured=savedRange(old),device=old?.control;return{min:Math.max(Number(device?.min??20),configured?.min??20),max:Math.min(Number(device?.max??100),configured?.max??100)}};
+ // R639: ekranda gösterilen sıcaklık düzeltmesi (-5…+5 °C) ve cihaz görünen adı. Cihaz kimliği (kazan-1) ve anahtar değişmez.
+ const savedCalibration=old=>{const c=old?.calibration;return c&&Number.isFinite(c.valueC)&&Math.abs(c.valueC)<=5?c:null};
+ const savedName=old=>typeof old?.deviceName==='string'&&DEVICE_NAME.test(old.deviceName)?old.deviceName:null;
  async function configure(r){
   if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','Yalnızca ana yönetici cihaz bağlayabilir.');
   if(!['pair','revoke'].includes(r.data?.action))throw new HttpsError('invalid-argument','İşlem geçersiz.');
   const token=crypto.randomBytes(32).toString('hex'),enabled=r.data.action==='pair';
-  await db.runTransaction(async tx=>{const [gate,current]=await Promise.all([tx.get(maintenance),tx.get(state)]);if(gate.data()?.active)throw new HttpsError('unavailable','Yedekleme işleminin tamamlanmasını bekleyin.');const targetRange=savedRange(current.data());tx.set(credentials,{enabled,tokenHash:enabled?hash(token):'',updatedAtMs:now(),updatedBy:r.auth.uid});tx.set(state,{deviceId:DEVICE,paired:enabled,temperatureC:null,endaConnected:false,measuredAtMs:null,lastSeenAtMs:null,sentAtMs:0,firmwareVersion:'',...(targetRange?{targetRange}:{})});});
+  await db.runTransaction(async tx=>{const [gate,current]=await Promise.all([tx.get(maintenance),tx.get(state)]);if(gate.data()?.active)throw new HttpsError('unavailable','Yedekleme işleminin tamamlanmasını bekleyin.');const targetRange=savedRange(current.data()),calibration=savedCalibration(current.data()),deviceName=savedName(current.data());tx.set(credentials,{enabled,tokenHash:enabled?hash(token):'',updatedAtMs:now(),updatedBy:r.auth.uid});tx.set(state,{deviceId:DEVICE,paired:enabled,temperatureC:null,endaConnected:false,measuredAtMs:null,lastSeenAtMs:null,sentAtMs:0,firmwareVersion:'',...(targetRange?{targetRange}:{}),...(calibration?{calibration}:{}),...(deviceName?{deviceName}:{})});});
   return enabled?{deviceId:DEVICE,token,endpoint:`https://europe-west1-${projectId}.cloudfunctions.net/receiveBoilerTemperature`}:{revoked:true};
  }
  async function setTarget(r){
@@ -74,6 +78,23 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
    if(!old.paired||!old.endaConnected||old.hysteresisOnOff!==true||!Number.isInteger(old.hysteresisC)||at-old.lastSeenAtMs>20000||at-old.hysteresisMeasuredAtMs>20000||old.hysteresisMeasuredAtMs>at+30000||old.hysteresisC!==b.expected||typeof old.bootId!=='string'||!/^[a-f0-9]{32}$/.test(old.bootId))throw new HttpsError('failed-precondition','Cihaz ON/OFF modunda değil, veri güncel değil veya fark değeri değişti.');
    const hysteresisCommand={id:b.id,value:b.value,expected:b.expected,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
    tx.set(state,{...old,hysteresisCommand});return{id:b.id,status:'pending'};
+  });
+ }
+ async function setCalibration(r){
+  if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','Sıcaklık kalibrasyonunu yalnızca ana yönetici değiştirebilir.');
+  const b=r.data||{},tenths=Math.round(Number(b.value)*10);
+  if(Object.keys(b).some(k=>!['value','expected'].includes(k))||typeof b.value!=='number'||!Number.isFinite(b.value)||Math.abs(b.value*10-tenths)>1e-6||Math.abs(tenths)>50||typeof b.expected!=='number'||!Number.isFinite(b.expected))throw new HttpsError('invalid-argument','Düzeltme -5 ile +5 °C arasında, en fazla bir ondalıklı olmalıdır.');
+  return db.runTransaction(async tx=>{const [s,g]=await Promise.all([tx.get(state),tx.get(maintenance)]),old=s.data()||{};if(g.data()?.active)throw new HttpsError('unavailable','Yedekleme işleminin tamamlanmasını bekleyin.');
+   const current=savedCalibration(old)?.valueC??0;if(Math.abs(current-b.expected)>1e-6)throw new HttpsError('failed-precondition','Kalibrasyon başka yerden değişti. Sayfayı yenileyip yeniden deneyin.');
+   const valueC=tenths/10||0;tx.set(state,{...old,calibration:{valueC,updatedAtMs:now(),updatedBy:r.auth.uid}});return{value:valueC};
+  });
+ }
+ async function setDeviceName(r){
+  if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','Cihaz adını yalnızca ana yönetici değiştirebilir.');
+  const b=r.data||{},name=typeof b.name==='string'?b.name.trim().replace(/\s+/g,' '):'';
+  if(Object.keys(b).some(k=>k!=='name')||!DEVICE_NAME.test(name))throw new HttpsError('invalid-argument','Cihaz adı 1–32 karakter olmalı; harf, rakam, boşluk, nokta, tire veya alt çizgi içerebilir.');
+  return db.runTransaction(async tx=>{const [s,g]=await Promise.all([tx.get(state),tx.get(maintenance)]),old=s.data()||{};if(g.data()?.active)throw new HttpsError('unavailable','Yedekleme işleminin tamamlanmasını bekleyin.');
+   tx.set(state,{...old,deviceName:name,deviceNameUpdatedAtMs:now(),deviceNameUpdatedBy:r.auth.uid});return{name};
   });
  }
  async function ingest(token,body){
@@ -126,6 +147,6 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
   try{const result=await ingest(req.get('Authorization'),req.body);if(result.command)res.set('X-Boiler-Command',result.command);if(result.hysteresisCommand)res.set('X-Boiler-Hysteresis',result.hysteresisCommand);if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
   catch(e){return res.status(e.status||503).json({error:e.status?e.message:'Gönderim tamamlanamadı.'});}
  }
- return{configure,receive,ingest,setTarget,setTargetRange,setHysteresis};
+ return{configure,receive,ingest,setTarget,setTargetRange,setHysteresis,setCalibration,setDeviceName};
 }
 module.exports={buildSmartBoiler,parseSample};
