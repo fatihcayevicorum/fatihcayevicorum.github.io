@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=10">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
   <link rel="stylesheet" href="../yonetim-merkezi/style.css?v=448">
-  <link rel="stylesheet" href="style.css?v=643">
+  <link rel="stylesheet" href="style.css?v=6442">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=564">
   <script src="../assets/js/theme.js?v=564"></script>
@@ -96,7 +96,7 @@
       <button id="closeSmartBoilerSettings" class="dialog-close definition-close-button" type="button" aria-label="Kapat">×</button>
       <div class="dialog-heading boiler-settings-heading"><div class="dialog-icon"><i class="fa-solid fa-fire-flame-curved"></i></div><div><p class="dialog-kicker">Tanımlamalar</p><h2 id="smartBoilerSettingsHeading">Akıllı Kazan</h2></div><div class="boiler-heading-actions"><button id="openBoilerUpdateDialog" class="secondary-button boiler-system-button" type="button" aria-haspopup="dialog"><i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i> Yazılım Güncelleme</button><button id="openBoilerDeviceDialog" class="secondary-button boiler-system-button" type="button" aria-haspopup="dialog"><i class="fa-solid fa-plug" aria-hidden="true"></i> Cihaz</button></div></div>
       <div class="boiler-settings-grid boiler-control-grid">
-        <section class="boiler-settings-section boiler-square-card boiler-target-range"><h3>Hedef Sıcaklık</h3><p class="boiler-target-now"><small>Kazanın Hedefi</small><strong id="boilerTargetNow">—</strong></p><div class="boiler-range-fields"><label>Alt Sınır<div><input id="boilerTargetMin" type="number" inputmode="numeric" min="20" max="99" step="1"><span>°C</span></div></label><label>Üst Sınır<div><input id="boilerTargetMax" type="number" inputmode="numeric" min="21" max="100" step="1"><span>°C</span></div></label></div><button id="saveBoilerTargetRange" class="primary-button boiler-system-button" type="button">Aralığı Kaydet</button><p id="boilerTargetRangeStatus" class="tea-settings-copy">Geçerli Aralık Yükleniyor…</p></section>
+        <section class="boiler-settings-section boiler-square-card boiler-target-range"><h3>Hedef Sıcaklık</h3><p class="boiler-target-now"><small>Kazanın Hedefi</small><strong id="boilerTargetNow">—</strong></p><div class="boiler-range-fields"><label>Alt Sınır<div><input id="boilerTargetMin" type="number" inputmode="numeric" min="20" max="99" step="1"><span>°C</span></div></label><label>Üst Sınır<div><input id="boilerTargetMax" type="number" inputmode="numeric" min="21" max="100" step="1"><span>°C</span></div></label></div><div class="boiler-actions"><button id="cancelBoilerTargetRange" class="secondary-button boiler-system-button" type="button">İptal</button><button id="saveBoilerTargetRange" class="primary-button boiler-system-button" type="button">Kaydet</button></div><p id="boilerTargetRangeStatus" class="boiler-note" role="status" aria-live="polite">Geçerli Aralık Yükleniyor…</p></section>
         <section id="boilerHysteresisSettings" class="boiler-settings-section boiler-square-card boiler-settings-hysteresis" data-hysteresis-editor></section>
         <section id="boilerCalibrationSettings" class="boiler-settings-section boiler-square-card boiler-calibration-card"><h3>Sıcaklık Kalibrasyonu</h3><input id="boilerCalibrationValue" type="hidden" value="0"><div class="boiler-calibration-stepper"><button id="boilerCalibrationDown" type="button" aria-label="Kalibrasyonu azalt">−</button><output id="boilerCalibrationDisplay">0.0 °C</output><button id="boilerCalibrationUp" type="button" aria-label="Kalibrasyonu artır">+</button></div><div class="boiler-actions"><button id="cancelBoilerCalibration" type="button">İptal</button><button id="saveBoilerCalibration" type="button">Kaydet</button></div><p id="boilerCalibrationStatus" class="boiler-note" role="status" aria-live="polite"></p></section>
       </div>
@@ -368,7 +368,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="script.js?v=643"></script>
-  <script type="module" src="../assets/js/smart-boiler-settings.js?v=643"></script>
+  <script type="module" src="../assets/js/smart-boiler-settings.js?v=644"></script>
   <script type="module" src="../assets/js/system-ui.js?v=634"></script>
 </body>
 </html>
