@@ -18,6 +18,7 @@ on:
           - '0.6.1-ota-test'
           - '0.6.2-onoff-aday'
           - '0.6.3-kalibrasyon-aday'
+          - '0.6.4-enda-offset-aday'
 
 permissions:
   contents: read
@@ -29,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      FIRMWARE_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.firmware || (github.ref_name == 'esp32-tablet-bin-ota-teshis-0-6-3' && '0.6.3-kalibrasyon-aday' || '0.6.1-ota-test') }}
+      FIRMWARE_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.firmware || (github.ref_name == 'esp32-tablet-bin-ota-teshis-0-6-3' && '0.6.4-enda-offset-aday' || '0.6.1-ota-test') }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -41,6 +42,7 @@ jobs:
             0.6.1-ota-test) dir='esp32/FatihKazan_ESP32_FW_0.6.1_OTA_Test' ;;
             0.6.2-onoff-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.2_ONOFF_Aday' ;;
             0.6.3-kalibrasyon-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.3_Kalibrasyon_Aday' ;;
+            0.6.4-enda-offset-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.4_ENDA_Offset_Aday' ;;
             *) echo 'Unrecognized firmware selection' >&2; exit 1 ;;
           esac
           test -f "$dir/$(basename "$dir").ino"
