@@ -10,7 +10,7 @@ import{mountHysteresisEditor}from'./smart-boiler-live.js?v=643';
 const $=id=>document.getElementById(id),card=$('smartBoilerSettingsCard'),dialog=$('smartBoilerSettingsDialog'),updateDialog=$('boilerUpdateDialog'),deviceDialog=$('boilerDeviceDialog');
 if(card&&dialog&&updateDialog&&deviceDialog){
  const db=getFirestore(firebaseApp),functions=getFunctions(firebaseApp,'europe-west1'),storage=getStorage(firebaseApp);
- const status=$('boilerSettingsStatus'),firmwareSelect=$('boilerFirmwareSelect'),rangeMin=$('boilerTargetMin'),rangeMax=$('boilerTargetMax'),rangeSave=$('saveBoilerTargetRange');let state=null,downloadUrl=null,unsubscribe=null,rangeDirty=false,rangeSaving=false;
+ const status=$('boilerSettingsStatus'),firmwareSelect=$('boilerFirmwareSelect'),rangeMin=$('boilerTargetMin'),rangeMax=$('boilerTargetMax'),rangeCancel=$('cancelBoilerTargetRange'),rangeSave=$('saveBoilerTargetRange');let state=null,downloadUrl=null,unsubscribe=null,rangeDirty=false,rangeSaving=false;
  const calValue=$('boilerCalibrationValue'),calDisplay=$('boilerCalibrationDisplay'),calDown=$('boilerCalibrationDown'),calUp=$('boilerCalibrationUp'),calCancel=$('cancelBoilerCalibration'),calSave=$('saveBoilerCalibration'),nameInput=$('boilerDeviceName'),nameSave=$('saveBoilerDeviceName');let calDirty=false,calSaving=false,calNotice='',nameDirty=false,nameSaving=false;
  const DEVICE_NAME=/^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,31}$/u;
  const text=value=>String(value??'').replace(/[<>]/g,'');
@@ -67,7 +67,7 @@ if(card&&dialog&&updateDialog&&deviceDialog){
   $('boilerFirmwareCurrent').textContent=state?.firmwareVersion||'—';$('boilerLastSeen').textContent=time(state?.lastSeenAtMs);
   const ota=state?.ota||{};$('boilerOtaStatus').textContent=ota.status?`${ota.version||''} · ${ota.status}`:'Bekleyen güncelleme yok';$('boilerOtaResult').textContent=ota.finishedAtMs?`Sonuç: ${time(ota.finishedAtMs)}${ota.error?' · '+ota.error:''}`:'Henüz güncelleme sonucu yok';
   $('startBoilerUpdate').disabled=!state?.paired||!firmwareSelect.value||['pending','offered','downloading','installing'].includes(ota.status);$('cancelBoilerUpdate').disabled=!['pending','offered'].includes(ota.status);
-  const saved=range();if(!rangeDirty){rangeMin.value=saved.min;rangeMax.value=saved.max}$('boilerTargetRangeStatus').textContent=`Geçerli Hedef Aralığı: ${saved.min}–${saved.max}°C`;rangeSave.disabled=rangeSaving;
+  const saved=range();if(!rangeDirty){rangeMin.value=saved.min;rangeMax.value=saved.max}$('boilerTargetRangeStatus').textContent=rangeDirty?'':`Geçerli Aralık: ${saved.min}–${saved.max}°C`;rangeCancel.disabled=rangeSaving||!rangeDirty;rangeSave.disabled=rangeSaving||!rangeDirty;
   hysteresisEditor?.refreshHysteresis?.();
   paintTarget();paintCalibration();paintName();
  }
@@ -89,7 +89,7 @@ if(card&&dialog&&updateDialog&&deviceDialog){
  $('closeBoilerUpdateDialog').onclick=()=>updateDialog.close();$('doneBoilerUpdateDialog').onclick=()=>updateDialog.close();
  $('closeBoilerDeviceDialog').onclick=()=>deviceDialog.close();$('doneBoilerDeviceDialog').onclick=()=>deviceDialog.close();
  $('pairBoilerDevice').onclick=()=>pair('pair');$('revokeBoilerDevice').onclick=()=>pair('revoke');$('uploadBoilerFirmware').onclick=upload;$('startBoilerUpdate').onclick=start;$('cancelBoilerUpdate').onclick=cancel;firmwareSelect.onchange=paint;
- const rangeChanged=()=>{rangeDirty=true;rangeSave.disabled=false};rangeMin.oninput=rangeMin.onchange=rangeChanged;rangeMax.oninput=rangeMax.onchange=rangeChanged;rangeSave.onclick=saveRange;
+ const rangeChanged=()=>{rangeDirty=true;$('boilerTargetRangeStatus').textContent='';rangeCancel.disabled=false;rangeSave.disabled=false};const cancelRange=()=>{const saved=range();rangeMin.value=saved.min;rangeMax.value=saved.max;rangeDirty=false;paint()};rangeMin.oninput=rangeMin.onchange=rangeChanged;rangeMax.oninput=rangeMax.onchange=rangeChanged;rangeCancel.onclick=cancelRange;rangeSave.onclick=saveRange;
  calDown.onclick=()=>changeCalibration(-.1);calUp.onclick=()=>changeCalibration(.1);calCancel.onclick=cancelCalibration;calSave.onclick=saveCalibration;
  nameInput.oninput=()=>{nameDirty=true;paint()};nameSave.onclick=saveName;
  /* Tek metin alanlı pencerelerde Enter, formu gönderip pencereyi kapatmasın; ad alanında Enter kaydeder. */
