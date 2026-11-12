@@ -31,12 +31,12 @@ body:has(.boiler-dialog[open]){overflow:hidden}.boiler-page [hidden],.boiler-dia
 #smartBoilerQuickDialog .boiler-quick-card{padding:35px 11px 11px}
 #smartBoilerQuickDialog .boiler-quick-card>small,#smartBoilerQuickDialog .boiler-quick-title{top:11px;left:11px;right:11px;font-size:.78rem}
 #smartBoilerQuickDialog .boiler-quick-editor{justify-content:flex-start}
-#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{grid-template-columns:46px minmax(74px,1fr) 46px;width:100%;gap:7px;margin:auto 0 12px}
+#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{position:absolute;top:50%;left:11px;right:11px;grid-template-columns:46px minmax(74px,1fr) 46px;width:auto;gap:7px;margin:0;transform:translateY(-50%)}
 #smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper button{width:46px;min-height:42px;font-size:1.4rem}
 #smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper output{font-size:1.9rem;line-height:1.1}
-#smartBoilerQuickDialog .boiler-quick-editor .boiler-actions{gap:7px}
+#smartBoilerQuickDialog .boiler-quick-editor .boiler-actions{gap:7px;margin-top:auto}
 #smartBoilerQuickDialog .boiler-quick-editor .boiler-actions button{min-height:42px;font-size:.78rem}
 #smartBoilerQuickDialog .boiler-quick-editor .boiler-note:empty{display:none}
 #smartBoilerQuickDialog .boiler-quick-editor .boiler-note{margin:5px 0 0;font-size:.63rem}
-@media(max-width:430px){#smartBoilerQuickDialog{padding:12px}#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) 38px;margin-bottom:8px}#smartBoilerQuickDialog .boiler-quick-heading .boiler-close{width:38px;min-height:38px}#smartBoilerQuickDialog .boiler-quick-card{padding:32px 8px 8px}#smartBoilerQuickDialog .boiler-quick-card>small,#smartBoilerQuickDialog .boiler-quick-title{top:9px;left:9px;font-size:.67rem}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{grid-template-columns:40px minmax(58px,1fr) 40px;margin-bottom:9px}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper output{font-size:1.5rem}#smartBoilerQuickDialog .boiler-quick-editor .boiler-actions button{font-size:.67rem}}
+@media(max-width:430px){#smartBoilerQuickDialog{padding:12px}#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) 38px;margin-bottom:8px}#smartBoilerQuickDialog .boiler-quick-heading .boiler-close{width:38px;min-height:38px}#smartBoilerQuickDialog .boiler-quick-card{padding:32px 8px 8px}#smartBoilerQuickDialog .boiler-quick-card>small,#smartBoilerQuickDialog .boiler-quick-title{top:9px;left:9px;font-size:.67rem}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{left:8px;right:8px;grid-template-columns:40px minmax(58px,1fr) 40px}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper output{font-size:1.5rem}#smartBoilerQuickDialog .boiler-quick-editor .boiler-actions button{font-size:.67rem}}
 
