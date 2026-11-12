@@ -4,14 +4,14 @@ import{getFunctions,httpsCallable}from'https://www.gstatic.com/firebasejs/12.16.
 import{getStorage,ref,uploadBytes}from'https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js';
 import{firebaseApp,ADMIN_UID}from'./firebase-config.js';
 import{systemConfirm}from'./system-confirm.js';
-import{mountHysteresisEditor}from'./smart-boiler-live.js?v=639';
+import{mountHysteresisEditor}from'./smart-boiler-live.js?v=643';
 
-/* R639 — Akıllı Kazan: ana pencerede üç sıcaklık kartı; Yazılım Güncelleme ve Cihaz ayrı pencerelerde. */
+/* R643 aday — Akıllı Kazan ayarları üç sade kare kartta; güncelleme ve cihaz işlemleri ayrı pencerelerde. */
 const $=id=>document.getElementById(id),card=$('smartBoilerSettingsCard'),dialog=$('smartBoilerSettingsDialog'),updateDialog=$('boilerUpdateDialog'),deviceDialog=$('boilerDeviceDialog');
 if(card&&dialog&&updateDialog&&deviceDialog){
  const db=getFirestore(firebaseApp),functions=getFunctions(firebaseApp,'europe-west1'),storage=getStorage(firebaseApp);
  const status=$('boilerSettingsStatus'),firmwareSelect=$('boilerFirmwareSelect'),rangeMin=$('boilerTargetMin'),rangeMax=$('boilerTargetMax'),rangeSave=$('saveBoilerTargetRange');let state=null,downloadUrl=null,unsubscribe=null,rangeDirty=false,rangeSaving=false;
- const calValue=$('boilerCalibrationValue'),calSave=$('saveBoilerCalibration'),nameInput=$('boilerDeviceName'),nameSave=$('saveBoilerDeviceName');let calDirty=false,calSaving=false,calNotice='',nameDirty=false,nameSaving=false;
+ const calValue=$('boilerCalibrationValue'),calDisplay=$('boilerCalibrationDisplay'),calDown=$('boilerCalibrationDown'),calUp=$('boilerCalibrationUp'),calCancel=$('cancelBoilerCalibration'),calSave=$('saveBoilerCalibration'),nameInput=$('boilerDeviceName'),nameSave=$('saveBoilerDeviceName');let calDirty=false,calSaving=false,calNotice='',nameDirty=false,nameSaving=false;
  const DEVICE_NAME=/^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,31}$/u;
  const text=value=>String(value??'').replace(/[<>]/g,'');
  const time=value=>Number(value)?new Date(Number(value)).toLocaleString('tr-TR'):'—';
@@ -28,15 +28,16 @@ if(card&&dialog&&updateDialog&&deviceDialog){
  /* Kart 3 — Sıcaklık Kalibrasyonu: yalnızca ekranlarda gösterilen sıcaklığı düzeltir; ENDA ölçümü ve ısıtma kontrolü değişmez. */
  const sign=value=>`${value>0?'+':''}${(Math.round(value*10)/10).toFixed(1)}`;
  function calibration(){const value=state?.calibration?.valueC;return Number.isFinite(value)&&Math.abs(value)<=5?value:0}
- function calReading(){const age=Date.now()-Number(state?.measuredAtMs||0);return state?.paired&&state?.endaConnected===true&&Number.isFinite(state?.temperatureC)&&age<=45000&&age>=-30000?state.temperatureC:null}
  function calDraft(){const raw=calValue.value.trim(),value=Number(raw),tenths=Math.round(value*10);return raw!==''&&Number.isFinite(value)&&Math.abs(value*10-tenths)<=1e-6&&Math.abs(tenths)<=50?(tenths/10||0):null}
- function paintCalibration(){const saved=calibration(),reading=calReading(),draft=calDirty?calDraft():saved;
+ function paintCalibration(){const saved=calibration(),draft=calDirty?calDraft():saved;
   if(!calDirty&&!calSaving)calValue.value=String(saved);
-  $('boilerCalibrationRaw').textContent=reading===null?'—':`${reading.toFixed(1)} °C`;
-  $('boilerCalibrationShown').textContent=reading===null||draft===null?'—':`${(reading+draft).toFixed(1)} °C`;
-  $('boilerCalibrationStatus').textContent=calNotice||`Geçerli Düzeltme: ${sign(saved)} °C${calDirty?' · Kaydedilmedi':''}`;
+  calDisplay.textContent=draft===null?'—':`${sign(draft)} °C`;
+  $('boilerCalibrationStatus').textContent=calNotice;
+  calDown.disabled=calSaving||draft===null||draft<=-5;calUp.disabled=calSaving||draft===null||draft>=5;calCancel.disabled=calSaving||!calDirty;
   calSave.disabled=calSaving||!calDirty||calDraft()===null;
  }
+ function changeCalibration(step){if(calSaving)return;const current=calDraft()??calibration(),next=Math.max(-5,Math.min(5,Math.round((current+step)*10)/10));calValue.value=String(next);calDirty=next!==calibration();calNotice='';paint()}
+ function cancelCalibration(){calValue.value=String(calibration());calDirty=false;calNotice='';paint()}
  async function saveCalibration(){if(calSaving)return;const value=calDraft();
   if(value===null){calNotice='-5 İle +5 Arasında, En Fazla Bir Ondalıklı Değer Girin.';paint();return}
   const current=calibration();if(value===current){calDirty=false;calNotice='';paint();return}
@@ -74,7 +75,7 @@ if(card&&dialog&&updateDialog&&deviceDialog){
   const current=range(),accepted=await systemConfirm({title:'Hedef sıcaklık aralığı değiştirilsin mi?',message:`Hedef sıcaklık aralığı ${current.min}–${current.max}°C yerine ${min}–${max}°C olacak.`,confirmText:'Aralığı Kaydet'});if(!accepted)return;
   rangeSaving=true;rangeSave.disabled=true;$('boilerTargetRangeStatus').textContent='Aralık Kaydediliyor…';try{await httpsCallable(functions,'setBoilerTargetRange')({min,max});state={...state,targetRange:{min,max}};rangeDirty=false;rangeSaving=false;paint();$('boilerTargetRangeStatus').textContent=`Hedef Sıcaklık Aralığı ${min}–${max}°C Olarak Kaydedildi.`}catch(e){rangeSaving=false;$('boilerTargetRangeStatus').textContent=e.code?.includes('failed-precondition')?'Mevcut Hedef Seçilen Aralığın Dışında Kalıyor. Önce Hedef Sıcaklığı Değiştirin.':e.code?.includes('permission-denied')?'Bu İşlem Yalnızca Ana Yöneticiye Açıktır.':'Sıcaklık Aralığı Kaydedilemedi.';rangeSave.disabled=false}}
  async function loadReleases(){const snap=await getDocs(collection(db,'adminBoilerFirmware')),rows=snap.docs.map(x=>x.data()).filter(x=>x.status==='ready').sort((a,b)=>Number(b.createdAtMs)-Number(a.createdAtMs));firmwareSelect.innerHTML='<option value="">Sürüm seçin</option>'+rows.map(x=>`<option value="${text(x.version)}">${text(x.version)} · ${(Number(x.size)/1024).toFixed(0)} KB</option>`).join('');paint()}
- async function pair(action){const accepted=await systemConfirm({title:action==='pair'?'ESP32 bağlantısı oluşturulsun mu?':'ESP32 bağlantısı kesilsin mi?',message:action==='pair'?'Yeni bağlantı dosyası mevcut cihaz anahtarını değiştirir. Dosyayı güvenli saklayın.':'Cihaz yeni bağlantı dosyası yüklenene kadar sıcaklık ve güncelleme gönderemez.',confirmText:action==='pair'?'Oluştur':'Bağlantıyı Kes',danger:action!=='pair'});if(!accepted)return;
+ async function pair(action){const accepted=await systemConfirm({title:action==='pair'?'ESP32 cihaza bağlansın mı?':'ESP32 bağlantısı kesilsin mi?',message:action==='pair'?'Güvenli bağlantı dosyası oluşturulup indirilecek. Yeni dosya mevcut cihaz anahtarını değiştirir; dosyayı güvenli saklayın.':'Cihaz yeni bağlantı dosyası yüklenene kadar sıcaklık ve güncelleme gönderemez.',confirmText:action==='pair'?'Dosyayı Oluştur':'Bağlantıyı Kes',danger:action!=='pair'});if(!accepted)return;
   message('İşleniyor…',false,'boilerDeviceMessage');try{const {data}=await httpsCallable(functions,'configureBoilerDevice')({action});if(action==='pair'){const content='#pragma once\n// Cihaza özel gizli dosya. GitHub’a veya paylaşılan ZIP’e eklemeyin.\n#define BOILER_CLOUD_URL '+JSON.stringify(data.endpoint)+'\n#define BOILER_DEVICE_TOKEN '+JSON.stringify(data.token)+'\n';if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=URL.createObjectURL(new Blob([content],{type:'text/plain;charset=utf-8'}));const link=document.createElement('a');link.href=downloadUrl;link.download='boiler_cloud.h';link.click();message('Bağlantı dosyası indirildi. ESP32’ye yüklenene kadar bu dosyayı saklayın.',false,'boilerDeviceMessage')}else message('ESP32 bağlantısı kesildi.',false,'boilerDeviceMessage');}catch(e){message(e.code?.includes('permission-denied')?'Bu işlem yalnızca ana yöneticiye açıktır.':'İşlem tamamlanamadı.',true,'boilerDeviceMessage')}}
  async function upload(){const file=$('boilerFirmwareFile').files[0],version=$('boilerFirmwareVersion').value.trim();if(!file||!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.-]+)?$/i.test(version)){message('Geçerli sürüm ve .bin firmware dosyası seçin.',true,'boilerUpdateMessage');return}if(file.size<65536||file.size>4*1024*1024){message('Firmware boyutu 64 KB–4 MB arasında olmalı.',true,'boilerUpdateMessage');return}
   $('uploadBoilerFirmware').disabled=true;message('Dosya doğrulanıyor ve yükleniyor…',false,'boilerUpdateMessage');try{const sha=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer()))].map(x=>x.toString(16).padStart(2,'0')).join('');await uploadBytes(ref(storage,`boiler-firmware/releases/${version}.bin`),file,{contentType:'application/octet-stream',customMetadata:{sha256:sha}});await httpsCallable(functions,'publishBoilerFirmware')({version,sha256:sha,size:file.size});message(`${version} firmware sürümü hazırlandı.`,false,'boilerUpdateMessage');await loadReleases();firmwareSelect.value=version;paint()}catch(e){message(e.code?.includes('permission-denied')?'Firmware işlemi yalnızca ana yöneticiye açıktır.':'Firmware yüklenemedi veya bütünlük kontrolü başarısız.',true,'boilerUpdateMessage')}finally{$('uploadBoilerFirmware').disabled=false}}
@@ -89,7 +90,7 @@ if(card&&dialog&&updateDialog&&deviceDialog){
  $('closeBoilerDeviceDialog').onclick=()=>deviceDialog.close();$('doneBoilerDeviceDialog').onclick=()=>deviceDialog.close();
  $('pairBoilerDevice').onclick=()=>pair('pair');$('revokeBoilerDevice').onclick=()=>pair('revoke');$('uploadBoilerFirmware').onclick=upload;$('startBoilerUpdate').onclick=start;$('cancelBoilerUpdate').onclick=cancel;firmwareSelect.onchange=paint;
  const rangeChanged=()=>{rangeDirty=true;rangeSave.disabled=false};rangeMin.oninput=rangeMin.onchange=rangeChanged;rangeMax.oninput=rangeMax.onchange=rangeChanged;rangeSave.onclick=saveRange;
- calValue.oninput=()=>{calDirty=true;calNotice='';paint()};calSave.onclick=saveCalibration;
+ calDown.onclick=()=>changeCalibration(-.1);calUp.onclick=()=>changeCalibration(.1);calCancel.onclick=cancelCalibration;calSave.onclick=saveCalibration;
  nameInput.oninput=()=>{nameDirty=true;paint()};nameSave.onclick=saveName;
  /* Tek metin alanlı pencerelerde Enter, formu gönderip pencereyi kapatmasın; ad alanında Enter kaydeder. */
  for(const target of [dialog,updateDialog,deviceDialog])target.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.tagName==='INPUT')event.preventDefault()});
@@ -97,3 +98,4 @@ if(card&&dialog&&updateDialog&&deviceDialog){
  setInterval(()=>{if(dialog.open||updateDialog.open||deviceDialog.open)paint()},5000);
  onAuthStateChanged(getAuth(firebaseApp),user=>{card.disabled=user?.uid!==ADMIN_UID;unsubscribe?.();unsubscribe=null;if(user?.uid===ADMIN_UID)unsubscribe=onSnapshot(doc(db,'adminBoilerState','kazan-1'),snap=>{state=snap.data()||null;paint()},()=>{status.textContent='Cihaz durumu alınamadı.'})});
 }
+
