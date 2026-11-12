@@ -7,7 +7,7 @@
 #include <Update.h>
 #include <mbedtls/sha256.h>
 #include <time.h>
-#include <esp_system.h>\n#include <esp_ota_ops.h>
+#include <esp_system.h>
 #include "cloud_ca.h"
 #if __has_include("boiler_cloud.h")
 #include "boiler_cloud.h"
@@ -111,14 +111,13 @@ bool installOta(const String &wire) {
   http.addHeader("Authorization",String("Bearer ")+BOILER_DEVICE_TOKEN);
   int code=http.GET();int length=http.getSize();
   if(code!=200||length!=(int)expectedSize){http.end();setOtaReport(requestId.c_str(),4,"Firmware boyutu veya HTTP yaniti gecersiz.");return false;}
-  const esp_partition_t *nextPartition=esp_ota_get_next_update_partition(nullptr);
-  if(!nextPartition){http.end();setOtaReport(requestId.c_str(),4,"OTA hedef bolumu bulunamadi.");return false;}
-  if(expectedSize>nextPartition->size){
-    char message[121];snprintf(message,sizeof(message),"Firmware %u bayt, OTA alani %u bayt.",(unsigned)expectedSize,(unsigned)nextPartition->size);
+  static const size_t OTA_SLOT_SIZE=0x140000;
+  if(expectedSize>OTA_SLOT_SIZE){
+    char message[121];snprintf(message,sizeof(message),"Firmware %u bayt, OTA alani %u bayt.",(unsigned)expectedSize,(unsigned)OTA_SLOT_SIZE);
     http.end();setOtaReport(requestId.c_str(),4,message);return false;
   }
   if(!Update.begin(expectedSize)){
-    char message[121];snprintf(message,sizeof(message),"OTA baslatilamadi (kod %u, dosya %u, alan %u).",(unsigned)Update.getError(),(unsigned)expectedSize,(unsigned)nextPartition->size);
+    char message[121];snprintf(message,sizeof(message),"OTA baslatilamadi (kod %u, dosya %u, alan %u).",(unsigned)Update.getError(),(unsigned)expectedSize,(unsigned)OTA_SLOT_SIZE);
     http.end();setOtaReport(requestId.c_str(),4,message);return false;
   }
   setOtaReport(requestId.c_str(),3);WiFiClient *stream=http.getStreamPtr();uint8_t buffer[1024],digest[32];size_t written=0;
