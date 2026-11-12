@@ -129,6 +129,6 @@ test('boiler quick settings: compact four-card layout uses the simple enlarged e
  const base=path.join(__dirname,'../..'),shell=fs.readFileSync(path.join(base,'assets/js/smart-boiler.js'),'utf8'),live=fs.readFileSync(path.join(base,'assets/js/smart-boiler-live.js'),'utf8'),css=fs.readFileSync(path.join(base,'assets/css/smart-boiler.css'),'utf8');
  assert.match(shell,/simple:root===dialog/);assert.doesNotMatch(shell,/simple:root===targetDialog/);
  assert.match(live,/Yeni Sıcaklık/);assert.ok(live.indexOf('data-down')<live.indexOf('data-draft')&&live.indexOf('data-draft')<live.indexOf('data-up'));
- assert.match(shell,/class="boiler-quick-heading"/);assert.match(css,/#smartBoilerQuickDialog\{width:min\(560px/);assert.match(css,/boiler-quick-heading\{display:grid/);assert.match(css,/boiler-target-stepper output\{font-size:1\.9rem/);assert.match(css,/boiler-target-stepper\{[^}]*margin:auto 0 12px/);
+ assert.match(shell,/class="boiler-quick-heading"/);assert.match(css,/#smartBoilerQuickDialog\{width:min\(560px/);assert.match(css,/boiler-quick-heading\{display:grid/);assert.match(css,/boiler-target-stepper output\{font-size:1\.9rem/);assert.match(css,/boiler-target-stepper\{position:absolute;top:50%/);assert.match(css,/boiler-quick-editor \.boiler-actions\{gap:7px;margin-top:auto/);
 });
 
