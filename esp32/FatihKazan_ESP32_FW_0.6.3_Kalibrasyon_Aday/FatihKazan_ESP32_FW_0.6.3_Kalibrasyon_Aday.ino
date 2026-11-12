@@ -26,7 +26,8 @@
 // Firmware surumu ana uygulamanin R surumlerinden bagimsizdir.
 static const char *FIRMWARE_VERSION = "KazanFW 0.6.3-kalibrasyon-aday";
 // Sunucudan gelen offset yalnizca goruntu icindir; Modbus/ENDA kontrolune uygulanmaz.
-float displayCalibrationC=0.0f;\nstatic const char *SETUP_AP_NAME = "FatihKazan-Kurulum";
+float displayCalibrationC=0.0f;
+static const char *SETUP_AP_NAME = "FatihKazan-Kurulum";
 
 static const uint8_t RX_PIN = 16;
 static const uint8_t TX_PIN = 17;
