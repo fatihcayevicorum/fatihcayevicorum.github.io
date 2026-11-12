@@ -2,7 +2,7 @@
 let liveInfo={fresh:false,temperature:null,status:"Cihaz bağlantısı bekleniyor.",last:null,owner:false,phase:"offline",heaterKnown:false,heaterOn:false},liveModule=null,liveStarted=false;
 let page=null,headerButton=null,dialog=null,targetDialog=null;
 const HEADER_ID="smartBoilerHeaderButton",DIALOG_ID="smartBoilerQuickDialog",TARGET_DIALOG_ID="smartBoilerTargetDialog";
-const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=644",import.meta.url);document.head.append(css);
+const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=6441",import.meta.url);document.head.append(css);
 
 function temperature(c){return `${Math.round(c)}°C`}
 function startLive(){if(liveStarted)return;liveStarted=true;import("./smart-boiler-live.js?v=644").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
@@ -34,7 +34,7 @@ function render(){renderLive();for(const root of [dialog,targetDialog])root?.que
 function createQuickDialog(){
  dialog=document.getElementById(DIALOG_ID);if(dialog)return;
  dialog=document.createElement("dialog");dialog.id=DIALOG_ID;dialog.className="boiler-dialog";dialog.setAttribute("aria-labelledby","boilerQuickTitle");
- dialog.innerHTML=`<button type="button" class="boiler-close" aria-label="Kapat">×</button><h2 id="boilerQuickTitle">Akıllı Kazan Hızlı Ayarı</h2><div class="boiler-quick-grid"><section class="boiler-quick-card"><small>Mevcut Sıcaklık</small><strong data-current>—</strong></section><section class="boiler-quick-card boiler-quick-heater"><small>Isıtma Durumu</small><div class="boiler-heater" data-heater></div></section><section class="boiler-quick-card"><small>Hedef Sıcaklık</small><strong data-target>—</strong></section><section class="boiler-quick-card boiler-quick-editor" data-target-editor></section></div>`;
+ dialog.innerHTML=`<div class="boiler-quick-heading"><h2 id="boilerQuickTitle">Akıllı Kazan Hızlı Ayarı</h2><button type="button" class="boiler-close" aria-label="Kapat">×</button></div><div class="boiler-quick-grid"><section class="boiler-quick-card"><small>Mevcut Sıcaklık</small><strong data-current>—</strong></section><section class="boiler-quick-card boiler-quick-heater"><small>Isıtma Durumu</small><div class="boiler-heater" data-heater></div></section><section class="boiler-quick-card"><small>Hedef Sıcaklık</small><strong data-target>—</strong></section><section class="boiler-quick-card boiler-quick-editor" data-target-editor></section></div>`;
  document.body.append(dialog);dialog.querySelector(".boiler-close").onclick=()=>dialog.close();dialog.addEventListener("click",event=>{if(event.target!==dialog)return;const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close()});
 }
 function createTargetDialog(){
