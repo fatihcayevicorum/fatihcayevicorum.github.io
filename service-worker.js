@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r647-modal-kazan-onbellek-aday",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r648-hedef-sicaklik-yerlesim-aday",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/css/smart-boiler.css",
   "./assets/js/product-group-summary.js","./assets/css/product-group-summary.css",
@@ -81,7 +81,7 @@ self.addEventListener("fetch",event=>{
     return;
   }
   if(url.pathname.endsWith("/assets/js/system-ui.js")){
-    const latest=new URL(url);latest.searchParams.set("v","647");
+    const latest=new URL(url);latest.searchParams.set("v","6482");
     event.respondWith(caches.open(RUNTIME_CACHE).then(async cache=>{const cached=await cache.match(latest.href);if(cached)return cached;const response=await fetch(latest.href);if(response.ok)await cache.put(latest.href,response.clone());return response}).catch(()=>matchAppCache(request)));
     return;
   }

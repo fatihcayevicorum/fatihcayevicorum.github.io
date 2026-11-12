@@ -2,11 +2,11 @@
 let liveInfo={fresh:false,temperature:null,status:"Cihaz bağlantısı bekleniyor.",last:null,owner:false,phase:"offline",heaterKnown:false,heaterOn:false},liveModule=null,liveStarted=false;
 let page=null,headerButton=null,dialog=null,targetDialog=null;
 const HEADER_ID="smartBoilerHeaderButton",DIALOG_ID="smartBoilerQuickDialog",TARGET_DIALOG_ID="smartBoilerTargetDialog";
-const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=6461",import.meta.url);document.head.append(css);
+const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=6482",import.meta.url);document.head.append(css);
 
 function temperature(c){return `${Math.round(c)}°C`}
 function startLive(){if(liveStarted)return;liveStarted=true;import("./smart-boiler-live.js?v=644").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
-function mountEditors(){if(!liveModule)return;for(const root of [dialog,targetDialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor,{simple:root===dialog,onConfirmed:root===targetDialog?()=>targetDialog.close():null,onCancel:root===targetDialog?()=>targetDialog.close():null})}}}
+function mountEditors(){if(!liveModule)return;for(const root of [dialog,targetDialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor,{simple:root===dialog,onConfirmed:root===targetDialog?()=>targetDialog.close():null,onCancel:root===targetDialog?()=>targetDialog.close():null});if(root===targetDialog){const save=editor.querySelector("[data-save]");if(save)save.textContent="Kaydet"}}}}
 function heaterLabel(){
  if(!liveInfo.fresh)return["Bağlantı yok","Güncel veri alınamadı"];
  if(!liveInfo.heaterKnown)return["Durum bilinmiyor","ENDA çıkışı doğrulanamadı"];
@@ -57,7 +57,7 @@ function openTarget(){if(!targetDialog)return;targetDialog.querySelector("[data-
 
 export function mountBoilerPage(root){
  if(root.dataset.mounted)return;root.dataset.mounted="true";page=root;startLive();root.classList.add("boiler-page");
- root.innerHTML=`<section class="boiler-device-strip"><div><p class="boiler-kicker">Akıllı Kazan</p><h2>ENDA ET4420-230-RS</h2></div><dl><div><dt>ENDA bağlantısı</dt><dd data-enda>Bağlantı yok</dd></div><div><dt>ESP32 bağlantısı</dt><dd data-esp>Bağlantı yok</dd></div><div><dt>ESP32 firmware</dt><dd data-firmware>Doğrulanmadı</dd></div><div><dt>Son veri</dt><dd><time data-last>Henüz veri yok</time></dd></div></dl></section><div class="boiler-dashboard"><section class="boiler-card boiler-temperature-card"><small>Anlık Sıcaklık</small><strong data-current>—</strong></section><button class="boiler-card boiler-target-card" type="button" aria-label="Hedef sıcaklığı değiştir"><small>Hedef Sıcaklık</small><strong data-target>—</strong></button><section class="boiler-card boiler-status-card"><small>Canlı Isıtma Durumu</small><div class="boiler-heater" data-heater></div></section></div>`;
+ root.innerHTML=`<section class="boiler-device-strip"><div><p class="boiler-kicker">Akıllı Kazan</p><h2>ENDA ET4420-230-RS</h2></div><dl><div><dt>ENDA bağlantısı</dt><dd data-enda>Bağlantı yok</dd></div><div><dt>ESP32 bağlantısı</dt><dd data-esp>Bağlantı yok</dd></div><div><dt>ESP32 firmware</dt><dd data-firmware>Doğrulanmadı</dd></div><div><dt>Son veri</dt><dd><time data-last>Henüz veri yok</time></dd></div></dl></section><p class="boiler-page-status" data-mode role="status">Kazan verisi kontrol ediliyor.</p><div class="boiler-dashboard"><section class="boiler-card boiler-temperature-card"><small>Anlık Sıcaklık</small><strong data-current>—</strong></section><button class="boiler-card boiler-target-card" type="button" aria-label="Hedef sıcaklığı değiştir"><small>Hedef Sıcaklık</small><strong data-target>—</strong></button><section class="boiler-card boiler-status-card"><small>Canlı Isıtma Durumu</small><div class="boiler-heater" data-heater></div></section></div>`;
  root.querySelector(".boiler-target-card").onclick=openTarget;mountEditors();render();
 }
 installHeader();
