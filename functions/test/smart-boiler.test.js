@@ -4,3 +4,16 @@ test('Kazan: canlı ölçüm gösterilir, eski ölçüm gizlenir',()=>{const{api
 test('Kazan: bütün değerler yalnız Celsius gösterilir',()=>{for(const saved of [null,'bad','F','{"temperature":82}']){const{api}=load(saved);assert.equal(api.temperature(100),'100°C');assert.equal(api.temperature(25),'25°C')}});
 test('Kazan: ana sayfa üç ortalı kart, üst son veri ve sade hedef ayarı içerir',()=>{const source=fs.readFileSync(path.join(__dirname,'../../assets/js/smart-boiler.js'),'utf8');assert.match(source,/boiler-temperature-card/);assert.match(source,/boiler-target-card/);assert.match(source,/boiler-status-card/);assert.match(source,/targetDialog\.showModal/);assert.match(source,/boiler-target-heading/);assert.match(source,/<dt>Son veri<\/dt>/);assert.doesNotMatch(source,/data-target-hysteresis-summary/);assert.doesNotMatch(source,/data-pairing/);assert.doesNotMatch(source,/data-hysteresis-editor/)});
 test('Kazan: app-header bulunan bütün sayfalar tek ortak arayüz dosyası yükler',()=>{const base=path.join(__dirname,'../..');const pages=[];function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){if(['node_modules','.git'].includes(entry.name))continue;const file=path.join(dir,entry.name);if(entry.isDirectory())walk(file);else if(entry.name.endsWith('.html')){const html=fs.readFileSync(file,'utf8');if(html.includes('class="app-header'))pages.push([file,html])}}}walk(base);assert.ok(pages.length>15);for(const[file,html]of pages){const matches=html.match(/assets\/js\/system-ui\.js\?v=634/g)||[];assert.equal(matches.length,1,`${path.relative(base,file)} ortak başlık dosyasını bir kez yüklemeli`)}});
+
+test('Kazan: başlık ve yönetim sayfası aynı canlı modülü kullanır',()=>{
+ const base=path.join(__dirname,'../..');
+ const header=fs.readFileSync(path.join(base,'assets/js/system-ui.js'),'utf8');
+ const page=fs.readFileSync(path.join(base,'akilli-kazan/script.js'),'utf8');
+ const headerRefs=[...header.matchAll(/smart-boiler\.js\?v=(\d+)/g)];
+ const pageRefs=[...page.matchAll(/smart-boiler\.js\?v=(\d+)/g)];
+ assert.equal(headerRefs.length,1,'Başlık tek kazan modülü yüklemeli');
+ assert.equal(pageRefs.length,1,'Akıllı Kazan sayfası tek kazan modülü yüklemeli');
+ assert.equal(pageRefs[0][1],headerRefs[0][1],'İki ayrı sürüm iki farklı canlı veri dinleyicisi oluşturur');
+ const source=fs.readFileSync(path.join(base,'assets/js/smart-boiler.js'),'utf8');
+ assert.match(source,/function startLive\(\)\{if\(liveStarted\)return;/,'Tek modülde canlı dinleyici bir kez başlatılmalı');
+});
