@@ -436,3 +436,42 @@ html.embed-mode .history-shell{
   background:linear-gradient(180deg,var(--theme-surface,var(--paper)),var(--theme-surface-2,var(--cream)))!important;
 }
 @media(max-width:700px){html.embed-mode .history-shell{border-radius:12px!important}}
+/* R647 aday — görünür üç alanı tam yüksekliğe dağıt; listeyi altta kesme. */
+html.embed-mode .history-shell{
+  grid-template-rows:auto auto minmax(0,1fr);
+  gap:10px;
+  padding:5px 6px 6px!important;
+  border-radius:10px!important;
+}
+html.embed-mode .history-shell:has(#lockNotice:not([hidden])){
+  grid-template-rows:auto auto auto minmax(0,1fr);
+}
+html.embed-mode .history-workspace{
+  min-height:0;
+  height:100%;
+  overflow:hidden;
+}
+html.embed-mode .history-list-pane{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  overflow:hidden;
+}
+html.embed-mode .history-list-pane .history-list{
+  flex:1 1 auto;
+  min-height:0;
+  max-height:none!important;
+  height:auto!important;
+  overflow-y:auto;
+}
+@media(max-width:760px){
+  html.embed-mode .history-workspace.detail-open{overflow:auto;align-content:start}
+  html.embed-mode .history-workspace.detail-open .history-list-pane .history-list{
+    flex:0 0 auto;
+    max-height:240px!important;
+  }
+  html.embed-mode .history-workspace.detail-open .inline-detail{
+    height:auto;
+    max-height:calc(100dvh - 290px);
+  }
+}
