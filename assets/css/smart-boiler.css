@@ -85,3 +85,14 @@ body:has(.boiler-dialog[open]){overflow:hidden}.boiler-page [hidden],.boiler-dia
   #smartBoilerQuickDialog .boiler-quick-heater .boiler-heater strong{font-size:.85rem}
   #smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper output{min-height:32px}
 }
+/* R648 aday — Yalnızca veri yoksa tanılama metni; kazan kontrolü değişmez. */
+.boiler-page-status{
+  margin:0;
+  padding:11px 14px;
+  border:1px solid var(--theme-border,#eadfd3);
+  border-radius:12px;
+  color:var(--theme-text,#271d1f);
+  background:var(--theme-surface-2,#f4ece4);
+  font:700 .74rem/1.5 Poppins,Arial,sans-serif;
+}
+.boiler-page-status[data-mode="live"]{display:none}
