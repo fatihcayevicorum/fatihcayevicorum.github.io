@@ -47,7 +47,7 @@ export function mountPairing(root){
 }
 
 export function mountTargetEditor(root,{onConfirmed=null,onCancel=null,simple=false}={}){
- root.innerHTML=simple?'<div class="boiler-target-stepper"><button type="button" data-up aria-label="Hedefi artır">+</button><output data-draft>—</output><button type="button" data-down aria-label="Hedefi azalt">−</button></div><div class="boiler-actions"><button type="button" data-cancel>İptal</button><button type="button" data-save>Uygula</button></div><p class="boiler-note" data-command-status role="status"></p><p class="boiler-target-hysteresis-note" data-target-hysteresis-note></p>':'<h3>Hedef Sıcaklık</h3><p class="boiler-editor-current">Mevcut hedef: <strong data-editor-target>—</strong></p><div class="boiler-adjust"><button type="button" data-down aria-label="Hedefi azalt">−</button><output data-draft>—</output><button type="button" data-up aria-label="Hedefi artır">+</button></div><div class="boiler-actions"><button type="button" data-save>Uygula</button><button type="button" data-cancel>İptal</button></div><p class="boiler-note" data-command-status role="status"></p><p class="boiler-target-hysteresis-note" data-target-hysteresis-note></p>';
+ root.innerHTML=simple?'<small class="boiler-quick-title">Yeni Sıcaklık</small><div class="boiler-target-stepper"><button type="button" data-up aria-label="Hedefi artır">+</button><output data-draft>—</output><button type="button" data-down aria-label="Hedefi azalt">−</button></div><div class="boiler-actions"><button type="button" data-cancel>İptal</button><button type="button" data-save>Kaydet</button></div><p class="boiler-note" data-command-status role="status"></p><p class="boiler-target-hysteresis-note" data-target-hysteresis-note></p>':'<h3>Hedef Sıcaklık</h3><p class="boiler-editor-current">Mevcut hedef: <strong data-editor-target>—</strong></p><div class="boiler-adjust"><button type="button" data-down aria-label="Hedefi azalt">−</button><output data-draft>—</output><button type="button" data-up aria-label="Hedefi artır">+</button></div><div class="boiler-actions"><button type="button" data-save>Uygula</button><button type="button" data-cancel>İptal</button></div><p class="boiler-note" data-command-status role="status"></p><p class="boiler-target-hysteresis-note" data-target-hysteresis-note></p>';
  let draft=null,expected=null,dirty=false,sending=false,notice='',awaitedId=null,awaitedUntil=0,confirmedId=null;
  const q=s=>root.querySelector(s);
  function reset(){draft=null;expected=null;dirty=false;notice='';paint()}
@@ -80,7 +80,7 @@ export function mountTargetEditor(root,{onConfirmed=null,onCancel=null,simple=fa
 }
 
 export function mountHysteresisEditor(root,{read=()=>view()}={}){
- root.innerHTML='<div><small>ON/OFF Fark Ayarı</small><h3 data-hysteresis-mode>Doğrulanıyor</h3></div><p class="boiler-editor-current">Mevcut Fark: <strong data-hysteresis-current>—</strong></p><div class="boiler-adjust"><button type="button" data-hysteresis-down aria-label="Farkı azalt">−</button><output data-hysteresis-draft>—</output><button type="button" data-hysteresis-up aria-label="Farkı artır">+</button></div><div class="boiler-actions"><button type="button" data-hysteresis-save>Kaydet</button><button type="button" data-hysteresis-cancel>İptal</button></div><p class="boiler-note" data-hysteresis-status role="status"></p><p class="boiler-reheat-example" data-hysteresis-example>Yeniden Isıtma Başlangıcı Hesaplanıyor.</p>';
+ root.innerHTML='<h3>ON/OFF Farkı</h3><div class="boiler-adjust"><button type="button" data-hysteresis-down aria-label="Farkı azalt">−</button><output data-hysteresis-draft>—</output><button type="button" data-hysteresis-up aria-label="Farkı artır">+</button></div><div class="boiler-actions"><button type="button" data-hysteresis-cancel>İptal</button><button type="button" data-hysteresis-save>Kaydet</button></div><p class="boiler-note" data-hysteresis-status role="status"></p>';
  let draft=null,expected=null,dirty=false,sending=false,notice='',awaitedId=null,awaitedUntil=0;
  const q=s=>root.querySelector(s);
  function reset(){draft=null;expected=null;dirty=false;notice='';paint()}
@@ -88,21 +88,19 @@ export function mountHysteresisEditor(root,{read=()=>view()}={}){
   if(!dirty&&!sending){draft=h?.value??null;expected=h?.value??null;}
   if(awaitedId===v.hysteresisCommand?.id||Date.now()>awaitedUntil)awaitedId=null;
   const localWaiting=!!awaitedId,modeReady=!!h?.onOff,allowed=modeReady&&!v.hysteresisWaiting&&!v.waiting&&!sending&&!localWaiting;
-  q('[data-hysteresis-mode]').textContent=!h?'Cihaz verisi bekleniyor':modeReady?'ON/OFF modu aktif':'PID modu aktif';
-  q('[data-hysteresis-current]').textContent=h?h.value+' °C':'—';q('[data-hysteresis-draft]').textContent=draft===null?'—':draft+' °C';
+  q('[data-hysteresis-draft]').textContent=draft===null?'—':draft+' °C';
   q('[data-hysteresis-down]').disabled=!allowed||draft===null||draft<=1;q('[data-hysteresis-up]').disabled=!allowed||draft===null||draft>=10;
   q('[data-hysteresis-save]').disabled=!allowed||!dirty||draft<1||draft>10;q('[data-hysteresis-cancel]').disabled=sending||!dirty;
   const c=v.hysteresisCommand;const status=c&&c.expiresAtMs<=Date.now()&&['pending','dispatched'].includes(c.status)?(c.status==='pending'?'expired':'unknown'):c?.status;
-  const messages={pending:'İstek alındı; cihaz bekleniyor.',dispatched:'Cihaza iletildi; ENDA doğrulaması bekleniyor.',confirmed:'ENDA ON/OFF farkını doğruladı.',rejected:'Uygulanmadı: cihaz modu veya değer değişti.',expired:'İstek zaman aşımına uğradı; uygulanmadı.',unknown:'Sonuç doğrulanamadı. ENDA’daki C.HYS değerini kontrol edin.'};
-  q('[data-hysteresis-status]').textContent=notice||(sending?'Gönderiliyor…':localWaiting?'İstek gönderildi; sunucu durumu bekleniyor.':v.hysteresisWaiting?messages[status]:!h?'Değişiklik için ESP32 0.6.2 ve güncel ENDA verisi gerekiyor.':!modeReady?'C.Pb sıfır olmadığı için güvenlik gereği C.HYS değiştirilemez.':(messages[status]||'')+' Güvenli kullanıcı aralığı: 1–10 °C.');
-  q('[data-hysteresis-example]').textContent=v.targetFresh&&draft!==null?`${Math.round(v.target)}°C hedef ve ${draft}°C fark için yeniden ısıtma yaklaşık ${Math.round(v.target)-draft}°C’de başlar.`:'Hedef ve fark bilgisi geldiğinde yeniden başlama sıcaklığı gösterilir.';
+  const messages={pending:'İstek alındı.',dispatched:'Cihaz onayı bekleniyor.',confirmed:'Kaydedildi.',rejected:'Ayar uygulanamadı.',expired:'İstek zaman aşımına uğradı.',unknown:'Sonuç doğrulanamadı.'};
+  q('[data-hysteresis-status]').textContent=notice||(sending?'Kaydediliyor…':localWaiting?'Cihaz onayı bekleniyor.':v.hysteresisWaiting?messages[status]:!h?'Cihaz bağlantısı bekleniyor.':!modeReady?'Ayar şu anda kullanılamıyor.':messages[status]||'');
  }
  q('[data-hysteresis-down]').onclick=()=>{if(read().hysteresis?.onOff&&draft!==null){draft=Math.max(1,draft-1);dirty=true;notice='';paint()}};
  q('[data-hysteresis-up]').onclick=()=>{if(read().hysteresis?.onOff&&draft!==null){draft=Math.min(10,draft+1);dirty=true;notice='';paint()}};
  q('[data-hysteresis-cancel]').onclick=reset;
  q('[data-hysteresis-save]').onclick=async()=>{const v=read();if(!v.owner||!v.hysteresis?.onOff||sending||!dirty||v.hysteresisWaiting||v.waiting)return;
   if(v.hysteresis.value!==expected){notice='ON/OFF farkı başka yerden değişti. İptal’e basıp güncel değer üzerinden ayarlayın.';paint();return;}
-  const accepted=await systemConfirm({title:'ON/OFF farkı değiştirilsin mi?',message:`ENDA C.HYS değeri ${expected}°C’den ${draft}°C’ye değiştirilecek.`,confirmText:'Kaydet'});if(!accepted)return;
+  const accepted=await systemConfirm({title:'ON/OFF farkı değiştirilsin mi?',message:`Fark ayarı ${expected}°C’den ${draft}°C’ye değiştirilecek.`,confirmText:'Kaydet'});if(!accepted)return;
   sending=true;notice='';paint();const id=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
   try{await httpsCallable(getFunctions(firebaseApp,'europe-west1'),'setBoilerHysteresis')({id,value:draft,expected,sentAtMs:Date.now()});dirty=false;awaitedId=id;awaitedUntil=Date.now()+35000;notice='';}
   catch(e){notice=e.code?.includes('failed-precondition')?'ENDA ON/OFF modunda değil veya fark değeri değişti. İptal’e basıp yeniden kontrol edin.':e.code?.includes('permission-denied')?'Yalnızca ana yönetici değiştirebilir.':'İstek tamamlanamadı. Cihaz bağlantısını ve C.HYS değerini kontrol edin.';}
@@ -110,3 +108,4 @@ export function mountHysteresisEditor(root,{read=()=>view()}={}){
  };
  root.refreshHysteresis=()=>{if(read().hysteresisCommand)notice='';paint()};root.resetHysteresis=reset;paint();
 }
+

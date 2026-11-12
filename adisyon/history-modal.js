@@ -12,10 +12,13 @@ function ensureFrame(){
 function openHistory(){
   if(!dialog)return;
   ensureFrame();
+  document.body.classList.add("history-modal-open");
   if(!dialog.open)dialog.showModal();
 }
-function closeHistory(){if(dialog?.open)dialog.close()}
+function closeHistory(){document.body.classList.remove("history-modal-open");if(dialog?.open)dialog.close()}
 openButton?.addEventListener("click",openHistory);
 closeButton?.addEventListener("click",closeHistory);
 dialog?.addEventListener("click",e=>{if(e.target===dialog)closeHistory()});
 dialog?.addEventListener("cancel",e=>{e.preventDefault();closeHistory()});
+dialog?.addEventListener("close",()=>document.body.classList.remove("history-modal-open"));
+
