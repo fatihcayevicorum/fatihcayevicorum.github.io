@@ -40,3 +40,48 @@ body:has(.boiler-dialog[open]){overflow:hidden}.boiler-page [hidden],.boiler-dia
 #smartBoilerQuickDialog .boiler-quick-editor .boiler-note{margin:5px 0 0;font-size:.63rem}
 @media(max-width:430px){#smartBoilerQuickDialog{padding:12px}#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) 38px;margin-bottom:8px}#smartBoilerQuickDialog .boiler-quick-heading .boiler-close{width:38px;min-height:38px}#smartBoilerQuickDialog .boiler-quick-card{padding:32px 8px 8px}#smartBoilerQuickDialog .boiler-quick-card>small,#smartBoilerQuickDialog .boiler-quick-title{top:9px;left:9px;font-size:.67rem}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{left:8px;right:8px;grid-template-columns:40px minmax(58px,1fr) 40px}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper output{font-size:1.5rem}#smartBoilerQuickDialog .boiler-quick-editor .boiler-actions button{font-size:.67rem}}
 
+/* R646 aday — Hızlı Ayar: durum simgesi üstte, durum etiketi altta.
+   data-phase ve renderHeater mantığına dokunulmaz; tüm dinamik renk/animasyonlar korunur. */
+#smartBoilerQuickDialog .boiler-quick-heater .boiler-heater{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  padding:0;
+  text-align:center;
+}
+#smartBoilerQuickDialog .boiler-quick-heater .boiler-heater i{
+  flex:0 0 auto;
+  font-size:clamp(2.8rem,5vw,3.5rem);
+  line-height:1;
+}
+#smartBoilerQuickDialog .boiler-quick-heater .boiler-heater strong{
+  font-size:clamp(1.02rem,1.7vw,1.2rem);
+  line-height:1.25;
+  text-align:center;
+}
+/* Sıcaklık değeri ve iki düzenleme düğmesi aynı dikey eksende. */
+#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{
+  align-items:center;
+}
+#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper button{
+  display:grid;
+  place-items:center;
+  line-height:1;
+}
+#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper output{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:42px;
+  line-height:1.15;
+  white-space:nowrap;
+}
+@media(max-width:430px){
+  #smartBoilerQuickDialog .boiler-quick-heater .boiler-heater{gap:7px}
+  #smartBoilerQuickDialog .boiler-quick-heater .boiler-heater i{font-size:2.1rem}
+  #smartBoilerQuickDialog .boiler-quick-heater .boiler-heater strong{font-size:.85rem}
+  #smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper output{min-height:32px}
+}
