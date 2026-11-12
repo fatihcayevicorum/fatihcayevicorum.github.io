@@ -126,4 +126,12 @@
   .history-modal-body{padding:6px 7px 8px!important}
   .history-modal-body iframe{border-radius:12px!important}
 }
-
+/* R647 aday — tablet penceresinin yan ve alt boşluklarını azalt. */
+.history-modal-dialog{width:min(94vw,1280px);height:min(88dvh,840px)}
+.history-modal-body{padding:4px 6px 6px!important;overflow:hidden}
+.history-modal-body iframe{border-radius:12px!important}
+@media(max-width:700px){
+  .history-modal-dialog{width:calc(100vw - 12px);height:min(92dvh,780px)}
+  .history-modal-body{padding:3px 4px 5px!important}
+  .history-modal-body iframe{border-radius:10px!important}
+}
