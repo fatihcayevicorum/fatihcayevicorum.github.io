@@ -25,7 +25,8 @@
 // Fatih Cay Evi - Akilli Kazan cihaz yazilimi
 // Firmware surumu ana uygulamanin R surumlerinden bagimsizdir.
 static const char *FIRMWARE_VERSION = "KazanFW 0.6.3-kalibrasyon-aday";
-// Sunucudan gelen offset yalnizca goruntu icindir; Modbus/ENDA kontrolune uygulanmaz.\nfloat displayCalibrationC=0.0f;\nstatic const char *SETUP_AP_NAME = "FatihKazan-Kurulum";
+// Sunucudan gelen offset yalnizca goruntu icindir; Modbus/ENDA kontrolune uygulanmaz.
+float displayCalibrationC=0.0f;\nstatic const char *SETUP_AP_NAME = "FatihKazan-Kurulum";
 
 static const uint8_t RX_PIN = 16;
 static const uint8_t TX_PIN = 17;
@@ -418,7 +419,9 @@ void sendStatus() {
   json += "{";
   json += "\"temperature_valid\":" + String(temperatureValid ? "true" : "false") + ",";
   json += "\"has_previous_reading\":" + String(hasSuccessfulReading ? "true" : "false") + ",";
-  json += "\"temperature_c\":" + String(lastTemperatureC+displayCalibrationC, 1) + ",";\n  json += "\"raw_temperature_c\":" + String(lastTemperatureC, 1) + ",";\n  json += "\"calibration_c\":" + String(displayCalibrationC, 1) + ",";
+  json += "\"temperature_c\":" + String(lastTemperatureC+displayCalibrationC, 1) + ",";
+  json += "\"raw_temperature_c\":" + String(lastTemperatureC, 1) + ",";
+  json += "\"calibration_c\":" + String(displayCalibrationC, 1) + ",";
   bool targetValid=temperatureValid && lastModbusAttemptSucceeded && targetReadOK && nowMs-lastTargetReadMs<=TEMPERATURE_STALE_MS;
   json += "\"target_temperature_c\":" + (targetValid?String(lastTargetC,1):String("null")) + ",";
   json += "\"onoff_mode\":" + String(hysteresisControl.ready&&hysteresisControl.onOff ? "true" : "false") + ",";
