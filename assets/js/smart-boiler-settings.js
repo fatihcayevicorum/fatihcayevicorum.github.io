@@ -25,26 +25,29 @@ if(card&&dialog&&updateDialog&&deviceDialog){
  }
  const hysteresisEditor=$('boilerHysteresisSettings');if(hysteresisEditor)mountHysteresisEditor(hysteresisEditor,{read:controlView});
 
- /* Kart 3 — Sıcaklık Kalibrasyonu: yalnızca ekranlarda gösterilen sıcaklığı düzeltir; ENDA ölçümü ve ısıtma kontrolü değişmez. */
+ /* Kart 3 — ENDA oFFS kalibrasyonu: H35 yazılır, tekrar okunur ve cihaz onayı beklenir. */
  const sign=value=>`${value>0?'+':''}${(Math.round(value*10)/10).toFixed(1)}`;
- function calibration(){const value=state?.calibration?.valueC;return Number.isFinite(value)&&Math.abs(value)<=5?value:0}
+ function calibration(){const value=state?.calibration?.valueC;return Number.isFinite(value)&&Math.abs(value)<=10?value:null}
  function calDraft(){const raw=calValue.value.trim(),value=Number(raw),tenths=Math.round(value*10);return raw!==''&&Number.isFinite(value)&&Math.abs(value*10-tenths)<=1e-6&&Math.abs(tenths)<=50?(tenths/10||0):null}
- function paintCalibration(){const saved=calibration(),draft=calDirty?calDraft():saved;
-  if(!calDirty&&!calSaving)calValue.value=String(saved);
+ function paintCalibration(){const saved=calibration(),draft=calDirty?calDraft():saved,command=state?.calibrationCommand||null,waiting=!!command&&['pending','dispatched'].includes(command.status)&&Number(command.expiresAtMs)>Date.now();
+  if(!calDirty&&!calSaving&&saved!==null)calValue.value=String(saved);
   calDisplay.textContent=draft===null?'—':`${sign(draft)} °C`;
-  $('boilerCalibrationStatus').textContent=calNotice;
-  calDown.disabled=calSaving||draft===null||draft<=-5;calUp.disabled=calSaving||draft===null||draft>=5;calCancel.disabled=calSaving||!calDirty;
-  calSave.disabled=calSaving||!calDirty||calDraft()===null;
+  const messages={pending:'ENDA komutu gönderilmeyi bekliyor.',dispatched:'ENDA doğrulaması bekleniyor.',confirmed:'ENDA offset değeri doğrulandı.',rejected:'ENDA offset değişikliği reddedildi.',expired:'Kalibrasyon isteğinin süresi doldu.',unknown:'ENDA sonucu doğrulanamadı.'};
+  $('boilerCalibrationStatus').textContent=calNotice||(waiting?messages[command.status]:(messages[command?.status]||(!state?.endaConnected?'ENDA bağlantısı bekleniyor.':saved===null?'ENDA offset değeri okunuyor.':'')));
+  calDown.disabled=calSaving||waiting||saved===null||draft===null||draft<=-5;calUp.disabled=calSaving||waiting||saved===null||draft===null||draft>=5;calCancel.disabled=calSaving||waiting||!calDirty;
+  calSave.disabled=calSaving||waiting||saved===null||!calDirty||calDraft()===null;
  }
- function changeCalibration(step){if(calSaving)return;const current=calDraft()??calibration(),next=Math.max(-5,Math.min(5,Math.round((current+step)*10)/10));calValue.value=String(next);calDirty=next!==calibration();calNotice='';paint()}
- function cancelCalibration(){calValue.value=String(calibration());calDirty=false;calNotice='';paint()}
- async function saveCalibration(){if(calSaving)return;const value=calDraft();
-  if(value===null){calNotice='-5 İle +5 Arasında, En Fazla Bir Ondalıklı Değer Girin.';paint();return}
-  const current=calibration();if(value===current){calDirty=false;calNotice='';paint();return}
-  const accepted=await systemConfirm({title:'Sıcaklık kalibrasyonu değiştirilsin mi?',message:`Düzeltme ${sign(current)} °C yerine ${sign(value)} °C olacak. Bu yalnızca ekranlarda gösterilen sıcaklığı düzeltir; ENDA’nın ölçümü ve ısıtma kontrolü değişmez.`,confirmText:'Kalibrasyonu Kaydet'});if(!accepted)return;
-  calSaving=true;calNotice='Kalibrasyon Kaydediliyor…';paint();
-  try{const {data}=await httpsCallable(functions,'setBoilerCalibration')({value,expected:current});state={...state,calibration:{...(state?.calibration||{}),valueC:data.value}};calDirty=false;calNotice=`Düzeltme ${sign(data.value)} °C Olarak Kaydedildi.`}
-  catch(e){calNotice=e.code?.includes('failed-precondition')?'Kalibrasyon Başka Yerden Değişti. Güncel Değeri Kontrol Edin.':e.code?.includes('permission-denied')?'Bu İşlem Yalnızca Ana Yöneticiye Açıktır.':'Kalibrasyon Kaydedilemedi.'}
+ function changeCalibration(step){if(calSaving||calibration()===null)return;const current=calDraft()??calibration(),next=Math.max(-5,Math.min(5,Math.round((current+step)*10)/10));calValue.value=String(next);calDirty=next!==calibration();calNotice='';paint()}
+ function cancelCalibration(){const current=calibration();if(current!==null)calValue.value=String(current);calDirty=false;calNotice='';paint()}
+ async function saveCalibration(){if(calSaving)return;const value=calDraft(),current=calibration();
+  if(value===null){calNotice='-5 İle +5 Arasında, 0,1 °C Adımlı Değer Girin.';paint();return}
+  if(current===null){calNotice='ENDA Offset Değeri Okunmadan Kalibrasyon Yapılamaz.';paint();return}
+  if(value===current){calDirty=false;calNotice='';paint();return}
+  const accepted=await systemConfirm({title:'ENDA sıcaklık kalibrasyonu değiştirilsin mi?',message:`ENDA oFFS değeri ${sign(current)} °C yerine ${sign(value)} °C olacak. ENDA ekranı, ısıtma kontrolü ve tablet aynı düzeltilmiş sıcaklığı kullanacak.`,confirmText:'ENDA Kalibrasyonunu Uygula'});if(!accepted)return;
+  calSaving=true;calNotice='ENDA Kalibrasyon Komutu Hazırlanıyor…';paint();
+  const id=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join(''),sentAtMs=Date.now();
+  try{const {data}=await httpsCallable(functions,'setBoilerCalibration')({id,value,expected:current,sentAtMs});state={...state,calibrationCommand:{id:data.id,status:data.status,expiresAtMs:sentAtMs+30000}};calDirty=false;calNotice='ENDA Cihaz Onayı Bekleniyor.'}
+  catch(e){calNotice=e.code?.includes('failed-precondition')?'ENDA Verisi Güncel Değil Veya Offset Başka Yerden Değişti.':e.code?.includes('permission-denied')?'Bu İşlem Yalnızca Ana Yöneticiye Açıktır.':'Kalibrasyon Komutu Oluşturulamadı.'}
   finally{calSaving=false;paint()}
  }
 
