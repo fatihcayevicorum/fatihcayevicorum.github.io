@@ -1,0 +1,170 @@
+name: ESP32 - Tablet Firmware BIN
+
+on:
+  push:
+    branches:
+      - 'esp32-tablet-bin-*'
+    paths:
+      - '.github/workflows/esp32-firmware-bin.yml'
+      - 'esp32/**'
+  workflow_dispatch:
+    inputs:
+      firmware:
+        description: 'Derlenecek firmware (cihaza yukleme yapmaz)'
+        required: true
+        type: choice
+        default: '0.6.1-ota-test'
+        options:
+          - '0.6.1-ota-test'
+          - '0.6.2-onoff-aday'
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    # Manual production builds are allowed on main only. Branch pushes are smoke tests.
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FIRMWARE_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.firmware || '0.6.1-ota-test' }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Select approved sketch directory
+        shell: bash
+        run: |
+          case "$FIRMWARE_KIND" in
+            0.6.1-ota-test) dir='esp32/FatihKazan_ESP32_FW_0.6.1_OTA_Test' ;;
+            0.6.2-onoff-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.2_ONOFF_Aday' ;;
+            *) echo 'Unrecognized firmware selection' >&2; exit 1 ;;
+          esac
+          test -f "$dir/$(basename "$dir").ino"
+          echo "SKETCH_DIR=$dir" >> "$GITHUB_ENV"
+
+      - name: Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+        with:
+          version: '1.0.1'
+
+      - name: Install pinned ESP32 toolchain and library
+        shell: bash
+        run: |
+          url='https://espressif.github.io/arduino-esp32/package_esp32_index.json'
+          arduino-cli core update-index --additional-urls "$url"
+          arduino-cli core install esp32:esp32@2.0.17 --additional-urls "$url"
+          arduino-cli lib install WiFiManager@2.0.17
+
+      - name: Create NON-DEPLOYABLE test headers (branch validation only)
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          cat > "$SKETCH_DIR/device_secrets.h" <<'EOF'
+          #pragma once
+          static const char *SETUP_AP_PASSWORD = "TEST-ONLY-NOT-FOR-ESP32";
+          static const char *PANEL_USERNAME = "test";
+          static const char *PANEL_PASSWORD = "TEST-ONLY-NOT-FOR-ESP32";
+          EOF
+          cat > "$SKETCH_DIR/boiler_cloud.h" <<'EOF'
+          #pragma once
+          #define BOILER_CLOUD_URL ""
+          #define BOILER_DEVICE_TOKEN ""
+          EOF
+
+      - name: Create private configuration headers (manual main builds only)
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        env:
+          ESP32_SETUP_AP_PASSWORD: ${{ secrets.ESP32_SETUP_AP_PASSWORD }}
+          ESP32_PANEL_USERNAME: ${{ secrets.ESP32_PANEL_USERNAME }}
+          ESP32_PANEL_PASSWORD: ${{ secrets.ESP32_PANEL_PASSWORD }}
+          ESP32_CLOUD_URL: ${{ secrets.ESP32_CLOUD_URL }}
+          ESP32_DEVICE_TOKEN: ${{ secrets.ESP32_DEVICE_TOKEN }}
+          ESP32_BIN_ARCHIVE_PASSWORD: ${{ secrets.ESP32_BIN_ARCHIVE_PASSWORD }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re, sys
+          values = {key: os.environ.get('ESP32_' + key, '') for key in (
+              'SETUP_AP_PASSWORD', 'PANEL_USERNAME', 'PANEL_PASSWORD',
+              'CLOUD_URL', 'DEVICE_TOKEN', 'BIN_ARCHIVE_PASSWORD')}
+          if any(not value for value in values.values()):
+              sys.exit('Required ESP32 Actions secrets are missing; no deployable firmware will be built.')
+          if not 8 <= len(values['SETUP_AP_PASSWORD'].encode()) <= 63:
+              sys.exit('Invalid setup access-point password length.')
+          if len(values['PANEL_PASSWORD']) < 8 or len(values['BIN_ARCHIVE_PASSWORD']) < 24:
+              sys.exit('Panel password or archive password is too short.')
+          if not re.fullmatch(r'[a-fA-F0-9]{64}', values['DEVICE_TOKEN']):
+              sys.exit('ESP32 device token must be 64 hexadecimal characters.')
+          if not re.fullmatch(r'https://europe-west1-[a-z0-9-]+\\.cloudfunctions\\.net/receiveBoilerTemperature', values['CLOUD_URL']):
+              sys.exit('Cloud URL does not match the configured ESP32 receiver.')
+          target = pathlib.Path(os.environ['SKETCH_DIR'])
+          c = lambda name: json.dumps(values[name], ensure_ascii=True)
+          (target / 'device_secrets.h').write_text(
+              '#pragma once\\n'
+              + f'static const char *SETUP_AP_PASSWORD = {c("SETUP_AP_PASSWORD")};\\n'
+              + f'static const char *PANEL_USERNAME = {c("PANEL_USERNAME")};\\n'
+              + f'static const char *PANEL_PASSWORD = {c("PANEL_PASSWORD")};\\n')
+          (target / 'boiler_cloud.h').write_text(
+              '#pragma once\\n'
+              + f'#define BOILER_CLOUD_URL {c("CLOUD_URL")}\\n'
+              + f'#define BOILER_DEVICE_TOKEN {c("DEVICE_TOKEN")}\\n')
+          PY
+
+      - name: Compile OTA application BIN (never flash from CI)
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/esp32-build"
+          arduino-cli compile \\
+            --fqbn esp32:esp32:esp32:PartitionScheme=default \\
+            --output-dir "$RUNNER_TEMP/esp32-build" \\
+            "$SKETCH_DIR"
+          mapfile -t files < <(find "$RUNNER_TEMP/esp32-build" -maxdepth 1 -type f -name '*.ino.bin')
+          if [ "${#files[@]}" -ne 1 ]; then
+            echo 'Exactly one application .ino.bin must be produced.' >&2
+            exit 1
+          fi
+          test -s "${files[0]}"
+          if [ "$GITHUB_EVENT_NAME" = 'workflow_dispatch' ]; then
+            mkdir -p "$RUNNER_TEMP/esp32-private"
+            cp "${files[0]}" "$RUNNER_TEMP/esp32-private/firmware.bin"
+          else
+            echo 'Smoke build succeeded; no firmware is published from branch pushes.'
+          fi
+
+      - name: Encrypt and verify firmware before publishing
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        env:
+          ARCHIVE_PASSWORD: ${{ secrets.ESP32_BIN_ARCHIVE_PASSWORD }}
+        shell: bash
+        run: |
+          if ! command -v 7z >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y p7zip-full
+          fi
+          cd "$RUNNER_TEMP/esp32-private"
+          sha256sum firmware.bin > SHA256SUMS.txt
+          printf 'Firmware: %s\\nBoard: ESP32 Dev Module\\nOTA application: firmware.bin\\nVerify SHA256SUMS.txt and device compatibility before updating.\\n' "$FIRMWARE_KIND" > README.txt
+          archive="$RUNNER_TEMP/FatihKazan-${FIRMWARE_KIND}-ENCRYPTED.7z"
+          7z a -t7z -mhe=on -mx=7 -p"$ARCHIVE_PASSWORD" "$archive" firmware.bin SHA256SUMS.txt README.txt >/dev/null
+          7z t -p"$ARCHIVE_PASSWORD" "$archive" >/dev/null
+          rm -rf "$RUNNER_TEMP/esp32-private" "$RUNNER_TEMP/esp32-build"
+          test -s "$archive"
+
+      - name: Publish encrypted artifact only (public repo safety)
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: FatihKazan-${{ inputs.firmware }}-sifreli
+          path: ${{ runner.temp }}/FatihKazan-*.7z
+          if-no-files-found: error
+          retention-days: 2
+
+      - name: Remove temporary secret headers
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${SKETCH_DIR:-}" ]; then
+            rm -f "$SKETCH_DIR/device_secrets.h" "$SKETCH_DIR/boiler_cloud.h"
+          fi
