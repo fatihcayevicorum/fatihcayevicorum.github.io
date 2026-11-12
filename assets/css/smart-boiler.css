@@ -96,3 +96,57 @@ body:has(.boiler-dialog[open]){overflow:hidden}.boiler-page [hidden],.boiler-dia
   font:700 .74rem/1.5 Poppins,Arial,sans-serif;
 }
 .boiler-page-status[data-mode="live"]{display:none}
+/* R648 hedef kartı: yalnızca yönetim Akıllı Kazan hedef sıcaklık modalı. */
+#smartBoilerTargetDialog{width:min(356px,calc(100% - 24px))}
+#smartBoilerTargetDialog .boiler-target-editor{padding:15px 14px 12px}
+#smartBoilerTargetDialog .boiler-target-editor>h3,
+#smartBoilerTargetDialog .boiler-target-editor>.boiler-editor-current{display:none!important}
+#smartBoilerTargetDialog .boiler-adjust{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-areas:"increase" "degree" "decrease";
+  justify-items:center;
+  align-items:center;
+  gap:9px;
+  margin:0 0 16px;
+}
+#smartBoilerTargetDialog .boiler-adjust [data-up]{grid-area:increase}
+#smartBoilerTargetDialog .boiler-adjust output{
+  grid-area:degree;
+  font-size:clamp(2.7rem,6vw,3.35rem);
+  font-weight:800;
+  line-height:1.15;
+  text-align:center;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+#smartBoilerTargetDialog .boiler-adjust [data-down]{grid-area:decrease}
+#smartBoilerTargetDialog .boiler-adjust button{
+  display:grid;
+  place-items:center;
+  width:64px;
+  min-height:44px;
+  padding:0;
+  border-radius:12px;
+  font-size:1.55rem;
+  line-height:1;
+}
+#smartBoilerTargetDialog .boiler-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+#smartBoilerTargetDialog .boiler-actions button{min-height:44px;font-size:.78rem}
+#smartBoilerTargetDialog .boiler-target-hysteresis-note{
+  margin:9px 0 0;
+  padding:5px 3px;
+  border:0;
+  background:transparent;
+  font-size:.62rem;
+  line-height:1.4;
+}
+@media(max-width:430px){
+  #smartBoilerTargetDialog .boiler-target-editor{padding:12px 10px}
+  #smartBoilerTargetDialog .boiler-adjust{gap:7px}
+  #smartBoilerTargetDialog .boiler-adjust output{font-size:2.8rem}
+}
