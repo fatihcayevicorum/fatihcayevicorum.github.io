@@ -223,7 +223,7 @@ static const char PANEL_HTML[] PROGMEM = R"HTML(
     <section class="hero">
       <div class="label">Anlık sıcaklık</div>
       <div class="temp" id="temperature">--<small>°C</small></div>
-      <div class="status" id="mainStatus"><span class="dot"></span><span id="mainStatusText">Veri bekleniyor</span></div>
+      <div class="sub" id="calibrationNote">Gösterim düzeltmesi bekleniyor</div>\n      <div class="status" id="mainStatus"><span class="dot"></span><span id="mainStatusText">Veri bekleniyor</span></div>
     </section>
     <section class="grid">
       <article class="card"><div class="k">Hedef sıcaklık</div><div class="v" id="target">—</div><div class="d">ENDA’dan okunan aktif hedef</div></article>
