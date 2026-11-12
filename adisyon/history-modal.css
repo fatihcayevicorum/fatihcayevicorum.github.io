@@ -102,6 +102,28 @@
 .history-modal-dialog::backdrop{background:rgba(42,23,20,.48)!important;backdrop-filter:blur(3px)!important}
 @media(max-width:700px){.history-modal-body iframe{border-radius:0!important}}
 
-/* R643 aday: yalnızca Kapatılan Adisyonlar açıkken genel bildirim zili pencerenin üstüne taşmaz. */
-.history-modal-open .admin-notification-bell{display:none!important}
+/* R646 aday — Kapatılan Adisyonlar: bildirim zili ana sayfada, içerik yumuşak köşeli. */
+.history-modal-card{
+  background:var(--theme-surface,var(--paper))!important;
+  border-color:var(--theme-border,var(--line))!important;
+}
+.history-modal-head{
+  background:var(--theme-surface,var(--paper))!important;
+  border-bottom-color:var(--theme-border,var(--line))!important;
+}
+.history-modal-head h2{color:var(--theme-text,var(--ink))}
+.history-modal-head p{color:var(--theme-primary,var(--red))}
+.history-modal-body{
+  padding:8px 12px 12px!important;
+  background:var(--theme-surface-2,var(--cream))!important;
+}
+.history-modal-body iframe{
+  border-radius:16px!important;
+  background:var(--theme-surface,var(--paper))!important;
+  box-shadow:none!important;
+}
+@media(max-width:700px){
+  .history-modal-body{padding:6px 7px 8px!important}
+  .history-modal-body iframe{border-radius:12px!important}
+}
 

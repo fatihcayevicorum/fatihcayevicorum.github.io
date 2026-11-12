@@ -426,3 +426,13 @@ html.embed-mode .page-top{display:none!important}
 }
 
 @media(min-width:901px){.summary-grid{grid-template-columns:repeat(5,1fr)}}
+
+/* R646 aday — iframe içinde ikinci bir bildirim zili oluşturulsa bile gösterme. */
+html.embed-mode .admin-notification-bell,
+html.embed-mode .admin-notification-panel{display:none!important}
+html.embed-mode main{padding:0!important;background:transparent!important}
+html.embed-mode .history-shell{
+  border-radius:16px!important;
+  background:linear-gradient(180deg,var(--theme-surface,var(--paper)),var(--theme-surface-2,var(--cream)))!important;
+}
+@media(max-width:700px){html.embed-mode .history-shell{border-radius:12px!important}}
