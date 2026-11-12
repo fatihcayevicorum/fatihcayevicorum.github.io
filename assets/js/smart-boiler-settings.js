@@ -4,7 +4,7 @@ import{getFunctions,httpsCallable}from'https://www.gstatic.com/firebasejs/12.16.
 import{getStorage,ref,uploadBytes}from'https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js';
 import{firebaseApp,ADMIN_UID}from'./firebase-config.js';
 import{systemConfirm}from'./system-confirm.js';
-import{mountHysteresisEditor}from'./smart-boiler-live.js?v=643';
+import{mountHysteresisEditor}from'./smart-boiler-live.js?v=644';
 
 /* R643 aday — Akıllı Kazan ayarları üç sade kare kartta; güncelleme ve cihaz işlemleri ayrı pencerelerde. */
 const $=id=>document.getElementById(id),card=$('smartBoilerSettingsCard'),dialog=$('smartBoilerSettingsDialog'),updateDialog=$('boilerUpdateDialog'),deviceDialog=$('boilerDeviceDialog');
