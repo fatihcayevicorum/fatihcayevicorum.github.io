@@ -135,7 +135,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
    }
    let next={...old,...sample,paired:true,temperaturePhase,...(command?{command}:{}),...(hysteresisCommand?{hysteresisCommand}:{})};delete next.otaReport;
    if(ota){next=await ota.applyReport(next,sample.otaReport);next=await ota.markSeen(next,sample.firmwareVersion);}
-   tx.set(state,next);return{accepted:true,...(wire?{command:wire}:{}),...(hysteresisWire?{hysteresisCommand:hysteresisWire}:{})};
+   tx.set(state,next);return{accepted:true,calibration:savedCalibration(next)?.valueC??0,...(wire?{command:wire}:{}),...(hysteresisWire?{hysteresisCommand:hysteresisWire}:{})};
   });
   if(ota&&result.accepted){const current=(await state.get()).data()||{},instruction=await ota.instruction(current);if(instruction){await state.set({ota:{...current.ota,status:'offered',offeredAtMs:now()}},{merge:true});result.ota=instruction;}}
   return result;
@@ -144,7 +144,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
   res.set('Cache-Control','no-store');
   if(req.method!=='POST')return res.status(405).json({error:'POST gerekli.'});
   if(!req.is('application/json')||(req.rawBody?.length||0)>2048)return res.status(400).json({error:'Geçersiz istek.'});
-  try{const result=await ingest(req.get('Authorization'),req.body);if(result.command)res.set('X-Boiler-Command',result.command);if(result.hysteresisCommand)res.set('X-Boiler-Hysteresis',result.hysteresisCommand);if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
+  try{const result=await ingest(req.get('Authorization'),req.body);if(result.command)res.set('X-Boiler-Command',result.command);if(result.hysteresisCommand)res.set('X-Boiler-Hysteresis',result.hysteresisCommand);res.set('X-Boiler-Calibration',String(result.calibration??0));if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
   catch(e){return res.status(e.status||503).json({error:e.status?e.message:'Gönderim tamamlanamadı.'});}
  }
  return{configure,receive,ingest,setTarget,setTargetRange,setHysteresis,setCalibration,setDeviceName};

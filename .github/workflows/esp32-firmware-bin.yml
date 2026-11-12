@@ -17,6 +17,7 @@ on:
         options:
           - '0.6.1-ota-test'
           - '0.6.2-onoff-aday'
+          - '0.6.3-kalibrasyon-aday'
 
 permissions:
   contents: read
@@ -39,6 +40,7 @@ jobs:
           case "$FIRMWARE_KIND" in
             0.6.1-ota-test) dir='esp32/FatihKazan_ESP32_FW_0.6.1_OTA_Test' ;;
             0.6.2-onoff-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.2_ONOFF_Aday' ;;
+            0.6.3-kalibrasyon-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.3_Kalibrasyon_Aday' ;;
             *) echo 'Unrecognized firmware selection' >&2; exit 1 ;;
           esac
           test -f "$dir/$(basename "$dir").ino"
