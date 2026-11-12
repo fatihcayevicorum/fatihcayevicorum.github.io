@@ -1,5 +1,5 @@
 // R643 aday: Ortak başlıkta durum renkli ve dalga efektli Akıllı Kazan sıcaklık düğmesi.
-if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=644").catch(error=>console.error("Kazan sıcaklığı açılamadı:",error));
+if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=6441").catch(error=>console.error("Kazan sıcaklığı açılamadı:",error));
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
