@@ -97,28 +97,28 @@ jobs:
               sys.exit('Panel password or archive password is too short.')
           if not re.fullmatch(r'[a-fA-F0-9]{64}', values['DEVICE_TOKEN']):
               sys.exit('ESP32 device token must be 64 hexadecimal characters.')
-          if not re.fullmatch(r'https://europe-west1-[a-z0-9-]+\\.cloudfunctions\\.net/receiveBoilerTemperature', values['CLOUD_URL']):
+          if not re.fullmatch(r'https://europe-west1-[a-z0-9-]+\.cloudfunctions\.net/receiveBoilerTemperature', values['CLOUD_URL']):
               sys.exit('Cloud URL does not match the configured ESP32 receiver.')
           target = pathlib.Path(os.environ['SKETCH_DIR'])
           c = lambda name: json.dumps(values[name], ensure_ascii=True)
           (target / 'device_secrets.h').write_text(
-              '#pragma once\\n'
-              + f'static const char *SETUP_AP_PASSWORD = {c("SETUP_AP_PASSWORD")};\\n'
-              + f'static const char *PANEL_USERNAME = {c("PANEL_USERNAME")};\\n'
-              + f'static const char *PANEL_PASSWORD = {c("PANEL_PASSWORD")};\\n')
+              '#pragma once\n'
+              + f'static const char *SETUP_AP_PASSWORD = {c("SETUP_AP_PASSWORD")};\n'
+              + f'static const char *PANEL_USERNAME = {c("PANEL_USERNAME")};\n'
+              + f'static const char *PANEL_PASSWORD = {c("PANEL_PASSWORD")};\n')
           (target / 'boiler_cloud.h').write_text(
-              '#pragma once\\n'
-              + f'#define BOILER_CLOUD_URL {c("CLOUD_URL")}\\n'
-              + f'#define BOILER_DEVICE_TOKEN {c("DEVICE_TOKEN")}\\n')
+              '#pragma once\n'
+              + f'#define BOILER_CLOUD_URL {c("CLOUD_URL")}\n'
+              + f'#define BOILER_DEVICE_TOKEN {c("DEVICE_TOKEN")}\n')
           PY
 
       - name: Compile OTA application BIN (never flash from CI)
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/esp32-build"
-          arduino-cli compile \\
-            --fqbn esp32:esp32:esp32:PartitionScheme=default \\
-            --output-dir "$RUNNER_TEMP/esp32-build" \\
+          arduino-cli compile \
+            --fqbn esp32:esp32:esp32:PartitionScheme=default \
+            --output-dir "$RUNNER_TEMP/esp32-build" \
             "$SKETCH_DIR"
           mapfile -t files < <(find "$RUNNER_TEMP/esp32-build" -maxdepth 1 -type f -name '*.ino.bin')
           if [ "${#files[@]}" -ne 1 ]; then
@@ -145,7 +145,7 @@ jobs:
           fi
           cd "$RUNNER_TEMP/esp32-private"
           sha256sum firmware.bin > SHA256SUMS.txt
-          printf 'Firmware: %s\\nBoard: ESP32 Dev Module\\nOTA application: firmware.bin\\nVerify SHA256SUMS.txt and device compatibility before updating.\\n' "$FIRMWARE_KIND" > README.txt
+          printf 'Firmware: %s\nBoard: ESP32 Dev Module\nOTA application: firmware.bin\nVerify SHA256SUMS.txt and device compatibility before updating.\n' "$FIRMWARE_KIND" > README.txt
           archive="$RUNNER_TEMP/FatihKazan-${FIRMWARE_KIND}-ENCRYPTED.7z"
           7z a -t7z -mhe=on -mx=7 -p"$ARCHIVE_PASSWORD" "$archive" firmware.bin SHA256SUMS.txt README.txt >/dev/null
           7z t -p"$ARCHIVE_PASSWORD" "$archive" >/dev/null
