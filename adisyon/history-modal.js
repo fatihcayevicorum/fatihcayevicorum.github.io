@@ -5,7 +5,7 @@ const frame=document.getElementById("closedOrdersHistoryFrame");
 
 function ensureFrame(){
   if(frame){
-    const target=frame.dataset.src||"../adisyon-gecmisi/?embed=1&v=1861";
+    const target=frame.dataset.src||"../adisyon-gecmisi/?embed=1&v=1862";
     if(frame.getAttribute("src")!==target)frame.setAttribute("src",target);
   }
 }
