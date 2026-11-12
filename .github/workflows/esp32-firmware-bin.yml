@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      FIRMWARE_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.firmware || '0.6.1-ota-test' }}
+      FIRMWARE_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.firmware || (github.ref_name == 'esp32-tablet-bin-ota-teshis-0-6-3' && '0.6.3-kalibrasyon-aday' || '0.6.1-ota-test') }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
