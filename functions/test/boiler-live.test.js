@@ -125,4 +125,10 @@ test('boiler settings page: header buttons, three side-by-side cards, firmware c
  assert.match(js,/setBoilerCalibration/);assert.match(js,/renameBoilerDevice/);assert.match(index,/exports\.setBoilerCalibration=/);assert.match(index,/exports\.renameBoilerDevice=/);
  assert.match(js,/key==='Enter'&&event\.target\.tagName==='INPUT'/);
 });
+test('boiler quick settings: compact four-card layout uses the simple enlarged editor',()=>{
+ const base=path.join(__dirname,'../..'),shell=fs.readFileSync(path.join(base,'assets/js/smart-boiler.js'),'utf8'),live=fs.readFileSync(path.join(base,'assets/js/smart-boiler-live.js'),'utf8'),css=fs.readFileSync(path.join(base,'assets/css/smart-boiler.css'),'utf8');
+ assert.match(shell,/simple:root===dialog/);assert.doesNotMatch(shell,/simple:root===targetDialog/);
+ assert.match(live,/Yeni Sıcaklık/);assert.ok(live.indexOf('data-down')<live.indexOf('data-draft')&&live.indexOf('data-draft')<live.indexOf('data-up'));
+ assert.match(css,/#smartBoilerQuickDialog\{position:relative;width:min\(560px/);assert.match(css,/boiler-target-stepper output\{font-size:1\.7rem/);
+});
 
