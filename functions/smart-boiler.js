@@ -5,7 +5,7 @@ const DEVICE_NAME=/^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,31}$/u;
 const hash=v=>crypto.createHash('sha256').update(v).digest('hex');
 function problem(status,message){const e=new Error(message);e.status=status;throw e;}
 function parseSample(b,now){
- if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion','targetTemperatureC','targetAgeMs','control','bootId','result','hysteresis','hysteresisResult','heaterOutputKnown','heaterOn','ota'].includes(k)))problem(400,'Geçersiz ölçüm.');
+ if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion','targetTemperatureC','targetAgeMs','control','bootId','result','hysteresis','hysteresisResult','heaterOutputKnown','heaterOn','ota','calibration','calibrationResult'].includes(k)))problem(400,'Geçersiz ölçüm.');
  if(b.deviceId!==DEVICE||!Number.isSafeInteger(b.sentAtMs)||Math.abs(now-b.sentAtMs)>30000)problem(400,'Cihaz veya saat geçersiz.');
  if(typeof b.endaConnected!=='boolean'||typeof b.firmwareVersion!=='string'||!/^[\w .-]{1,48}$/.test(b.firmwareVersion))problem(400,'Geçersiz durum.');
  if(b.endaConnected){if(!Number.isFinite(b.temperatureC)||b.temperatureC< -50||b.temperatureC>200||!Number.isSafeInteger(b.measuredAgeMs)||b.measuredAgeMs<0||b.measuredAgeMs>10000)problem(400,'Ölçüm geçersiz veya eski.');}
@@ -21,10 +21,14 @@ function parseSample(b,now){
  if(b.hysteresis!=null){const h=b.hysteresis;if(!h||typeof h!=='object'||Array.isArray(h)||Object.keys(h).some(k=>!['onOff','value'].includes(k))||typeof h.onOff!=='boolean'||!Number.isInteger(h.value)||h.value<1||h.value>50||!b.endaConnected||typeof b.bootId!=='string'||!/^[a-f0-9]{32}$/.test(b.bootId))problem(400,'ON/OFF farkı geçersiz.');hysteresis={onOff:h.onOff,value:h.value};}
  let hysteresisResult=null;
  if(b.hysteresisResult!=null){const r=b.hysteresisResult;if(!r||typeof r!=='object'||!(/^[a-f0-9]{32}$/.test(r.id))||!['confirmed','rejected','unknown'].includes(r.status)||Object.keys(r).some(k=>!['id','status'].includes(k)))problem(400,'ON/OFF komut sonucu geçersiz.');hysteresisResult={id:r.id,status:r.status};}
+ let calibration=null;
+ if(b.calibration!=null){const v=b.calibration;if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!['valueC','decimal'].includes(k))||!Number.isFinite(v.valueC)||Math.abs(v.valueC)>10||Math.abs(v.valueC*10-Math.round(v.valueC*10))>1e-6||![0,1].includes(v.decimal)||!b.endaConnected)problem(400,'ENDA kalibrasyon bilgisi geçersiz.');calibration={valueC:v.valueC,decimal:v.decimal};}
+ let calibrationResult=null;
+ if(b.calibrationResult!=null){const r=b.calibrationResult;if(!r||typeof r!=='object'||!(/^[a-f0-9]{32}$/.test(r.id))||!['confirmed','rejected','unknown'].includes(r.status)||Object.keys(r).some(k=>!['id','status'].includes(k)))problem(400,'Kalibrasyon komut sonucu geçersiz.');calibrationResult={id:r.id,status:r.status};}
  const heaterOutputKnown=b.heaterOutputKnown===true,heaterOn=heaterOutputKnown&&typeof b.heaterOn==='boolean'?b.heaterOn:null;
  if((b.heaterOutputKnown!=null&&typeof b.heaterOutputKnown!=='boolean')||(heaterOutputKnown&&typeof b.heaterOn!=='boolean')||(!heaterOutputKnown&&b.heaterOn!=null))problem(400,'Isıtma çıkışı geçersiz.');
  let otaReport=null;if(b.ota!=null){const o=b.ota;if(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).some(k=>!['requestId','status','error'].includes(k))||!/^[a-f0-9]{32}$/.test(o.requestId)||!['offered','downloading','installing','failed'].includes(o.status)||typeof(o.error||'')!=='string'||String(o.error||'').length>160)problem(400,'OTA sonucu geçersiz.');otaReport={requestId:o.requestId,status:o.status,error:String(o.error||'')};}
- return {control,bootId:typeof b.bootId==='string'&&/^[a-f0-9]{32}$/.test(b.bootId)?b.bootId:null,result,hysteresisResult,hysteresisOnOff:hysteresis?.onOff??null,hysteresisC:hysteresis?.value??null,hysteresisMeasuredAtMs:hysteresis?b.sentAtMs-b.measuredAgeMs:null,otaReport,heaterOutputKnown,heaterOn,targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
+ return {control,bootId:typeof b.bootId==='string'&&/^[a-f0-9]{32}$/.test(b.bootId)?b.bootId:null,result,hysteresisResult,hysteresisOnOff:hysteresis?.onOff??null,hysteresisC:hysteresis?.value??null,hysteresisMeasuredAtMs:hysteresis?b.sentAtMs-b.measuredAgeMs:null,calibration,calibrationResult,calibrationMeasuredAtMs:calibration?b.sentAtMs-b.measuredAgeMs:null,otaReport,heaterOutputKnown,heaterOn,targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
 }
 function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.now}){
  const credentials=db.doc('adminBoilerDevices/'+DEVICE),state=db.doc('adminBoilerState/'+DEVICE),maintenance=db.doc('adminBackupControl/state');
@@ -49,6 +53,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
    if(g.data()?.active||!c.data()?.enabled)throw new HttpsError('unavailable','Cihaz şu an kullanılamıyor.');
    if(old.command?.id===b.id)return {id:b.id,status:old.command.status};
    if(old.hysteresisCommand&&['pending','dispatched'].includes(old.hysteresisCommand.status)&&old.hysteresisCommand.expiresAtMs>at)throw new HttpsError('aborted','ON/OFF farkı işleminin sonucunu bekleyin.');
+   if(old.calibrationCommand&&['pending','dispatched'].includes(old.calibrationCommand.status)&&old.calibrationCommand.expiresAtMs>at)throw new HttpsError('aborted','ENDA kalibrasyon işleminin sonucunu bekleyin.');
    if(old.command&&['pending','dispatched'].includes(old.command.status)&&old.command.expiresAtMs>at)throw new HttpsError('aborted','Önceki işlemin sonucunu bekleyin.');
    if(!old.paired||!old.endaConnected||!old.control||at-old.lastSeenAtMs>20000||at-old.targetMeasuredAtMs>20000||old.targetMeasuredAtMs>at+30000||old.targetTemperatureC!==b.expected)throw new HttpsError('failed-precondition','Cihaz verisi güncel değil veya hedef değişti. Yeniden deneyin.');
    const range=effectiveRange(old);if(b.target<range.min||b.target>range.max)throw new HttpsError('out-of-range','Hedef belirlenen sıcaklık aralığının dışında.');
@@ -74,6 +79,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
    if(g.data()?.active||!c.data()?.enabled)throw new HttpsError('unavailable','Cihaz şu an kullanılamıyor.');
    if(old.hysteresisCommand?.id===b.id)return{id:b.id,status:old.hysteresisCommand.status};
    if(old.command&&['pending','dispatched'].includes(old.command.status)&&old.command.expiresAtMs>at)throw new HttpsError('aborted','Hedef sıcaklık işleminin sonucunu bekleyin.');
+   if(old.calibrationCommand&&['pending','dispatched'].includes(old.calibrationCommand.status)&&old.calibrationCommand.expiresAtMs>at)throw new HttpsError('aborted','ENDA kalibrasyon işleminin sonucunu bekleyin.');
    if(old.hysteresisCommand&&['pending','dispatched'].includes(old.hysteresisCommand.status)&&old.hysteresisCommand.expiresAtMs>at)throw new HttpsError('aborted','Önceki ON/OFF farkı işleminin sonucunu bekleyin.');
    if(!old.paired||!old.endaConnected||old.hysteresisOnOff!==true||!Number.isInteger(old.hysteresisC)||at-old.lastSeenAtMs>20000||at-old.hysteresisMeasuredAtMs>20000||old.hysteresisMeasuredAtMs>at+30000||old.hysteresisC!==b.expected||typeof old.bootId!=='string'||!/^[a-f0-9]{32}$/.test(old.bootId))throw new HttpsError('failed-precondition','Cihaz ON/OFF modunda değil, veri güncel değil veya fark değeri değişti.');
    const hysteresisCommand={id:b.id,value:b.value,expected:b.expected,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
@@ -81,12 +87,20 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
   });
  }
  async function setCalibration(r){
-  if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','Sıcaklık kalibrasyonunu yalnızca ana yönetici değiştirebilir.');
-  const b=r.data||{},tenths=Math.round(Number(b.value)*10);
-  if(Object.keys(b).some(k=>!['value','expected'].includes(k))||typeof b.value!=='number'||!Number.isFinite(b.value)||Math.abs(b.value*10-tenths)>1e-6||Math.abs(tenths)>50||typeof b.expected!=='number'||!Number.isFinite(b.expected))throw new HttpsError('invalid-argument','Düzeltme -5 ile +5 °C arasında, en fazla bir ondalıklı olmalıdır.');
-  return db.runTransaction(async tx=>{const [s,g]=await Promise.all([tx.get(state),tx.get(maintenance)]),old=s.data()||{};if(g.data()?.active)throw new HttpsError('unavailable','Yedekleme işleminin tamamlanmasını bekleyin.');
-   const current=savedCalibration(old)?.valueC??0;if(Math.abs(current-b.expected)>1e-6)throw new HttpsError('failed-precondition','Kalibrasyon başka yerden değişti. Sayfayı yenileyip yeniden deneyin.');
-   const valueC=tenths/10||0;tx.set(state,{...old,calibration:{valueC,updatedAtMs:now(),updatedBy:r.auth.uid}});return{value:valueC};
+  if(r.auth?.uid!==ownerUid)throw new HttpsError('permission-denied','ENDA sıcaklık kalibrasyonunu yalnızca ana yönetici değiştirebilir.');
+  const b=r.data||{},tenths=Math.round(Number(b.value)*10),expectedTenths=Math.round(Number(b.expected)*10);
+  if(Object.keys(b).some(k=>!['id','value','expected','sentAtMs'].includes(k))||!(/^[a-f0-9]{32}$/.test(b.id))||typeof b.value!=='number'||!Number.isFinite(b.value)||Math.abs(b.value*10-tenths)>1e-6||Math.abs(tenths)>50||typeof b.expected!=='number'||!Number.isFinite(b.expected)||Math.abs(b.expected*10-expectedTenths)>1e-6||!Number.isSafeInteger(b.sentAtMs)||Math.abs(now()-b.sentAtMs)>15000)throw new HttpsError('invalid-argument','Düzeltme -5 ile +5 °C arasında, 0,1 °C adımlı olmalıdır.');
+  return db.runTransaction(async tx=>{const [s,c,g]=await Promise.all([tx.get(state),tx.get(credentials),tx.get(maintenance)]),old=s.data()||{},at=now();
+   if(g.data()?.active||!c.data()?.enabled)throw new HttpsError('unavailable','Cihaz şu an kullanılamıyor.');
+   if(old.calibrationCommand?.id===b.id)return{id:b.id,status:old.calibrationCommand.status};
+   if(old.command&&['pending','dispatched'].includes(old.command.status)&&old.command.expiresAtMs>at)throw new HttpsError('aborted','Hedef sıcaklık işleminin sonucunu bekleyin.');
+   if(old.hysteresisCommand&&['pending','dispatched'].includes(old.hysteresisCommand.status)&&old.hysteresisCommand.expiresAtMs>at)throw new HttpsError('aborted','ON/OFF farkı işleminin sonucunu bekleyin.');
+   if(old.calibrationCommand&&['pending','dispatched'].includes(old.calibrationCommand.status)&&old.calibrationCommand.expiresAtMs>at)throw new HttpsError('aborted','Önceki kalibrasyon işleminin sonucunu bekleyin.');
+   const current=savedCalibration(old)?.valueC;
+   if(!old.paired||!old.endaConnected||!Number.isFinite(current)||at-old.lastSeenAtMs>20000||at-old.calibrationMeasuredAtMs>20000||old.calibrationMeasuredAtMs>at+30000||Math.abs(current-b.expected)>1e-6||![0,1].includes(old.calibration?.decimal)||typeof old.bootId!=='string'||!/^[a-f0-9]{32}$/.test(old.bootId))throw new HttpsError('failed-precondition','ENDA verisi güncel değil veya kalibrasyon değeri değişti.');
+   if(old.calibration.decimal===0&&(tenths%10!==0))throw new HttpsError('failed-precondition','ENDA tam derece modunda; 0,1 °C adımı kullanılamıyor.');
+   const calibrationCommand={id:b.id,valueC:tenths/10||0,expectedC:expectedTenths/10||0,decimal:old.calibration.decimal,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
+   tx.set(state,{...old,calibrationCommand});return{id:b.id,status:'pending'};
   });
  }
  async function setDeviceName(r){
@@ -126,6 +140,15 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
      else if(now()-sample.hysteresisMeasuredAtMs<=5000&&now()-sample.hysteresisMeasuredAtMs>=-30000){hysteresisCommand.status='dispatched';hysteresisWire=[hysteresisCommand.id,hysteresisCommand.value,hysteresisCommand.expected,Math.floor(hysteresisCommand.expiresAtMs/1000)].join(',');}
     }
    }
+   let calibrationCommand=old.calibrationCommand||null,calibrationWire=null;
+   if(calibrationCommand){calibrationCommand={...calibrationCommand};
+    if(calibrationCommand.status==='dispatched'&&sample.calibrationResult?.id===calibrationCommand.id){calibrationCommand.status=sample.calibrationResult.status==='confirmed'&&sample.calibration&&Math.abs(sample.calibration.valueC-calibrationCommand.valueC)<1e-6?'confirmed':sample.calibrationResult.status==='rejected'?'rejected':'unknown';}
+    if(['pending','dispatched'].includes(calibrationCommand.status)&&calibrationCommand.expiresAtMs<=now())calibrationCommand.status=calibrationCommand.status==='pending'?'expired':'unknown';
+    if(calibrationCommand.status==='pending'){
+     if(sample.bootId!==calibrationCommand.bootId||!sample.calibration||sample.calibration.decimal!==calibrationCommand.decimal||Math.abs(sample.calibration.valueC-calibrationCommand.expectedC)>1e-6)calibrationCommand.status='rejected';
+     else if(now()-sample.calibrationMeasuredAtMs<=5000&&now()-sample.calibrationMeasuredAtMs>=-30000){calibrationCommand.status='dispatched';calibrationWire=[calibrationCommand.id,Math.round(calibrationCommand.valueC*10),Math.round(calibrationCommand.expectedC*10),calibrationCommand.decimal,Math.floor(calibrationCommand.expiresAtMs/1000)].join(',');}
+    }
+   }
    let temperaturePhase='offline';
    if(sample.endaConnected&&Number.isFinite(sample.temperatureC)){
     const reached=Number.isFinite(sample.targetTemperatureC)&&sample.temperatureC>=sample.targetTemperatureC-0.5;
@@ -133,9 +156,9 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
     const recentlyHeating=old.temperaturePhase==='heating'&&Number.isFinite(old.temperatureC)&&sample.temperatureC>=Number(old.temperatureC)-0.1&&now()-Number(old.lastSeenAtMs||0)<=20000;
     temperaturePhase=sample.heaterOutputKnown?(sample.heaterOn?'heating':reached?'reached':'cold'):reached?'reached':(rising||recentlyHeating)?'heating':'cold';
    }
-   let next={...old,...sample,paired:true,temperaturePhase,...(command?{command}:{}),...(hysteresisCommand?{hysteresisCommand}:{})};delete next.otaReport;
+   let next={...old,...sample,paired:true,temperaturePhase,...(command?{command}:{}),...(hysteresisCommand?{hysteresisCommand}:{}),...(calibrationCommand?{calibrationCommand}:{})};delete next.otaReport;
    if(ota){next=await ota.applyReport(next,sample.otaReport);next=await ota.markSeen(next,sample.firmwareVersion);}
-   tx.set(state,next);return{accepted:true,...(wire?{command:wire}:{}),...(hysteresisWire?{hysteresisCommand:hysteresisWire}:{})};
+   tx.set(state,next);return{accepted:true,...(wire?{command:wire}:{}),...(hysteresisWire?{hysteresisCommand:hysteresisWire}:{}),...(calibrationWire?{calibrationCommand:calibrationWire}:{})};
   });
   if(ota&&result.accepted){const current=(await state.get()).data()||{},instruction=await ota.instruction(current);if(instruction){await state.set({ota:{...current.ota,status:'offered',offeredAtMs:now()}},{merge:true});result.ota=instruction;}}
   return result;
@@ -144,7 +167,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,now=Date.no
   res.set('Cache-Control','no-store');
   if(req.method!=='POST')return res.status(405).json({error:'POST gerekli.'});
   if(!req.is('application/json')||(req.rawBody?.length||0)>2048)return res.status(400).json({error:'Geçersiz istek.'});
-  try{const result=await ingest(req.get('Authorization'),req.body);const current=(await state.get()).data()||{};if(result.command)res.set('X-Boiler-Command',result.command);if(result.hysteresisCommand)res.set('X-Boiler-Hysteresis',result.hysteresisCommand);res.set('X-Boiler-Calibration',String(savedCalibration(current)?.valueC??0));if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
+  try{const result=await ingest(req.get('Authorization'),req.body);const current=(await state.get()).data()||{};if(result.command)res.set('X-Boiler-Command',result.command);if(result.hysteresisCommand)res.set('X-Boiler-Hysteresis',result.hysteresisCommand);if(result.calibrationCommand)res.set('X-Boiler-Calibration',result.calibrationCommand);if(result.ota)res.set('X-Boiler-Ota',[result.ota.requestId,result.ota.version,result.ota.sha256,result.ota.size,result.ota.downloadUrl].join('|'));return res.status(200).json(result);}
   catch(e){return res.status(e.status||503).json({error:e.status?e.message:'Gönderim tamamlanamadı.'});}
  }
  return{configure,receive,ingest,setTarget,setTargetRange,setHysteresis,setCalibration,setDeviceName};

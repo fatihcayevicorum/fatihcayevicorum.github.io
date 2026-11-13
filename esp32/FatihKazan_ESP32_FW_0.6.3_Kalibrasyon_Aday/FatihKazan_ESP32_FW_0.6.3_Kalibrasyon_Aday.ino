@@ -111,7 +111,15 @@ bool installOta(const String &wire) {
   http.addHeader("Authorization",String("Bearer ")+BOILER_DEVICE_TOKEN);
   int code=http.GET();int length=http.getSize();
   if(code!=200||length!=(int)expectedSize){http.end();setOtaReport(requestId.c_str(),4,"Firmware boyutu veya HTTP yaniti gecersiz.");return false;}
-  if(!Update.begin(expectedSize)){http.end();setOtaReport(requestId.c_str(),4,"OTA bolumu yetersiz.");return false;}
+  static const size_t OTA_SLOT_SIZE=0x140000;
+  if(expectedSize>OTA_SLOT_SIZE){
+    char message[121];snprintf(message,sizeof(message),"Firmware %u bayt, OTA alani %u bayt.",(unsigned)expectedSize,(unsigned)OTA_SLOT_SIZE);
+    http.end();setOtaReport(requestId.c_str(),4,message);return false;
+  }
+  if(!Update.begin(expectedSize)){
+    char message[121];snprintf(message,sizeof(message),"OTA baslatilamadi (kod %u, dosya %u, alan %u).",(unsigned)Update.getError(),(unsigned)expectedSize,(unsigned)OTA_SLOT_SIZE);
+    http.end();setOtaReport(requestId.c_str(),4,message);return false;
+  }
   setOtaReport(requestId.c_str(),3);WiFiClient *stream=http.getStreamPtr();uint8_t buffer[1024],digest[32];size_t written=0;
   mbedtls_sha256_context sha;mbedtls_sha256_init(&sha);mbedtls_sha256_starts(&sha,0);
   uint32_t lastData=millis();
