@@ -56,25 +56,27 @@ test('hysteresis control: mode change, reboot and stale command fail closed',asy
  for(const patch of [{hysteresis:{onOff:false,value:3}},{bootId:'c'.repeat(32)}]){const f=await pairedHysteresis();await f.api.setHysteresis(hysteresisCommand());f.tick(15000);assert.equal((await f.api.ingest(f.token,hysteresisSample({sentAtMs:NOW+15000,...patch}))).hysteresisCommand,undefined);assert.equal(f.records.get('adminBoilerState/kazan-1').hysteresisCommand.status,'rejected');}
 });
 
-// R639 — kalibrasyon, cihaz adı ve yeni Akıllı Kazan pencereleri.
-test('boiler calibration: owner-only, validated, concurrency-safe, kept after pairing and device samples',async()=>{
- const f=fixture(),owner={auth:{uid:'owner'}};
- await assert.rejects(f.api.setCalibration({auth:{uid:'staff'},data:{value:1,expected:0}}),{code:'permission-denied'});
- for(const bad of [{value:6,expected:0},{value:-5.1,expected:0},{value:0.25,expected:0},{value:'1',expected:0},{value:NaN,expected:0},{value:1},{value:1,expected:0,extra:1}])await assert.rejects(f.api.setCalibration({...owner,data:bad}),{code:'invalid-argument'});
- assert.deepEqual(await f.api.setCalibration({...owner,data:{value:-1.5,expected:0}}),{value:-1.5});
- assert.equal(f.records.get('adminBoilerState/kazan-1').calibration.valueC,-1.5);
- await assert.rejects(f.api.setCalibration({...owner,data:{value:2,expected:0}}),{code:'failed-precondition'});
- assert.deepEqual(await f.api.setCalibration({...owner,data:{value:5,expected:-1.5}}),{value:5});
- assert.deepEqual(await f.api.setCalibration({...owner,data:{value:-0,expected:5}}),{value:0});
- await f.api.setCalibration({...owner,data:{value:2.5,expected:0}});
- const r=await f.api.configure({...owner,data:{action:'pair'}});
- assert.equal(f.records.get('adminBoilerState/kazan-1').calibration.valueC,2.5);
- await f.api.ingest('Bearer '+r.token,sample());
- const saved=f.records.get('adminBoilerState/kazan-1');
- assert.equal(saved.calibration.valueC,2.5);assert.equal(saved.temperatureC,27);
- f.records.set('adminBackupControl/state',{active:true});
- await assert.rejects(f.api.setCalibration({...owner,data:{value:1,expected:2.5}}),{code:'unavailable'});
+// ENDA H35 kalibrasyonu: komut tek kez gönderilir ve okuma geri dönüşü olmadan onaylanmaz.
+function calibrationSample(extra={}){return controlSample({calibration:{valueC:0,decimal:1},...extra})}
+async function pairedCalibration(extra={}){const f=fixture(),r=await f.api.configure({auth:{uid:'owner'},data:{action:'pair'}});f.token='Bearer '+r.token;await f.api.ingest(f.token,calibrationSample(extra));return f}
+function calibrationCommand(extra={}){return{auth:{uid:'owner'},data:{id:'f'.repeat(32),value:-1.5,expected:0,sentAtMs:NOW,...extra}}}
+test('boiler calibration: owner-only, validated, dispatched once and confirmed by ENDA H35 readback',async()=>{
+ const f=await pairedCalibration();
+ await assert.rejects(f.api.setCalibration({...calibrationCommand(),auth:{uid:'staff'}}),{code:'permission-denied'});
+ for(const patch of [{value:6},{value:-5.1},{value:0.25},{value:'1'},{value:NaN},{sentAtMs:NOW-20000},{extra:1}])await assert.rejects(f.api.setCalibration(calibrationCommand(patch)),{code:'invalid-argument'});
+ assert.deepEqual(await f.api.setCalibration(calibrationCommand()),{id:'f'.repeat(32),status:'pending'});
+ await assert.rejects(f.api.setCalibration(calibrationCommand({id:'e'.repeat(32)})),{code:'aborted'});
+ f.tick(15000);let result=await f.api.ingest(f.token,calibrationSample({sentAtMs:NOW+15000}));
+ assert.match(result.calibrationCommand,/^f{32},-15,0,1,/);assert.equal(f.records.get('adminBoilerState/kazan-1').calibrationCommand.status,'dispatched');
+ f.tick(5000);await f.api.ingest(f.token,calibrationSample({sentAtMs:NOW+20000,calibration:{valueC:-1.5,decimal:1},calibrationResult:{id:'f'.repeat(32),status:'confirmed'}}));
+ const saved=f.records.get('adminBoilerState/kazan-1');assert.equal(saved.calibration.valueC,-1.5);assert.equal(saved.calibrationCommand.status,'confirmed');assert.equal(saved.temperatureC,27);
+ f.records.set('adminBackupControl/state',{active:true});await assert.rejects(f.api.setCalibration(calibrationCommand({id:'d'.repeat(32),value:1,expected:-1.5,sentAtMs:NOW+20000})),{code:'unavailable'});
 });
+test('boiler calibration: telemetry validates ENDA offset and decimal mode',()=>{
+ assert.equal(parseSample(calibrationSample(),NOW).calibration.valueC,0);
+ for(const calibration of [{valueC:11,decimal:1},{valueC:.25,decimal:1},{valueC:1,decimal:2},{valueC:'1',decimal:1},{valueC:1,decimal:1,extra:true}])assert.throws(()=>parseSample(calibrationSample({calibration}),NOW));
+});
+
 test('boiler device name: owner-only, safe characters; device id, token and records stay untouched',async()=>{
  const f=fixture(),owner={auth:{uid:'owner'}},r=await f.api.configure({...owner,data:{action:'pair'}});
  await assert.rejects(f.api.setDeviceName({auth:{uid:'staff'},data:{name:'Ocak'}}),{code:'permission-denied'});
@@ -90,24 +92,19 @@ test('boiler device name: owner-only, safe characters; device id, token and reco
  f.records.set('adminBackupControl/state',{active:true});
  await assert.rejects(f.api.setDeviceName({...owner,data:{name:'Yeni'}}),{code:'unavailable'});
 });
-test('boiler calibration: shown temperature is corrected, heating phase keeps the raw reading, invalid values ignored',()=>{
+test('boiler calibration: web uses ENDA-corrected temperature once',()=>{
  const source=fs.readFileSync(path.join(__dirname,'../../assets/js/smart-boiler-live.js'),'utf8').replace(/^import.*;$/gm,'').replaceAll('export function','function');
  const context={Date:{now:()=>NOW},navigator:{onLine:true},URL};vm.createContext(context);vm.runInContext(source+'\nthis.api={view,set:(d,o)=>{data=d;online=o;message="";}};',context);
  const d={paired:true,temperatureC:90,endaConnected:true,measuredAtMs:NOW-1000,lastSeenAtMs:NOW-1000,targetTemperatureC:90.4,targetMeasuredAtMs:NOW-1000,heaterOutputKnown:true,heaterOn:false};
- context.api.set(d,true);assert.equal(context.api.view().temperature,90);assert.equal(context.api.view().calibration,0);
- context.api.set({...d,calibration:{valueC:-2.5}},true);const v=context.api.view();
- assert.equal(v.temperature,87.5);assert.equal(v.rawTemperature,90);assert.equal(v.calibration,-2.5);assert.equal(v.phase,'reached');
- for(const bad of [9,-6,'x',NaN,null,undefined]){context.api.set({...d,calibration:{valueC:bad}},true);assert.equal(context.api.view().temperature,90);assert.equal(context.api.view().calibration,0)}
- context.api.set({...d,measuredAtMs:NOW-60000,calibration:{valueC:1}},true);assert.equal(context.api.view().temperature,null);
+ context.api.set({...d,calibration:{valueC:-2.5,decimal:1}},true);const v=context.api.view();
+ assert.equal(v.temperature,90);assert.equal(v.rawTemperature,90);assert.equal(v.calibration,-2.5);assert.equal(v.phase,'reached');
+ context.api.set({...d,measuredAtMs:NOW-60000,calibration:{valueC:1,decimal:1}},true);assert.equal(context.api.view().temperature,null);
 });
-test('tea widget: shown boiler temperature is corrected, phase uses the raw reading',()=>{
+test('tea widget: ENDA-corrected temperature is not offset a second time',()=>{
  const {boilerView}=require('../widget-tea');
- const s={paired:true,endaConnected:true,temperatureC:90,measuredAtMs:NOW-1000,lastSeenAtMs:NOW-1000,targetTemperatureC:90.4,targetMeasuredAtMs:NOW-1000,heaterOutputKnown:true,heaterOn:false};
- assert.equal(boilerView(s,NOW).temperatureC,90);
- const v=boilerView({...s,calibration:{valueC:-2.5}},NOW);
- assert.equal(v.temperatureC,87.5);assert.equal(v.temperatureText,'88 °C');assert.equal(v.phase,'reached');
- assert.equal(boilerView({...s,calibration:{valueC:12}},NOW).temperatureC,90);
- assert.equal(boilerView({...s,calibration:{valueC:1},measuredAtMs:NOW-60000},NOW).temperatureC,null);
+ const s={paired:true,endaConnected:true,temperatureC:90,measuredAtMs:NOW-1000,lastSeenAtMs:NOW-1000,targetTemperatureC:90.4,targetMeasuredAtMs:NOW-1000,heaterOutputKnown:true,heaterOn:false,calibration:{valueC:-2.5,decimal:1}};
+ const v=boilerView(s,NOW);assert.equal(v.temperatureC,90);assert.equal(v.temperatureText,'90 °C');assert.equal(v.phase,'reached');
+ assert.equal(boilerView({...s,measuredAtMs:NOW-60000},NOW).temperatureC,null);
 });
 test('boiler settings page: header buttons, three side-by-side cards, firmware card and device tools in their own windows',()=>{
  const base=path.join(__dirname,'../..'),html=fs.readFileSync(path.join(base,'tanimlamalar/index.html'),'utf8'),css=fs.readFileSync(path.join(base,'tanimlamalar/style.css'),'utf8'),js=fs.readFileSync(path.join(base,'assets/js/smart-boiler-settings.js'),'utf8'),index=fs.readFileSync(path.join(base,'functions/index.js'),'utf8');
