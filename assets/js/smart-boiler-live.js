@@ -16,7 +16,8 @@ export function startLive(update){emit=update;const db=getFirestore(firebaseApp)
  window.addEventListener('offline',()=>{online=false;emit(view());});setInterval(()=>emit(view()),1000);
 }
 function view(){const at=Date.now(),age=data?.measuredAtMs?at-data.measuredAtMs:Infinity,seen=data?.lastSeenAtMs?at-data.lastSeenAtMs:Infinity;
- const fresh=online&&navigator.onLine&&data?.paired===true&&data.endaConnected===true&&Number.isFinite(data.temperatureC)&&age>=-30000&&age<=45000&&seen>=-30000&&seen<=45000;
+ const espFresh=online&&navigator.onLine&&data?.paired===true&&seen>=-30000&&seen<=45000;
+ const fresh=espFresh&&data.endaConnected===true&&Number.isFinite(data.temperatureC)&&age>=-30000&&age<=45000;
  const targetAge=data?.targetMeasuredAtMs?at-data.targetMeasuredAtMs:Infinity;
  const targetFresh=fresh&&Number.isFinite(data?.targetTemperatureC)&&targetAge>=-30000&&targetAge<=45000;
  const heaterKnown=fresh&&data?.heaterOutputKnown===true&&typeof data?.heaterOn==='boolean',heaterOn=heaterKnown&&data.heaterOn===true;
@@ -32,7 +33,7 @@ function view(){const at=Date.now(),age=data?.measuredAtMs?at-data.measuredAtMs:
  const control=targetFresh&&owner&&data?.control&&seen<=20000?{...data.control,min:Math.max(data.control.min,configuredMin),max:Math.min(data.control.max,configuredMax)}:null;
  /* R639: gösterilen sıcaklık kalibrasyonla düzeltilir (-5…+5 °C). Isıtma evresi (phase) ENDA'nın ham ölçümüyle hesaplanır. */
  const calibration=Number.isFinite(data?.calibration?.valueC)&&Math.abs(data.calibration.valueC)<=5?data.calibration.valueC:0;
- return{control,targetRange:{min:configuredMin,max:configuredMax},command,waiting,hysteresis:hysteresisFresh?{onOff:data.hysteresisOnOff,value:data.hysteresisC}:null,hysteresisCommand,hysteresisWaiting,targetFresh,target:targetFresh?data.targetTemperatureC:null,fresh,temperature:fresh?Math.round(data.temperatureC*10)/10:null,rawTemperature:fresh?data.temperatureC:null,calibration,status,last:data?.lastSeenAtMs||null,owner,paired:!!data?.paired,endaConnected:fresh&&data?.endaConnected===true,espConnected:fresh,phase,heaterKnown,heaterOn,firmwareVersion:data?.firmwareVersion||'',ota:data?.ota||null};
+ return{control,targetRange:{min:configuredMin,max:configuredMax},command,waiting,hysteresis:hysteresisFresh?{onOff:data.hysteresisOnOff,value:data.hysteresisC}:null,hysteresisCommand,hysteresisWaiting,targetFresh,target:targetFresh?data.targetTemperatureC:null,fresh,temperature:fresh?Math.round(data.temperatureC*10)/10:null,rawTemperature:fresh?data.temperatureC:null,calibration,status,last:data?.lastSeenAtMs||null,owner,paired:!!data?.paired,endaConnected:espFresh&&data?.endaConnected===true,espConnected:espFresh,phase,heaterKnown,heaterOn,firmwareVersion:data?.firmwareVersion||'',ota:data?.ota||null};
 }
 export function mountPairing(root){
  root.innerHTML='<h3>Cihaz bağlantısı</h3><p class="boiler-note">ESP32 bağlantı dosyasını indirip cihaz yazılımına ekleyin. Yenileme mevcut cihaz anahtarını geçersiz kılar.</p><div class="boiler-actions"><button type="button" data-pair>Bağlantı dosyası oluştur</button><button type="button" data-revoke>Bağlantıyı iptal et</button></div><p class="boiler-note" data-pair-status role="status"></p><a hidden data-download>boiler_cloud.h dosyasını indir</a>';

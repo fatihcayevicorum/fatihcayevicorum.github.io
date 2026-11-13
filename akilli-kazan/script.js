@@ -3,7 +3,7 @@ import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.16.
 import{getFirestore}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{firebaseConfig}from"../assets/js/firebase-config.js";
 import{hasPanelAccess}from"../assets/js/admin-access.js";
-import{mountBoilerPage}from"../assets/js/smart-boiler.js?v=6482";
+import{mountBoilerPage}from"../assets/js/smart-boiler.js?v=651";
 const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(firebaseConfig);
 onAuthStateChanged(getAuth(app),async user=>{
  const page=document.getElementById("boilerPage"),notice=document.getElementById("boilerAccess");page.hidden=true;
