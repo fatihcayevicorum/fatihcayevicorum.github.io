@@ -168,7 +168,7 @@
 
     <script type="module" src="script.js?v=597"></script>
     
-    <script type="module" src="../assets/js/system-ui.js?v=634"></script>
+    <script type="module" src="../assets/js/system-ui.js?v=651"></script>
     <script>/* R642: Tanımlamalar içinde bir pencere açılınca üst pencerenin başlığı da flürlenir. */
     if(window.parent!==window&&new URLSearchParams(location.search).get('tanimlamalar')==='1'){let last=null;const send=()=>{const open=!!document.querySelector('dialog[open]');if(open!==last){last=open;try{window.parent.postMessage({type:'fatih-product-settings-modal',open},location.origin)}catch(e){}}};new MutationObserver(send).observe(document.body,{subtree:true,attributes:true,attributeFilter:['open']});}</script>
 </body>
