@@ -156,26 +156,32 @@ body:has(.boiler-dialog[open]){overflow:hidden}.boiler-page [hidden],.boiler-dia
 .boiler-dashboard>.boiler-card{height:100%;min-height:280px;padding:52px 18px 28px}
 .boiler-dashboard>.boiler-card>small{left:10px;right:10px;text-align:center;font-size:clamp(.85rem,1.6vw,1.2rem)}
 .boiler-dashboard>.boiler-card>strong{font-size:clamp(3rem,6vw,6rem)}
-#smartBoilerQuickDialog{width:min(720px,calc(100% - 24px))}
+#smartBoilerQuickDialog{width:min(780px,calc(100% - 24px))}
 #smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .boiler-quick-heading-actions{display:flex;align-items:center;gap:6px}
 .boiler-quick-heading-actions>span{display:grid;place-items:center;width:52px;height:38px;border-radius:9px;font-size:.72rem;font-weight:800;background:#a32c3c;color:#fff}
 .boiler-quick-heading-actions>span[data-state=online]{background:#23744a}
 #smartBoilerQuickDialog .boiler-quick-heading-actions .boiler-close,#smartBoilerQuickDialog .boiler-quick-heading-actions [data-power]{width:40px;height:40px;min-height:40px;padding:0;float:none}
 #smartBoilerQuickDialog .boiler-quick-heading-actions [data-power]{font-size:1.05rem}
-#smartBoilerQuickDialog .boiler-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:150px minmax(280px,auto)}
-#smartBoilerQuickDialog .boiler-quick-card{aspect-ratio:auto;min-height:0}
+#smartBoilerQuickDialog .boiler-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:220px;gap:10px}
+#smartBoilerQuickDialog .boiler-quick-card{aspect-ratio:auto;min-height:220px;padding:40px 12px 12px}
 #smartBoilerQuickDialog .boiler-quick-card>small{text-align:center}
-#smartBoilerQuickDialog .boiler-quick-editor{padding:36px 9px 9px;display:grid;grid-template-rows:minmax(180px,1fr) auto auto;align-items:stretch}
-#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{position:static;transform:none;display:grid;grid-template-columns:1fr;grid-template-rows:44px minmax(48px,1fr) 44px;gap:4px;place-items:center;margin:0 0 8px;align-self:stretch}
-#smartBoilerQuickDialog .boiler-quick-editor [data-up]{grid-row:1}
-#smartBoilerQuickDialog .boiler-quick-editor [data-draft]{grid-row:2;font-size:clamp(1.5rem,3.6vw,2.2rem);white-space:nowrap}
-#smartBoilerQuickDialog .boiler-quick-editor [data-down]{grid-row:3}
-#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper button{min-height:44px;width:48px}
-#smartBoilerQuickDialog .boiler-quick-editor .boiler-actions{margin:0;gap:4px}
-#smartBoilerQuickDialog .boiler-quick-editor .boiler-actions button{padding:5px 2px;font-size:.7rem;min-height:44px}
-[data-quick-modes]{width:100%;display:grid;gap:9px;grid-auto-rows:1fr}
-[data-quick-modes] button{min-height:52px;overflow-wrap:anywhere}
+#smartBoilerQuickDialog .boiler-quick-current{gap:10px}#smartBoilerQuickDialog .boiler-quick-current>i{color:var(--theme-primary,#741722);font-size:2.6rem}#smartBoilerQuickDialog .boiler-quick-current>strong{font-size:clamp(2.25rem,4vw,3rem)}
+#smartBoilerQuickDialog .boiler-quick-editor{display:grid;align-content:center}
+#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{position:static;transform:none;display:grid;grid-template-columns:repeat(2,52px);grid-template-areas:"degree degree" "decrease increase";place-content:center;gap:10px;margin:0}
+#smartBoilerQuickDialog .boiler-quick-editor [data-draft]{grid-area:degree;font-size:clamp(2.25rem,4vw,3rem);white-space:nowrap}
+#smartBoilerQuickDialog .boiler-quick-editor [data-down]{grid-area:decrease}#smartBoilerQuickDialog .boiler-quick-editor [data-up]{grid-area:increase}
+#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper button{width:52px;min-height:42px;font-size:1.35rem}
+#smartBoilerQuickDialog .boiler-quick-editor .boiler-note{position:absolute;left:8px;right:8px;bottom:5px;margin:0;font-size:.5rem;line-height:1.25}
+#smartBoilerQuickDialog .boiler-quick-mode-area{margin-top:10px;padding:11px 12px;border:1px solid var(--theme-border,#eadfd3);border-radius:15px;background:var(--theme-surface-2,#f4ece4)}
+#smartBoilerQuickDialog .boiler-quick-mode-area h3{margin:0 0 9px;text-align:left;font-size:.8rem}
+#smartBoilerQuickDialog [data-quick-modes]{display:flex;align-items:stretch;gap:9px;width:100%}
+#smartBoilerQuickDialog [data-quick-modes] button{width:82px;min-width:82px;aspect-ratio:1/1;min-height:0;padding:7px;overflow-wrap:anywhere;background:var(--theme-surface,#fffdf9)}
+#smartBoilerQuickDialog [data-quick-modes] button[data-selected=true]{border:2px solid var(--theme-primary,#741722);color:var(--theme-primary,#741722);box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-primary,#741722) 12%,transparent)}
+#smartBoilerQuickDialog .boiler-quick-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+#smartBoilerQuickDialog .boiler-preparation-note{margin:0;flex:1;text-align:left}
+#smartBoilerQuickDialog [data-target-actions] .boiler-actions{display:grid;grid-template-columns:repeat(2,110px);gap:8px}
+#smartBoilerQuickDialog [data-target-actions] .boiler-actions button{min-height:42px}#smartBoilerQuickDialog [data-target-actions] [data-cancel]{background:var(--theme-surface,#fffdf9)}#smartBoilerQuickDialog [data-target-actions] [data-save]{color:var(--theme-on-primary,#fff);background:var(--theme-primary,#741722)}
 .boiler-power-row{display:flex;align-items:center;gap:12px;margin-top:12px}
 .boiler-power-row .boiler-note{margin:0;flex:1}
 .boiler-power-row [data-power=icon]{width:48px;min-height:48px;font-size:1.25rem;flex-shrink:0}
@@ -187,4 +193,5 @@ body:has(.boiler-dialog[open]){overflow:hidden}.boiler-page [hidden],.boiler-dia
 .boiler-target-dialog [data-power=text]{width:100%}
 .boiler-preparation-note{margin:8px 2px 0;text-align:center}
 @media(max-width:700px){.boiler-dashboard{grid-template-columns:1fr;min-height:0}.boiler-dashboard>.boiler-card{height:190px;min-height:190px}.boiler-status-card{grid-column:auto}.boiler-status-card .boiler-heater{gap:6px}.boiler-status-card .boiler-heater i{font-size:2.5rem}}
-@media(max-width:480px){#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) auto}#smartBoilerQuickDialog .boiler-quick-heading h2{font-size:.68rem}.boiler-quick-heading-actions{gap:3px}.boiler-quick-heading-actions>span{width:34px;height:34px;font-size:.54rem}#smartBoilerQuickDialog .boiler-quick-heading-actions .boiler-close,#smartBoilerQuickDialog .boiler-quick-heading-actions [data-power]{width:34px;height:34px;min-height:34px}#smartBoilerQuickDialog .boiler-quick-grid{grid-template-columns:1fr 1fr;grid-template-rows:125px minmax(260px,auto)}#smartBoilerQuickDialog .boiler-quick-card>small{font-size:.68rem}#smartBoilerQuickDialog .boiler-quick-editor [data-draft]{font-size:1.75rem}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper button{width:40px}}
+@media(max-width:620px){#smartBoilerQuickDialog .boiler-quick-grid{grid-template-columns:1fr;grid-template-rows:none}#smartBoilerQuickDialog .boiler-quick-card{min-height:150px}#smartBoilerQuickDialog .boiler-quick-current{gap:5px}#smartBoilerQuickDialog .boiler-quick-current>i{font-size:2rem}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper{grid-template-columns:repeat(2,46px);gap:6px}#smartBoilerQuickDialog .boiler-quick-editor .boiler-target-stepper button{width:46px;min-height:38px}#smartBoilerQuickDialog .boiler-quick-footer{align-items:stretch;flex-direction:column}#smartBoilerQuickDialog [data-target-actions] .boiler-actions{grid-template-columns:repeat(2,minmax(0,1fr))}#smartBoilerQuickDialog .boiler-preparation-note{text-align:center}}
+@media(max-width:480px){#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) auto}#smartBoilerQuickDialog .boiler-quick-heading h2{font-size:.68rem}.boiler-quick-heading-actions{gap:3px}.boiler-quick-heading-actions>span{width:34px;height:34px;font-size:.54rem}#smartBoilerQuickDialog .boiler-quick-heading-actions .boiler-close,#smartBoilerQuickDialog .boiler-quick-heading-actions [data-power]{width:34px;height:34px;min-height:34px}#smartBoilerQuickDialog .boiler-quick-card{min-height:142px}#smartBoilerQuickDialog .boiler-quick-card>small{font-size:.68rem}#smartBoilerQuickDialog [data-quick-modes] button{width:72px;min-width:72px}}

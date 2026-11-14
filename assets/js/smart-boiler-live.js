@@ -47,12 +47,13 @@ export function mountPairing(root){
  root.querySelector('[data-pair]').onclick=()=>run('pair');root.querySelector('[data-revoke]').onclick=()=>run('revoke');
 }
 
-export function mountTargetEditor(root,{onConfirmed=null,onCancel=null,simple=false}={}){
+export function mountTargetEditor(root,{onConfirmed=null,onCancel=null,simple=false,actionsHost=null}={}){
  root.innerHTML=simple?'<small class="boiler-quick-title">Hedef Sıcaklık</small><div class="boiler-target-stepper"><button type="button" data-down aria-label="Hedefi azalt">−</button><output data-draft>—</output><button type="button" data-up aria-label="Hedefi artır">+</button></div><div class="boiler-actions"><button type="button" data-cancel>İptal</button><button type="button" data-save>Kaydet</button></div><p class="boiler-note" data-command-status role="status"></p><p class="boiler-target-hysteresis-note" data-target-hysteresis-note></p>':'<h3>Hedef Sıcaklık</h3><p class="boiler-editor-current">Mevcut hedef: <strong data-editor-target>—</strong></p><div class="boiler-adjust"><button type="button" data-down aria-label="Hedefi azalt">−</button><output data-draft>—</output><button type="button" data-up aria-label="Hedefi artır">+</button></div><div class="boiler-actions"><button type="button" data-save>Uygula</button><button type="button" data-cancel>İptal</button></div><p class="boiler-note" data-command-status role="status"></p><p class="boiler-target-hysteresis-note" data-target-hysteresis-note></p>';
+ if(simple&&actionsHost)actionsHost.append(root.querySelector('.boiler-actions'));
  let draft=null,expected=null,dirty=false,sending=false,notice='',awaitedId=null,awaitedUntil=0,confirmedId=null;
- const q=s=>root.querySelector(s);
+ const q=s=>root.querySelector(s)||actionsHost?.querySelector(s);
  function reset(){draft=null;expected=null;dirty=false;notice='';paint()}
- function paint(){const v=view();root.hidden=!v.owner;if(!v.owner){draft=null;expected=null;dirty=false;return;}
+ function paint(){const v=view();root.hidden=!v.owner;if(actionsHost)actionsHost.hidden=!v.owner;if(!v.owner){draft=null;expected=null;dirty=false;return;}
   if(!dirty&&!sending){draft=v.targetFresh?Math.round(v.target):null;expected=v.target;}
   const c=v.command;if(awaitedId&&c?.id===awaitedId&&c.status==='confirmed'){const id=awaitedId;awaitedId=null;notice='ENDA hedefi doğruladı.';if(confirmedId!==id){confirmedId=id;setTimeout(()=>onConfirmed?.(),500)}}else if(Date.now()>awaitedUntil||awaitedId&&c?.id===awaitedId&&['rejected','expired','unknown'].includes(c.status))awaitedId=null;
   const localWaiting=!!awaitedId;

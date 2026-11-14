@@ -131,8 +131,10 @@ test('boiler quick settings: compact four-card layout uses the simple enlarged e
  const heading=shell.match(/<div class="boiler-quick-heading">([\s\S]*?)<\/div><\/div><div class="boiler-quick-grid">/)?.[1]||'';
  assert.match(heading,/data-power="icon"/);assert.ok(heading.indexOf('data-connection="enda"')<heading.indexOf('data-connection="esp"')&&heading.indexOf('data-connection="esp"')<heading.indexOf('data-power="icon"')&&heading.indexOf('data-power="icon"')<heading.indexOf('class="boiler-close"'));
  assert.doesNotMatch(shell,/<div class="boiler-power-row"><button type="button" data-power="icon"/);
- const quickGrid=shell.match(/<div class="boiler-quick-grid">([\s\S]*?)<p class="boiler-note boiler-preparation-note"/)?.[1]||'';
- assert.doesNotMatch(quickGrid,/<small>Hedef Sıcaklık<\/small><strong data-target>/);assert.match(quickGrid,/boiler-quick-current/);assert.match(quickGrid,/boiler-quick-editor/);assert.match(quickGrid,/boiler-quick-modes/);
+ const quickGrid=shell.match(/<div class="boiler-quick-grid">([\s\S]*?)<section class="boiler-quick-mode-area">/)?.[1]||'';
+ assert.doesNotMatch(quickGrid,/<small>Hedef Sıcaklık<\/small><strong data-target>/);assert.match(quickGrid,/boiler-quick-current/);assert.match(quickGrid,/boiler-quick-editor/);assert.match(quickGrid,/boiler-quick-heater/);assert.equal((quickGrid.match(/boiler-quick-card/g)||[]).length,3);
+ assert.match(shell,/class="boiler-quick-mode-area"><h3>Çalışma Modu<\/h3><div data-quick-modes>/);assert.match(shell,/class="boiler-quick-footer"/);assert.match(shell,/data-target-actions/);
+ assert.match(live,/actionsHost\.append\(root\.querySelector\('\.boiler-actions'\)\)/);assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);assert.match(css,/\[data-target-actions\] \.boiler-actions/);
 });
 test('boiler plan editor: square mode cards and compact weekly table keep one HH:mm field per time',()=>{
  const base=path.join(__dirname,'../..'),js=fs.readFileSync(path.join(base,'assets/js/smart-boiler-settings.js'),'utf8'),css=fs.readFileSync(path.join(base,'tanimlamalar/style.css'),'utf8');
