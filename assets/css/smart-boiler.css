@@ -157,11 +157,13 @@ body:has(.boiler-dialog[open]){overflow:hidden}.boiler-page [hidden],.boiler-dia
 .boiler-dashboard>.boiler-card>small{left:10px;right:10px;text-align:center;font-size:clamp(.85rem,1.6vw,1.2rem)}
 .boiler-dashboard>.boiler-card>strong{font-size:clamp(3rem,6vw,6rem)}
 #smartBoilerQuickDialog{width:min(720px,calc(100% - 24px))}
-#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) auto 40px;gap:8px}
-.boiler-connection-badges{display:flex;gap:6px}
-.boiler-connection-badges span{display:grid;place-items:center;width:52px;height:34px;border-radius:9px;font-size:.72rem;font-weight:800;background:#a32c3c;color:#fff}
-.boiler-connection-badges [data-state=online]{background:#23744a}
-#smartBoilerQuickDialog .boiler-quick-grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr);grid-template-rows:170px minmax(310px,auto)}
+#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.boiler-quick-heading-actions{display:flex;align-items:center;gap:6px}
+.boiler-quick-heading-actions>span{display:grid;place-items:center;width:52px;height:38px;border-radius:9px;font-size:.72rem;font-weight:800;background:#a32c3c;color:#fff}
+.boiler-quick-heading-actions>span[data-state=online]{background:#23744a}
+#smartBoilerQuickDialog .boiler-quick-heading-actions .boiler-close,#smartBoilerQuickDialog .boiler-quick-heading-actions [data-power]{width:40px;height:40px;min-height:40px;padding:0;float:none}
+#smartBoilerQuickDialog .boiler-quick-heading-actions [data-power]{font-size:1.05rem}
+#smartBoilerQuickDialog .boiler-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:150px minmax(300px,auto)}
 #smartBoilerQuickDialog .boiler-quick-card{aspect-ratio:auto;min-height:0}
 #smartBoilerQuickDialog .boiler-quick-card>small{text-align:center}
 .boiler-quick-lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;min-width:0}
@@ -184,5 +186,6 @@ body:has(.boiler-dialog[open]){overflow:hidden}.boiler-page [hidden],.boiler-dia
 .boiler-dialog [data-power=text][data-state=off]{background:#23744a}
 .boiler-target-dialog .boiler-power-row{flex-direction:column;text-align:center}
 .boiler-target-dialog [data-power=text]{width:100%}
+.boiler-preparation-note{margin:8px 2px 0;text-align:center}
 @media(max-width:700px){.boiler-dashboard{grid-template-columns:1fr;min-height:0}.boiler-dashboard>.boiler-card{height:190px;min-height:190px}.boiler-status-card{grid-column:auto}.boiler-status-card .boiler-heater{gap:6px}.boiler-status-card .boiler-heater i{font-size:2.5rem}}
-@media(max-width:480px){#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) auto 36px}#smartBoilerQuickDialog .boiler-quick-heading h2{font-size:.8rem}.boiler-connection-badges{gap:4px}.boiler-connection-badges span{width:40px;height:32px;font-size:.62rem}#smartBoilerQuickDialog .boiler-quick-grid{grid-template-columns:1fr 1fr;grid-template-rows:140px auto}#smartBoilerQuickDialog .boiler-quick-grid>section:nth-child(3){grid-column:1/-1;min-height:100px}#smartBoilerQuickDialog .boiler-quick-lower{grid-column:1/-1;min-height:300px}#smartBoilerQuickDialog .boiler-quick-card>small{font-size:.7rem}#smartBoilerQuickDialog .boiler-quick-editor [data-draft]{font-size:2.1rem}}
+@media(max-width:480px){#smartBoilerQuickDialog .boiler-quick-heading{grid-template-columns:minmax(0,1fr) auto}#smartBoilerQuickDialog .boiler-quick-heading h2{font-size:.72rem}.boiler-quick-heading-actions{gap:3px}.boiler-quick-heading-actions>span{width:35px;height:34px;font-size:.56rem}#smartBoilerQuickDialog .boiler-quick-heading-actions .boiler-close,#smartBoilerQuickDialog .boiler-quick-heading-actions [data-power]{width:34px;height:34px;min-height:34px}#smartBoilerQuickDialog .boiler-quick-grid{grid-template-columns:1fr 1fr;grid-template-rows:130px auto}#smartBoilerQuickDialog .boiler-quick-grid>section:nth-child(3){grid-column:1/-1;min-height:90px}#smartBoilerQuickDialog .boiler-quick-lower{grid-column:1/-1;min-height:290px}#smartBoilerQuickDialog .boiler-quick-card>small{font-size:.7rem}#smartBoilerQuickDialog .boiler-quick-editor [data-draft]{font-size:2.1rem}}

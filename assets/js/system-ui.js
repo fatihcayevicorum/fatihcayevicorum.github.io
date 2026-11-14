@@ -1,5 +1,5 @@
 // R651 aday: ESP32 ve ENDA bağlantı durumları bağımsız gösterilir.
-if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=653").catch(error=>console.error("Kazan sıcaklığı açılamadı:",error));
+if(document.querySelector(".app-header")&&!location.pathname.includes("/esnaf-paneli/"))import("./smart-boiler.js?v=6532").catch(error=>console.error("Kazan sıcaklığı açılamadı:",error));
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import{doc,getFirestore,onSnapshot}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
