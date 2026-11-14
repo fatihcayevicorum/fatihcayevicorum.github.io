@@ -123,7 +123,7 @@ test('boiler settings page: header buttons, three side-by-side cards, firmware c
  assert.match(html,/smart-boiler-settings\.js\?v=653/);assert.match(worker,/fatih-cay-evi-r653-kazan-web-aday/);
  assert.match(js,/key==='Enter'&&event\.target\.tagName==='INPUT'/);
 });
-test('boiler quick settings: compact four-card layout uses the simple enlarged editor',()=>{
+test('boiler quick settings: centered three-card layout uses the simple editor and compact modes',()=>{
  const base=path.join(__dirname,'../..'),shell=fs.readFileSync(path.join(base,'assets/js/smart-boiler.js'),'utf8'),live=fs.readFileSync(path.join(base,'assets/js/smart-boiler-live.js'),'utf8'),css=fs.readFileSync(path.join(base,'assets/css/smart-boiler.css'),'utf8');
  assert.match(shell,/simple:root===dialog/);assert.doesNotMatch(shell,/simple:root===targetDialog/);
  assert.match(live,/Hedef Sıcaklık/);assert.ok(live.indexOf('data-down')<live.indexOf('data-draft')&&live.indexOf('data-draft')<live.indexOf('data-up'));
@@ -135,6 +135,7 @@ test('boiler quick settings: compact four-card layout uses the simple enlarged e
  assert.doesNotMatch(quickGrid,/<small>Hedef Sıcaklık<\/small><strong data-target>/);assert.match(quickGrid,/boiler-quick-current/);assert.match(quickGrid,/boiler-quick-editor/);assert.match(quickGrid,/boiler-quick-heater/);assert.equal((quickGrid.match(/boiler-quick-card/g)||[]).length,3);
  assert.match(shell,/class="boiler-quick-mode-area"><h3>Çalışma Modu<\/h3><div data-quick-modes>/);assert.match(shell,/class="boiler-quick-footer"/);assert.match(shell,/data-target-actions/);
  assert.match(live,/actionsHost\.append\(root\.querySelector\('\.boiler-actions'\)\)/);assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);assert.match(css,/\[data-target-actions\] \.boiler-actions/);
+ assert.match(css,/boiler-quick-editor \.boiler-target-stepper\{position:absolute;inset:42px 10px 28px/);assert.match(css,/grid-template-columns:repeat\(auto-fit,minmax\(140px,220px\)\)/);assert.match(css,/\[data-quick-modes\] button\{width:100%;min-width:0;height:64px/);
 });
 test('boiler plan editor: square mode cards and compact weekly table keep one HH:mm field per time',()=>{
  const base=path.join(__dirname,'../..'),js=fs.readFileSync(path.join(base,'assets/js/smart-boiler-settings.js'),'utf8'),css=fs.readFileSync(path.join(base,'tanimlamalar/style.css'),'utf8');

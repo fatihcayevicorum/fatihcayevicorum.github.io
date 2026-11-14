@@ -3,10 +3,10 @@ let liveInfo={fresh:false,temperature:null,status:"Cihaz bağlantısı bekleniyo
 let planModule=null,planInfo={plan:{modes:[]},ready:false};
 let page=null,headerButton=null,dialog=null,targetDialog=null;
 const HEADER_ID="smartBoilerHeaderButton",DIALOG_ID="smartBoilerQuickDialog",TARGET_DIALOG_ID="smartBoilerTargetDialog";
-const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=6534",import.meta.url);document.head.append(css);
+const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("../css/smart-boiler.css?v=6535",import.meta.url);document.head.append(css);
 
 function temperature(c){return `${Math.round(c)}°C`}
-function startLive(){if(liveStarted)return;liveStarted=true;import('./smart-boiler-plan.js?v=6534').then(module=>{planModule=module;module.watchPlan(info=>{planInfo=info;render()})}).catch(()=>{});import("./smart-boiler-live.js?v=6534").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
+function startLive(){if(liveStarted)return;liveStarted=true;import('./smart-boiler-plan.js?v=6535').then(module=>{planModule=module;module.watchPlan(info=>{planInfo=info;render()})}).catch(()=>{});import("./smart-boiler-live.js?v=6535").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
 function mountEditors(){if(!liveModule)return;for(const root of [dialog,targetDialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor,{simple:root===dialog,actionsHost:root===dialog?root.querySelector('[data-target-actions]'):null,onConfirmed:root===targetDialog?()=>targetDialog.close():null,onCancel:root===targetDialog?()=>targetDialog.close():null});if(root===targetDialog){const save=editor.querySelector("[data-save]");if(save)save.textContent="Kaydet"}}}}
 function heaterLabel(){
  if(!liveInfo.fresh)return["Bağlantı yok","Güncel veri alınamadı"];
