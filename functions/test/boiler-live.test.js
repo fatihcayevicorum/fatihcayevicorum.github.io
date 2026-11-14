@@ -126,15 +126,18 @@ test('boiler settings page: header buttons, three side-by-side cards, firmware c
 test('boiler quick settings: compact four-card layout uses the simple enlarged editor',()=>{
  const base=path.join(__dirname,'../..'),shell=fs.readFileSync(path.join(base,'assets/js/smart-boiler.js'),'utf8'),live=fs.readFileSync(path.join(base,'assets/js/smart-boiler-live.js'),'utf8'),css=fs.readFileSync(path.join(base,'assets/css/smart-boiler.css'),'utf8');
  assert.match(shell,/simple:root===dialog/);assert.doesNotMatch(shell,/simple:root===targetDialog/);
- assert.match(live,/Yeni Sıcaklık/);assert.ok(live.indexOf('data-down')<live.indexOf('data-draft')&&live.indexOf('data-draft')<live.indexOf('data-up'));
+ assert.match(live,/Hedef Sıcaklık/);assert.ok(live.indexOf('data-down')<live.indexOf('data-draft')&&live.indexOf('data-draft')<live.indexOf('data-up'));
  assert.match(shell,/class="boiler-quick-heading"/);assert.match(css,/#smartBoilerQuickDialog\{width:min\(560px/);assert.match(css,/boiler-quick-heading\{display:grid/);assert.match(css,/boiler-target-stepper output\{font-size:1\.9rem/);assert.match(css,/boiler-target-stepper\{position:absolute;top:50%/);assert.match(css,/boiler-quick-editor \.boiler-actions\{gap:7px;margin-top:auto/);
  const heading=shell.match(/<div class="boiler-quick-heading">([\s\S]*?)<\/div><\/div><div class="boiler-quick-grid">/)?.[1]||'';
- assert.match(heading,/data-power="icon"/);assert.ok(heading.indexOf('class="boiler-close"')<heading.indexOf('data-power="icon"')&&heading.indexOf('data-power="icon"')<heading.indexOf('data-connection="esp"'));
+ assert.match(heading,/data-power="icon"/);assert.ok(heading.indexOf('data-connection="enda"')<heading.indexOf('data-connection="esp"')&&heading.indexOf('data-connection="esp"')<heading.indexOf('data-power="icon"')&&heading.indexOf('data-power="icon"')<heading.indexOf('class="boiler-close"'));
  assert.doesNotMatch(shell,/<div class="boiler-power-row"><button type="button" data-power="icon"/);
+ const quickGrid=shell.match(/<div class="boiler-quick-grid">([\s\S]*?)<p class="boiler-note boiler-preparation-note"/)?.[1]||'';
+ assert.doesNotMatch(quickGrid,/<small>Hedef Sıcaklık<\/small><strong data-target>/);assert.match(quickGrid,/boiler-quick-current/);assert.match(quickGrid,/boiler-quick-editor/);assert.match(quickGrid,/boiler-quick-modes/);
 });
 test('boiler plan editor: square mode cards and compact weekly table keep one HH:mm field per time',()=>{
  const base=path.join(__dirname,'../..'),js=fs.readFileSync(path.join(base,'assets/js/smart-boiler-settings.js'),'utf8'),css=fs.readFileSync(path.join(base,'tanimlamalar/style.css'),'utf8');
  assert.match(js,/class="boiler-mode-row"/);assert.match(css,/\.boiler-mode-row,\.boiler-mode-add\{[^}]*aspect-ratio:1\/1/);
+ assert.match(js,/classList\.add\('boiler-mode-editing'\)/);assert.match(js,/classList\.remove\('boiler-mode-editing'\)/);assert.match(css,/\.boiler-plan-dialog\.boiler-mode-editing\{width:min\(480px/);
  assert.match(js,/type="time" value="\$\{time\}"/);assert.doesNotMatch(js,/function timeSelect/);assert.match(js,/class="boiler-week-columns"/);
  for(const heading of ['Günler','Açılış Saati','Kapanış Saati','Aktif\/Pasif'])assert.match(js,new RegExp(heading));
  assert.match(js,/day\.enabled=e\.target\.checked/);assert.match(js,/input\.disabled=!day\.enabled/);assert.match(js,/paintMaster\(\)/);
