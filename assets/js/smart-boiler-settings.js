@@ -102,3 +102,51 @@ if(card&&dialog&&updateDialog&&deviceDialog){
  onAuthStateChanged(getAuth(firebaseApp),user=>{card.disabled=user?.uid!==ADMIN_UID;unsubscribe?.();unsubscribe=null;if(user?.uid===ADMIN_UID)unsubscribe=onSnapshot(doc(db,'adminBoilerState','kazan-1'),snap=>{state=snap.data()||null;paint()},()=>{status.textContent='Cihaz durumu alınamadı.'})});
 }
 
+
+/* R653 — cihazdan bağımsız mod/program hazırlığı; aynı kayıt tüm cihazlarda okunur. */
+import{watchPlan,savePlan,planSnapshot,defaultPlan,validatePlan,DAY_NAMES,PREPARATION_NOTE}from'./smart-boiler-plan.js?v=6533';
+function installPlanSettings(){
+ if(!$('openBoilerModesDialog'))return;
+ let snapshot=planSnapshot();watchPlan(value=>{snapshot=value;for(const b of [$('openBoilerModesDialog'),$('openBoilerScheduleDialog')])b.disabled=!value.ready});
+ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function open(kind){
+  if(!snapshot.ready||getAuth(firebaseApp).currentUser?.uid!==ADMIN_UID)return;
+  const draft=structuredClone(snapshot.plan),revision=draft.revision;let busy=false,editing=null;
+  const modal=document.createElement('dialog');modal.className='settings-dialog smart-boiler-settings-dialog boiler-plan-dialog';modal.setAttribute('aria-labelledby','boilerPlanHeading');
+  modal.innerHTML=`<form><button class="dialog-close definition-close-button" type="button" data-close aria-label="Kapat">×</button><div class="dialog-heading"><div class="dialog-icon"><i class="fa-solid ${kind==='modes'?'fa-sliders':'fa-clock'}"></i></div><div><p class="dialog-kicker">Akıllı Kazan</p><div class="boiler-plan-title-row"><h2 id="boilerPlanHeading">${kind==='modes'?'Mod Ayarları':'Haftalık Çalışma Programı'}</h2>${kind==='schedule'?`<label class="boiler-switch" aria-label="Haftalık programı aç veya kapat"><input type="checkbox" data-enabled ${draft.schedule.enabled?'checked':''}><i aria-hidden="true"></i></label>`:''}</div></div></div><p class="tea-settings-copy">${PREPARATION_NOTE}</p><div data-content></div><p class="form-message" data-message role="status"></p><div class="dialog-actions"><button class="secondary-button" type="button" data-close>İptal</button><button class="primary-button" type="submit" data-save>Kaydet</button></div></form>`;
+  document.body.append(modal);const q=s=>modal.querySelector(s),content=q('[data-content]'),message=q('[data-message]');
+  function close(){if(!busy)modal.close()}
+  modal.querySelectorAll('[data-close]').forEach(b=>b.onclick=close);modal.addEventListener('cancel',e=>{if(busy)e.preventDefault()});modal.addEventListener('close',()=>modal.remove(),{once:true});
+  function modeList(){
+   editing=null;modal.classList.remove('boiler-mode-editing');
+   content.innerHTML=`<p class="tea-settings-copy">İlk üç mod hızlı ayarda görünür.</p><div class="boiler-mode-list">${draft.modes.map((m,i)=>`<section class="boiler-mode-row"><strong>${i+1}. ${esc(m.name)}</strong><small>${m.target} °C</small><small>Fark ${m.hysteresis} °C</small><div class="boiler-mode-actions"><button type="button" data-up="${i}" aria-label="${esc(m.name)} yukarı" ${i===0?'disabled':''}>↑</button><button type="button" data-down="${i}" aria-label="${esc(m.name)} aşağı" ${i===draft.modes.length-1?'disabled':''}>↓</button><button type="button" data-edit="${i}" aria-label="${esc(m.name)} düzenle"><i class="fa-solid fa-pen"></i></button><button type="button" data-delete="${i}" aria-label="${esc(m.name)} sil"><i class="fa-solid fa-trash"></i></button></div></section>`).join('')}<button class="boiler-mode-add" type="button" data-add ${draft.modes.length>=50?'disabled':''}><i class="fa-solid fa-plus"></i><span>Mod Ekle</span></button></div>${draft.modes.length?'':'<p class="tea-settings-copy boiler-mode-empty">Henüz mod eklenmedi.</p>'}`;
+   q('[data-add]').onclick=()=>editMode(-1);
+   for(const b of content.querySelectorAll('[data-up],[data-down]'))b.onclick=()=>{const i=Number(b.dataset.up??b.dataset.down),j=i+(b.hasAttribute('data-up')?-1:1);if(j<0||j>=draft.modes.length)return;[draft.modes[i],draft.modes[j]]=[draft.modes[j],draft.modes[i]];modeList()};
+   for(const b of content.querySelectorAll('[data-edit]'))b.onclick=()=>editMode(Number(b.dataset.edit));
+   for(const b of content.querySelectorAll('[data-delete]'))b.onclick=async()=>{const i=Number(b.dataset.delete);if(await systemConfirm({title:'Mod silinsin mi?',message:draft.modes[i].name,confirmText:'Sil',danger:true})){draft.modes.splice(i,1);modeList()}};
+  }
+  function editMode(index){
+   editing=index;modal.classList.add('boiler-mode-editing');const m=index<0?{name:'',target:90,hysteresis:3}:draft.modes[index];
+   content.innerHTML=`<section class="boiler-mode-editor"><label class="boiler-mode-name">Kısa Mod Adı<input data-name maxlength="24" autocomplete="off" value="${esc(m.name)}"></label><div class="boiler-mode-values">${[['target','Hedef Sıcaklık',m.target],['hysteresis','On/Off Farkı',m.hysteresis]].map(([key,label,value])=>`<div class="boiler-mode-value-card"><label>${label}</label><div class="boiler-plan-stepper"><button type="button" data-step="${key}" data-delta="-1" aria-label="${label} azalt">−</button><output data-value="${key}">${value} °C</output><button type="button" data-step="${key}" data-delta="1" aria-label="${label} artır">+</button></div></div>`).join('')}</div><div class="dialog-actions"><button type="button" class="secondary-button" data-cancel-edit>Vazgeç</button><button type="button" class="primary-button" data-apply-edit>Listeye Ekle</button></div></section>`;
+   const values={target:m.target,hysteresis:m.hysteresis};
+   for(const b of content.querySelectorAll('[data-step]'))b.onclick=()=>{const key=b.dataset.step,min=key==='target'?20:1,max=key==='target'?100:10;values[key]=Math.max(min,Math.min(max,values[key]+Number(b.dataset.delta)));content.querySelector(`[data-value="${key}"]`).textContent=`${values[key]} °C`};
+   q('[data-cancel-edit]').onclick=modeList;q('[data-apply-edit]').textContent=index<0?'Listeye Ekle':'Değişikliği Uygula';q('[data-apply-edit]').onclick=()=>{const mode={id:index<0?crypto.randomUUID():m.id,name:q('[data-name]').value.trim(),...values};try{validatePlan({...defaultPlan(),modes:[mode]});if(index<0)draft.modes.push(mode);else draft.modes[index]=mode;message.textContent='';modeList()}catch(e){message.textContent=e.message}};
+   q('[data-name]').focus();
+  }
+  function timeInput(index,key,time,enabled){return `<input type="time" value="${time}" data-day="${index}" data-time="${key}" aria-label="${DAY_NAMES[index]} ${key==='open'?'açılış':'kapanış'} saati" ${enabled?'':'disabled'}>`}
+  function schedule(){
+   content.innerHTML=`<div class="boiler-week-columns" aria-hidden="true"><span>Günler</span><span>Açılış Saati</span><span>Kapanış Saati</span><span>Aktif/Pasif</span></div><div class="boiler-week">${draft.schedule.days.map((day,i)=>`<section class="boiler-day" data-enabled="${day.enabled}"><strong>${DAY_NAMES[i]}</strong>${timeInput(i,'open',day.open,day.enabled)}${timeInput(i,'close',day.close,day.enabled)}<label class="boiler-switch" aria-label="${DAY_NAMES[i]} aktif veya pasif"><input type="checkbox" data-day-enabled="${i}" ${day.enabled?'checked':''}><i aria-hidden="true"></i></label></section>`).join('')}</div><p class="tea-settings-copy boiler-schedule-note">Türkiye saati. Kapanış açılıştan erkense ertesi gündür. Manuel seçim bir sonraki planlı olaya kadar geçerlidir.</p>`;
+   const paintDay=index=>{const day=draft.schedule.days[index],row=q(`.boiler-day [data-day-enabled="${index}"]`).closest('.boiler-day');row.dataset.enabled=String(day.enabled);row.querySelectorAll('[data-time]').forEach(input=>input.disabled=!day.enabled)};
+   const paintMaster=()=>content.querySelectorAll('[data-day-enabled]').forEach(input=>input.disabled=!draft.schedule.enabled);
+   q('[data-enabled]').onchange=e=>{draft.schedule.enabled=e.target.checked;draft.schedule.days.forEach((day,index)=>{day.enabled=e.target.checked;q(`[data-day-enabled="${index}"]`).checked=e.target.checked;paintDay(index)});paintMaster()};
+   content.querySelectorAll('[data-day-enabled]').forEach(b=>b.onchange=()=>{const index=Number(b.dataset.dayEnabled);draft.schedule.days[index].enabled=b.checked;paintDay(index)});
+   content.querySelectorAll('[data-time]').forEach(input=>input.onchange=()=>{const {day,time}=input.dataset;draft.schedule.days[Number(day)][time]=input.value});
+   paintMaster();
+  }
+  kind==='modes'?modeList():schedule();
+  q('form').onsubmit=async e=>{e.preventDefault();if(busy)return;if(editing!==null){message.textContent='Önce mod değişikliğini listeye uygulayın veya Vazgeç’e basın.';return}try{validatePlan(draft);busy=true;modal.querySelectorAll('button,input,select').forEach(el=>el.disabled=true);message.textContent='Kaydediliyor…';await savePlan(draft,revision);modal.close()}catch(e){message.textContent=e.message;busy=false;modal.querySelectorAll('button,input,select').forEach(el=>el.disabled=false)}};
+  q('form').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')e.preventDefault()});modal.showModal();
+ }
+ $('openBoilerModesDialog').onclick=()=>open('modes');$('openBoilerScheduleDialog').onclick=()=>open('schedule');
+}
+installPlanSettings();

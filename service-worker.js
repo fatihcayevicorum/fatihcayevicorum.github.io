@@ -20,9 +20,9 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r652-kalibrasyon-onbellek-aday",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r653-kazan-web-aday-5",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
-  "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/css/smart-boiler.css",
+  "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-plan.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/css/smart-boiler.css",
   "./assets/js/product-group-summary.js","./assets/css/product-group-summary.css",
   "./assets/js/product-pricing.js","./assets/js/current-account-pricing.js","./assets/js/current-account-pricing-store.js",
   "./assets/js/sales-mode.js","./assets/js/table-layout.js","./assets/js/theme.js","./assets/js/finance-account-compat.js","./assets/js/finance-real-accounts.js","./assets/js/payment-methods.js","./assets/js/payment-account-routing.js","./assets/css/theme.css",
@@ -81,7 +81,7 @@ self.addEventListener("fetch",event=>{
     return;
   }
   if(url.pathname.endsWith("/assets/js/system-ui.js")){
-    const latest=new URL(url);latest.searchParams.set("v","6482");
+    const latest=new URL(url);latest.searchParams.set("v","653");
     event.respondWith(caches.open(RUNTIME_CACHE).then(async cache=>{const cached=await cache.match(latest.href);if(cached)return cached;const response=await fetch(latest.href);if(response.ok)await cache.put(latest.href,response.clone());return response}).catch(()=>matchAppCache(request)));
     return;
   }
