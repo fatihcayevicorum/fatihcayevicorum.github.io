@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=8">
   <link rel="stylesheet" href="../assets/css/panel-scroll.css?v=2">
-  <link rel="stylesheet" href="style.css?v=511">
+  <link rel="stylesheet" href="style.css?v=659">
   <script type="module" src="../assets/js/connection-status.js?v=481"></script>
   <link rel="stylesheet" href="../assets/css/theme.css?v=548">
   <script src="../assets/js/theme.js?v=541"></script>
@@ -78,6 +78,39 @@
       <div class="section-note"><i class="fa-solid fa-circle-info"></i><span>Uygulama kapalıyken bildirimler cihazın sistem bildirim alanına gelir.</span></div>
     </section>
 
+    <section class="notification-section business-reminder-card boiler-notification-card" id="akilli-kazan-bildirimleri">
+      <div class="section-heading">
+        <span class="card-icon boiler-neon-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <div><p>YÖNETİCİLERE ÖZEL PUSH</p><h2>Akıllı Kazan Bildirimleri</h2><span>Kazan, bağlantı, sıcaklık ve güvenlik bildirimlerini bu cihaz için yönetin.</span></div>
+        <span class="live-badge" id="boilerNotificationBadge"><i></i> Kapalı</span>
+      </div>
+      <div class="tea-device-bar boiler-device-bar">
+        <div class="device-summary"><span><i class="fa-solid fa-mobile-screen-button"></i></span><div><small>Kazan bildirimi açık</small><strong id="boilerActiveDeviceCount">—</strong></div></div>
+        <div class="device-summary"><span><i class="fa-solid fa-fire-flame-curved"></i></span><div><small>Bu cihaz</small><strong id="boilerCurrentDeviceSummary">Kontrol ediliyor</strong></div></div>
+        <div class="device-status" id="boilerDeviceStatus" role="status"><i class="fa-solid fa-circle-info"></i><span>Cihaz durumu kontrol ediliyor.</span></div>
+        <div class="device-actions">
+          <button id="enableBoilerDevice" class="primary" type="button"><i class="fa-solid fa-bell"></i> Bu Cihazda Aç</button>
+          <button id="disableBoilerDevice" class="secondary" type="button"><i class="fa-solid fa-bell-slash"></i> Bu Cihazda Kapat</button>
+        </div>
+      </div>
+      <div class="business-reminder-grid boiler-preference-grid">
+        <label><input type="checkbox" data-boiler-pref="powerOn"><i class="boiler-pref-icon success fa-solid fa-power-off"></i><span><strong>Kazan açıldı</strong><small>Manuel veya uzaktan açılma ENDA tarafından doğrulandığında.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="powerOff"><i class="boiler-pref-icon success fa-solid fa-power-off"></i><span><strong>Kazan kapatıldı</strong><small>Kapatma işlemi ENDA tarafından doğrulandığında.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="startupTemperature"><i class="boiler-pref-icon success fa-solid fa-temperature-half"></i><span><strong>İlk çalışma sıcaklığı</strong><small>Enerji dönüşündeki ilk geçerli kazan sıcaklığı.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="schedulePower"><i class="boiler-pref-icon success fa-solid fa-clock"></i><span><strong>Haftalık programa göre açıldı</strong><small>Planlı komut ENDA tarafından doğrulandığında.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="targetReached"><i class="boiler-pref-icon success fa-solid fa-bullseye"></i><span><strong>Hedef sıcaklığa ulaştı</strong><small>03.00 işletme günü içinde bir defa.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="temperatureOvershoot"><i class="boiler-pref-icon warning fa-solid fa-triangle-exclamation"></i><span><strong>Hedef sıcaklık aşımı</strong><small>Hedef +2°C üzerinde 5 dakika kalırsa.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="espConnected"><i class="boiler-pref-icon success fa-solid fa-wifi"></i><span><strong>ESP32 bağlandı</strong><small>ESP32 yeniden çevrim içi olduğunda.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="espDisconnected"><i class="boiler-pref-icon critical fa-solid fa-triangle-exclamation"></i><span><strong>ESP32 bağlantısı kesildi</strong><small>Bir dakika boyunca veri alınamadığında.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="endaConnected"><i class="boiler-pref-icon success fa-solid fa-link"></i><span><strong>ENDA bağlandı</strong><small>ENDA haberleşmesi yeniden başladığında.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="endaDisconnected"><i class="boiler-pref-icon critical fa-solid fa-link-slash"></i><span><strong>ENDA bağlantısı kesildi</strong><small>ESP bağlıyken ENDA bir dakika cevap vermediğinde.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="endaErrors"><i class="boiler-pref-icon critical fa-solid fa-temperature-arrow-down"></i><span><strong>PT100 ve ENDA ölçüm hataları</strong><small>Firmware hata kodu sağladığında kopukluk, kısa devre ve ölçüm hataları.</small></span></label>
+        <label><input type="checkbox" data-boiler-pref="safetyAlerts"><i class="boiler-pref-icon critical fa-solid fa-shield-halved"></i><span><strong>Isıtma güvenlik uyarıları</strong><small>Çıkış durumu ile sıcaklık hareketi uyuşmadığında.</small></span></label>
+      </div>
+      <div class="business-reminder-actions"><span id="boilerPreferenceStatus"><i class="fa-solid fa-circle-info"></i> Tercihler bu yönetici cihazına özel kaydedilir.</span><button id="saveBoilerPreferences" class="primary" type="button"><i class="fa-solid fa-check"></i> Ayarları Kaydet</button></div>
+      <div class="section-note"><i class="fa-solid fa-mobile-screen"></i><span>Push bildirimleri uygulama kapalıyken de telefonun veya tabletin sistem bildirim alanına gelir.</span></div>
+    </section>
+
     <section class="notification-section business-reminder-card" id="taze-dem-gonderim-ayarlari">
       <div class="section-heading"><span class="card-icon"><i class="fa-solid fa-paper-plane"></i></span><div><p>TAZE DEM AYARLARI</p><h2>Taze Dem Gönderim Ayarları</h2><span>Müşteri ve esnafa giden yeni dem bildirimlerini buradan yönetin.</span></div></div>
       <div class="business-reminder-grid">
@@ -133,7 +166,7 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="script.js?v=511"></script>
+  <script type="module" src="script.js?v=659"></script>
   <script type="module" src="../assets/js/system-ui.js?v=651"></script>
 </body>
 </html>

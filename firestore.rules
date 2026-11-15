@@ -557,6 +557,17 @@ service cloud.firestore {
       allow read: if hasPanel('tea');
       allow write: if backupWritable() && (false);
     }
+    match /adminBoilerNotificationState/{device} {
+      allow read, write: if backupWritable() && (false);
+    }
+    match /adminBoilerEvents/{eventId} {
+      allow read: if isOwner();
+      allow write: if backupWritable() && (false);
+    }
+    match /adminBoilerActions/{actionId} {
+      allow read: if isOwner();
+      allow write: if backupWritable() && (false);
+    }
     match /adminBoilerFirmware/{version} {
       allow read: if isOwner();
       allow write: if backupWritable() && (false);
@@ -580,13 +591,13 @@ service cloud.firestore {
         && !(collection in ['adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminEmailReport', 'adminEmailVerification', 'adminEmailSendJobs', 'adminEmailDailyJobs', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState', 'adminBoilerPlans'])
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState', 'adminBoilerPlans', 'adminBoilerNotificationState', 'adminBoilerEvents', 'adminBoilerActions'])
         && collection != 'adminBoilerFirmware';
       allow write: if backupWritable() && (isOwner()
         && !(collection in ['adminEmailReport', 'adminEmailVerification', 'adminEmailSendJobs', 'adminEmailDailyJobs', 'adminAppSettings', 'adminOrders', 'adminSales', 'adminBackupControl', 'adminBackupJobs', 'adminBackupLeases', 'adminCashMovements', 'adminSavingsAccounts',
           'adminSavingsOperations', 'adminSavingsLedger', 'adminSavingsAudit',
           'adminSavingsNames', 'adminSavingsControl', 'adminSavingsSessions',
-          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState', 'adminBoilerPlans'])
+          'adminSavingsRates', 'adminOperationHistory', 'adminHistorySessions', 'adminHistoryAttempts', 'adminCancellationEvents', 'adminBoilerDevices', 'adminBoilerState', 'adminBoilerPlans', 'adminBoilerNotificationState', 'adminBoilerEvents', 'adminBoilerActions'])
         && collection != 'adminBoilerFirmware');
     }
   }

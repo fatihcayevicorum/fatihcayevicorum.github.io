@@ -7,8 +7,9 @@ import{adminPushSupported,currentAdminPushDeviceId,disableAdminTeaPushDevice,reg
 import{systemConfirm}from"../assets/js/system-confirm.js";
 import{addDoc,setDoc}from"../assets/js/offline-firestore.js";
 
-const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),sendCustomerBroadcast=httpsCallable(functions,"sendCustomerBroadcast"),resolveStaffProfileChange=httpsCallable(functions,"resolveStaffProfileChange"),byId=id=>document.getElementById(id);
-let user=null,busy=false,activeIds=new Set,unsubscribeDevices=null,profileRequests=[];
+const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1"),sendCustomerBroadcast=httpsCallable(functions,"sendCustomerBroadcast"),resolveStaffProfileChange=httpsCallable(functions,"resolveStaffProfileChange"),setBoilerNotificationPreferences=httpsCallable(functions,"setBoilerNotificationPreferences"),byId=id=>document.getElementById(id);
+let user=null,busy=false,activeIds=new Set,deviceData=new Map,unsubscribeDevices=null,profileRequests=[],boilerPreferencesDirty=false;
+const DEFAULT_BOILER_PREFS={powerOn:true,powerOff:true,startupTemperature:true,schedulePower:true,targetReached:true,espConnected:true,espDisconnected:true,endaConnected:true,endaDisconnected:true,endaErrors:true,temperatureOvershoot:true,safetyAlerts:true};
 
 onAuthStateChanged(auth,async current=>{
   if(!current||current.uid!==ADMIN_UID){location.replace("../yonetici-giris.html?next=bildirim-merkezi/");return}
@@ -19,7 +20,7 @@ onAuthStateChanged(auth,async current=>{
   watchProfileChangeRequests();
   await loadTeaBroadcastPreferences();
   await loadBusinessReminderPreferences();
-  await renderDeviceStatus()
+  await renderDeviceStatus();await renderBoilerDeviceStatus()
 });
 
 const DEFAULT_REMINDER_PREFS={purchaseOrders:true,stockCritical:true,stockEmpty:true,stockCount:true,paymentDue:true,paymentOverdue:true};
@@ -28,6 +29,13 @@ function renderTeaBroadcastStatus(serviceOpen){byId("teaBroadcastStatus").innerH
 byId("saveTeaBroadcastPreferences").onclick=async()=>{if(!user||busy)return;const button=byId("saveTeaBroadcastPreferences");button.disabled=true;try{await setDoc(doc(db,"adminTea","state"),{customerNotificationsEnabled:byId("customerTeaBroadcastInput").checked,merchantNotificationsEnabled:byId("merchantTeaBroadcastInput").checked,teaSettingsVersion:"r390",updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});toast("Taze Dem bildirim ayarları kaydedildi.")}catch(error){console.error(error);toast("Taze Dem bildirim ayarları kaydedilemedi.")}finally{button.disabled=false}};
 async function loadBusinessReminderPreferences(){try{const snap=await getDoc(doc(db,"adminReminderPreferences",user.uid)),prefs={...DEFAULT_REMINDER_PREFS,...(snap.data()||{})};document.querySelectorAll("[data-reminder-pref]").forEach(input=>input.checked=prefs[input.dataset.reminderPref]!==false)}catch(error){console.error(error);toast("Uygulama içi bildirim tercihleri alınamadı.")}}
 byId("saveBusinessReminderPreferences").onclick=async()=>{if(!user||busy)return;const button=byId("saveBusinessReminderPreferences"),prefs={};document.querySelectorAll("[data-reminder-pref]").forEach(input=>prefs[input.dataset.reminderPref]=input.checked);button.disabled=true;try{await setDoc(doc(db,"adminReminderPreferences",user.uid),{...prefs,uid:user.uid,updatedAtMs:Date.now(),updatedAt:serverTimestamp()},{merge:true});byId("businessReminderStatus").innerHTML='<i class="fa-solid fa-circle-check"></i> Tercihler kaydedildi.';toast("Uygulama içi bildirim tercihleri kaydedildi.")}catch(error){console.error(error);toast("Tercihler kaydedilemedi.")}finally{button.disabled=false}};
+
+function readBoilerPreferences(){const result={};document.querySelectorAll("[data-boiler-pref]").forEach(input=>result[input.dataset.boilerPref]=input.checked);return result}
+function paintBoilerPreferences(preferences){document.querySelectorAll("[data-boiler-pref]").forEach(input=>input.checked=preferences?.[input.dataset.boilerPref]!==false)}
+document.querySelectorAll("[data-boiler-pref]").forEach(input=>input.onchange=()=>{boilerPreferencesDirty=true;byId("boilerPreferenceStatus").classList.remove("is-saved");byId("boilerPreferenceStatus").innerHTML='<i class="fa-solid fa-circle-info"></i> Kaydedilmemiş değişiklik var.'});
+byId("enableBoilerDevice").onclick=async()=>{if(!user||busy)return;setBusy(true);setBoilerStatus("Akıllı Kazan bildirimleri hazırlanıyor…","working");try{const deviceId=await registerAdminTeaPushDevice(user.uid),preferences=readBoilerPreferences();await setBoilerNotificationPreferences({deviceId,enabled:true,preferences});boilerPreferencesDirty=false;toast("Akıllı Kazan bildirimleri bu cihazda açıldı.")}catch(error){console.error(error);toast(pushError(error))}finally{setBusy(false);await renderDeviceStatus();await renderBoilerDeviceStatus()}};
+byId("disableBoilerDevice").onclick=async()=>{if(!user||busy)return;const deviceId=currentAdminPushDeviceId();if(!deviceId)return;setBusy(true);try{await setBoilerNotificationPreferences({deviceId,enabled:false,preferences:readBoilerPreferences()});boilerPreferencesDirty=false;toast("Akıllı Kazan bildirimleri bu cihazda kapatıldı.")}catch(error){console.error(error);toast("Akıllı Kazan bildirimleri kapatılamadı.")}finally{setBusy(false);await renderBoilerDeviceStatus()}};
+byId("saveBoilerPreferences").onclick=async()=>{if(!user||busy)return;const deviceId=currentAdminPushDeviceId(),data=deviceData.get(deviceId);if(!deviceId||!data?.active||data.boilerNotificationsEnabled!==true)return toast("Önce bu cihazda Akıllı Kazan bildirimlerini açın.");setBusy(true);try{await setBoilerNotificationPreferences({deviceId,enabled:true,preferences:readBoilerPreferences()});boilerPreferencesDirty=false;byId("boilerPreferenceStatus").classList.add("is-saved");byId("boilerPreferenceStatus").innerHTML='<i class="fa-solid fa-circle-check"></i> Akıllı Kazan tercihleri kaydedildi.';toast("Akıllı Kazan bildirim tercihleri kaydedildi.")}catch(error){console.error(error);toast("Akıllı Kazan tercihleri kaydedilemedi.")}finally{setBusy(false)}};
 
 byId("logoutButton").onclick=async()=>{await signOut(auth);location.replace("../yonetici-giris.html")};
 byId("profileRequestList").onclick=async event=>{const button=event.target.closest("[data-profile-action]"),card=event.target.closest("[data-profile-request]");if(!button||!card||busy)return;const request=profileRequests.find(x=>x.id===card.dataset.profileRequest);if(!request)return;const approve=button.dataset.profileAction==="approve",confirmed=await systemConfirm({title:approve?"Personel bilgileri güncellensin mi?":"Talep reddedilsin mi?",message:approve?`${request.currentDisplayName||"Personel"} için istenen isim ve telefon bilgileri uygulanacak.${request.passwordChangeRequested?" Şifre değiştirme izni 24 saat açılacak.":""}`:"Personelin talebi uygulanmadan reddedilecek.",confirmText:approve?"Onayla ve Uygula":"Talebi Reddet",danger:!approve});if(!confirmed)return;button.disabled=true;try{await resolveStaffProfileChange({uid:request.uid,action:approve?"approve":"reject"});toast(approve?"Personel ayar talebi onaylandı.":"Personel ayar talebi reddedildi.")}catch(error){console.error(error);toast(callableMessage(error))}finally{button.disabled=false}};
@@ -51,7 +59,7 @@ byId("enableDevice").onclick=async()=>{
 byId("disableDevice").onclick=async()=>{
   if(!user||busy)return;
   setBusy(true);
-  try{const deviceId=await disableAdminTeaPushDevice(user.uid);if(deviceId)activeIds.delete(deviceId);setStatus("Bu cihazda yönetici bildirimleri kapalı.","off");toast("Bu cihazdaki yönetici bildirimleri kapatıldı.")}
+  try{const currentId=currentAdminPushDeviceId(),current=deviceData.get(currentId);if(currentId&&current?.boilerNotificationsEnabled===true)await setBoilerNotificationPreferences({deviceId:currentId,enabled:false,preferences:{...DEFAULT_BOILER_PREFS,...(current.boilerPreferences||{})}});const deviceId=await disableAdminTeaPushDevice(user.uid);if(deviceId)activeIds.delete(deviceId);setStatus("Bu cihazda yönetici bildirimleri kapalı.","off");toast("Bu cihazdaki yönetici bildirimleri kapatıldı.")}
   catch{toast("Bildirim kapatılamadı. İnternet bağlantısını kontrol edin.")}
   finally{setBusy(false);await renderDeviceStatus()}
 };
@@ -84,9 +92,9 @@ byId("merchantBroadcastForm").onsubmit=async event=>{
 function watchDevices(){
   unsubscribeDevices?.();
   unsubscribeDevices=onSnapshot(query(collection(db,"adminTeaPushDevices"),where("active","==",true)),snapshot=>{
-    activeIds=new Set(snapshot.docs.map(item=>item.id));
+    activeIds=new Set(snapshot.docs.map(item=>item.id));deviceData=new Map(snapshot.docs.map(item=>[item.id,{id:item.id,...item.data()}]));
     byId("activeDeviceCount").textContent=String(snapshot.size);
-    renderDeviceStatus()
+    renderDeviceStatus();renderBoilerDeviceStatus()
   },()=>{byId("activeDeviceCount").textContent="—";toast("Bildirim cihazları alınamadı.")})
 }
 
@@ -116,11 +124,21 @@ async function renderDeviceStatus(){
   else setStatus("Bu cihaz henüz yönetici bildirim cihazı olarak ayarlanmadı.","off")
 }
 
+async function renderBoilerDeviceStatus(){
+  const supported=await adminPushSupported().catch(()=>false),deviceId=currentAdminPushDeviceId(),data=deviceData.get(deviceId),active=Boolean(data?.active),enabled=active&&data?.boilerNotificationsEnabled===true,count=[...deviceData.values()].filter(item=>item.active&&item.boilerNotificationsEnabled===true).length;
+  byId("boilerActiveDeviceCount").textContent=String(count);byId("boilerCurrentDeviceSummary").textContent=enabled?"Açık":"Kapalı";byId("boilerCurrentDeviceSummary").className=enabled?"is-on":"is-off";byId("enableBoilerDevice").hidden=enabled;byId("disableBoilerDevice").hidden=!enabled;
+  const badge=byId("boilerNotificationBadge");badge.classList.toggle("is-off",!enabled);badge.innerHTML=`<i></i> ${enabled?"Canlı":"Kapalı"}`;
+  if(!boilerPreferencesDirty)paintBoilerPreferences({...DEFAULT_BOILER_PREFS,...(data?.boilerPreferences||{})});document.querySelectorAll("[data-boiler-pref]").forEach(input=>input.disabled=!enabled);byId("saveBoilerPreferences").disabled=!enabled||busy;
+  if(enabled)setBoilerStatus("Bu cihaz uygulama kapalıyken Akıllı Kazan push bildirimlerini alıyor.","on");else if(!supported)setBoilerStatus("Bu cihaz veya tarayıcı push bildirimlerini desteklemiyor.","off");else if(Notification.permission==="denied")setBoilerStatus("Bildirim izni cihaz ayarlarından engellenmiş.","off");else if(!active)setBoilerStatus("Önce bu cihazda yönetici bildirim izni açılacak.","off");else setBoilerStatus("Akıllı Kazan bildirimleri bu cihazda kapalı.","off")
+}
+function setBoilerStatus(message,type){const element=byId("boilerDeviceStatus");element.className=`device-status is-${type}`;element.innerHTML=`<i class="fa-solid ${type==="on"?"fa-circle-check":type==="working"?"fa-spinner fa-spin":"fa-circle-info"}"></i><span>${message}</span>`}
+function pushError(error){const code=String(error?.code||error?.message||"");return code.includes("permission-denied")?"Bildirim izni verilmedi. Cihaz ayarlarından izin verin.":code.includes("unsupported")?"Bu cihaz push bildirimlerini desteklemiyor.":"Akıllı Kazan bildirimleri açılamadı. İnternet bağlantısını kontrol edin."}
+
 function setStatus(message,type){
   const element=byId("deviceStatus");element.className=`device-status is-${type}`;
   element.innerHTML=`<i class="fa-solid ${type==="on"?"fa-circle-check":type==="working"?"fa-spinner fa-spin":"fa-circle-info"}"></i><span>${message}</span>`
 }
-function setBusy(value){busy=value;byId("enableDevice").disabled=value;byId("disableDevice").disabled=value}
+function setBusy(value){busy=value;byId("enableDevice").disabled=value;byId("disableDevice").disabled=value;byId("enableBoilerDevice").disabled=value;byId("disableBoilerDevice").disabled=value;byId("saveBoilerPreferences").disabled=value||byId("boilerCurrentDeviceSummary").textContent!=="Açık"}
 function toast(message){const element=byId("toast");element.textContent=message;element.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>element.classList.remove("show"),3200)}
 function tick(){const now=new Date;byId("currentTime").textContent=now.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});byId("currentDate").textContent=now.toLocaleDateString("tr-TR")}
 tick();setInterval(tick,1000);
