@@ -9,9 +9,20 @@ import{mountHysteresisEditor}from'./smart-boiler-live.js?v=654';
 /* R643 aday — Akıllı Kazan ayarları üç sade kare kartta; güncelleme ve cihaz işlemleri ayrı pencerelerde. */
 const $=id=>document.getElementById(id),card=$('smartBoilerSettingsCard'),dialog=$('smartBoilerSettingsDialog'),updateDialog=$('boilerUpdateDialog'),deviceDialog=$('boilerDeviceDialog');
 export function isOtaActive(ota,now=Date.now()){return ['pending','offered','downloading','installing'].includes(ota?.status)&&Number(ota?.expiresAtMs)>now}
+export function otaPanelView(ota,paired,version,confirmed,online,busy,now=Date.now()){
+ const active=isOtaActive(ota,now),working=['pending','offered','downloading','installing'].includes(ota?.status),expired=working&&!active;
+ const labels={pending:'Cihaz bekleniyor',offered:'Cihaza gönderildi',downloading:'İndiriliyor',installing:'Kuruluyor',failed:'Başarısız',success:'Tamamlandı',cancelled:'İptal edildi'};
+ const label=ota?.status?(expired?'Süresi doldu':labels[ota.status]||'Önceki kayıt'):'Bekleyen güncelleme yok';
+ const status=ota?.version?ota.version+' · '+label:label;
+ const blocked=busy?'İşlem yapılıyor.':!online?'İnternet bağlantısı yok.':!confirmed?'Güncel cihaz durumu doğrulanıyor.':!paired?'ESP32 eşleştirilmemiş.':active?'Devam eden güncelleme tamamlanmalı. Kilit bitişi: '+new Date(Number(ota.expiresAtMs)).toLocaleString('tr-TR'):!version?'Sunucudan bir sürüm seçin.':'';
+ const resultCurrent=Number(ota?.finishedAtMs)>0&&Number(ota.finishedAtMs)>=Number(ota.requestedAtMs||0);
+ const result=resultCurrent?'Sonuç: '+new Date(Number(ota.finishedAtMs)).toLocaleString('tr-TR')+(ota.error?' · '+ota.error:''):'';
+ const previous=expired?'Önceki güncelleme isteğinin süresi doldu.':result||(!active?'Henüz güncelleme sonucu yok':'');
+ return {active,status,result:[previous,expired&&result?result:'',blocked|| (expired?'Yeni sürüm gönderilebilir.':'')].filter(Boolean).join(' '),startDisabled:!!blocked,cancelDisabled:busy||!online||!confirmed||!paired||!active||!['pending','offered'].includes(ota?.status)};
+}
 if(card&&dialog&&updateDialog&&deviceDialog){
  const db=getFirestore(firebaseApp),functions=getFunctions(firebaseApp,'europe-west1'),storage=getStorage(firebaseApp);
- const status=$('boilerSettingsStatus'),firmwareSelect=$('boilerFirmwareSelect'),rangeMin=$('boilerTargetMin'),rangeMax=$('boilerTargetMax'),rangeCancel=$('cancelBoilerTargetRange'),rangeSave=$('saveBoilerTargetRange');let state=null,downloadUrl=null,unsubscribe=null,rangeDirty=false,rangeSaving=false;
+ const status=$('boilerSettingsStatus'),firmwareSelect=$('boilerFirmwareSelect'),rangeMin=$('boilerTargetMin'),rangeMax=$('boilerTargetMax'),rangeCancel=$('cancelBoilerTargetRange'),rangeSave=$('saveBoilerTargetRange');let state=null,downloadUrl=null,unsubscribe=null,rangeDirty=false,rangeSaving=false,otaConfirmed=false,otaBusy=false;
  const calValue=$('boilerCalibrationValue'),calDisplay=$('boilerCalibrationDisplay'),calDown=$('boilerCalibrationDown'),calUp=$('boilerCalibrationUp'),calCancel=$('cancelBoilerCalibration'),calSave=$('saveBoilerCalibration'),nameInput=$('boilerDeviceName'),nameSave=$('saveBoilerDeviceName');let calDirty=false,calSaving=false,calNotice='',nameDirty=false,nameSaving=false;
  const DEVICE_NAME=/^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,31}$/u;
  const text=value=>String(value??'').replace(/[<>]/g,'');
@@ -69,8 +80,9 @@ if(card&&dialog&&updateDialog&&deviceDialog){
   const fresh=state&&Date.now()-Number(state.lastSeenAtMs||0)<=45000;
   $('boilerDeviceId').textContent=state?.deviceId||'kazan-1';$('boilerConnectionState').textContent=state?.paired?(fresh?'Bağlı ve canlı':'Bağlı, cihaz bekleniyor'):'Bağlı değil';
   $('boilerFirmwareCurrent').textContent=state?.firmwareVersion||'—';$('boilerLastSeen').textContent=time(state?.lastSeenAtMs);
-  const ota=state?.ota||{},otaActive=isOtaActive(ota);$('boilerOtaStatus').textContent=otaActive?`${ota.version||''} · ${ota.status}`:ota.status?`${ota.version||''} · Önceki kayıt`:'Bekleyen güncelleme yok';$('boilerOtaResult').textContent=ota.finishedAtMs?`Sonuç: ${time(ota.finishedAtMs)}${ota.error?' · '+ota.error:''}`:ota.status&&!otaActive?'Önceki güncelleme isteğinin süresi doldu. Yeni sürüm gönderilebilir.':'Henüz Güncelleme Sonucu Yok';
-  $('startBoilerUpdate').disabled=!state?.paired||!firmwareSelect.value||otaActive;$('cancelBoilerUpdate').disabled=!otaActive||!['pending','offered'].includes(ota.status);
+  const ota=otaPanelView(state?.ota,!!state?.paired,firmwareSelect.value,otaConfirmed,navigator.onLine,otaBusy);
+  $('boilerOtaStatus').textContent=ota.status;$('boilerOtaResult').textContent=ota.result;
+  $('startBoilerUpdate').disabled=ota.startDisabled;$('cancelBoilerUpdate').disabled=ota.cancelDisabled;
   const saved=range();if(!rangeDirty){rangeMin.value=saved.min;rangeMax.value=saved.max}$('boilerTargetRangeStatus').textContent=rangeDirty?'':`Geçerli Aralık: ${saved.min}–${saved.max}°C`;rangeCancel.disabled=rangeSaving||!rangeDirty;rangeSave.disabled=rangeSaving||!rangeDirty;
   hysteresisEditor?.refreshHysteresis?.();
   paintTarget();paintCalibration();paintName();
@@ -83,8 +95,16 @@ if(card&&dialog&&updateDialog&&deviceDialog){
   message('İşleniyor…',false,'boilerDeviceMessage');try{const {data}=await httpsCallable(functions,'configureBoilerDevice')({action});if(action==='pair'){const content='#pragma once\n// Cihaza özel gizli dosya. GitHub’a veya paylaşılan ZIP’e eklemeyin.\n#define BOILER_CLOUD_URL '+JSON.stringify(data.endpoint)+'\n#define BOILER_DEVICE_TOKEN '+JSON.stringify(data.token)+'\n';if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=URL.createObjectURL(new Blob([content],{type:'text/plain;charset=utf-8'}));const link=document.createElement('a');link.href=downloadUrl;link.download='boiler_cloud.h';link.click();message('Bağlantı dosyası indirildi. ESP32’ye yüklenene kadar bu dosyayı saklayın.',false,'boilerDeviceMessage')}else message('ESP32 bağlantısı kesildi.',false,'boilerDeviceMessage');}catch(e){message(e.code?.includes('permission-denied')?'Bu işlem yalnızca ana yöneticiye açıktır.':'İşlem tamamlanamadı.',true,'boilerDeviceMessage')}}
  async function upload(){const file=$('boilerFirmwareFile').files[0],version=$('boilerFirmwareVersion').value.trim();if(!file||!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.-]+)?$/i.test(version)){message('Geçerli sürüm ve .bin firmware dosyası seçin.',true,'boilerUpdateMessage');return}if(file.size<65536||file.size>4*1024*1024){message('Firmware boyutu 64 KB–4 MB arasında olmalı.',true,'boilerUpdateMessage');return}
   $('uploadBoilerFirmware').disabled=true;message('Dosya doğrulanıyor ve yükleniyor…',false,'boilerUpdateMessage');try{const sha=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer()))].map(x=>x.toString(16).padStart(2,'0')).join('');await uploadBytes(ref(storage,`boiler-firmware/releases/${version}.bin`),file,{contentType:'application/octet-stream',customMetadata:{sha256:sha}});await httpsCallable(functions,'publishBoilerFirmware')({version,sha256:sha,size:file.size});message(`${version} firmware sürümü hazırlandı.`,false,'boilerUpdateMessage');await loadReleases();firmwareSelect.value=version;paint()}catch(e){message(e.code?.includes('permission-denied')?'Firmware işlemi yalnızca ana yöneticiye açıktır.':'Firmware yüklenemedi veya bütünlük kontrolü başarısız.',true,'boilerUpdateMessage')}finally{$('uploadBoilerFirmware').disabled=false}}
- async function start(){const version=firmwareSelect.value;if(!version)return;const accepted=await systemConfirm({title:'ESP32 güncellensin mi?',message:`${version} sürümü cihaza gönderilecek. ESP32 çevrimdışıysa istek cihaz bağlanana kadar bekler.`,confirmText:'Güncellemeyi Başlat'});if(!accepted)return;message('Güncelleme isteği oluşturuluyor…',false,'boilerUpdateMessage');try{await httpsCallable(functions,'startBoilerFirmwareUpdate')({version});message('Güncelleme isteği hazır. Cihaz bağlandığında otomatik alacak.',false,'boilerUpdateMessage')}catch(e){message(e.code?.includes('failed-precondition')?e.message:'Güncelleme başlatılamadı.',true,'boilerUpdateMessage')}}
- async function cancel(){try{await httpsCallable(functions,'cancelBoilerFirmwareUpdate')({});message('Bekleyen güncelleme iptal edildi.',false,'boilerUpdateMessage')}catch{message('Bekleyen güncelleme iptal edilemedi.',true,'boilerUpdateMessage')}}
+ async function start(){const version=firmwareSelect.value;if(otaPanelView(state?.ota,!!state?.paired,version,otaConfirmed,navigator.onLine,otaBusy).startDisabled)return;
+  otaBusy=true;paint();
+  try{const accepted=await systemConfirm({title:'ESP32 güncellensin mi?',message:`${version} sürümü cihaza gönderilecek. ESP32 çevrimdışıysa istek cihaz bağlanana kadar bekler.`,confirmText:'Güncellemeyi Başlat'});if(!accepted)return;
+   if(otaPanelView(state?.ota,!!state?.paired,version,otaConfirmed,navigator.onLine,false).startDisabled){message('Cihaz durumu değişti. Güncelleme isteği gönderilmedi.',true,'boilerUpdateMessage');return}
+   message('Güncelleme isteği oluşturuluyor…',false,'boilerUpdateMessage');
+   await httpsCallable(functions,'startBoilerFirmwareUpdate')({version});
+   message('Güncelleme isteği hazır. Cihaz bağlandığında otomatik alacak.',false,'boilerUpdateMessage');
+  }catch(e){message(e.code?.includes('aborted')||e.code?.includes('failed-precondition')?e.message:'Güncelleme başlatılamadı.',true,'boilerUpdateMessage')}finally{otaBusy=false;paint()}
+ }
+ async function cancel(){if(otaPanelView(state?.ota,!!state?.paired,firmwareSelect.value,otaConfirmed,navigator.onLine,otaBusy).cancelDisabled)return;otaBusy=true;paint();try{await httpsCallable(functions,'cancelBoilerFirmwareUpdate')({});message('Bekleyen güncelleme iptal edildi.',false,'boilerUpdateMessage')}catch(e){message(e.code?.includes('failed-precondition')?e.message:'Bekleyen güncelleme iptal edilemedi.',true,'boilerUpdateMessage')}finally{otaBusy=false;paint()}}
 
  card.onclick=()=>{rangeDirty=false;calDirty=false;calNotice='';dialog.showModal();paint()};
  $('openBoilerUpdateDialog').onclick=()=>{message('',false,'boilerUpdateMessage');updateDialog.showModal();loadReleases().catch(()=>message('Firmware Listesi Alınamadı.',true,'boilerUpdateMessage'));paint()};
@@ -100,7 +120,7 @@ if(card&&dialog&&updateDialog&&deviceDialog){
  for(const target of [dialog,updateDialog,deviceDialog])target.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.tagName==='INPUT')event.preventDefault()});
  nameInput.addEventListener('keydown',event=>{if(event.key==='Enter'&&!nameSave.disabled)saveName()});
  setInterval(()=>{if(dialog.open||updateDialog.open||deviceDialog.open)paint()},5000);
- onAuthStateChanged(getAuth(firebaseApp),user=>{card.disabled=user?.uid!==ADMIN_UID;unsubscribe?.();unsubscribe=null;if(user?.uid===ADMIN_UID)unsubscribe=onSnapshot(doc(db,'adminBoilerState','kazan-1'),snap=>{state=snap.data()||null;paint()},()=>{status.textContent='Cihaz durumu alınamadı.'})});
+ onAuthStateChanged(getAuth(firebaseApp),user=>{card.disabled=user?.uid!==ADMIN_UID;unsubscribe?.();unsubscribe=null;otaConfirmed=false;if(user?.uid===ADMIN_UID)unsubscribe=onSnapshot(doc(db,'adminBoilerState','kazan-1'),{includeMetadataChanges:true},snap=>{state=snap.data()||null;otaConfirmed=!snap.metadata.fromCache;paint()},()=>{otaConfirmed=false;status.textContent='Cihaz durumu alınamadı.';paint()});else paint()});
 }
 
 
