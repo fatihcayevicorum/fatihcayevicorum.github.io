@@ -129,7 +129,7 @@ test('boiler settings page: header buttons, three side-by-side cards, firmware c
  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(ids.length,new Set(ids).size,'yinelenen kimlik var');
  for(const m of js.matchAll(/\$\('([A-Za-z]+)'\)/g))assert.ok(ids.includes(m[1]),`JS'in beklediği kimlik sayfada yok: ${m[1]}`);
  assert.match(js,/setBoilerCalibration/);assert.match(js,/renameBoilerDevice/);assert.match(index,/exports\.setBoilerCalibration=/);assert.match(index,/exports\.renameBoilerDevice=/);
- assert.match(html,/smart-boiler-settings\.js\?v=655/);assert.match(worker,/fatih-cay-evi-r655-ota-sure-asimi-fix/);
+ assert.match(html,/smart-boiler-settings\.js\?v=655/);assert.match(worker,/fatih-cay-evi-r656-kazan-durum-mesaji/);
  assert.match(js,/key==='Enter'&&event\.target\.tagName==='INPUT'/);
 });
 test('boiler OTA: expired device reports do not keep the update button locked',()=>{
@@ -152,6 +152,8 @@ test('boiler quick settings: centered three-card layout uses the simple editor a
  assert.match(shell,/class="boiler-quick-mode-area"><h3>Çalışma Modu<\/h3><div data-quick-modes>/);assert.match(shell,/class="boiler-quick-footer"/);assert.match(shell,/data-target-actions/);
  assert.match(live,/actionsHost\.append\(root\.querySelector\('\.boiler-actions'\)\)/);assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);assert.match(css,/\[data-target-actions\] \.boiler-actions/);
  assert.match(css,/boiler-quick-editor \.boiler-target-stepper\{position:absolute;inset:42px 10px 28px/);assert.match(css,/grid-template-columns:repeat\(auto-fit,minmax\(140px,220px\)\)/);assert.match(css,/\[data-quick-modes\] button\{width:100%;min-width:0;height:64px/);
+ assert.match(shell,/controlState\(\)===false\)return\["Kazan kapalı"/);assert.match(shell,/state===desired\)\{note\.textContent=''/);assert.match(shell,/else note\.textContent=''/);
+ assert.match(css,/\[data-cancel\]:disabled\{opacity:\.72;color:/);
 });
 test('boiler plan editor: square mode cards and compact weekly table keep one HH:mm field per time',()=>{
  const base=path.join(__dirname,'../..'),js=fs.readFileSync(path.join(base,'assets/js/smart-boiler-settings.js'),'utf8'),css=fs.readFileSync(path.join(base,'tanimlamalar/style.css'),'utf8');
