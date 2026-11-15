@@ -12,7 +12,7 @@ function buildBoilerSchedule({db,executionEnabled=false,now=Date.now}){const pla
    if(old.controlEnabled===pending.enabled){tx.set(state,{...old,schedulePending:null,lastScheduleEventId:pending.id,lastScheduleEventAtMs:pending.eventAtMs});return{status:'already-set',id:pending.id}}
    const active=old.powerCommand&&['pending','dispatched'].includes(old.powerCommand.status)&&old.powerCommand.expiresAtMs>at;
    if(active){tx.set(state,{...old,schedulePending:pending});return{status:'waiting-command',id:pending.id}}
-   const powerCommand={id:pending.id,enabled:pending.enabled,expected:old.controlEnabled,source:'schedule',bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
+   const powerCommand={id:pending.id,enabled:pending.enabled,expected:old.controlEnabled,source:'schedule',createdBy:'system',bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
    tx.set(state,{...old,schedulePending:pending,powerCommand});return{status:'queued',id:pending.id,enabled:pending.enabled};
   })}
  return{run};

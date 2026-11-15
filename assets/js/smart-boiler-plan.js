@@ -54,6 +54,7 @@ export async function applyMode(mode,read){
  if(!state.hysteresis?.onOff||!Number.isInteger(state.hysteresis.value)||!state.targetFresh)throw Error('Mod için güncel hedef ve ON/OFF farkı gerekiyor.');
  if(state.hysteresis.value!==intent.hysteresis){const id=randomId();await httpsCallable(functions,'setBoilerHysteresis')({id,value:intent.hysteresis,expected:state.hysteresis.value,sentAtMs:Date.now()});await waitUntil(read,v=>v.hysteresis?.value===intent.hysteresis&&!v.hysteresisWaiting)}
  const current=read();if(Math.round(current.target)!==intent.target){const id=randomId();await httpsCallable(functions,'setBoilerTarget')({id,target:intent.target,expected:current.target,sentAtMs:Date.now()});await waitUntil(read,v=>Math.round(v.target)===intent.target&&!v.waiting)}
+ await httpsCallable(functions,'recordBoilerModeSelection')({id:mode.id,name:mode.name,target:mode.target,hysteresis:mode.hysteresis});
  return intent;
 }
 let plan=defaultPlan(),ready=false,error='',started=false,stop=null,epoch=0;const listeners=new Set();

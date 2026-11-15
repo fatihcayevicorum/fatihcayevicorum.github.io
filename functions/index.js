@@ -149,6 +149,7 @@ const ADMIN_TEA_EVENT_COLLECTION="adminTeaNotificationEvents";
 const CUSTOMER_PUSH_DEVICE_COLLECTION="customerPushDevices";
 const MERCHANT_PUSH_DEVICE_COLLECTION="merchantPushDevices";
 const ADMIN_IN_APP_NOTIFICATION_COLLECTION="adminInAppNotifications";
+const boilerNotificationModule=require('./smart-boiler-notifications');
 const SITE_URL="https://fatihcayevi.com.tr";
 const TEA_BREWING_MS=20*60*1000;
 const TEA_FRESHNESS_MS=60*60*1000;
@@ -215,6 +216,31 @@ async function sendAdminTeaPush(message){
   }
   return result
 }
+
+async function sendAdminBoilerPush(message){
+  const snap=await db.collection(ADMIN_TEA_DEVICE_COLLECTION).where("active","==",true).get(),unique=new Map();
+  snap.docs.forEach(item=>{const data=item.data()||{},preferences=data.boilerPreferences||{};if(data.boilerNotificationsEnabled===true&&preferences[message.preference]!==false&&typeof data.token==="string"&&data.token.length>20)unique.set(data.token,item)});
+  const entries=[...unique.entries()],result={deviceCount:entries.length,successCount:0,failureCount:0};
+  for(let offset=0;offset<entries.length;offset+=500){
+    const part=entries.slice(offset,offset+500),response=await getMessaging().sendEachForMulticast({
+      tokens:part.map(([token])=>token),
+      data:{title:String(message.title||"Akıllı Kazan"),body:String(message.body||""),type:`admin-boiler-${message.type}`,tag:`admin-boiler-${message.id}`,severity:String(message.severity||"info"),link:`${SITE_URL}/akilli-kazan/`},
+      webpush:{headers:{Urgency:message.severity==="critical"?"high":"normal",TTL:"600"},fcmOptions:{link:`${SITE_URL}/akilli-kazan/`}}
+    });
+    result.successCount+=response.successCount;result.failureCount+=response.failureCount;
+    const invalid=[];response.responses.forEach((entry,index)=>{const code=entry.error?.code||"";if(!entry.success&&(code.includes("registration-token-not-registered")||code.includes("invalid-registration-token")))invalid.push(part[index][1].ref.delete())});await Promise.allSettled(invalid)
+  }
+  return result
+}
+
+exports.setBoilerNotificationPreferences=onCall({region:"europe-west1",cors:true},async request=>{
+  requireOwner(request);const deviceId=String(request.data?.deviceId||""),enabled=request.data?.enabled===true,input=request.data?.preferences||{};
+  if(!/^[a-f0-9]{64}$/.test(deviceId))throw new HttpsError("invalid-argument","Bildirim cihazı geçersiz.");
+  const preferences={};for(const key of Object.keys(boilerNotificationModule.DEFAULT_PREFERENCES)){if(typeof input[key]!=="boolean")throw new HttpsError("invalid-argument","Akıllı Kazan bildirim tercihi geçersiz.");preferences[key]=input[key]}
+  const ref=db.doc(`${ADMIN_TEA_DEVICE_COLLECTION}/${deviceId}`),snap=await ref.get();if(!snap.exists||snap.data()?.uid!==request.auth.uid||snap.data()?.active!==true)throw new HttpsError("failed-precondition","Önce bu cihazda yönetici bildirimlerini açın.");
+  const before={enabled:snap.data()?.boilerNotificationsEnabled===true,preferences:snap.data()?.boilerPreferences||{}},at=Date.now();await ref.set({boilerNotificationsEnabled:enabled,boilerPreferences:preferences,boilerUpdatedAtMs:at,boilerUpdatedBy:request.auth.uid,updatedAtMs:at,updatedAt:FieldValue.serverTimestamp()},{merge:true});
+  const actionId=crypto.createHash("sha256").update(`boiler-push:${deviceId}:${at}`).digest("hex");await db.doc(`adminBoilerActions/${actionId}`).set({title:`Bu cihazda Akıllı Kazan bildirimleri ${enabled?"açıldı":"kapatıldı"}`,actionType:"notification-preferences",beforeValue:before,afterValue:{enabled,preferences},createdBy:request.auth.uid,createdAtMs:at,createdAt:FieldValue.serverTimestamp()});return{enabled,preferences}
+});
 
 async function sendAndroidWidgetRefresh(){
   const documents=(await activeAdminTeaDevices()).filter(item=>item.data().client==="android-widget"),unique=[...new Set(documents.map(item=>item.data().token))];
@@ -636,9 +662,33 @@ exports.downloadBoilerFirmware=require('firebase-functions/v2/https').onRequest(
 const boilerSchedule=require('./smart-boiler-schedule').buildBoilerSchedule({db,executionEnabled:true});
 exports.runBoilerWeeklySchedule=firebaseOnSchedule({schedule:'every 1 minutes',region:'europe-west1',timeZone:'Europe/Istanbul',timeoutSeconds:30,maxInstances:1,retryCount:1},boilerSchedule.run);
 
+// R659 adayı: Taze Dem akışına dokunmadan, yönetici cihaz tercihlerine göre
+// Akıllı Kazan olaylarını kalıcı kaydeder ve uygulama kapalıyken push gönderir.
+const boilerNotifications=boilerNotificationModule.buildBoilerNotifications({db,FieldValue,sendPush:sendAdminBoilerPush});
+exports.runBoilerNotificationMonitor=firebaseOnSchedule({schedule:'every 1 minutes',region:'europe-west1',timeZone:'Europe/Istanbul',timeoutSeconds:45,maxInstances:1,retryCount:1},boilerNotifications.run);
+
+exports.recordBoilerModeSelection=onCall({region:'europe-west1',cors:true},async request=>{
+  requireOwner(request);const data=request.data||{},id=String(data.id||''),name=String(data.name||'').trim();
+  if(!/^[a-zA-Z0-9_-]{1,64}$/.test(id)||!name||name.length>24||!Number.isInteger(data.target)||data.target<20||data.target>100||!Number.isInteger(data.hysteresis)||data.hysteresis<1||data.hysteresis>10)throw new HttpsError('invalid-argument','Kazan modu geçersiz.');
+  const actionId=crypto.createHash('sha256').update(`boiler-mode:${request.auth.uid}:${id}:${Date.now()}`).digest('hex');
+  await db.doc(`adminBoilerActions/${actionId}`).set({title:`${name} çalışma modu seçildi`,actionType:'mode-select',modeId:id,modeName:name,target:data.target,hysteresis:data.hysteresis,createdBy:request.auth.uid,createdAtMs:Date.now(),createdAt:FieldValue.serverTimestamp()});return{recorded:true}
+});
+
+async function recordBoilerStateActions(before,after){
+  const rows=[];
+  for(const [key,type,label,value] of [['command','target','Hedef sıcaklık',x=>`${x.target}°C`],['hysteresisCommand','hysteresis','ON/OFF farkı',x=>`${x.value}°C`],['powerCommand','power','Kazan kontrolü',x=>x.enabled?'açıldı':'kapatıldı'],['calibrationCommand','calibration','Sıcaklık kalibrasyonu',x=>`${x.valueC}°C`]]){
+    const old=before?.[key],next=after?.[key];if(!next?.id||next.id===old?.id)continue;rows.push({id:next.id,data:{title:`${label} ${value(next)}`,actionType:type,source:next.source||'manual',beforeValue:next.expected??null,afterValue:key==='command'?next.target:key==='hysteresisCommand'?next.value:key==='powerCommand'?next.enabled:next.valueC,createdBy:next.createdBy||'system',createdAtMs:Number(next.createdAtMs)||Date.now(),createdAt:FieldValue.serverTimestamp()}})
+  }
+  if(JSON.stringify(before?.targetRange||null)!==JSON.stringify(after?.targetRange||null)&&after?.targetRange?.updatedAtMs)rows.push({id:`range-${after.targetRange.updatedAtMs}`,data:{title:`Hedef sıcaklık aralığı ${after.targetRange.min}–${after.targetRange.max}°C oldu`,actionType:'target-range',beforeValue:before?.targetRange||null,afterValue:after.targetRange,createdBy:after.targetRange.updatedBy||'system',createdAtMs:after.targetRange.updatedAtMs,createdAt:FieldValue.serverTimestamp()}});
+  if(before?.deviceName!==after?.deviceName&&after?.deviceNameUpdatedAtMs)rows.push({id:`name-${after.deviceNameUpdatedAtMs}`,data:{title:`Kazan cihaz adı ${after.deviceName} oldu`,actionType:'device-name',beforeValue:before?.deviceName||'',afterValue:after.deviceName,createdBy:after.deviceNameUpdatedBy||'system',createdAtMs:after.deviceNameUpdatedAtMs,createdAt:FieldValue.serverTimestamp()}});
+  if(!rows.length)return;const batch=db.batch();rows.forEach(row=>batch.set(db.doc(`adminBoilerActions/${row.id}`),row.data,{merge:false}));await batch.commit()
+}
+
 // R621: Kazan telemetrisi değiştiğinde Android widget'ını en fazla 5 saniyede bir yenile.
 exports.refreshAndroidWidgetOnBoilerState=onDocumentUpdated({document:'adminBoilerState/kazan-1',region:'europe-west1'},async event=>{
+  const before=event.data?.before?.data()||{};
   const after=event.data?.after?.data()||{};
+  await recordBoilerStateActions(before,after);
   if(after.paired!==true)return null;
   const now=Date.now(),ref=db.doc('adminWidgetRefreshControl/boiler');
   const claimed=await db.runTransaction(async tx=>{

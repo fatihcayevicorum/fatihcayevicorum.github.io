@@ -8,7 +8,7 @@ const css=document.createElement("link");css.rel="stylesheet";css.href=new URL("
 function temperature(c){return `${Math.round(c)}°C`}
 function controlState(){return planModule?.powerState(liveInfo)??null}
 function displayPhase(){return controlState()===false?'off':liveInfo.phase}
-function startLive(){if(liveStarted)return;liveStarted=true;import('./smart-boiler-plan.js?v=654').then(module=>{planModule=module;module.watchPlan(info=>{planInfo=info;render()})}).catch(()=>{});import("./smart-boiler-live.js?v=656").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
+function startLive(){if(liveStarted)return;liveStarted=true;import('./smart-boiler-plan.js?v=659').then(module=>{planModule=module;module.watchPlan(info=>{planInfo=info;render()})}).catch(()=>{});import("./smart-boiler-live.js?v=656").then(module=>{liveModule=module;module.startLive(info=>{liveInfo=info;render()});mountEditors();}).catch(()=>{liveInfo.status="Canlı sıcaklık bağlantısı açılamadı.";render()})}
 function mountEditors(){if(!liveModule)return;for(const root of [dialog,targetDialog]){const editor=root?.querySelector("[data-target-editor]");if(editor&&!editor.dataset.mounted){editor.dataset.mounted="true";liveModule.mountTargetEditor(editor,{simple:root===dialog,actionsHost:root===dialog?root.querySelector('[data-target-actions]'):null,onConfirmed:root===targetDialog?()=>targetDialog.close():null,onCancel:root===targetDialog?()=>targetDialog.close():null});if(root===targetDialog){const save=editor.querySelector("[data-save]");if(save)save.textContent="Kaydet"}}}}
 function heaterLabel(){
  if(!liveInfo.fresh)return["Bağlantı yok","Güncel veri alınamadı"];

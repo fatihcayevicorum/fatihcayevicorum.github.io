@@ -5,11 +5,12 @@ const DEVICE_NAME=/^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,31}$/u;
 const hash=v=>crypto.createHash('sha256').update(v).digest('hex');
 function problem(status,message){const e=new Error(message);e.status=status;throw e;}
 function parseSample(b,now){
- if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','firmwareVersion','targetTemperatureC','targetAgeMs','control','bootId','result','hysteresis','hysteresisResult','heaterOutputKnown','heaterOn','ota','calibration','calibrationResult','power','powerResult'].includes(k)))problem(400,'Geçersiz ölçüm.');
+ if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['deviceId','sentAtMs','measuredAgeMs','temperatureC','endaConnected','endaErrorCode','firmwareVersion','targetTemperatureC','targetAgeMs','control','bootId','result','hysteresis','hysteresisResult','heaterOutputKnown','heaterOn','ota','calibration','calibrationResult','power','powerResult'].includes(k)))problem(400,'Geçersiz ölçüm.');
  if(b.deviceId!==DEVICE||!Number.isSafeInteger(b.sentAtMs)||Math.abs(now-b.sentAtMs)>30000)problem(400,'Cihaz veya saat geçersiz.');
  if(typeof b.endaConnected!=='boolean'||typeof b.firmwareVersion!=='string'||!/^[\w .-]{1,48}$/.test(b.firmwareVersion))problem(400,'Geçersiz durum.');
  if(b.endaConnected){if(!Number.isFinite(b.temperatureC)||b.temperatureC< -50||b.temperatureC>200||!Number.isSafeInteger(b.measuredAgeMs)||b.measuredAgeMs<0||b.measuredAgeMs>10000)problem(400,'Ölçüm geçersiz veya eski.');}
  else if(b.temperatureC!==null||b.measuredAgeMs!==null)problem(400,'Bağlantısız cihaz ölçüm gönderemez.');
+ const endaErrorCode=b.endaErrorCode==null?0:Number(b.endaErrorCode);if(!Number.isInteger(endaErrorCode)||endaErrorCode<0||endaErrorCode>5||(!b.endaConnected&&endaErrorCode!==0))problem(400,'ENDA hata kodu geçersiz.');
  const hasTarget=b.targetTemperatureC!=null;
  if(hasTarget&&(!b.endaConnected||!Number.isFinite(b.targetTemperatureC)||b.targetTemperatureC< -50||b.targetTemperatureC>200||!Number.isSafeInteger(b.targetAgeMs)||b.targetAgeMs<0||b.targetAgeMs>10000))problem(400,'Hedef geçersiz veya eski.');
  if(!hasTarget&&b.targetAgeMs!=null)problem(400,'Hedef zamanı geçersiz.');
@@ -30,7 +31,7 @@ function parseSample(b,now){
  const heaterOutputKnown=b.heaterOutputKnown===true,heaterOn=heaterOutputKnown&&typeof b.heaterOn==='boolean'?b.heaterOn:null;
  if((b.heaterOutputKnown!=null&&typeof b.heaterOutputKnown!=='boolean')||(heaterOutputKnown&&typeof b.heaterOn!=='boolean')||(!heaterOutputKnown&&b.heaterOn!=null))problem(400,'Isıtma çıkışı geçersiz.');
  let otaReport=null;if(b.ota!=null){const o=b.ota;if(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).some(k=>!['requestId','status','error'].includes(k))||!/^[a-f0-9]{32}$/.test(o.requestId)||!['offered','downloading','installing','failed'].includes(o.status)||typeof(o.error||'')!=='string'||String(o.error||'').length>160)problem(400,'OTA sonucu geçersiz.');otaReport={requestId:o.requestId,status:o.status,error:String(o.error||'')};}
- return {control,bootId:typeof b.bootId==='string'&&/^[a-f0-9]{32}$/.test(b.bootId)?b.bootId:null,result,hysteresisResult,hysteresisOnOff:hysteresis?.onOff??null,hysteresisC:hysteresis?.value??null,hysteresisMeasuredAtMs:hysteresis?b.sentAtMs-b.measuredAgeMs:null,calibration,calibrationResult,calibrationMeasuredAtMs:calibration?b.sentAtMs-b.measuredAgeMs:null,powerResult,controlVerified:!!power,controlEnabled:power?.enabled??null,controlMeasuredAtMs:power?b.sentAtMs-b.measuredAgeMs:null,otaReport,heaterOutputKnown,heaterOn,targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
+ return {control,bootId:typeof b.bootId==='string'&&/^[a-f0-9]{32}$/.test(b.bootId)?b.bootId:null,result,hysteresisResult,hysteresisOnOff:hysteresis?.onOff??null,hysteresisC:hysteresis?.value??null,hysteresisMeasuredAtMs:hysteresis?b.sentAtMs-b.measuredAgeMs:null,calibration,calibrationResult,calibrationMeasuredAtMs:calibration?b.sentAtMs-b.measuredAgeMs:null,powerResult,controlVerified:!!power,controlEnabled:power?.enabled??null,controlMeasuredAtMs:power?b.sentAtMs-b.measuredAgeMs:null,otaReport,heaterOutputKnown,heaterOn,targetTemperatureC:hasTarget?b.targetTemperatureC:null,targetMeasuredAtMs:hasTarget?b.sentAtMs-b.targetAgeMs:null,deviceId:DEVICE,temperatureC:b.endaConnected?b.temperatureC:null,endaConnected:b.endaConnected,endaErrorCode,measuredAtMs:b.endaConnected?b.sentAtMs-b.measuredAgeMs:null,sentAtMs:b.sentAtMs,lastSeenAtMs:now,firmwareVersion:b.firmwareVersion};
 }
 function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,authorizePower=async()=>{},now=Date.now}){
  const credentials=db.doc('adminBoilerDevices/'+DEVICE),state=db.doc('adminBoilerState/'+DEVICE),maintenance=db.doc('adminBackupControl/state');
@@ -60,7 +61,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,authorizePo
    if(old.command&&['pending','dispatched'].includes(old.command.status)&&old.command.expiresAtMs>at)throw new HttpsError('aborted','Önceki işlemin sonucunu bekleyin.');
    if(!old.paired||!old.endaConnected||!old.control||at-old.lastSeenAtMs>20000||at-old.targetMeasuredAtMs>20000||old.targetMeasuredAtMs>at+30000||old.targetTemperatureC!==b.expected)throw new HttpsError('failed-precondition','Cihaz verisi güncel değil veya hedef değişti. Yeniden deneyin.');
    const range=effectiveRange(old);if(b.target<range.min||b.target>range.max)throw new HttpsError('out-of-range','Hedef belirlenen sıcaklık aralığının dışında.');
-   const command={id:b.id,target:b.target,expected:b.expected,register:old.control.register,decimal:old.control.decimal,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
+   const command={id:b.id,target:b.target,expected:b.expected,register:old.control.register,decimal:old.control.decimal,bootId:old.bootId,status:'pending',source:'manual',createdBy:r.auth.uid,createdAtMs:at,expiresAtMs:at+30000};
    tx.set(state,{...old,command});return{id:b.id,status:'pending'};
   });
  }
@@ -86,7 +87,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,authorizePo
    if(old.powerCommand&&['pending','dispatched'].includes(old.powerCommand.status)&&old.powerCommand.expiresAtMs>at)throw new HttpsError('aborted','Kazan açma/kapatma işleminin sonucunu bekleyin.');
    if(old.hysteresisCommand&&['pending','dispatched'].includes(old.hysteresisCommand.status)&&old.hysteresisCommand.expiresAtMs>at)throw new HttpsError('aborted','Önceki ON/OFF farkı işleminin sonucunu bekleyin.');
    if(!old.paired||!old.endaConnected||old.hysteresisOnOff!==true||!Number.isInteger(old.hysteresisC)||at-old.lastSeenAtMs>20000||at-old.hysteresisMeasuredAtMs>20000||old.hysteresisMeasuredAtMs>at+30000||old.hysteresisC!==b.expected||typeof old.bootId!=='string'||!/^[a-f0-9]{32}$/.test(old.bootId))throw new HttpsError('failed-precondition','Cihaz ON/OFF modunda değil, veri güncel değil veya fark değeri değişti.');
-   const hysteresisCommand={id:b.id,value:b.value,expected:b.expected,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
+   const hysteresisCommand={id:b.id,value:b.value,expected:b.expected,bootId:old.bootId,status:'pending',source:'manual',createdBy:r.auth.uid,createdAtMs:at,expiresAtMs:at+30000};
    tx.set(state,{...old,hysteresisCommand});return{id:b.id,status:'pending'};
   });
  }
@@ -101,7 +102,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,authorizePo
    if(old.powerCommand?.id===b.id)return{id:b.id,status:old.powerCommand.status};
    for(const key of ['command','hysteresisCommand','calibrationCommand','powerCommand'])if(old[key]&&['pending','dispatched'].includes(old[key].status)&&old[key].expiresAtMs>at)throw new HttpsError('aborted','Önceki kazan işleminin sonucunu bekleyin.');
    if(!old.paired||!old.endaConnected||old.controlVerified!==true||typeof old.controlEnabled!=='boolean'||at-old.lastSeenAtMs>20000||at-old.controlMeasuredAtMs>20000||old.controlMeasuredAtMs>at+30000||old.controlEnabled!==b.expected||typeof old.bootId!=='string'||!/^[a-f0-9]{32}$/.test(old.bootId))throw new HttpsError('failed-precondition','Kazan kontrol durumu güncel değil veya değişti.');
-   const powerCommand={id:b.id,enabled:b.enabled,expected:b.expected,source:'manual',bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
+   const powerCommand={id:b.id,enabled:b.enabled,expected:b.expected,source:'manual',createdBy:r.auth.uid,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
    tx.set(state,{...old,powerCommand});return{id:b.id,status:'pending'};
   });
  }
@@ -119,7 +120,7 @@ function buildSmartBoiler({db,HttpsError,ownerUid,projectId,ota=null,authorizePo
    const current=savedCalibration(old)?.valueC;
    if(!old.paired||!old.endaConnected||!Number.isFinite(current)||at-old.lastSeenAtMs>20000||at-old.calibrationMeasuredAtMs>20000||old.calibrationMeasuredAtMs>at+30000||Math.abs(current-b.expected)>1e-6||![0,1].includes(old.calibration?.decimal)||typeof old.bootId!=='string'||!/^[a-f0-9]{32}$/.test(old.bootId))throw new HttpsError('failed-precondition','ENDA verisi güncel değil veya kalibrasyon değeri değişti.');
    if(old.calibration.decimal===0&&(tenths%10!==0))throw new HttpsError('failed-precondition','ENDA tam derece modunda; 0,1 °C adımı kullanılamıyor.');
-   const calibrationCommand={id:b.id,valueC:tenths/10||0,expectedC:expectedTenths/10||0,decimal:old.calibration.decimal,bootId:old.bootId,status:'pending',createdAtMs:at,expiresAtMs:at+30000};
+   const calibrationCommand={id:b.id,valueC:tenths/10||0,expectedC:expectedTenths/10||0,decimal:old.calibration.decimal,bootId:old.bootId,status:'pending',source:'manual',createdBy:r.auth.uid,createdAtMs:at,expiresAtMs:at+30000};
    tx.set(state,{...old,calibrationCommand});return{id:b.id,status:'pending'};
   });
  }

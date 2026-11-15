@@ -105,7 +105,7 @@ if(card&&dialog&&updateDialog&&deviceDialog){
 
 
 /* R653 — cihazdan bağımsız mod/program hazırlığı; aynı kayıt tüm cihazlarda okunur. */
-import{watchPlan,savePlan,planSnapshot,defaultPlan,validatePlan,DAY_NAMES,PREPARATION_NOTE}from'./smart-boiler-plan.js?v=654';
+import{watchPlan,savePlan,planSnapshot,defaultPlan,validatePlan,DAY_NAMES,PREPARATION_NOTE}from'./smart-boiler-plan.js?v=659';
 function installPlanSettings(){
  if(!$('openBoilerModesDialog'))return;
  let snapshot=planSnapshot();watchPlan(value=>{snapshot=value;for(const b of [$('openBoilerModesDialog'),$('openBoilerScheduleDialog')])b.disabled=!value.ready});
