@@ -20,6 +20,12 @@ on:
           - '0.6.3-kalibrasyon-aday'
           - '0.6.4-enda-offset-aday'
           - '0.6.5-kazan-kontrol-aday'
+          - '0.6.6-bildirim-telemetri-aday'
+      publish_firmware:
+        description: 'Derlenen firmware dosyasını güvenli Firebase OTA alanına hazırla'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -31,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      FIRMWARE_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.firmware || (github.ref_name == 'esp32-tablet-bin-kazan-kontrol-0-6-5' && '0.6.5-kazan-kontrol-aday' || github.ref_name == 'esp32-tablet-bin-ota-teshis-0-6-3' && '0.6.4-enda-offset-aday' || '0.6.1-ota-test') }}
+      FIRMWARE_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.firmware || (github.ref_name == 'esp32-tablet-bin-bildirim-telemetri-0-6-6' && '0.6.6-bildirim-telemetri-aday' || github.ref_name == 'esp32-tablet-bin-kazan-kontrol-0-6-5' && '0.6.5-kazan-kontrol-aday' || github.ref_name == 'esp32-tablet-bin-ota-teshis-0-6-3' && '0.6.4-enda-offset-aday' || '0.6.1-ota-test') }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -45,6 +51,7 @@ jobs:
             0.6.3-kalibrasyon-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.3_Kalibrasyon_Aday' ;;
             0.6.4-enda-offset-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.4_ENDA_Offset_Aday' ;;
             0.6.5-kazan-kontrol-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.5_Kazan_Kontrol_Aday' ;;
+            0.6.6-bildirim-telemetri-aday) dir='esp32/FatihKazan_ESP32_FW_0.6.6_Bildirim_Telemetri_Aday' ;;
             *) echo 'Unrecognized firmware selection' >&2; exit 1 ;;
           esac
           test -f "$dir/$(basename "$dir").ino"
@@ -132,12 +139,51 @@ jobs:
             exit 1
           fi
           test -s "${files[0]}"
+          size=$(stat -c '%s' "${files[0]}")
+          slot=$((0x140000))
+          preferred=$((slot * 85 / 100))
+          if [ "$size" -gt "$slot" ]; then
+            echo "Firmware ${size} bayt; OTA alanı ${slot} bayt." >&2
+            exit 1
+          fi
+          if [ "$size" -gt "$preferred" ]; then
+            echo "::warning::Firmware ${size} bayt ile OTA alanının %85 güvenlik payını aşıyor."
+          fi
+          printf 'Firmware boyutu: %s bayt / OTA alanı: %s bayt\n' "$size" "$slot" >> "$GITHUB_STEP_SUMMARY"
           if [ "$GITHUB_EVENT_NAME" = 'workflow_dispatch' ]; then
             mkdir -p "$RUNNER_TEMP/esp32-private"
             cp "${files[0]}" "$RUNNER_TEMP/esp32-private/firmware.bin"
           else
             echo 'Smoke build succeeded; no firmware is published from branch pushes.'
           fi
+
+      - name: Publish firmware securely to Firebase OTA storage
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish_firmware
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FATIHCAYEVI }}
+          RELEASE_VERSION: ${{ inputs.firmware }}
+        shell: bash
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
+          npm ci --prefix functions --omit=dev --ignore-scripts
+          GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" node <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const{initializeApp,applicationDefault}=require('./functions/node_modules/firebase-admin/app');
+          const{getFirestore,FieldValue}=require('./functions/node_modules/firebase-admin/firestore');
+          const{getStorage}=require('./functions/node_modules/firebase-admin/storage');
+          const version=process.env.RELEASE_VERSION,bytes=fs.readFileSync(process.env.RUNNER_TEMP+'/esp32-private/firmware.bin');
+          if(!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.-]+)?$/i.test(version))throw Error('Firmware version is invalid.');
+          if(bytes.length<65536||bytes.length>0x140000)throw Error('Firmware does not fit the verified OTA slot.');
+          const sha256=crypto.createHash('sha256').update(bytes).digest('hex'),path=`boiler-firmware/releases/${version}.bin`,now=Date.now();
+          initializeApp({credential:applicationDefault(),projectId:'fatihcayevi',storageBucket:'fatihcayevi.firebasestorage.app'});
+          const db=getFirestore(),bucket=getStorage().bucket();
+          (async()=>{
+            await bucket.file(path).save(bytes,{resumable:false,metadata:{contentType:'application/octet-stream',metadata:{sha256,sourceCommit:process.env.GITHUB_SHA}}});
+            await db.doc(`adminBoilerFirmware/${version}`).set({version,path,sha256,size:bytes.length,status:'ready',createdAtMs:now,createdAt:FieldValue.serverTimestamp(),createdBy:'github-actions',sourceCommit:process.env.GITHUB_SHA});
+            await db.doc(`adminBoilerActions/firmware-${process.env.GITHUB_RUN_ID}`).set({title:`${version} firmware OTA için hazırlandı`,actionType:'firmware-publish',afterValue:{version,size:bytes.length,sha256},createdBy:'github-actions',createdAtMs:now,createdAt:FieldValue.serverTimestamp()});
+            process.stdout.write(`Firmware ${version} securely published (${bytes.length} bytes, ${sha256}).\n`);
+          })().catch(error=>{console.error(error.message);process.exitCode=1});
+          JS
 
       - name: Encrypt and verify firmware before publishing
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
