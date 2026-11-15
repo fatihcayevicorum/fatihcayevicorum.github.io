@@ -631,7 +631,9 @@ exports.publishBoilerFirmware=onCall({region:'europe-west1',cors:true,timeoutSec
 exports.startBoilerFirmwareUpdate=onCall({region:'europe-west1',cors:true},boilerOta.start);
 exports.cancelBoilerFirmwareUpdate=onCall({region:'europe-west1',cors:true},boilerOta.cancel);
 exports.downloadBoilerFirmware=require('firebase-functions/v2/https').onRequest({region:'europe-west1',cors:false,invoker:'public',maxInstances:2,timeoutSeconds:300,memory:'512MiB'},boilerOta.download);
-const boilerSchedule=require('./smart-boiler-schedule').buildBoilerSchedule({db,executionEnabled:process.env.BOILER_SCHEDULE_ENABLED==='true'});
+// R658: ENDA C6 açma/kapatma saha testi 15.11.2026 tarihinde doğrulandı.
+// Haftalık program artık kayıtlı Türkiye saatlerinde gerçek cihaz komutu üretebilir.
+const boilerSchedule=require('./smart-boiler-schedule').buildBoilerSchedule({db,executionEnabled:true});
 exports.runBoilerWeeklySchedule=firebaseOnSchedule({schedule:'every 1 minutes',region:'europe-west1',timeZone:'Europe/Istanbul',timeoutSeconds:30,maxInstances:1,retryCount:1},boilerSchedule.run);
 
 // R621: Kazan telemetrisi değiştiğinde Android widget'ını en fazla 5 saniyede bir yenile.

@@ -1,5 +1,5 @@
 'use strict';
-const test=require('node:test'),assert=require('node:assert/strict');
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const{buildBoilerSchedule,eventAt}=require('../smart-boiler-schedule');
 const monday=Date.parse('2026-11-16T07:00:10+03:00');
 function plan(){return{schemaVersion:1,revision:4,schedule:{enabled:true,days:Array.from({length:7},(_,i)=>({enabled:i<6,open:'07:00',close:i===5?'02:00':'23:00'}))}}}
@@ -8,3 +8,4 @@ test('weekly schedule calculates Istanbul open, close and overnight close',()=>{
 test('weekly schedule queues one verified power command and keeps manual override until the event',async()=>{const f=fixture();const first=await f.run();assert.equal(first.status,'queued');let state=f.data.get('adminBoilerState/kazan-1');assert.equal(state.powerCommand.enabled,true);assert.equal(state.powerCommand.source,'schedule');assert.equal(state.powerCommand.expected,false);const second=await f.run();assert.equal(second.status,'waiting-command');state=f.data.get('adminBoilerState/kazan-1');state.controlEnabled=true;state.powerCommand.status='confirmed';const third=await f.run();assert.equal(third.status,'already-set');assert.equal(f.data.get('adminBoilerState/kazan-1').schedulePending,null)});
 test('weekly schedule waits for fresh ENDA C6 state and disabled program preserves no pending action',async()=>{const f=fixture();f.data.get('adminBoilerState/kazan-1').controlVerified=false;assert.equal((await f.run()).status,'waiting-device');f.data.get('adminBoilerPlans/kazan-1').schedule.enabled=false;assert.equal((await f.run()).status,'idle');assert.equal(f.data.get('adminBoilerState/kazan-1').schedulePending,null)});
 test('weekly execution is server-locked until the physical C6 test is approved',async()=>{const f=fixture();assert.equal((await buildBoilerSchedule({db:f.db,now:()=>monday}).run()).status,'disabled');assert.equal(f.data.get('adminBoilerState/kazan-1').powerCommand,undefined)});
+test('weekly execution is enabled in the deployed function after the approved C6 field test',()=>{const index=fs.readFileSync(path.join(__dirname,'../index.js'),'utf8');assert.match(index,/buildBoilerSchedule\(\{db,executionEnabled:true\}\)/);assert.doesNotMatch(index,/BOILER_SCHEDULE_ENABLED/)});
