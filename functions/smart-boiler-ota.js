@@ -33,7 +33,7 @@ function buildBoilerOta({db,bucket,FieldValue,HttpsError,ownerUid,projectId,cloc
   if(request.auth?.uid!==ownerUid)fail(HttpsError,'permission-denied','Yalnızca ana yönetici güncelleme başlatabilir.');
   const version=cleanVersion(request.data?.version,HttpsError),release=await releases.doc(version).get();if(!release.exists||release.data()?.status!=='ready')fail(HttpsError,'failed-precondition','Hazır firmware sürümü bulunamadı.');
   const snap=await state.get(),current=snap.data()||{},now=clock();if(current.paired!==true)fail(HttpsError,'failed-precondition','ESP32 bağlı değil.');
-  if(current.ota&&['pending','offered','downloading','installing'].includes(current.ota.status)&&Number(current.ota.expiresAtMs)>now)fail(HttpsError,'aborted','Devam eden güncellemenin tamamlanmasını bekleyin.');
+  if(activeOta(current.ota,now))fail(HttpsError,'aborted','Devam eden güncellemenin tamamlanmasını bekleyin.');
   const requestId=crypto.randomBytes(16).toString('hex'),data=release.data();
   const ota={requestId,version,sha256:data.sha256,size:data.size,status:'pending',requestedAtMs:now,expiresAtMs:now+24*60*60*1000,previousVersion:String(current.firmwareVersion||''),requestedBy:request.auth.uid};
   await state.set({ota},{merge:true});return ota;
@@ -54,7 +54,7 @@ function buildBoilerOta({db,bucket,FieldValue,HttpsError,ownerUid,projectId,cloc
  }
 
  async function applyReport(current,report){
-  const ota=current?.ota;if(!ota||!report||report.requestId!==ota.requestId)return current;
+  const ota=current?.ota;if(!ota||ota.finishedAtMs||!report||report.requestId!==ota.requestId)return current;
   const allowed=['offered','downloading','installing','failed'];if(!allowed.includes(report.status))return current;
   const now=clock(),next={...ota,status:report.status,lastDeviceReportAtMs:now};
   if(report.status==='failed'){next.finishedAtMs=now;next.error=String(report.error||'Güncelleme tamamlanamadı.').slice(0,160)}
@@ -72,7 +72,7 @@ function buildBoilerOta({db,bucket,FieldValue,HttpsError,ownerUid,projectId,cloc
   if(!/^Bearer [a-f0-9]{64}$/.test(bearer)||!REQUEST.test(requestId)||!VERSION.test(version))return res.status(401).json({error:'Cihaz kimliği doğrulanamadı.'});
   try{
    const [keySnap,stateSnap]=await Promise.all([credentials.get(),state.get()]),key=keySnap.data()||{},current=stateSnap.data()||{},ota=current.ota||{};
-   if(!key.enabled||!safe(hash(bearer.slice(7)),key.tokenHash)||ota.requestId!==requestId||ota.version!==version||!['pending','offered','downloading'].includes(ota.status)||Number(ota.expiresAtMs)<=clock())return res.status(401).json({error:'Güncelleme yetkisi geçersiz.'});
+   if(!key.enabled||!safe(hash(bearer.slice(7)),key.tokenHash)||ota.requestId!==requestId||ota.version!==version||ota.finishedAtMs||!['pending','offered','downloading'].includes(ota.status)||Number(ota.expiresAtMs)<=clock())return res.status(401).json({error:'Güncelleme yetkisi geçersiz.'});
    const release=await releases.doc(version).get(),data=release.data()||{};if(!release.exists||data.status!=='ready'||data.sha256!==ota.sha256||data.size!==ota.size)return res.status(404).json({error:'Firmware hazır değil.'});
    await state.set({ota:{...ota,status:'downloading',lastDeviceReportAtMs:clock()}},{merge:true});
    const file=bucket.file(data.path);res.status(200);res.set('Content-Type','application/octet-stream');res.set('Content-Length',String(data.size));res.set('X-Firmware-SHA256',data.sha256);res.set('X-Firmware-Version',version);
