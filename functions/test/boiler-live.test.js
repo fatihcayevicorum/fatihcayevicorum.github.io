@@ -200,3 +200,40 @@ test('ESP32 0.6.6: official ENDA I2 faults are sent without a fabricated tempera
  assert.match(source,/writeControlCoilOnce\(6,cmd\.enabled==0\)/);
 });
 
+
+test('boiler OTA: reconcile short upload labels against authenticated device version, keep real updates locked',async()=>{
+ const {buildBoilerOta}=require('../smart-boiler-ota');
+ const db={collection:()=>({doc:()=>({get:async()=>({exists:true,data:()=>({status:'ready'})})})}),doc:()=>({})};
+ const api=buildBoilerOta({db,clock:()=>NOW,projectId:'test'});
+ const ota={requestId:'a'.repeat(32),version:'0.6.5',sha256:'b'.repeat(64),status:'downloading',expiresAtMs:NOW+1000,requestedAtMs:NOW-3600000};
+ const stuck={paired:true,firmwareVersion:'KazanFW 0.6.5-kazan-kontrol-aday',ota};
+ const fixed=await api.markSeen(stuck,stuck.firmwareVersion);
+ assert.equal(fixed.ota.status,'cancelled');assert.equal(fixed.ota.finishedAtMs,NOW);assert.match(fixed.ota.error,/tam derleme doğrulanmadan/);
+ assert.equal(fixed.ota.requestId,ota.requestId);
+ for(const status of ['offered','downloading','installing','failed'])assert.deepEqual(await api.applyReport(fixed,{requestId:ota.requestId,status}),fixed);
+ const active={...stuck,ota:{...ota,version:'0.6.6',status:'downloading'}};
+ assert.deepEqual(await api.markSeen(active,stuck.firmwareVersion),active);
+ const distinct={...stuck,ota:{...ota,version:'0.6.5-other-aday'}};
+ assert.deepEqual(await api.markSeen(distinct,stuck.firmwareVersion),distinct);
+ const exact={...stuck,ota:{...ota,version:'0.6.5-kazan-kontrol-aday'}};
+ assert.equal((await api.markSeen(exact,stuck.firmwareVersion)).ota.status,'success');
+ const pending={...stuck,ota:{...ota,status:'pending'}};
+ assert.equal(await api.instruction(pending),null);
+ assert.ok(await api.instruction({...pending,ota:{...pending.ota,version:'0.6.6'}}));
+ const failed=await api.applyReport(active,{requestId:ota.requestId,status:'failed',error:'download error'});
+ assert.equal(failed.ota.status,'failed');assert.deepEqual(await api.applyReport(failed,{requestId:ota.requestId,status:'downloading'}),failed);
+ assert.deepEqual(await api.applyReport(active,{requestId:'c'.repeat(32),status:'failed'}),active);
+});
+test('boiler OTA: reject duplicate installed short version, permit other release',async()=>{
+ const {buildBoilerOta}=require('../smart-boiler-ota');
+ const release={status:'ready',sha256:'b'.repeat(64),size:1044*1024};
+ let current={paired:true,firmwareVersion:'KazanFW 0.6.5-kazan-kontrol-aday',lastSeenAtMs:NOW,ota:{status:'cancelled'}};
+ const db={collection:()=>({doc:()=>({get:async()=>({exists:true,data:()=>release})})}),doc:()=>({get:async()=>({data:()=>current}),set:async value=>{current={...current,...value}}})};
+ class HttpsError extends Error{constructor(code,message){super(message);this.code=code}}
+ const api=buildBoilerOta({db,clock:()=>NOW,ownerUid:'owner',HttpsError});
+ await assert.rejects(api.start({auth:{uid:'owner'},data:{version:'0.6.5'}}),{code:'failed-precondition'});
+ await assert.rejects(api.start({auth:{uid:'owner'},data:{version:'0.6.5-kazan-kontrol-aday'}}),{code:'failed-precondition'});
+ const pending=await api.start({auth:{uid:'owner'},data:{version:'0.6.6'}});
+ assert.equal(pending.status,'pending');assert.equal(pending.version,'0.6.6');
+ await assert.rejects(api.start({auth:{uid:'owner'},data:{version:'0.6.7'}}),{code:'aborted'});
+});
