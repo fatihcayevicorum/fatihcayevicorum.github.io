@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r653-kazan-web-aday-5",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r654-kazan-kontrol-aday",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-plan.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/css/smart-boiler.css",
   "./assets/js/product-group-summary.js","./assets/css/product-group-summary.css",

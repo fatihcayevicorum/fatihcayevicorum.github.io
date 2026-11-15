@@ -46,11 +46,14 @@ exports.setSensitivePin=onCall({region:"europe-west1",cors:true},async request=>
   if(snap.exists&&(!currentPin||!safeHashEqual(pinHash(currentPin,old.salt||""),old.pinHash||"")))throw new HttpsError("permission-denied","Mevcut PIN yanlış.");
   const salt=crypto.randomBytes(24).toString("hex");await ref.set({salt,pinHash:pinHash(newPin,salt),updatedAtMs:Date.now(),updatedAt:FieldValue.serverTimestamp(),updatedBy:request.auth.uid});await auditUserAction("sensitive-pin-update",OWNER_UID,request.auth.uid);return{updated:true};
 });
-exports.verifySensitivePin=onCall({region:"europe-west1",cors:true},async request=>{
-  if(!request.auth?.uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const pin=cleanPin(request.data?.pin),ref=db.doc("adminSecurity/sensitiveAccess"),snap=await ref.get();if(!snap.exists)throw new HttpsError("failed-precondition","Yönetici PIN'i henüz oluşturulmadı.");
-  const data=snap.data(),attemptRef=db.doc(`sensitivePinAttempts/${request.auth.uid}`),attemptSnap=await attemptRef.get(),attempt=attemptSnap.data()||{},now=Date.now();if(Number(attempt.lockedUntilMs)>now)throw new HttpsError("resource-exhausted","Geçici olarak kilitlendi.");
+async function verifySensitivePinValue(uid,value){
+  if(!uid)throw new HttpsError("unauthenticated","Oturum açmanız gerekiyor.");const pin=cleanPin(value),ref=db.doc("adminSecurity/sensitiveAccess"),snap=await ref.get();if(!snap.exists)throw new HttpsError("failed-precondition","Yönetici PIN'i henüz oluşturulmadı.");
+  const data=snap.data(),attemptRef=db.doc(`sensitivePinAttempts/${uid}`),attemptSnap=await attemptRef.get(),attempt=attemptSnap.data()||{},now=Date.now();if(Number(attempt.lockedUntilMs)>now)throw new HttpsError("resource-exhausted","Geçici olarak kilitlendi.");
   if(!safeHashEqual(pinHash(pin,data.salt||""),data.pinHash||"")){const count=Number(attempt.count)||0,next=count+1,lockedUntilMs=next>=5?now+5*60*1000:0;await attemptRef.set({count:next>=5?0:next,lockedUntilMs,updatedAt:FieldValue.serverTimestamp()},{merge:true});throw new HttpsError(lockedUntilMs?"resource-exhausted":"permission-denied","PIN yanlış.")}
   await attemptRef.delete().catch(()=>{});return{verified:true,validForSeconds:600};
+}
+exports.verifySensitivePin=onCall({region:"europe-west1",cors:true},async request=>{
+  return verifySensitivePinValue(request.auth?.uid,request.data?.pin);
 });
 
 exports.createStaffUser=onCall({region:"europe-west1",cors:true},async request=>{
@@ -614,19 +617,22 @@ exports.retryFinanceDailyEmails=onSchedule({schedule:"every 15 minutes",region:"
 // R624: güvenli ESP32 firmware dağıtımı ve mevcut kazan telemetrisi.
 const boilerProjectId=process.env.GCLOUD_PROJECT||db.projectId;
 const boilerOta=require('./smart-boiler-ota').buildBoilerOta({db,bucket:getStorage().bucket(),FieldValue,HttpsError,ownerUid:OWNER_UID,projectId:boilerProjectId});
-const boiler=require('./smart-boiler').buildSmartBoiler({db,HttpsError,ownerUid:OWNER_UID,projectId:boilerProjectId,ota:boilerOta});
+const boiler=require('./smart-boiler').buildSmartBoiler({db,HttpsError,ownerUid:OWNER_UID,projectId:boilerProjectId,ota:boilerOta,authorizePower:request=>verifySensitivePinValue(request.auth?.uid,request.data?.pin)});
 exports.configureBoilerDevice=onCall({region:'europe-west1',cors:true},boiler.configure);
 exports.receiveBoilerTemperature=require('firebase-functions/v2/https').onRequest({region:'europe-west1',cors:false,invoker:'public',maxInstances:2,timeoutSeconds:15},boiler.receive);
 
 exports.setBoilerTarget=onCall({region:'europe-west1',cors:true},boiler.setTarget);
 exports.setBoilerTargetRange=onCall({region:'europe-west1',cors:true},boiler.setTargetRange);
 exports.setBoilerHysteresis=onCall({region:'europe-west1',cors:true},boiler.setHysteresis);
+exports.setBoilerPower=onCall({region:'europe-west1',cors:true},boiler.setPower);
 exports.setBoilerCalibration=onCall({region:'europe-west1',cors:true},boiler.setCalibration);
 exports.renameBoilerDevice=onCall({region:'europe-west1',cors:true},boiler.setDeviceName);
 exports.publishBoilerFirmware=onCall({region:'europe-west1',cors:true,timeoutSeconds:120,memory:'512MiB'},boilerOta.publish);
 exports.startBoilerFirmwareUpdate=onCall({region:'europe-west1',cors:true},boilerOta.start);
 exports.cancelBoilerFirmwareUpdate=onCall({region:'europe-west1',cors:true},boilerOta.cancel);
 exports.downloadBoilerFirmware=require('firebase-functions/v2/https').onRequest({region:'europe-west1',cors:false,invoker:'public',maxInstances:2,timeoutSeconds:300,memory:'512MiB'},boilerOta.download);
+const boilerSchedule=require('./smart-boiler-schedule').buildBoilerSchedule({db});
+exports.runBoilerWeeklySchedule=firebaseOnSchedule({schedule:'every 1 minutes',region:'europe-west1',timeZone:'Europe/Istanbul',timeoutSeconds:30,maxInstances:1,retryCount:1},boilerSchedule.run);
 
 // R621: Kazan telemetrisi değiştiğinde Android widget'ını en fazla 5 saniyede bir yenile.
 exports.refreshAndroidWidgetOnBoilerState=onDocumentUpdated({document:'adminBoilerState/kazan-1',region:'europe-west1'},async event=>{

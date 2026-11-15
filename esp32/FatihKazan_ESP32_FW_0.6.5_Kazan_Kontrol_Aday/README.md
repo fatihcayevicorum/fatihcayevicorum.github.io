@@ -14,4 +14,4 @@ Bu aday, 0.6.4 ENDA Offset adayını korur ve web/PWA'daki kazan açma/kapatma a
 
 ## Güvenlik ve etkinleştirme
 
-Bu klasör yalnız aday kaynaktır. Web komutları kapalı kalır. Fiziksel ENDA/kontaktör testi, C6 açık-kapalı geri okuması ve güvenli çalışma doğrulanmadan canlı sunucuya alınmamalı veya OTA ile cihaza yüklenmemelidir.
+Bu klasör yalnız aday kaynaktır. R654 aday dalında sunucu/web köprüsü hazırlanmıştır; canlı R653 sistemi değişmemiştir. Fiziksel ENDA/kontaktör testi, C6 açık-kapalı geri okuması ve güvenli çalışma doğrulanmadan canlı sunucuya alınmamalı veya OTA ile cihaza yüklenmemelidir.
