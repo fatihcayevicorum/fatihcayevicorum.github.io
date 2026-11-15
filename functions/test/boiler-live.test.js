@@ -145,4 +145,18 @@ test('boiler plan editor: square mode cards and compact weekly table keep one HH
  for(const heading of ['Günler','Açılış Saati','Kapanış Saati','Aktif\/Pasif'])assert.match(js,new RegExp(heading));
  assert.match(js,/day\.enabled=e\.target\.checked/);assert.match(js,/input\.disabled=!day\.enabled/);assert.match(js,/paintMaster\(\)/);
 });
+test('ESP32 0.6.5: boiler power uses ENDA C6 display-only control and verified readback',()=>{
+ const base=path.join(__dirname,'../../esp32/FatihKazan_ESP32_FW_0.6.5_Kazan_Kontrol_Aday');
+ const source=fs.readFileSync(path.join(base,'FatihKazan_ESP32_FW_0.6.5_Kazan_Kontrol_Aday.ino'),'utf8');
+ assert.match(source,/readControlWord\(1,6,displayOnly\)/);
+ assert.match(source,/writeControlCoilOnce\(6,cmd\.enabled==0\)/);
+ assert.match(source,/if\(address!=6\)return false/);
+ assert.match(source,/if\(inspectPower\(after\)\).*after\.enabled==\(cmd\.enabled==1\)/s);
+ assert.match(source,/\"X-Boiler-Power\"/);
+ assert.match(source,/\\\"power\\\":\{\\\"enabled\\\"/);
+ assert.doesNotMatch(source,/powerControl\.enabled\s*=\s*heaterOn/);
+ const readme=fs.readFileSync(path.join(base,'README.md'),'utf8');
+ assert.match(readme,/yalnız gösterge modundadır/);
+ assert.match(readme,/Web komutları kapalı kalır/);
+});
 
