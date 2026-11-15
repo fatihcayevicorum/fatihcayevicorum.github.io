@@ -20,9 +20,9 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r659-kazan-bildirimleri",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r663-ota-web-kilit-duzeltme",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
-  "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-plan.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/css/smart-boiler.css",
+  "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-plan.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/js/smart-boiler-settings.js?v=663","./assets/css/smart-boiler.css",
   "./assets/js/product-group-summary.js","./assets/css/product-group-summary.css",
   "./assets/js/product-pricing.js","./assets/js/current-account-pricing.js","./assets/js/current-account-pricing-store.js",
   "./assets/js/sales-mode.js","./assets/js/table-layout.js","./assets/js/theme.js","./assets/js/finance-account-compat.js","./assets/js/finance-real-accounts.js","./assets/js/payment-methods.js","./assets/js/payment-account-routing.js","./assets/css/theme.css",
@@ -79,6 +79,13 @@ self.addEventListener("fetch",event=>{
     if(!staticHosts.includes(url.hostname))return;
     event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok||response.type==="opaque"){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response})));
     return;
+  }
+  if(url.pathname.endsWith("/assets/js/smart-boiler-settings.js")){
+    const latest=new URL(url);latest.searchParams.set("v","663");
+    event.respondWith(caches.open(RUNTIME_CACHE).then(async cache=>{
+      try{const response=await fetch(latest.href,{cache:"reload"});if(response.ok){await cache.put(latest.href,response.clone());return response}return (await cache.match(latest.href))||response}
+      catch{return (await cache.match(latest.href))||await matchAppCache(latest.href)||await matchAppCache(request)||Response.error()}
+    }));return;
   }
   if(url.pathname.endsWith("/assets/js/system-ui.js")){
     const latest=new URL(url);latest.searchParams.set("v","659");
