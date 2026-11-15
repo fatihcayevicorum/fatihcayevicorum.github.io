@@ -166,6 +166,7 @@ jobs:
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
           npm ci --prefix functions --omit=dev --ignore-scripts
+          cd functions
           GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" node <<'JS'
           const fs=require('node:fs'),crypto=require('node:crypto');
           const{initializeApp,applicationDefault}=require('firebase-admin/app');
