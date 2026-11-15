@@ -8,6 +8,7 @@ import{mountHysteresisEditor}from'./smart-boiler-live.js?v=654';
 
 /* R643 aday — Akıllı Kazan ayarları üç sade kare kartta; güncelleme ve cihaz işlemleri ayrı pencerelerde. */
 const $=id=>document.getElementById(id),card=$('smartBoilerSettingsCard'),dialog=$('smartBoilerSettingsDialog'),updateDialog=$('boilerUpdateDialog'),deviceDialog=$('boilerDeviceDialog');
+export function isOtaActive(ota,now=Date.now()){return ['pending','offered','downloading','installing'].includes(ota?.status)&&Number(ota?.expiresAtMs)>now}
 if(card&&dialog&&updateDialog&&deviceDialog){
  const db=getFirestore(firebaseApp),functions=getFunctions(firebaseApp,'europe-west1'),storage=getStorage(firebaseApp);
  const status=$('boilerSettingsStatus'),firmwareSelect=$('boilerFirmwareSelect'),rangeMin=$('boilerTargetMin'),rangeMax=$('boilerTargetMax'),rangeCancel=$('cancelBoilerTargetRange'),rangeSave=$('saveBoilerTargetRange');let state=null,downloadUrl=null,unsubscribe=null,rangeDirty=false,rangeSaving=false;
@@ -68,8 +69,8 @@ if(card&&dialog&&updateDialog&&deviceDialog){
   const fresh=state&&Date.now()-Number(state.lastSeenAtMs||0)<=45000;
   $('boilerDeviceId').textContent=state?.deviceId||'kazan-1';$('boilerConnectionState').textContent=state?.paired?(fresh?'Bağlı ve canlı':'Bağlı, cihaz bekleniyor'):'Bağlı değil';
   $('boilerFirmwareCurrent').textContent=state?.firmwareVersion||'—';$('boilerLastSeen').textContent=time(state?.lastSeenAtMs);
-  const ota=state?.ota||{};$('boilerOtaStatus').textContent=ota.status?`${ota.version||''} · ${ota.status}`:'Bekleyen güncelleme yok';$('boilerOtaResult').textContent=ota.finishedAtMs?`Sonuç: ${time(ota.finishedAtMs)}${ota.error?' · '+ota.error:''}`:'Henüz güncelleme sonucu yok';
-  $('startBoilerUpdate').disabled=!state?.paired||!firmwareSelect.value||['pending','offered','downloading','installing'].includes(ota.status);$('cancelBoilerUpdate').disabled=!['pending','offered'].includes(ota.status);
+  const ota=state?.ota||{},otaActive=isOtaActive(ota);$('boilerOtaStatus').textContent=otaActive?`${ota.version||''} · ${ota.status}`:ota.status?`${ota.version||''} · Önceki kayıt`:'Bekleyen güncelleme yok';$('boilerOtaResult').textContent=ota.finishedAtMs?`Sonuç: ${time(ota.finishedAtMs)}${ota.error?' · '+ota.error:''}`:ota.status&&!otaActive?'Önceki güncelleme isteğinin süresi doldu. Yeni sürüm gönderilebilir.':'Henüz Güncelleme Sonucu Yok';
+  $('startBoilerUpdate').disabled=!state?.paired||!firmwareSelect.value||otaActive;$('cancelBoilerUpdate').disabled=!otaActive||!['pending','offered'].includes(ota.status);
   const saved=range();if(!rangeDirty){rangeMin.value=saved.min;rangeMax.value=saved.max}$('boilerTargetRangeStatus').textContent=rangeDirty?'':`Geçerli Aralık: ${saved.min}–${saved.max}°C`;rangeCancel.disabled=rangeSaving||!rangeDirty;rangeSave.disabled=rangeSaving||!rangeDirty;
   hysteresisEditor?.refreshHysteresis?.();
   paintTarget();paintCalibration();paintName();
