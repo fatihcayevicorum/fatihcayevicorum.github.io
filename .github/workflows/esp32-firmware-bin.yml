@@ -168,9 +168,9 @@ jobs:
           npm ci --prefix functions --omit=dev --ignore-scripts
           GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json" node <<'JS'
           const fs=require('node:fs'),crypto=require('node:crypto');
-          const{initializeApp,applicationDefault}=require('./functions/node_modules/firebase-admin/app');
-          const{getFirestore,FieldValue}=require('./functions/node_modules/firebase-admin/firestore');
-          const{getStorage}=require('./functions/node_modules/firebase-admin/storage');
+          const{initializeApp,applicationDefault}=require('firebase-admin/app');
+          const{getFirestore,FieldValue}=require('firebase-admin/firestore');
+          const{getStorage}=require('firebase-admin/storage');
           const version=process.env.RELEASE_VERSION,bytes=fs.readFileSync(process.env.RUNNER_TEMP+'/esp32-private/firmware.bin');
           if(!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.-]+)?$/i.test(version))throw Error('Firmware version is invalid.');
           if(bytes.length<65536||bytes.length>0x140000)throw Error('Firmware does not fit the verified OTA slot.');
