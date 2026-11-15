@@ -4,11 +4,10 @@ import{getFunctions,httpsCallable}from'https://www.gstatic.com/firebasejs/12.16.
 import{firebaseApp,ADMIN_UID}from'./firebase-config.js';
 import{requireServerSensitiveAccess}from'./sensitive-access.js?v=419';
 
-/* R653: yalnız web hazırlığı. Bu belge cihaz komut kuyruğu değildir.
- * ESP/ENDA protokolü ve sunucuda her komuta bağlı PIN yetkilendirmesi ayrıca
- * doğrulanmadan transport eklenmez. Tarayıcı hiçbir zaman zamanlayıcı çalıştırmaz. */
-export const DEVICE_COMMANDS_ENABLED=false;
-export const PREPARATION_NOTE='ESP32 desteği bekleniyor; cihaza uygulanmaz.';
+/* R654 aday: tarayıcı zamanlayıcı çalıştırmaz; yalnız doğrulanmış sunucu
+ * komutlarını başlatır. Canlıya alma fiziksel ENDA C6 testi sonrasındadır. */
+export const DEVICE_COMMANDS_ENABLED=true;
+export const PREPARATION_NOTE='Cihaz komutları fiziksel test adayıdır.';
 export const DAY_NAMES=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 export function defaultPlan(){return{schemaVersion:1,revision:0,modes:[],schedule:{enabled:false,timeZone:'Europe/Istanbul',manualPolicy:'until-next-event',days:DAY_NAMES.map(()=>({enabled:false,open:'08:00',close:'22:00'}))}}}
 export function validatePlan(value){
@@ -43,10 +42,19 @@ export function commandIntent(kind,value,state){
 export async function preparePowerChange(enabled,read){
  const initial=read();if(!initial?.owner||powerState(initial)===null)throw Error('Kazan kontrol durumu doğrulanamadı.');
  if(!DEVICE_COMMANDS_ENABLED)throw Error(PREPARATION_NOTE);
- const accepted=await requireServerSensitiveAccess(httpsCallable(getFunctions(firebaseApp,'europe-west1'),'verifySensitivePin'),{title:enabled?'Kazanı Aç':'Kazanı Kapat',message:'Bu işlem için yönetici PIN’ini girin.'});
+ const intent=commandIntent('power',enabled,initial),id=randomId(),call=httpsCallable(getFunctions(firebaseApp,'europe-west1'),'setBoilerPower');
+ const accepted=await requireServerSensitiveAccess(({pin})=>call({id,enabled:intent.enabled,expected:intent.expected,pin,sentAtMs:Date.now()}),{title:enabled?'Kazanı Aç':'Kazanı Kapat',message:'Bu işlem için yönetici PIN’ini girin.'});
  if(!accepted)return null;
- const current=read();if(powerState(current)!==powerState(initial))throw Error('Kazan durumu değişti. Yeniden kontrol edin.');
- return commandIntent('power',enabled,current);
+ return{id,status:'pending'};
+}
+function randomId(){return Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('')}
+function waitUntil(read,ready,timeout=35000){return new Promise((resolve,reject)=>{const began=Date.now(),timer=setInterval(()=>{const value=read();if(ready(value)){clearInterval(timer);resolve(value)}else if(Date.now()-began>timeout){clearInterval(timer);reject(Error('Cihaz doğrulaması zaman aşımına uğradı.'))}},500)})}
+export async function applyMode(mode,read){
+ const state=read(),intent=commandIntent('mode',mode,state),functions=getFunctions(firebaseApp,'europe-west1');
+ if(!state.hysteresis?.onOff||!Number.isInteger(state.hysteresis.value)||!state.targetFresh)throw Error('Mod için güncel hedef ve ON/OFF farkı gerekiyor.');
+ if(state.hysteresis.value!==intent.hysteresis){const id=randomId();await httpsCallable(functions,'setBoilerHysteresis')({id,value:intent.hysteresis,expected:state.hysteresis.value,sentAtMs:Date.now()});await waitUntil(read,v=>v.hysteresis?.value===intent.hysteresis&&!v.hysteresisWaiting)}
+ const current=read();if(Math.round(current.target)!==intent.target){const id=randomId();await httpsCallable(functions,'setBoilerTarget')({id,target:intent.target,expected:current.target,sentAtMs:Date.now()});await waitUntil(read,v=>Math.round(v.target)===intent.target&&!v.waiting)}
+ return intent;
 }
 let plan=defaultPlan(),ready=false,error='',started=false,stop=null,epoch=0;const listeners=new Set();
 export function planSnapshot(){return{plan:structuredClone(plan),ready,error}}

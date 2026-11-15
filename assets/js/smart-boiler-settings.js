@@ -4,7 +4,7 @@ import{getFunctions,httpsCallable}from'https://www.gstatic.com/firebasejs/12.16.
 import{getStorage,ref,uploadBytes}from'https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js';
 import{firebaseApp,ADMIN_UID}from'./firebase-config.js';
 import{systemConfirm}from'./system-confirm.js';
-import{mountHysteresisEditor}from'./smart-boiler-live.js?v=644';
+import{mountHysteresisEditor}from'./smart-boiler-live.js?v=654';
 
 /* R643 aday — Akıllı Kazan ayarları üç sade kare kartta; güncelleme ve cihaz işlemleri ayrı pencerelerde. */
 const $=id=>document.getElementById(id),card=$('smartBoilerSettingsCard'),dialog=$('smartBoilerSettingsDialog'),updateDialog=$('boilerUpdateDialog'),deviceDialog=$('boilerDeviceDialog');
@@ -104,7 +104,7 @@ if(card&&dialog&&updateDialog&&deviceDialog){
 
 
 /* R653 — cihazdan bağımsız mod/program hazırlığı; aynı kayıt tüm cihazlarda okunur. */
-import{watchPlan,savePlan,planSnapshot,defaultPlan,validatePlan,DAY_NAMES,PREPARATION_NOTE}from'./smart-boiler-plan.js?v=6533';
+import{watchPlan,savePlan,planSnapshot,defaultPlan,validatePlan,DAY_NAMES,PREPARATION_NOTE}from'./smart-boiler-plan.js?v=654';
 function installPlanSettings(){
  if(!$('openBoilerModesDialog'))return;
  let snapshot=planSnapshot();watchPlan(value=>{snapshot=value;for(const b of [$('openBoilerModesDialog'),$('openBoilerScheduleDialog')])b.disabled=!value.ready});
