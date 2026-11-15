@@ -129,7 +129,7 @@ test('boiler settings page: header buttons, three side-by-side cards, firmware c
  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(ids.length,new Set(ids).size,'yinelenen kimlik var');
  for(const m of js.matchAll(/\$\('([A-Za-z]+)'\)/g))assert.ok(ids.includes(m[1]),`JS'in beklediği kimlik sayfada yok: ${m[1]}`);
  assert.match(js,/setBoilerCalibration/);assert.match(js,/renameBoilerDevice/);assert.match(index,/exports\.setBoilerCalibration=/);assert.match(index,/exports\.renameBoilerDevice=/);
- assert.match(html,/smart-boiler-settings\.js\?v=655/);assert.match(worker,/fatih-cay-evi-r656-kazan-durum-mesaji/);
+ assert.match(html,/smart-boiler-settings\.js\?v=655/);assert.match(worker,/fatih-cay-evi-r657-kazan-onbellek/);assert.match(worker,/system-ui\.js"\)\)\{\s*const latest=new URL\(url\);latest\.searchParams\.set\("v","656"\)/);
  assert.match(js,/key==='Enter'&&event\.target\.tagName==='INPUT'/);
 });
 test('boiler OTA: expired device reports do not keep the update button locked',()=>{
