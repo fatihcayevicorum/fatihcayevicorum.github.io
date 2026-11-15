@@ -8,7 +8,7 @@ import{mountHysteresisEditor}from'./smart-boiler-live.js?v=654';
 
 /* R643 aday — Akıllı Kazan ayarları üç sade kare kartta; güncelleme ve cihaz işlemleri ayrı pencerelerde. */
 const $=id=>document.getElementById(id),card=$('smartBoilerSettingsCard'),dialog=$('smartBoilerSettingsDialog'),updateDialog=$('boilerUpdateDialog'),deviceDialog=$('boilerDeviceDialog');
-export function isOtaActive(ota,now=Date.now()){return ['pending','offered','downloading','installing'].includes(ota?.status)&&Number(ota?.expiresAtMs)>now}
+export function isOtaActive(ota,now=Date.now()){return !Number(ota?.finishedAtMs)&&['pending','offered','downloading','installing'].includes(ota?.status)&&Number(ota?.expiresAtMs)>now}
 if(card&&dialog&&updateDialog&&deviceDialog){
  const db=getFirestore(firebaseApp),functions=getFunctions(firebaseApp,'europe-west1'),storage=getStorage(firebaseApp);
  const status=$('boilerSettingsStatus'),firmwareSelect=$('boilerFirmwareSelect'),rangeMin=$('boilerTargetMin'),rangeMax=$('boilerTargetMax'),rangeCancel=$('cancelBoilerTargetRange'),rangeSave=$('saveBoilerTargetRange');let state=null,downloadUrl=null,unsubscribe=null,rangeDirty=false,rangeSaving=false;
