@@ -84,7 +84,7 @@ self.addEventListener("fetch",event=>{
     const latest=new URL(url);latest.searchParams.set("v","663");
     event.respondWith(caches.open(RUNTIME_CACHE).then(async cache=>{
       try{const response=await fetch(latest.href,{cache:"reload"});if(response.ok){await cache.put(latest.href,response.clone());return response}return (await cache.match(latest.href))||response}
-      catch{return (await cache.match(latest.href))||await matchAppCache(latest.href)||await matchAppCache(request)||Response.error()}
+      catch{return (await cache.match(latest.href))||await matchAppCache(new Request(latest.href))||await matchAppCache(request)||Response.error()}
     }));return;
   }
   if(url.pathname.endsWith("/assets/js/system-ui.js")){
