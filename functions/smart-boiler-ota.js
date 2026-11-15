@@ -12,6 +12,15 @@ const fail=(HttpsError,code,message)=>{throw new HttpsError(code,message)};
 function cleanVersion(value,HttpsError){const v=String(value||'').trim();if(!VERSION.test(v)||v.length>48)fail(HttpsError,'invalid-argument','Yazılım sürümü geçersiz.');return v}
 function pathFor(version){return `boiler-firmware/releases/${version}.bin`}
 function installedVersion(value){return String(value||'').replace(/^KazanFW\s+/i,'').trim()}
+const activeOtaStatus=status=>['pending','offered','downloading','installing'].includes(status);
+function versionRelation(requested,value){
+ const actual=installedVersion(value);
+ if(!VERSION.test(String(requested||''))||!VERSION.test(actual))return null;
+ if(requested===actual)return 'exact';
+ // A short upload label is only a version-number match, never proof of binary identity.
+ return /^[0-9]+\.[0-9]+\.[0-9]+$/.test(requested)&&actual.startsWith(requested+'-')?'short':null;
+}
+
 
 function buildBoilerOta({db,bucket,FieldValue,HttpsError,ownerUid,projectId,clock=Date.now}){
  const releases=db.collection('adminBoilerFirmware'),state=db.doc(`adminBoilerState/${DEVICE}`),credentials=db.doc(`adminBoilerDevices/${DEVICE}`);
@@ -33,7 +42,9 @@ function buildBoilerOta({db,bucket,FieldValue,HttpsError,ownerUid,projectId,cloc
   if(request.auth?.uid!==ownerUid)fail(HttpsError,'permission-denied','Yalnızca ana yönetici güncelleme başlatabilir.');
   const version=cleanVersion(request.data?.version,HttpsError),release=await releases.doc(version).get();if(!release.exists||release.data()?.status!=='ready')fail(HttpsError,'failed-precondition','Hazır firmware sürümü bulunamadı.');
   const snap=await state.get(),current=snap.data()||{},now=clock();if(current.paired!==true)fail(HttpsError,'failed-precondition','ESP32 bağlı değil.');
-  if(current.ota&&['pending','offered','downloading','installing'].includes(current.ota.status)&&Number(current.ota.expiresAtMs)>now)fail(HttpsError,'aborted','Devam eden güncellemenin tamamlanmasını bekleyin.');
+  if(current.ota&&activeOtaStatus(current.ota.status)&&Number(current.ota.expiresAtMs)>now)fail(HttpsError,'aborted','Devam eden güncellemenin tamamlanmasını bekleyin.');
+  const seen=Number(current.lastSeenAtMs),relation=versionRelation(version,current.firmwareVersion);
+  if(relation&&Number.isFinite(seen)&&seen>0&&now-seen>=0&&now-seen<=45000)fail(HttpsError,'failed-precondition',relation==='exact'?'Bu firmware sürümü cihazda zaten çalışıyor.':'Cihaz bu kısa sürüm numarasını zaten bildiriyor. Farklı derleme için tam firmware sürüm adını kullanın.');
   const requestId=crypto.randomBytes(16).toString('hex'),data=release.data();
   const ota={requestId,version,sha256:data.sha256,size:data.size,status:'pending',requestedAtMs:now,expiresAtMs:now+24*60*60*1000,previousVersion:String(current.firmwareVersion||''),requestedBy:request.auth.uid};
   await state.set({ota},{merge:true});return ota;
@@ -47,14 +58,14 @@ function buildBoilerOta({db,bucket,FieldValue,HttpsError,ownerUid,projectId,cloc
 
  async function instruction(current){
   const ota=current?.ota||{},now=clock();if(!REQUEST.test(String(ota.requestId||''))||!VERSION.test(String(ota.version||''))||!SHA.test(String(ota.sha256||'')))return null;
-  if(!['pending','offered'].includes(ota.status)||Number(ota.expiresAtMs)<=now||installedVersion(current.firmwareVersion)===ota.version)return null;
+  if(!['pending','offered'].includes(ota.status)||Number(ota.expiresAtMs)<=now||versionRelation(ota.version,current.firmwareVersion))return null;
   const release=await releases.doc(ota.version).get();if(!release.exists||release.data()?.status!=='ready')return null;
   const downloadUrl=`https://europe-west1-${projectId}.cloudfunctions.net/downloadBoilerFirmware?requestId=${ota.requestId}&version=${encodeURIComponent(ota.version)}`;
   return{requestId:ota.requestId,version:ota.version,sha256:ota.sha256,size:ota.size,downloadUrl};
  }
 
  async function applyReport(current,report){
-  const ota=current?.ota;if(!ota||!report||report.requestId!==ota.requestId)return current;
+  const ota=current?.ota;if(!ota||!activeOtaStatus(ota.status)||!report||report.requestId!==ota.requestId)return current;
   const allowed=['offered','downloading','installing','failed'];if(!allowed.includes(report.status))return current;
   const now=clock(),next={...ota,status:report.status,lastDeviceReportAtMs:now};
   if(report.status==='failed'){next.finishedAtMs=now;next.error=String(report.error||'Güncelleme tamamlanamadı.').slice(0,160)}
@@ -62,7 +73,11 @@ function buildBoilerOta({db,bucket,FieldValue,HttpsError,ownerUid,projectId,cloc
  }
 
  async function markSeen(current,firmwareVersion){
-  const ota=current?.ota;if(!ota||!VERSION.test(String(ota.version||''))||ota.version!==installedVersion(firmwareVersion)||!['pending','offered','downloading','installing'].includes(ota.status))return current;
+  const ota=current?.ota;if(!ota||!activeOtaStatus(ota.status))return current;
+  const relation=versionRelation(ota.version,firmwareVersion);if(!relation)return current;
+  // Called only for accepted, authenticated telemetry by the boiler ingest transaction.
+  // For the legacy short labels, close the redundant request without claiming the exact build was installed.
+  if(relation==='short')return{...current,ota:{...ota,status:'cancelled',finishedAtMs:clock(),installedVersion:firmwareVersion,error:'Cihaz '+installedVersion(firmwareVersion)+' sürümünü bildiriyor. Kısa sürüm numarası eşleşti; tam derleme doğrulanmadan tekrar indirme isteği kapatıldı.'}};
   return{...current,ota:{...ota,status:'success',finishedAtMs:clock(),installedVersion:firmwareVersion,error:''}};
  }
 
