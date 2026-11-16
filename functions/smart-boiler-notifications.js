@@ -23,20 +23,30 @@ function baseline(state,at){
 function decide(state,old,at){
  if(!old?.initialized)return{next:baseline(state,at),events:[]};
  const next={...old,updatedAtMs:at},events=[],fresh=freshState(state,at),enda=fresh&&state.endaConnected===true,day=businessDayKey(at),bootId=String(state.bootId||''),current=state.temperatureC,target=measured(state.targetTemperatureC,state.targetMeasuredAtMs,at)?state.targetTemperatureC:null,validTemperature=enda&&measured(current,state.measuredAtMs,at),command=state.powerCommand||{};
+ const bootChanged=fresh&&!!bootId&&!!next.bootId&&bootId!==next.bootId;
+ const espRecovered=fresh&&(next.espOfflineAlerted||bootChanged);
+ const endaRecovered=enda&&(next.endaOfflineAlerted||next.endaAwaitingAfterEsp);
  if(!fresh){
   if(!next.espOfflineAlerted){events.push(event('system-offline',Number(state.lastSeenAtMs)||at,'espDisconnected','critical','Akıllı Kazan Bağlantı Uyarısı','Akıllı Kazan sisteminden 1 dakikadır veri alınamıyor. Elektrik, internet veya ESP32 bağlantısını kontrol edin.'));next.espOfflineAlerted=true}
  }else{
-  if(next.espOfflineAlerted){events.push(event('esp-connected',`${bootId}:${at}`,'espConnected','success','Akıllı Kazan Bağlantısı','ESP32 yeniden bağlandı.'));next.espOfflineAlerted=false}
+  const tempText=validTemperature?`ENDA sıcaklık verisi: ${temperature(current)}.`:'ENDA sıcaklık verisi henüz alınamadı.';
+  if(espRecovered){
+   const preferences=['espConnected',...(enda?['endaConnected']:[]),...(bootChanged&&validTemperature?['startupTemperature']:[])];
+   const type=bootChanged&&validTemperature?'startup-temperature':'esp-connected';
+   events.push(event(type,`${bootId}:${at}`,preferences[0],enda?'success':'warning','Akıllı Kazan Bağlantısı',enda?`ESP32 ve ENDA bağlandı. ${tempText}`:'ESP32 bağlandı. ENDA henüz bağlı değil.',{preferences,connectionState:enda?'both':'esp-only',temperatureC:validTemperature?current:null,businessDate:day,...(bootChanged?{source:'power_restore'}:{})}));
+   next.espOfflineAlerted=false;
+   next.endaAwaitingAfterEsp=!enda;
+  }else if(endaRecovered){
+   events.push(event('enda-connected',`${bootId}:${at}`,'endaConnected','success','Akıllı Kazan Bağlantısı',`ENDA bağlandı. ${tempText}`,{temperatureC:validTemperature?current:null,businessDate:day}));
+  }
   if(enda){
-   if(next.endaOfflineAlerted){events.push(event('enda-connected',`${bootId}:${at}`,'endaConnected','success','Akıllı Kazan Bağlantısı','ENDA yeniden bağlandı.'));next.endaOfflineAlerted=false}
-   next.endaMissingSinceMs=0;
+   next.endaOfflineAlerted=false;next.endaAwaitingAfterEsp=false;next.endaMissingSinceMs=0;
   }else{
    if(!next.endaMissingSinceMs)next.endaMissingSinceMs=Number(state.lastSeenAtMs)||at;
    if(!next.endaOfflineAlerted&&at-next.endaMissingSinceMs>=MINUTE){events.push(event('enda-disconnected',next.endaMissingSinceMs,'endaDisconnected','critical','ENDA Bağlantı Uyarısı','ENDA ile 1 dakikadır bağlantı kurulamıyor. RS485 bağlantısını ve ENDA enerjisini kontrol edin.'));next.endaOfflineAlerted=true}
   }
+  if(bootId)next.bootId=bootId;
  }
- if(fresh&&bootId&&next.bootId&&bootId!==next.bootId&&validTemperature){events.push(event('startup-temperature',bootId,'startupTemperature','success','Akıllı Kazan Çalışmaya Başladı',`Başlangıç sıcaklığı: ${temperature(current)}.`,{temperatureC:current,businessDate:day,source:'power_restore'}))}
- if(fresh&&bootId&&(validTemperature||!next.bootId))next.bootId=bootId;
  if(command.status==='confirmed'&&command.id&&String(command.id)!==next.lastPowerCommandId){
   const enabled=command.enabled,scheduled=command.source==='schedule';
   if(enda&&recent(command.createdAtMs,at,POWER_WINDOW)&&command.bootId===bootId&&state.controlVerified===true&&recent(state.controlMeasuredAtMs,at)&&typeof enabled==='boolean'&&typeof command.expected==='boolean'&&command.expected!==enabled&&state.controlEnabled===enabled){
