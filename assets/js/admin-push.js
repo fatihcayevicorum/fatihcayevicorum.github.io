@@ -1,4 +1,4 @@
-import "./boiler-notification-visuals.js?v=668";
+import "./boiler-notification-visuals.js?v=669";
 import{getApp,getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{doc,getDoc,getFirestore,serverTimestamp,setDoc}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import{deleteToken,getMessaging,getToken,isSupported,onMessage}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
@@ -76,7 +76,7 @@ export async function startForegroundAdminPush(){
   onMessage(getMessaging(app),async payload=>{
     const worker=await registration(),title=payload.notification?.title||payload.data?.title||"Fatih Çay Evi";
     await worker.showNotification(globalThis.fatihNotificationTitle(payload.data||{},title),{
-      body:payload.notification?.body||payload.data?.body||"",...globalThis.fatihNotificationVisuals(payload.data||{}),
+      body:globalThis.fatihNotificationBody(payload.data||{},payload.notification?.body||payload.data?.body||""),...globalThis.fatihNotificationVisuals(payload.data||{}),
       tag:payload.data?.tag||payload.data?.type||"fatih-admin-tea",renotify:true,
       data:{link:payload.data?.link||"/taze-dem-paneli/"}
     })

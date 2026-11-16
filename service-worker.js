@@ -1,4 +1,4 @@
-importScripts("/assets/js/boiler-notification-visuals.js?v=668");
+importScripts("/assets/js/boiler-notification-visuals.js?v=669");
 /* R397 - Müşteri bilgilendirme penceresinde Fatih Çay Evi logosu */
 self.addEventListener("notificationclick",event=>{
   const raw=event.notification?.data||{},link=raw.link||raw.FCM_MSG?.data?.link||raw.FCM_MSG?.fcmOptions?.link||"/taze-dem-paneli/";
@@ -17,14 +17,14 @@ messaging.onBackgroundMessage(payload=>{
   const data=payload?.data||{},type=String(data.type||"");
   if(!data.title&&!data.body)return;
   return self.registration.showNotification(globalThis.fatihNotificationTitle(data,data.title||"Fatih Çay Evi"),{
-    body:data.body||"",...globalThis.fatihNotificationVisuals(data),
+    body:globalThis.fatihNotificationBody(data,data.body||""),...globalThis.fatihNotificationVisuals(data),
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r668-kazan-baglanti-bildirimleri",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r669-kazan-bildirim-okunabilirlik",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
-  "./assets/js/boiler-notification-visuals.js?v=668",
-  "./assets/icons/boiler/badge-r665.png",
+  "./assets/js/boiler-notification-visuals.js?v=669",
+  "./assets/icons/boiler/badge-r669.png",
   "./assets/icons/boiler/red-alert-r668.png","./assets/icons/boiler/orange-alert-r668.png","./assets/icons/boiler/wifi-r668.png","./assets/icons/boiler/link-r668.png","./assets/icons/boiler/unlink-r668.png","./assets/icons/boiler/power-r668.png","./assets/icons/boiler/target-r668.png","./assets/icons/boiler/sensor-r668.png","./assets/icons/boiler/shield-r668.png","./assets/icons/boiler/shield-warning-r668.png",
 
   "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-plan.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/js/smart-boiler-settings.js?v=663","./assets/css/smart-boiler.css",
