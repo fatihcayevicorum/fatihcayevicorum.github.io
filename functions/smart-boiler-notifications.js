@@ -57,7 +57,8 @@ function decide(state,old,at){
  const heating=validTemperature&&Number.isFinite(target)&&target-current>HEATING_GAP_C&&state.controlVerified===true&&recent(state.controlMeasuredAtMs,at)&&state.controlEnabled===true&&state.heaterOutputKnown===true&&state.heaterOn===true;
  if(heating){
   const restart=!next.heatingSinceMs||next.heatingTargetC!==target||old.bootId!==bootId||!recent(old.updatedAtMs,at,2*MINUTE+1)||!Number.isFinite(next.heatingStartC);
-  if(restart||current-Number(next.heatingStartC)>=1||Number(next.heatingStartC)-current>=1){next.heatingSinceMs=at;next.heatingStartC=current;next.heatingTargetC=target;if(restart)next.heatingAlerted=false;}
+  if(restart||current-Number(next.heatingStartC)>=1){next.heatingSinceMs=at;next.heatingStartC=current;next.heatingTargetC=target;if(restart)next.heatingAlerted=false;}
+  else if(current<next.heatingStartC)next.heatingStartC=current;
   if(!next.heatingAlerted&&at-next.heatingSinceMs>=HEATING_WINDOW){events.push(event('heating-no-rise',next.heatingSinceMs,'safetyAlerts','warning','Akıllı Kazan Isıtma Uyarısı',`Kazan hedefin 5°C'den fazla altında. Isıtma çıkışı açık görünmesine rağmen 15 dakikadır sıcaklık yeterince yükselmiyor. Hedef: ${temperature(target)}, mevcut: ${temperature(current)}. Kazanı ve kontaktörü kontrol edin.`,{temperatureC:current,targetTemperatureC:target,businessDate:day}));next.heatingAlerted=true}
  }else{next.heatingSinceMs=0;next.heatingStartC=null;next.heatingTargetC=null;next.heatingAlerted=false}
  const controlOff=validTemperature&&state.controlVerified===true&&recent(state.controlMeasuredAtMs,at)&&state.controlEnabled===false&&state.heaterOutputKnown===true&&state.heaterOn===false;
