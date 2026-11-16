@@ -1,4 +1,4 @@
-importScripts("/assets/js/boiler-notification-visuals.js?v=665");
+importScripts("/assets/js/boiler-notification-visuals.js?v=666");
 /* R397 - Müşteri bilgilendirme penceresinde Fatih Çay Evi logosu */
 self.addEventListener("notificationclick",event=>{
   const raw=event.notification?.data||{},link=raw.link||raw.FCM_MSG?.data?.link||raw.FCM_MSG?.fcmOptions?.link||"/taze-dem-paneli/";
@@ -16,20 +16,15 @@ messaging.onBackgroundMessage(payload=>{
   if(payload?.notification?.title||payload?.notification?.body)return;
   const data=payload?.data||{},type=String(data.type||"");
   if(!data.title&&!data.body)return;
-  return self.registration.showNotification(data.title||"Fatih Çay Evi",{
+  return self.registration.showNotification(globalThis.fatihNotificationTitle(data,data.title||"Fatih Çay Evi"),{
     body:data.body||"",...globalThis.fatihNotificationVisuals(data),
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r665-kazan-bildirim-gorselleri",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r666-kisa-kazan-bildirimleri",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
-  "./assets/js/boiler-notification-visuals.js?v=665",
-  "./assets/icons/boiler/critical-r665.png",
-  "./assets/icons/boiler/warning-r665.png",
-  "./assets/icons/boiler/success-r665.png",
-  "./assets/icons/boiler/info-r665.png",
+  "./assets/js/boiler-notification-visuals.js?v=666",
   "./assets/icons/boiler/badge-r665.png",
-  "./assets/icons/boiler/fahkon-r665.png",
 
   "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-plan.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/js/smart-boiler-settings.js?v=663","./assets/css/smart-boiler.css",
   "./assets/js/product-group-summary.js","./assets/css/product-group-summary.css",
