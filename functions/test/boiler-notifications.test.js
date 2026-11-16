@@ -45,3 +45,23 @@ test('R667: recorded event cannot be sent again even after monitor state rollbac
  let sends=0;const monitor=buildBoilerNotifications({db,FieldValue:{serverTimestamp:()=>AT},now:()=>AT+1000,sendPush:async()=>{sends++;return{successCount:1}}});
  await monitor.run();records.set('adminBoilerNotificationState/kazan-1',baseline(state(),AT));await monitor.run();assert.equal(sends,1);
 });
+
+test('R668: reconnect and reboot produce one combined notification with fresh temperature',()=>{
+ let m=baseline(state(),AT);const at=AT+121000;
+ m=decide(state(),m,AT+61000).next;
+ const r=decide(state({bootId:'b'.repeat(32),lastSeenAtMs:at,temperatureC:96,targetTemperatureC:100}),m,at);
+ assert.equal(r.events.length,1);assert.equal(r.events[0].connectionState,'both');assert.match(r.events[0].body,/ESP32 ve ENDA bağlandı. ENDA sıcaklık verisi: 96°C/);assert.deepEqual(r.events[0].preferences,['espConnected','endaConnected','startupTemperature']);
+ assert.deepEqual(decide(state({bootId:'b'.repeat(32),lastSeenAtMs:at+1000,temperatureC:96,targetTemperatureC:100}),r.next,at+1000).events,[]);
+});
+test('R668: ESP only reports missing ENDA, then ENDA recovery is separate once',()=>{
+ let m=baseline(state(),AT);const at=AT+121000;m=decide(state(),m,AT+61000).next;
+ const r=decide(state({bootId:'b'.repeat(32),lastSeenAtMs:at,endaConnected:false}),m,at);
+ assert.equal(r.events.length,1);assert.equal(r.events[0].connectionState,'esp-only');assert.match(r.events[0].body,/ENDA henüz bağlı değil/);
+ const t=decide(state({bootId:'b'.repeat(32),lastSeenAtMs:at+1000}),r.next,at+1000);
+ assert.deepEqual(t.events.map(x=>x.type),['enda-connected']);assert.match(t.events[0].body,/60°C/);
+});
+test('R668: standalone ENDA recovery and stale temperature never report invented values',()=>{
+ const m=baseline(state({endaConnected:false}),AT);
+ const r=decide(state({lastSeenAtMs:AT+1000,measuredAtMs:AT-120000}),m,AT+1000);
+ assert.deepEqual(r.events.map(x=>x.type),['enda-connected']);assert.match(r.events[0].body,/henüz alınamadı/);assert.equal(r.events[0].temperatureC,null);
+});
