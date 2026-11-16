@@ -219,12 +219,12 @@ async function sendAdminTeaPush(message){
 
 async function sendAdminBoilerPush(message){
   const snap=await db.collection(ADMIN_TEA_DEVICE_COLLECTION).where("active","==",true).get(),unique=new Map();
-  snap.docs.forEach(item=>{const data=item.data()||{},preferences=data.boilerPreferences||{};if(data.boilerNotificationsEnabled===true&&preferences[message.preference]!==false&&typeof data.token==="string"&&data.token.length>20)unique.set(data.token,item)});
+  snap.docs.forEach(item=>{const data=item.data()||{},preferences=data.boilerPreferences||{};if(data.boilerNotificationsEnabled===true&&(Array.isArray(message.preferences)?message.preferences:[message.preference]).some(key=>preferences[key]!==false)&&typeof data.token==="string"&&data.token.length>20)unique.set(data.token,item)});
   const entries=[...unique.entries()],result={deviceCount:entries.length,successCount:0,failureCount:0};
   for(let offset=0;offset<entries.length;offset+=500){
     const part=entries.slice(offset,offset+500),response=await getMessaging().sendEachForMulticast({
       tokens:part.map(([token])=>token),
-      data:{title:String(message.title||"Akıllı Kazan"),body:String(message.body||""),type:`admin-boiler-${message.type}`,tag:`admin-boiler-${message.id}`,severity:String(message.severity||"info"),link:`${SITE_URL}/akilli-kazan/`},
+      data:{title:String(message.title||"Akıllı Kazan"),body:String(message.body||""),type:`admin-boiler-${message.type}`,tag:`admin-boiler-${message.id}`,severity:String(message.severity||"info"),connectionState:String(message.connectionState||""),link:`${SITE_URL}/akilli-kazan/`},
       webpush:{headers:{Urgency:message.severity==="critical"?"high":"normal",TTL:"600"},fcmOptions:{link:`${SITE_URL}/akilli-kazan/`}}
     });
     result.successCount+=response.successCount;result.failureCount+=response.failureCount;
