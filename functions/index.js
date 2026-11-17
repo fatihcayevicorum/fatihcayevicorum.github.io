@@ -224,7 +224,7 @@ async function sendAdminBoilerPush(message){
   for(let offset=0;offset<entries.length;offset+=500){
     const part=entries.slice(offset,offset+500),response=await getMessaging().sendEachForMulticast({
       tokens:part.map(([token])=>token),
-      data:{title:String(message.title||"Akıllı Kazan"),body:String(message.body||""),type:`admin-boiler-${message.type}`,tag:`admin-boiler-${message.id}`,severity:String(message.severity||"info"),connectionState:String(message.connectionState||""),link:`${SITE_URL}/akilli-kazan/`},
+      data:{title:String(message.title||"Akıllı Kazan"),body:boilerNotificationModule.formatBoilerPushBody(message),type:`admin-boiler-${message.type}`,tag:`admin-boiler-${message.id}`,severity:String(message.severity||"info"),connectionState:String(message.connectionState||""),link:`${SITE_URL}/akilli-kazan/`},
       webpush:{headers:{Urgency:message.severity==="critical"?"high":"normal",TTL:"600"},fcmOptions:{link:`${SITE_URL}/akilli-kazan/`}}
     });
     result.successCount+=response.successCount;result.failureCount+=response.failureCount;

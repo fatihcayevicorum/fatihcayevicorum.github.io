@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{baseline,decide,businessDayKey,DEFAULT_PREFERENCES,buildBoilerNotifications}=require('../smart-boiler-notifications');
+const{baseline,decide,businessDayKey,DEFAULT_PREFERENCES,buildBoilerNotifications,formatBoilerPushBody}=require('../smart-boiler-notifications');
 const AT=Date.parse('2026-11-16T08:00:00+03:00'),BOOT='a'.repeat(32);
 function state(patch={}){const at=patch.lastSeenAtMs??AT;return{paired:true,lastSeenAtMs:at,measuredAtMs:at,targetMeasuredAtMs:at,controlMeasuredAtMs:at,endaConnected:true,bootId:BOOT,temperatureC:60,targetTemperatureC:95,controlVerified:true,controlEnabled:true,heaterOutputKnown:true,heaterOn:true,powerCommand:null,endaErrorCode:0,...patch}}
 function command(patch={}){return{id:'c'.repeat(32),status:'confirmed',enabled:true,expected:false,source:'manual',bootId:BOOT,createdAtMs:AT,...patch}}
@@ -64,4 +64,35 @@ test('R668: standalone ENDA recovery and stale temperature never report invented
  const m=baseline(state({endaConnected:false}),AT);
  const r=decide(state({lastSeenAtMs:AT+1000,measuredAtMs:AT-120000}),m,AT+1000);
  assert.deepEqual(r.events.map(x=>x.type),['enda-connected']);assert.match(r.events[0].body,/henüz alınamadı/);assert.equal(r.events[0].temperatureC,null);
+});
+
+test('R670: confirmed scheduled push contains only the temperature, original event log unchanged',()=>{
+ const at=AT+1000;
+ const r=decide(state({lastSeenAtMs:at,temperatureC:67,powerCommand:command({source:'schedule'})}),baseline(state(),AT),at);
+ const event=r.events.find(e=>e.type==='power-on');assert.match(event.title,/Programla Açıldı/);assert.match(event.body,/Haftalık çalışma programına göre/);
+ assert.equal(formatBoilerPushBody(event),'Anlık sıcaklık: 67°C');
+ assert.equal(formatBoilerPushBody({...event,type:'power-off'}),'Anlık sıcaklık: 67°C');
+ assert.equal(formatBoilerPushBody({...event,temperatureC:null}),'Sıcaklık verisi yok.');
+});
+test('R670: short push text preserves connection status, measured values and safety details',()=>{
+ const f=formatBoilerPushBody;
+ assert.equal(f({type:'esp-connected',connectionState:'both',temperatureC:96}),'ESP32 ve ENDA bağlı. 96°C');
+ assert.equal(f({type:'esp-connected',connectionState:'esp-only',temperatureC:96}),'ENDA henüz bağlı değil.');
+ assert.equal(f({type:'esp-connected',connectionState:'both',temperatureC:null}),'ESP32 ve ENDA bağlı.\nSıcaklık verisi yok.');
+ assert.equal(f({type:'temperature-overshoot',targetTemperatureC:93,temperatureC:97}),'5 dk hedefin üzerinde.\nHedef: 93°C · Anlık: 97°C');
+ assert.match(f({type:'heating-no-rise',targetTemperatureC:100,temperatureC:80}),/15 dk ısıtma/);
+ assert.match(f({type:'heating-no-rise',targetTemperatureC:100,temperatureC:80}),/Hedef: 100°C · Anlık: 80°C/);
+ assert.match(f({type:'heating-no-rise'}),/kontaktörü kontrol edin/);
+ assert.match(f({type:'control-off-rising'}),/Kontaktörü kontrol edin/);
+ assert.match(f({type:'enda-disconnected'}),/RS485/);
+ assert.match(f({type:'enda-error',errorCode:4}),/kısa devre/);
+ assert.equal(f({type:'future-type',body:'Özgün mesaj'}),'Özgün mesaj');
+});
+test('R670: server-side formatter is wired only to the kazan push sender',()=>{
+ const index=fs.readFileSync(path.join(__dirname,'../index.js'),'utf8');
+ const start=index.indexOf('async function sendAdminBoilerPush(message)');
+ assert.ok(start>=0);
+ const sender=index.slice(start,index.indexOf('\n}',start)+2);
+ assert.match(sender,/body:boilerNotificationModule\.formatBoilerPushBody\(message\)/);
+ assert.equal((index.match(/boilerNotificationModule\.formatBoilerPushBody\(/g)||[]).length,1);
 });
