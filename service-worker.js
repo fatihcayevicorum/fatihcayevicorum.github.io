@@ -21,8 +21,9 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r669-kazan-bildirim-okunabilirlik",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r671-faturalarim",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
+  "./faturalarim/","./faturalarim/index.html","./faturalarim/script.js?v=671","./faturalarim/style.css?v=671","./faturalarim/ocr-parser.js?v=671","./assets/js/supplier-report.js?v=671",
   "./assets/js/boiler-notification-visuals.js?v=669",
   "./assets/icons/boiler/badge-r669.png",
   "./assets/icons/boiler/red-alert-r668.png","./assets/icons/boiler/orange-alert-r668.png","./assets/icons/boiler/wifi-r668.png","./assets/icons/boiler/link-r668.png","./assets/icons/boiler/unlink-r668.png","./assets/icons/boiler/power-r668.png","./assets/icons/boiler/target-r668.png","./assets/icons/boiler/sensor-r668.png","./assets/icons/boiler/shield-r668.png","./assets/icons/boiler/shield-warning-r668.png",

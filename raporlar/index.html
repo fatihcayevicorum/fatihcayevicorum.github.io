@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/panel-header.css?v=6">
-  <link rel="stylesheet" href="style.css?v=606">
+  <link rel="stylesheet" href="style.css?v=671">
 <link rel="stylesheet" href="../birikim-hesaplari/style.css?v=419"><script type="module" src="../assets/js/connection-status.js?v=481"></script>  <link rel="stylesheet" href="../assets/css/theme.css?v=548">
   <script src="../assets/js/theme.js?v=541"></script>
 <link rel="stylesheet" href="../assets/css/product-group-summary.css?v=601">
@@ -66,6 +66,7 @@
       <button type="button" role="tab" aria-selected="false" data-report-tab="expenses"><i class="fa-solid fa-receipt"></i><span>Giderler</span><small>Kategori ve ödeme türü</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="stock"><i class="fa-solid fa-boxes-stacked"></i><span>Stok Raporu</span><small>Alım, satış ve tüketim</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="currentAccounts"><i class="fa-solid fa-address-book"></i><span>Cari Hesaplar</span><small>Borç ve tahsilat detayları</small></button>
+      <button id="supplierReportTab" hidden type="button" role="tab" aria-selected="false" data-report-tab="suppliers"><i class="fa-solid fa-file-invoice"></i><span>Tedarikçi Borçlarımız</span><small>Fatura ve ödeme takibi</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="personnel"><i class="fa-solid fa-users-gear"></i><span>Personel Performansı</span><small>Satış, işlem ve ücret takibi</small></button>
       <button type="button" role="tab" aria-selected="false" data-report-tab="closings"><i class="fa-solid fa-calendar-check"></i><span>Gün Sonları</span><small>Kapanış arşivi</small></button>
     </nav>
@@ -276,7 +277,7 @@
       <p id="closingEmpty" class="empty">Henüz kapatılmış gün raporu bulunmuyor.</p>
     </section>
     </section>
-  </main>
+  <section data-report-panel="suppliers" hidden class="panel"><div class="section-heading"><h2>Tedarikçi Cari Borçlarımız</h2><a href="../faturalarim/">Faturalarım</a></div><p class="notice">Güncel borç tüm tarihlerdeki açık faturaları kapsar. Fatura ve ödeme toplamları üstte seçilen döneme göredir. Müşteri alacaklarından ayrıdır.</p><div id="supplierReportSummary" class="supplier-report-summary"></div><input id="supplierReportSearch" type="search" placeholder="Tedarikçi ara" aria-label="Tedarikçi ara"><div id="supplierReport"></div></section></main>
 
   <dialog id="closingDetailDialog" class="closing-detail-dialog">
     <div class="closing-detail-card">
@@ -335,7 +336,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status"></div>
-  <script type="module" src="script.js?v=606"></script>
+  <script type="module" src="script.js?v=671"></script>
   
   <script type="module" src="../assets/js/system-ui.js?v=651"></script>
 </body>

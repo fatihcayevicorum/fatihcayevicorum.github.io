@@ -700,3 +700,6 @@ exports.refreshAndroidWidgetOnBoilerState=onDocumentUpdated({document:'adminBoil
   if(!claimed)return null;
   return sendAndroidWidgetRefresh();
 });
+
+// R671 — Owner-only transactional invoices and supplier payments.
+exports.manageInvoices=onCall({region:"europe-west1",cors:true},require("./invoices").buildInvoices({db,FieldValue,HttpsError,requireOwner}).handler);
