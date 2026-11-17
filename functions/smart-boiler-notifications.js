@@ -87,4 +87,28 @@ function buildBoilerNotifications({db,FieldValue,sendPush,now=Date.now}){
  async function run(){const at=now(),result=await db.runTransaction(async tx=>{const[stateSnap,monitorSnap]=await Promise.all([tx.get(stateRef),tx.get(monitorRef)]),state=stateSnap.data()||{},monitor=monitorSnap.data()||{},decision=decide(state,monitor,at);tx.set(monitorRef,decision.next,{merge:false});return decision.events});for(const item of result)await recordAndSend(item,at);return{processed:true,eventCount:result.length,events:result.map(x=>x.type)}}
  return{run}
 }
-module.exports={DEFAULT_PREFERENCES,ERROR_LABELS,businessDayKey,baseline,decide,buildBoilerNotifications};
+// R670: compact push text at the source, independent of browser cache and
+// Android line wrapping. Full event descriptions remain in the event log.
+function formatBoilerPushBody(message={}){
+ const value=Number.isFinite(message.temperatureC)?temperature(message.temperatureC):null;
+ const target=Number.isFinite(message.targetTemperatureC)?temperature(message.targetTemperatureC):null;
+ const live=value?`Anlık sıcaklık: ${value}`:'Sıcaklık verisi yok.';
+ const pair=target&&value?`Hedef: ${target} · Anlık: ${value}`:live;
+ switch(message.type){
+  case 'power-on':case 'power-off':return live;
+  case 'esp-connected':case 'startup-temperature':
+   if(message.connectionState==='both')return value?`ESP32 ve ENDA bağlı. ${value}`:'ESP32 ve ENDA bağlı.\nSıcaklık verisi yok.';
+   if(message.connectionState==='esp-only')return 'ENDA henüz bağlı değil.';
+   return message.type==='startup-temperature'?live:'ESP32 yeniden bağlandı.';
+  case 'enda-connected':return live;
+  case 'system-offline':return '1 dk veri yok.\nGüç, ağ ve ESP32 kontrolü.';
+  case 'enda-disconnected':return '1 dk ENDA yanıtı yok.\nRS485 ve ENDA enerjisini kontrol edin.';
+  case 'target-reached':return target?`Hedef sıcaklık: ${target}`:live;
+  case 'temperature-overshoot':return `5 dk hedefin üzerinde.\n${pair}`;
+  case 'heating-no-rise':return `15 dk ısıtma, artış yetersiz.\nHedefin 5°C'den fazla altında.\n${pair}\nKazan ve kontaktörü kontrol edin.`;
+  case 'control-off-rising':return 'Kontrol kapalı görünüyor.\nSıcaklık yükseliyor.\nKontaktörü kontrol edin.';
+  case 'enda-error':return ({1:'PT100 kopuk veya arızalı.',2:'Ölçüm alt skala dışında.',3:'Ölçüm üst skala dışında.',4:'PT100 kısa devre veya çok soğuk.',5:'ENDA sensör girişi hatalı.'})[message.errorCode]||String(message.body||'');
+  default:return String(message.body||'');
+ }
+}
+module.exports={DEFAULT_PREFERENCES,ERROR_LABELS,businessDayKey,baseline,decide,buildBoilerNotifications,formatBoilerPushBody};
