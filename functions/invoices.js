@@ -39,7 +39,8 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
         const r=ref('adminInvoices',invoiceId),existing=await tx.get(r);
         if(existing.exists){if(existing.data().requestHash!==requestHash||existing.data().status!=='posted')fail('already-exists','Bu işlem daha önce farklı içerikle veya iptal edilmiş olarak kaydedildi. Yeni taslak açın.');return{id:invoiceId,alreadyExists:true};}
         const unique=ref('adminInvoiceKeys',fingerprint),u=await tx.get(unique);
-        if(u.exists)fail('already-exists','Bu fatura numarası daha önce kaydedildi.');
+        let replacesInvoiceId='';
+        if(u.exists){const prior=await tx.get(ref('adminInvoices',u.data().invoiceId));if(!prior.exists||prior.data().status!=='cancelled')fail('already-exists','Bu fatura numarası daha önce kaydedildi.');replacesInvoiceId=prior.id;}
         const supplier=invoice.kind==='purchase'?await tx.get(ref('adminSuppliers',invoice.supplierId)):null;
         if(invoice.kind==='purchase'&&(!supplier?.exists||supplier.data().active===false))fail('not-found','Tedarikçi bulunamadı.');
         if(supplier)invoice.partyName=supplier.data().name;
@@ -49,7 +50,7 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
         const account=paid?await readAccount(tx,d.payment.accountId):null;
         if(paid)await checkDay(tx);
         const {photo,...fields}=invoice;
-        tx.set(r,{...fields,status:'posted',paidCents:paid,fingerprint,requestHash,hasPhoto:!!photo,title:`${invoice.partyName} • ${invoice.number}`,businessDate:invoice.date,...created(uid)});
+        tx.set(r,{...fields,status:'posted',paidCents:paid,fingerprint,requestHash,replacesInvoiceId,hasPhoto:!!photo,title:`${invoice.partyName} • ${invoice.number}`,businessDate:invoice.date,...created(uid)});
         tx.set(unique,{invoiceId});
         if(photo)tx.set(ref('adminInvoicePhotos',invoiceId),{photo,...created(uid)});
         if(supplier)tx.update(supplier.ref,{balanceCents:(supplier.data().balanceCents||0)+invoice.totalCents-paid,...stamp(uid)});
