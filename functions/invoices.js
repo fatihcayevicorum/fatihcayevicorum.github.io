@@ -12,6 +12,7 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
     catch(e){if(e instanceof HttpsError)throw e;throw new HttpsError('failed-precondition',e.message||'İşlem tamamlanamadı.');}
   }
   async function execute(d,uid) {
+    const operationDate=today();
     if(d.action==='supplier') {
       const name=C.text(d.name,100),taxId=C.text(d.taxId,11),supplierId=C.id(d.id);
       if(name.length<2 || (taxId&&!/^\d{10,11}$/.test(taxId)))fail('invalid-argument','Firma adı veya vergi numarası geçersiz.');
@@ -48,7 +49,7 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
         const changes=[];
         for(const [stockId,lines]of groups){const s=await tx.get(ref('adminStockItems',stockId));if(!s.exists)fail('not-found','Stok ürünü bulunamadı.');changes.push({id:stockId,stock:s.data(),change:C.stockChange(s.data(),lines),lines})}
         const account=paid?await readAccount(tx,d.payment.accountId):null;
-        if(paid)await checkDay(tx);
+        if(paid)await checkDay(tx,operationDate);
         const {photo,...fields}=invoice;
         tx.set(r,{...fields,status:'posted',paidCents:paid,fingerprint,requestHash,replacesInvoiceId,hasPhoto:!!photo,title:`${invoice.partyName} • ${invoice.number}`,businessDate:invoice.date,...created(uid)});
         tx.set(unique,{invoiceId});
@@ -60,7 +61,7 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
           tx.set(ref('adminStockMovements',moveId),{...change,source:'invoice',invoiceId,stockItemId:id,stockName:stock.name,linkedMenuItemId:stock.linkedMenuItemId||'',type:'in',unit:stock.unit||'adet',packageCount:lines.reduce((s,l)=>s+l.quantity,0),unitsPerPackage:lines.length===1?lines[0].multiplier:1,purchasePrice:lines.length===1?lines[0].unitPriceCents/100:change.purchaseTotal,purchaseUnitCost:change.purchaseTotal/change.amount,operationDate:invoice.date,note:`Fatura: ${invoice.number}`,cashMovementId:'',...created(uid)});
         }
         for(const line of invoice.lines.filter(l=>l.stock))tx.set(ref('adminInvoiceMappings',C.hash(`${invoice.supplierId}|${line.name.toLocaleLowerCase('tr-TR')}`)),{supplierId:invoice.supplierId,name:line.name,stockItemId:line.stockItemId,multiplier:line.multiplier,...stamp(uid)});
-        if(paid)writePayment(tx,`initial-${invoiceId}`,invoiceId,invoice,paid,account,uid);
+        if(paid)writePayment(tx,`initial-${invoiceId}`,invoiceId,invoice,paid,account,uid,operationDate);
         return{id:invoiceId};
       });
     }
@@ -72,18 +73,18 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
         const s=await tx.get(ref('adminInvoices',invoiceId)),invoice=s.data();
         if(!s.exists||invoice.kind!=='purchase'||invoice.status!=='posted')fail('failed-precondition','Ödenecek alış faturası bulunamadı.');
         if(amount>invoice.totalCents-invoice.paidCents)fail('failed-precondition','Ödeme kalan borcu aşamaz.');
-        const supplier=await tx.get(ref('adminSuppliers',invoice.supplierId)),account=await readAccount(tx,d.accountId);await checkDay(tx);
+        const supplier=await tx.get(ref('adminSuppliers',invoice.supplierId)),account=await readAccount(tx,d.accountId);await checkDay(tx,operationDate);
         if(!supplier.exists)fail('not-found','Tedarikçi bulunamadı.');
         tx.update(s.ref,{paidCents:invoice.paidCents+amount,...stamp(uid)});
         tx.update(supplier.ref,{balanceCents:supplier.data().balanceCents-amount,...stamp(uid)});
-        writePayment(tx,paymentId,invoiceId,invoice,amount,account,uid);return{id:paymentId};
+        writePayment(tx,paymentId,invoiceId,invoice,amount,account,uid,operationDate);return{id:paymentId};
       });
     }
     if(d.action==='cancelPayment') {
       const paymentId=C.id(d.id),reason=C.text(d.reason,500);if(!reason)fail('invalid-argument','İptal açıklaması yazın.');
       return db.runTransaction(async tx=>{
         const p=await tx.get(ref('adminInvoicePayments',paymentId)),payment=p.data();if(!p.exists)fail('not-found','Ödeme bulunamadı.');if(payment.reversed)return{alreadyCancelled:true};
-        if(payment.businessDate!==today())fail('failed-precondition','Geçmiş gün ödemesi burada iptal edilemez.');await checkDay(tx);
+        if(payment.businessDate!==operationDate)fail('failed-precondition','Geçmiş gün ödemesi burada iptal edilemez.');await checkDay(tx,operationDate);
         const s=await tx.get(ref('adminInvoices',payment.invoiceId)),supplier=await tx.get(ref('adminSuppliers',payment.supplierId)),cash=await tx.get(ref('adminCashMovements',`invoice-${paymentId}`));
         if(!s.exists||!supplier.exists||!cash.exists||cash.data().reversed)fail('failed-precondition','Bağlı kayıtlar doğrulanamadı.');
         tx.update(s.ref,{paidCents:s.data().paidCents-payment.amountCents,...stamp(uid)});tx.update(supplier.ref,{balanceCents:supplier.data().balanceCents+payment.amountCents,...stamp(uid)});
@@ -105,10 +106,10 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
     }
     fail('invalid-argument','İşlem tanınmadı.');
   }
-  async function checkDay(tx){const s=await tx.get(ref('adminFinanceDays',today()));if(s.exists&&s.data().locked===true)fail('failed-precondition','Bugünün finans günü kapalı. Ödeme kaydedilemez.');}
+  async function checkDay(tx,businessDate){const s=await tx.get(ref('adminFinanceDays',businessDate));if(s.exists&&s.data().locked===true)fail('failed-precondition','Bugünün finans günü kapalı. Ödeme kaydedilemez.');}
   async function readAccount(tx,value){const accountId=C.id(value),s=await tx.get(ref('adminFinancialAccounts',accountId));return C.paymentAccount(accountId,s.exists?s.data():null);}
-  function writePayment(tx,paymentId,invoiceId,invoice,amountCents,account,uid){
-    const businessDate=today(),title=`${invoice.partyName} • ${invoice.number} fatura ödemesi`;
+  function writePayment(tx,paymentId,invoiceId,invoice,amountCents,account,uid,businessDate){
+    const title=`${invoice.partyName} • ${invoice.number} fatura ödemesi`;
     tx.set(ref('adminInvoicePayments',paymentId),{invoiceId,supplierId:invoice.supplierId,amountCents,account:account.type,accountId:account.id,accountNameSnapshot:account.name,businessDate,title,...created(uid)});
     tx.set(ref('adminCashMovements',`invoice-${paymentId}`),{type:'expense',amount:amountCents/100,account:account.type,accountType:account.type,accountId:account.id,accountNameSnapshot:account.name,fromAccount:'',toAccount:'',category:'Fatura / Tedarikçi Ödemesi',description:title,businessDate,automatic:true,source:'invoice-payment',sourceId:paymentId,invoiceId,...created(uid)});
   }
