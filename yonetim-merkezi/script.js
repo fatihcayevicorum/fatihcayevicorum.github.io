@@ -43,7 +43,7 @@ onAuthStateChanged(auth,async user=>{
   $("staffSettingsButton").hidden=owner;
   if(!owner){watchStaffProfile(user.uid);watchOwnRequest(user.uid)}
   if(personnelSettings){document.querySelector("main").hidden=true;setTimeout(openStaffSettings,80)}
-  const alphabetical=(a,b)=>a.name.localeCompare(b.name,"tr-TR"),visibleDaily=daily.filter(can).sort(alphabetical),visibleManagement=management.filter(item=>!item.ownerOnly&&can(item)).sort(alphabetical),visibleOwner=management.filter(item=>item.ownerOnly&&can(item)).sort(alphabetical);
+  const alphabetical=(a,b)=>a.name.localeCompare(b.name,"tr-TR"),visibleDaily=daily.filter(can).sort(alphabetical),visibleManagement=management.filter(item=>(!item.ownerOnly||item.name==="Faturalarım")&&can(item)).sort(alphabetical),visibleOwner=management.filter(item=>item.ownerOnly&&item.name!=="Faturalarım"&&can(item)).sort(alphabetical);
   $("dailySection").hidden=!visibleDaily.length;
   $("dailyGrid").innerHTML=visibleDaily.map(card).join("");
   if(visibleDaily.some(item=>item.permission==='pos'))onSnapshot(doc(db,'adminAppSettings','pos'),snap=>{

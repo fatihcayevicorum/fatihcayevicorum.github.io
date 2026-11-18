@@ -1,4 +1,4 @@
-import {initSupplierReport,renderSupplierReport} from "../assets/js/supplier-report.js?v=671";
+import {initSupplierReport,renderSupplierReport} from "../assets/js/supplier-report.js?v=672";
 import {currentCollectionAmounts,closingCollectionSummary,closingCollectionRows} from "../assets/js/collection-summary.js?v=606";
 import {buildProductGroupSummary,productGroupCards} from "../assets/js/product-group-summary.js?v=601";
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
@@ -102,7 +102,7 @@ function buildReport(){
   }
   for(const movement of cashMovements){
     const date=String(movement.businessDate||dateFromTimestamp(movement.createdAt)||"");
-    if(movement.type!=="expense"||date<range.start||date>range.end)continue;
+    if(movement.reversed===true||movement.type!=="expense"||date<range.start||date>range.end)continue;
     if(range.start===currentBusinessDate&&range.end===currentBusinessDate&&currentBusinessDayStartedAtMs&&reportTime(movement)&&reportTime(movement)<currentBusinessDayStartedAtMs)continue;
     const amount=num(movement.amount);
     result.expenseMovements.push(movement);

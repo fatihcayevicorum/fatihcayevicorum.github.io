@@ -21,12 +21,13 @@ function normalizeInvoice(input) {
   if (!number || !partyName) fail('Firma ve fatura numarası zorunlu.');
   if (!Array.isArray(input.lines) || !input.lines.length || input.lines.length > 60) fail('1–60 fatura satırı girin.');
   const lines = input.lines.map(row => {
-    const name = text(row.name), quantity = Number(row.quantity), multiplier = Number(row.multiplier || 1);
+    const name = text(row.name), quantity = Number(row.quantity), unit=text(row.unit,20).toLocaleLowerCase('tr-TR')||'adet';
+    const multiplier = ['koli','paket'].includes(unit) ? Number(row.multiplier) : 1;
     if (!name || !Number.isFinite(quantity) || quantity<=0 || quantity>1000000 || !Number.isFinite(multiplier) || multiplier<=0 || multiplier>100000) fail('Ürün adı, miktar veya birim dönüşümü geçersiz.');
     const unitPriceCents = cents(row.unitPrice), totalCents = cents(row.total);
     if (Math.abs(Math.round(quantity*unitPriceCents)-totalCents)>Math.max(1,Math.ceil(quantity/2))) fail(`${name}: miktar, birim fiyat ve satır toplamını kontrol edin.`);
     const stock = input.kind==='purchase' && row.stock===true;
-    return {name,quantity,multiplier,unit:text(row.unit,20)||'adet',unitPriceCents,totalCents,stock,stockItemId:stock?id(row.stockItemId):''};
+    return {name,quantity,multiplier,unit,unitPriceCents,totalCents,stock,stockItemId:stock?id(row.stockItemId):''};
   });
   const totalCents = cents(input.total), vatCents = cents(input.vat || 0);
   if (!totalCents || lines.reduce((s,r)=>s+r.totalCents,0)!==totalCents || vatCents>totalCents) fail('KDV dâhil satır toplamları fatura genel toplamıyla eşleşmeli.');
