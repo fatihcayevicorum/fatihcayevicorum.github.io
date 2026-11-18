@@ -83,7 +83,7 @@
   function contrast(a,b){const lum=c=>{const v=c.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return .2126*v[0]+.7152*v[1]+.0722*v[2]};const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
   function readable(color,surfaces){if(surfaces.every(s=>contrast(color,s)>=4.5))return color;return ["#ffffff","#171717"].sort((a,b)=>Math.min(...surfaces.map(s=>contrast(b,s)))-Math.min(...surfaces.map(s=>contrast(a,s))))[0]}
   const media=matchMedia("(prefers-color-scheme: dark)");
-  const scriptUrl=document.currentScript?.src||"";
+  const scriptUrl=document.currentScript?.hasAttribute("data-preview")?"":document.currentScript?.src||"";
   let browserThemeColor="";
 
   function syncVisibility(){document.documentElement.dataset.pageVisible=String(!document.hidden)}
