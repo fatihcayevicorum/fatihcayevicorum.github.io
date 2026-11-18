@@ -185,9 +185,9 @@ service cloud.firestore {
           && (fields.hasOnly(themeFields()) || hasPanel('home'));
       }
       allow read: if true;
-      allow create: if backupWritable() && canWriteFields(request.resource.data.keys());
-      allow update: if backupWritable() && canWriteFields(request.resource.data.diff(resource.data).affectedKeys());
-      allow delete: if backupWritable() && hasPanel('home') && hasPanel('themeSave');
+      allow create: if backupWritable() && (canWriteFields(request.resource.data.keys()));
+      allow update: if backupWritable() && (canWriteFields(request.resource.data.diff(resource.data).affectedKeys()));
+      allow delete: if backupWritable() && (hasPanel('home') && hasPanel('themeSave'));
     }
     match /publicSite/stats {
       allow read: if true;
