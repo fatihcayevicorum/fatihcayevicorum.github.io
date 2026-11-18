@@ -1246,3 +1246,33 @@ button:focus:not(:focus-visible) {
     background:transparent!important;box-shadow:none!important;
   }
 }
+
+/* R674 · Masalar paneli ortak tema yüzeylerini kullanır. */
+body:not(.quick-sale) #tablesView {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+#tablesView .table-card {
+  --table-edge: var(--theme-border);
+  --table-fill: var(--theme-surface-2);
+  background: var(--table-fill);
+  border: 1px solid var(--table-edge);
+  border-radius: 16px;
+  color: var(--theme-text);
+}
+#tablesView .empty-table.has-region-style {
+  border-inline-start: 4px solid var(--region-end);
+}
+#tablesView .table-card.occupied {
+  --table-edge: #38875f;
+  --table-fill: color-mix(in srgb,var(--theme-surface-2) 84%,var(--table-edge));
+  border-inline-start-width: 4px;
+}
+#tablesView .table-card:is(.credit-table,.current-account-table) { --table-edge: #3281ae; }
+#tablesView .table-card.organization-table { --table-edge: #c47d22; }
+#tablesView .table-open { background: transparent; color: var(--theme-text); }
+#tablesView .table-open > :is(i,span,b,small) { color: var(--theme-text); }
+#tablesView .table-open > small { color: var(--theme-muted); opacity: 1; }
+#tablesView .pos-tea-card.is-empty { background: var(--theme-surface-2); border-color: var(--theme-border); }
+#tablesView .pos-tea-card.is-empty :is(span,strong,small) { color: var(--theme-muted); opacity: 1; }
