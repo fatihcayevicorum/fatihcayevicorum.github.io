@@ -694,6 +694,7 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
 }
 :root[data-tech-theme="true"] #tablesView {
   --pos-neon:var(--appearance-focus);
+  background-image:var(--pos-panel-finish),radial-gradient(ellipse at top,color-mix(in srgb,var(--pos-neon) 13%,transparent),transparent 75%)!important;
   border-color:color-mix(in srgb,var(--pos-neon) 55%,var(--theme-border));
   box-shadow:inset 0 0 22px color-mix(in srgb,var(--pos-neon) 8%,transparent),var(--theme-shadow);
 }
@@ -701,7 +702,7 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
 :root[data-color-theme="holo"] #tablesView {--pos-panel-finish:linear-gradient(125deg,#83f2ea23,transparent 42%,#9d7fff1c 77%,#83f2ea11);--pos-neon-strength:35%}
 :root[data-color-theme="control"] #tablesView {--pos-panel-finish:repeating-linear-gradient(90deg,transparent 0 23px,#54ebc812 23px 24px);--pos-neon-strength:42%}
 :root[data-tech-theme="true"] #tablesView .table-card {
-  background-image:var(--pos-panel-finish),linear-gradient(145deg,color-mix(in srgb,var(--pos-neon) 14%,transparent),transparent 60%,color-mix(in srgb,var(--card-signal) 14%,transparent))!important;
+  background-image:var(--pos-panel-finish),linear-gradient(145deg,color-mix(in srgb,var(--pos-neon) 22%,transparent),transparent 50%,color-mix(in srgb,var(--card-signal) 22%,transparent))!important;
   border-color:color-mix(in srgb,var(--pos-neon) 60%,var(--theme-border));
   border-width:1px;
   box-shadow:inset 0 0 14px color-mix(in srgb,var(--pos-neon) 12%,transparent),0 0 11px color-mix(in srgb,var(--pos-neon) 14%,transparent);
@@ -791,7 +792,8 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
   border-radius:var(--appearance-radius);
   box-shadow:inset 0 0 13px color-mix(in srgb,var(--theme-accent) 10%,transparent),var(--theme-shadow);
 }
-:root[data-tech-theme="true"]:is([data-effects="false"],[data-page-visible="false"]) .page-shell:has(#brewList) :is(.progress-fill::after,.live-badge>span) {animation:none!important}
+:root[data-tech-theme="true"]:is([data-effects="false"],[data-page-visible="false"]) .page-shell:has(#brewList) .progress-fill::after,
+:root[data-tech-theme="true"]:is([data-effects="false"],[data-page-visible="false"]) .page-shell:has(#brewList) .live-badge>span {animation:none!important}
 :root #tableEditDialog :is(.notice,.org-toggle) {
   background:var(--theme-surface-2)!important;color:var(--theme-text)!important;border-color:var(--theme-border);
 }
@@ -805,4 +807,20 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
 :root #themeSettingsDialog .dialog-actions {
   position:sticky;bottom:0;z-index:3;flex-wrap:wrap;padding:10px 0;
   background:var(--theme-surface);border-top:1px solid var(--theme-border);
+}
+
+/* R676: Mevcut Adisyon çevre ışığı animasyonunu masa kartlarında da kullan. */
+@media(prefers-reduced-motion:no-preference) {
+  :root[data-tech-theme="true"][data-effects="true"][data-page-visible="true"] #tablesView :is(.open-total-card,.pos-tea-card,.pos-tea-start)::before {
+    animation-duration:var(--motion-time);
+  }
+  @supports(mask-composite:exclude) {
+    :root[data-tech-theme="true"][data-effects="true"][data-page-visible="true"] #tablesView .table-card.occupied::after {
+      inset:0;width:auto;height:auto;padding:2px;border-radius:inherit;
+      background:conic-gradient(from var(--tea-border-angle),transparent 0deg 245deg,var(--pos-neon) 296deg,#dffaff 325deg,transparent 360deg);
+      mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+      box-shadow:none;opacity:calc(.4 + var(--light-strength) * .6);
+      animation:teaBorderOrbit var(--motion-time) linear infinite;
+    }
+  }
 }
