@@ -42,7 +42,7 @@ const CORE=[
   "./tanimlamalar/","./tanimlamalar/index.html","./tanimlamalar/style.css","./tanimlamalar/script.js",
   "./bildirim-merkezi/","./bildirim-merkezi/index.html","./bildirim-merkezi/style.css","./bildirim-merkezi/script.js",
   "./taze-dem-paneli/style.css","./taze-dem-paneli/script.js",
-  "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js","./adisyon/enhancements.css","./adisyon/internal-consumption.js","./adisyon/polish.css","./adisyon/quick-cash.css","./adisyon/quick-cash.js","./adisyon/personnel-mode.css","./adisyon/personnel-mode.js","./adisyon/history-modal.css","./adisyon/history-modal.js","./adisyon-gecmisi/","./adisyon-gecmisi/index.html","./adisyon-gecmisi/style.css","./adisyon-gecmisi/script.js",
+  "./adisyon/index.html","./adisyon/style.css","./adisyon/script.js","./adisyon/enhancements.css","./adisyon/internal-consumption.js","./adisyon/polish.css","./adisyon/polish.css?v=674","./adisyon/quick-cash.css","./adisyon/quick-cash.js","./adisyon/personnel-mode.css","./adisyon/personnel-mode.js","./adisyon/history-modal.css","./adisyon/history-modal.js","./adisyon-gecmisi/","./adisyon-gecmisi/index.html","./adisyon-gecmisi/style.css","./adisyon-gecmisi/script.js",
   "./stok-yonetimi/index.html","./stok-yonetimi/style.css","./stok-yonetimi/simple-stock.css","./stok-yonetimi/script.js",
   "./cari-hesaplar/","./cari-hesaplar/index.html","./cari-hesaplar/style.css","./cari-hesaplar/script.js",
   "./siparis-listesi/","./siparis-listesi/index.html","./siparis-listesi/style.css","./siparis-listesi/script.js",
