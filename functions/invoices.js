@@ -21,7 +21,7 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
         if(s.exists && s.data().taxId!==taxId)fail('failed-precondition','Kayıtlı firmanın vergi numarası değiştirilemez.');
         const key=ref('adminSupplierKeys',C.hash(taxId||name.toLocaleLowerCase('tr-TR'))),k=await tx.get(key);
         if(k.exists&&k.data().supplierId!==supplierId)fail('already-exists','Bu tedarikçi zaten kayıtlı.');
-        tx.set(r,{name,taxId,phone:C.text(d.phone,30),note:C.text(d.note,500),...(s.exists?stamp(uid):{...created(uid),balanceCents:0}),active:true},{merge:true});
+        tx.set(r,{name,taxId,taxOffice:C.text(d.taxOffice,100),address:C.text(d.address,300),phone:C.text(d.phone,30),note:C.text(d.note,500),...(s.exists?stamp(uid):{...created(uid),balanceCents:0}),active:true},{merge:true});
         tx.set(key,{supplierId});return{id:supplierId};
       });
     }
@@ -91,15 +91,32 @@ function buildInvoices({db,FieldValue,HttpsError,requireOwner,now=()=>Date.now()
         const reverse={reversed:true,reversalReason:reason,reversedBy:uid,reversedAt:FieldValue.serverTimestamp(),...stamp(uid)};tx.update(p.ref,reverse);tx.update(cash.ref,reverse);return{cancelled:true};
       });
     }
+    if(d.action==='editPayment') {
+      const paymentId=C.id(d.id),amount=C.cents(d.amount);if(!amount)fail('invalid-argument','Ödeme tutarı sıfır olamaz.');
+      return db.runTransaction(async tx=>{
+        const p=await tx.get(ref('adminInvoicePayments',paymentId)),payment=p.data();if(!p.exists||payment.reversed)fail('not-found','Düzeltilecek aktif ödeme bulunamadı.');
+        if(payment.businessDate!==operationDate)fail('failed-precondition','Kapatılmış veya geçmiş finans günündeki ödeme düzeltilemez.');
+        const s=await tx.get(ref('adminInvoices',payment.invoiceId)),invoice=s.data(),supplier=await tx.get(ref('adminSuppliers',payment.supplierId)),cash=await tx.get(ref('adminCashMovements',`invoice-${paymentId}`)),account=await readAccount(tx,d.accountId);await checkDay(tx,operationDate);
+        if(!s.exists||invoice.status!=='posted'||!supplier.exists||!cash.exists||cash.data().reversed)fail('failed-precondition','Bağlı kayıtlar doğrulanamadı.');
+        const nextPaid=invoice.paidCents-payment.amountCents+amount;if(nextPaid<0||nextPaid>invoice.totalCents)fail('failed-precondition','Düzeltilen ödeme kalan borcu aşamaz.');
+        const delta=amount-payment.amountCents,changed={amountCents:amount,account:account.type,accountId:account.id,accountNameSnapshot:account.name,correctedAt:FieldValue.serverTimestamp(),correctedBy:uid,...stamp(uid)};
+        tx.update(s.ref,{paidCents:nextPaid,...stamp(uid)});tx.update(supplier.ref,{balanceCents:supplier.data().balanceCents-delta,...stamp(uid)});tx.update(p.ref,changed);tx.update(cash.ref,{amount:amount/100,account:account.type,accountType:account.type,accountId:account.id,accountNameSnapshot:account.name,correctedAt:FieldValue.serverTimestamp(),correctedBy:uid,...stamp(uid)});return{corrected:true};
+      });
+    }
     if(d.action==='cancelInvoice') {
       const invoiceId=C.id(d.id),reason=C.text(d.reason,500);if(!reason)fail('invalid-argument','İptal açıklaması yazın.');
       return db.runTransaction(async tx=>{
         const s=await tx.get(ref('adminInvoices',invoiceId)),invoice=s.data();if(!s.exists)fail('not-found','Fatura bulunamadı.');if(invoice.status==='cancelled')return{alreadyCancelled:true};
-        if(invoice.paidCents)fail('failed-precondition','Önce faturaya bağlı ödemeleri iptal edin.');
         const supplier=invoice.kind==='purchase'?await tx.get(ref('adminSuppliers',invoice.supplierId)):null,changes=[];
-        for(const stockId of new Set(invoice.lines.filter(l=>l.stock).map(l=>l.stockItemId))){const stock=await tx.get(ref('adminStockItems',stockId)),move=await tx.get(ref('adminStockMovements',`invoice-${invoiceId}-${stockId}`));if(!stock.exists||!move.exists||move.data().reversed||(stock.data().updatedAt?.toMillis?.()||0)>(move.data().createdAt?.toMillis?.()||0)||Math.abs(stock.data().quantity-move.data().resultingQuantity)>.00001||Math.abs(stock.data().unitCost-move.data().unitCost)>.00001)fail('failed-precondition','Stokta sonraki hareket var. Fatura otomatik iptal edilemez.');changes.push({stock,move})}
-        tx.update(s.ref,{status:'cancelled',cancelReason:reason,cancelledBy:uid,...stamp(uid)});
-        if(supplier)tx.update(supplier.ref,{balanceCents:supplier.data().balanceCents-invoice.totalCents,...stamp(uid)});
+        const paymentQuery=db.collection('adminInvoicePayments').where('invoiceId','==',invoiceId),paymentSnapshot=await tx.get(paymentQuery),activePayments=paymentSnapshot.docs.map(x=>({ref:x.ref,...x.data()})).filter(x=>x.reversed!==true),cashRows=[];
+        if(activePayments.some(x=>x.businessDate!==operationDate))fail('failed-precondition','Geçmiş finans gününde gerçekleşmiş ödeme var. Fatura iptali için önce iade/düzeltme işlemi gerekir.');
+        if(activePayments.length)await checkDay(tx,operationDate);
+        for(const payment of activePayments){const cash=await tx.get(ref('adminCashMovements',`invoice-${payment.ref.id}`));if(!cash.exists||cash.data().reversed)fail('failed-precondition','Bağlı ödeme hareketleri doğrulanamadı.');cashRows.push({payment,cash});}
+        const activePaid=activePayments.reduce((sum,x)=>sum+x.amountCents,0);if(activePaid!==invoice.paidCents)fail('failed-precondition','Fatura ödeme toplamları uyuşmuyor; kısmi iptal yapılmadı.');
+        for(const stockId of new Set(invoice.lines.filter(l=>l.stock).map(l=>l.stockItemId))){const stock=await tx.get(ref('adminStockItems',stockId)),move=await tx.get(ref('adminStockMovements',`invoice-${invoiceId}-${stockId}`));if(!stock.exists||!move.exists||move.data().reversed||Math.abs(Number(stock.data().quantity)-Number(move.data().resultingQuantity))>.00001||Math.abs(Number(stock.data().unitCost)-Number(move.data().unitCost))>.00001)fail('failed-precondition','Stokta sonraki hareket var. Fatura otomatik iptal edilemez.');changes.push({stock,move})}
+        tx.update(s.ref,{status:'cancelled',paidCents:0,cancelReason:reason,cancelledBy:uid,...stamp(uid)});
+        if(supplier)tx.update(supplier.ref,{balanceCents:supplier.data().balanceCents-(invoice.totalCents-activePaid),...stamp(uid)});
+        const reverse={reversed:true,reversalReason:reason,reversedBy:uid,reversedAt:FieldValue.serverTimestamp(),...stamp(uid)};for(const {payment,cash}of cashRows){tx.update(payment.ref,reverse);tx.update(cash.ref,reverse)}
         for(const {stock,move}of changes){tx.update(stock.ref,{quantity:move.data().previousQuantity,unitCost:move.data().previousUnitCost,...stamp(uid)});tx.update(move.ref,{reversed:true,reversedBy:uid,reversalReason:reason,...stamp(uid)});}
         return{cancelled:true};
       });

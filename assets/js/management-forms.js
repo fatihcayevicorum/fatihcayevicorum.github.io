@@ -259,6 +259,11 @@ window.__fatihManagementFormsLoaded=true;
     ["#receivePaymentAmount",{decimals:2,maxDigits:10}],
     ["#paymentEditAmount",{decimals:2,maxDigits:10}]
   );
+  if(path.includes("/faturalarim/"))rules.push(
+    ["#total,#paidAmount,#paymentAmount",{decimals:2,maxDigits:12}],
+    ["#mappingMultiplier,.invoice-line [data-field='quantity'],.invoice-line [data-field='multiplier'],[data-map-mult]",{decimals:3,maxDigits:10}],
+    [".invoice-line [data-field='unitPrice'],.invoice-line [data-field='total']",{decimals:2,maxDigits:12}]
+  );
   if(path.includes("/siparis-listesi/"))rules.push(
     ["#editStockQuantity",{decimals:0,maxDigits:6}],
     ["#customProductQuantity",{decimals:0,maxDigits:6}],
