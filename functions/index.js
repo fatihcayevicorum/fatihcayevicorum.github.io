@@ -22,7 +22,7 @@ const onSchedule=(options,handler)=>firebaseOnSchedule(options,systemBackup.guar
 
 exports.changePosSalesMode=onCall({region:"europe-west1",cors:true},require('./pos-sales-mode').buildPosSalesMode({db,FieldValue,HttpsError,requireOwner}));
 
-const PANEL_IDS=["tea","pos","currentAccounts","currentAccountTransfer","menu","stock","credit","merchant","reports","cash","home","personnel"];
+const PANEL_IDS=["themeSave","backgroundAdd","backgroundDelete","tea","pos","currentAccounts","currentAccountTransfer","menu","stock","credit","merchant","reports","cash","home","personnel"];
 
 function businessDateNow(now=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul"}).format(now)}
 function numberValue(value){return Number(value)||0}

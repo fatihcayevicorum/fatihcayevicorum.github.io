@@ -283,7 +283,7 @@
         </div>
       </section>
       <section class="theme-setting-panel">
-        <div class="theme-setting-heading"><div><h3>Renk Teması</h3><p>Başlık, ana buton ve vurgu renklerini birlikte değiştirir.</p></div></div>
+        <div class="theme-setting-heading"><div><h3>Sistem Temaları</h3><p>Başlık, ana buton ve vurgu renklerini birlikte değiştirir.</p></div></div>
         <div class="theme-palette-options">
           <label><input type="radio" name="themePalette" value="classic"><span><i class="theme-swatches classic"><b></b><b></b><b></b></i><strong>Klasik Bordo</strong><small>Mevcut Fatih Çay Evi görünümü</small></span></label>
           <label><input type="radio" name="themePalette" value="graphite"><span><i class="theme-swatches graphite"><b></b><b></b><b></b></i><strong>Bordo Antrasit</strong><small>Daha sakin ve modern tonlar</small></span></label>
@@ -293,8 +293,24 @@
           <label><input type="radio" name="themePalette" value="mono"><span><i class="theme-swatches mono"><b></b><b></b><b></b></i><strong>Siyah Beyaz</strong><small>Sade ve tamamen nötr görünüm</small></span></label>
           <label><input type="radio" name="themePalette" value="emerald"><span><i class="theme-swatches emerald"><b></b><b></b><b></b></i><strong>Zümrüt Altın</strong><small>Koyu yeşil ve sıcak altın uyumu</small></span></label>
           <label><input type="radio" name="themePalette" value="orange"><span><i class="theme-swatches orange"><b></b><b></b><b></b></i><strong>Turuncu Kömür</strong><small>Sıcak turuncu ve koyu antrasit</small></span></label>
+          <label><input type="radio" name="themePalette" value="blackGold"><span><i class="theme-sample" style="background:linear-gradient(125deg,#171510,#322b20 70%,#151412),#342c20;border:3px double #ebc775;border-radius:3px"></i><strong>Siyah &amp; Altın</strong></span></label>
+          <label><input type="radio" name="themePalette" value="glass"><span><i class="theme-sample" style="background:linear-gradient(135deg,#7899b655,transparent 50%,#87acbe33),#324e6b;border:3px solid #9de3ef;border-radius:18px"></i><strong>Cam Efektli</strong></span></label>
+          <label><input type="radio" name="themePalette" value="teahouse"><span><i class="theme-sample" style="background:repeating-linear-gradient(3deg,#aa825810 0 1px,transparent 2px 9px),#66412d;border:3px solid #cd9264;border-radius:8px"></i><strong>Çay Evi Klasik</strong></span></label>
+          <label><input type="radio" name="themePalette" value="future"><span><i class="theme-sample" style="background:linear-gradient(135deg,#709dff35,transparent 30%),#29346b;border:3px solid #88cbff;border-radius:2px 18px"></i><strong>Fütüristik</strong></span></label>
+          <label><input type="radio" name="themePalette" value="minimal"><span><i class="theme-sample" style="background:linear-gradient(180deg,transparent,#8498900d),#415563;border:3px solid #94b4ae;border-radius:12px"></i><strong>Modern Minimal</strong></span></label>
+          <label><input type="radio" name="themePalette" value="jade"><span><i class="theme-sample" style="background:linear-gradient(145deg,#4295782c,transparent 60%),#154c41;border:3px double #d8bc79;border-radius:16px 3px"></i><strong>Zümrüt</strong></span></label>
+          <label><input type="radio" name="themePalette" value="original"><span><i class="theme-sample" style="background:linear-gradient(120deg,#ce455221,transparent 60%),#701927;border:3px solid #ffcb67;border-radius:4px 14px"></i><strong>Fütüristik Orijinal</strong></span></label>
+          <label><input type="radio" name="themePalette" value="corum"><span><i class="theme-sample" style="background:repeating-linear-gradient(125deg,#b9333e17 0 4px,transparent 4px 20px),#8c1529;border:3px solid #f6c6c8;border-radius:2px"></i><strong>Çorum FK</strong></span></label>
+          <label><input type="radio" name="themePalette" value="hud"><span><i class="theme-sample" style="background:repeating-linear-gradient(0deg,#1dc9fc11 0 1px,transparent 1px 5px),#123955;border:3px solid #4edcff;border-radius:2px 16px"></i><strong>Holografik HUD</strong></span></label>
+          <label><input type="radio" name="themePalette" value="holo"><span><i class="theme-sample" style="background:linear-gradient(120deg,#82e4ee25,transparent 40%,#af8add26),#354668;border:3px solid #83f2ea;border-radius:22px"></i><strong>Holografik Cam</strong></span></label>
+          <label><input type="radio" name="themePalette" value="control"><span><i class="theme-sample" style="background:repeating-linear-gradient(90deg,transparent 0 23px,#30dfcd10 23px 24px),#193e48;border:3px solid #54ebc8;border-radius:5px"></i><strong>Kontrol Merkezi</strong></span></label>
           <label><input type="radio" name="themePalette" value="custom"><span><i class="fa-solid fa-palette"></i><strong>Özel Tema</strong><small>Renkleri kendiniz belirleyin</small></span></label>
         </div>
+      </section>
+      <section class="theme-setting-panel"><h3>Hareketli Efekt Ayarları</h3>
+        <label><input type="checkbox" id="appearanceEffects"> Hareketli Efektler</label>
+        <label>Efekt Yoğunluğu <select id="appearanceIntensity"><option value="low">Hafif</option><option value="medium">Orta</option><option value="high">Yoğun</option></select></label>
+        <label>Animasyon Hızı <select id="appearanceSpeed"><option value="slow">Yavaş</option><option value="normal">Normal</option><option value="fast">Hızlı</option></select></label>
       </section>
       <section class="theme-live-preview" aria-live="polite">
         <div id="customThemeEditor" hidden><h3>Özel Tema Renkleri</h3><p>Açık ve karanlık görünümü ayrı düzenleyin. Okunamayan yazı renkleri otomatik dengelenir.</p><div id="customThemeColors"></div></div>

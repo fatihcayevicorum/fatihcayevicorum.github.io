@@ -14,6 +14,64 @@
     emerald:{name:"Zümrüt Altın",light:"#28624f",dark:"#10251f"},
     orange:{name:"Turuncu Kömür",light:"#a65324",dark:"#211713"}
   };
+  Object.assign(PALETTE_META,{
+  "blackGold": {
+    "name": "Siyah & Altın",
+    "light": "#342c20",
+    "dark": "#342c20"
+  },
+  "glass": {
+    "name": "Cam Efektli",
+    "light": "#324e6b",
+    "dark": "#324e6b"
+  },
+  "teahouse": {
+    "name": "Çay Evi Klasik",
+    "light": "#66412d",
+    "dark": "#66412d"
+  },
+  "future": {
+    "name": "Fütüristik",
+    "light": "#29346b",
+    "dark": "#29346b"
+  },
+  "minimal": {
+    "name": "Modern Minimal",
+    "light": "#415563",
+    "dark": "#415563"
+  },
+  "jade": {
+    "name": "Zümrüt",
+    "light": "#154c41",
+    "dark": "#154c41"
+  },
+  "original": {
+    "name": "Fütüristik Orijinal",
+    "light": "#701927",
+    "dark": "#701927"
+  },
+  "corum": {
+    "name": "Çorum FK",
+    "light": "#8c1529",
+    "dark": "#8c1529"
+  },
+  "hud": {
+    "name": "Holografik HUD",
+    "light": "#123955",
+    "dark": "#123955"
+  },
+  "holo": {
+    "name": "Holografik Cam",
+    "light": "#354668",
+    "dark": "#354668"
+  },
+  "control": {
+    "name": "Kontrol Merkezi",
+    "light": "#193e48",
+    "dark": "#193e48"
+  }
+});
+  Object.keys(PALETTE_META).forEach(key=>PALETTES.add(key));
   const defaults=Object.freeze({mode:"light",palette:"classic"});
   const customDefaults={light:{primary:"#741722",accent:"#e3b84c",page:"#f8f1e7",panel:"#fffdf9",card:"#f4ece4",text:"#271d1f",muted:"#77686a",input:"#ffffff"},dark:{primary:"#741722",accent:"#e3b84c",page:"#171315",panel:"#241e20",card:"#30282b",text:"#f5ece8",muted:"#bcaeb0",input:"#2b2426"}};
   const colorKeys=Object.keys(customDefaults.light);
@@ -25,9 +83,12 @@
   function contrast(a,b){const lum=c=>{const v=c.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return .2126*v[0]+.7152*v[1]+.0722*v[2]};const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
   function readable(color,surfaces){if(surfaces.every(s=>contrast(color,s)>=4.5))return color;return ["#ffffff","#171717"].sort((a,b)=>Math.min(...surfaces.map(s=>contrast(b,s)))-Math.min(...surfaces.map(s=>contrast(a,s))))[0]}
   const media=matchMedia("(prefers-color-scheme: dark)");
-  const scriptUrl=document.currentScript?.src||"";
+  const scriptUrl=document.currentScript?.hasAttribute("data-preview")?"":document.currentScript?.src||"";
   let browserThemeColor="";
 
+  function syncVisibility(){document.documentElement.dataset.pageVisible=String(!document.hidden)}
+  document.addEventListener("visibilitychange",syncVisibility);
+  syncVisibility();
   function syncBrowserThemeColor(color){
     browserThemeColor=color;
     let meta=document.querySelector('meta[name="theme-color"]');
@@ -39,6 +100,9 @@
     return{
       mode:MODES.has(value?.mode)?value.mode:defaults.mode,
       palette:PALETTES.has(value?.palette)?value.palette:defaults.palette,
+      effects:value?.effects!==false,
+      speed:["slow","fast"].includes(value?.speed)?value.speed:"normal",
+      intensity:["low","high"].includes(value?.intensity)?value.intensity:"medium",
       custom:customColors(value?.custom)
     };
   }
@@ -55,6 +119,10 @@
     root.dataset.themeMode=settings.mode;
     root.dataset.effectiveTheme=effective;
     root.dataset.colorTheme=settings.palette;
+    root.dataset.techTheme=String(["hud","holo","control"].includes(settings.palette));
+    root.dataset.effects=String(settings.effects);
+    root.dataset.speed=settings.speed;
+    root.dataset.intensity=settings.intensity;
     root.style.colorScheme=effective;
     const vars=["primary","primary-dark","primary-bright","accent","page","page-glow","surface","surface-2","input","text","muted","border","on-primary","header-text","header-muted"];
     vars.forEach(key=>root.style.removeProperty("--theme-"+key));

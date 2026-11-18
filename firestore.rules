@@ -177,8 +177,17 @@ service cloud.firestore {
       allow write: if backupWritable() && (hasPanel('menu'));
     }
     match /publicSite/config {
+      function themeFields() {
+        return ['themeSettings','themeSettingsUpdatedAt','themeSettingsUpdatedBy'];
+      }
+      function canWriteFields(fields) {
+        return (!fields.hasAny(themeFields()) || hasPanel('themeSave'))
+          && (fields.hasOnly(themeFields()) || hasPanel('home'));
+      }
       allow read: if true;
-      allow write: if backupWritable() && (hasPanel('home'));
+      allow create: if backupWritable() && (canWriteFields(request.resource.data.keys()));
+      allow update: if backupWritable() && (canWriteFields(request.resource.data.diff(resource.data).affectedKeys()));
+      allow delete: if backupWritable() && (hasPanel('home') && hasPanel('themeSave'));
     }
     match /publicSite/stats {
       allow read: if true;

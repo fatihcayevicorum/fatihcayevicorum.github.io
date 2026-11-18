@@ -13,6 +13,9 @@ export const PANEL_DEFINITIONS=[
   {id:"home",name:"Ana Sayfa Yönetimi",path:"ana-sayfa-yonetimi/",icon:"fa-house"}
 ];
 export const ACTION_DEFINITIONS=[
+  {id:"themeSave",name:"Tema Ve Görünüm · Ayarları Kaydet",icon:"fa-palette",kind:"action"},
+  {id:"backgroundAdd",name:"Tema Ve Görünüm · Arka Plan Ekle",icon:"fa-image",kind:"action"},
+  {id:"backgroundDelete",name:"Tema Ve Görünüm · Arka Plan Sil",icon:"fa-trash",kind:"action"},
   {id:"personnel",name:"Personel Yetkisi",icon:"fa-user-tie",kind:"personnel"},
   {id:"currentAccountTransfer",name:"Adisyondan Cari Hesaba Aktar",icon:"fa-arrow-right-arrow-left",kind:"action",requires:"pos"}
 ];
