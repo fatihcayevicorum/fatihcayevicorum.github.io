@@ -112,8 +112,9 @@ self.addEventListener("fetch",event=>{
   if(url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js")){
     const latest=new URL(url);latest.searchParams.set("v","675");
     event.respondWith(caches.open(RUNTIME_CACHE).then(async cache=>{
-      try{const response=await fetch(latest.href,{cache:"reload"});if(response.ok){await cache.put(latest.href,response.clone());return response}return (await cache.match(latest.href))||await matchAppCache(new Request(latest.href))||response}
-      catch{return (await cache.match(latest.href))||await matchAppCache(new Request(latest.href))||await matchAppCache(request)||Response.error()}
+      const cached=await cache.match(latest.href)||await caches.match(latest.href);if(cached)return cached;
+      try{const response=await fetch(latest.href,{cache:"reload"});if(response.ok){try{await cache.put(latest.href,response.clone())}catch{}return response}return await matchAppCache(new Request(latest.href))||response}
+      catch{return await matchAppCache(new Request(latest.href))||await matchAppCache(request)||Response.error()}
     }));return;
   }
   if(url.pathname.endsWith("/veri-yonetimi/script.js")&&url.searchParams.get("v")!=="575"){const latest=new URL(url);latest.searchParams.set("v","575");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
