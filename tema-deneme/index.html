@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>R673 · Tema Denemesi</title>
+<link rel="stylesheet" href="../assets/css/theme.css?v=673">
+<style>
+*{box-sizing:border-box}body{margin:0;background:var(--theme-page);color:var(--theme-text);font:16px system-ui,sans-serif}main{max-width:1040px;margin:auto;padding:clamp(16px,4vw,40px)}header{border-bottom:1px solid var(--theme-border);padding-bottom:12px}h1{font-size:clamp(24px,4vw,36px);margin:4px 0}p{color:var(--theme-muted)}.controls,.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr));gap:12px;margin:18px 0}label{display:grid;gap:6px}button,select{min-height:44px;padding:8px 12px;border:1px solid var(--theme-border);background:var(--theme-input);color:var(--theme-text);border-radius:8px;font:inherit}.boiler-card{background-color:var(--theme-surface);border:1px solid var(--theme-border);padding:20px;text-align:center;display:grid;justify-items:center;align-content:center;gap:15px;min-height:140px}.boiler-card strong{font-size:30px}.boiler-heater{display:grid;justify-items:center;gap:5px}small{font-size:14px}dialog{color:var(--theme-text);background:var(--theme-surface);border:1px solid var(--theme-border);border-radius:12px}button{cursor:pointer}
+</style></head><body><main><header><small>Fatih Çay Evi · R673</small><h1>Tema Denemesi</h1><p>Bu ekrandaki kazan değerleri örnektir. Seçimler yalnızca bu deneme ekranında saklanır.</p></header>
+<section class="controls"><label>Sistem Teması<select id="palette"></select></label><label>Görünüm<select id="mode"><option value="dark">Karanlık</option><option value="light">Açık</option><option value="auto">Otomatik</option></select></label><label>Efekt Yoğunluğu<select id="intensity"><option value="low">Hafif</option><option value="medium">Orta</option><option value="high">Yoğun</option></select></label><label>Animasyon Hızı<select id="speed"><option value="slow">Yavaş</option><option value="normal">Normal</option><option value="fast">Hızlı</option></select></label></section>
+<button id="effects" type="button"></button>
+<h2 class="section-heading">Fahkon Akıllı Kazan</h2><label>Örnek Cihaz Durumu<select id="phase"><option value="heating">Isıtıyor</option><option value="waiting">Beklemede</option><option value="offline">Veri Güncel Değil</option></select></label>
+<section class="metrics"><article class="boiler-card boiler-temperature-card"><small>Anlık Sıcaklık</small><strong data-current></strong></article><article class="boiler-card"><small>Hedef Sıcaklık</small><strong data-target>96 °C</strong></article><article class="boiler-card"><small>Isıtma Durumu</small><div class="boiler-heater" data-heater></div></article></section>
+<button id="open">Modalı Ön İzle</button><dialog><h2>Hedef Sıcaklık</h2><p>Örnek hedef 96 °C</p><button id="close">Kapat</button></dialog></main>
+<script src="../assets/js/theme.js?v=673" data-preview></script><script>
+const get=id=>document.getElementById(id);
+const initial={palette:"hud",mode:"dark",intensity:"medium",speed:"normal",effects:true};
+let options={...initial};try{options={...initial,...JSON.parse(localStorage.getItem("r673-demo")||"{}")}}catch{}
+for(const [key,item] of Object.entries(FatihTheme.palettes))get("palette").add(new Option(item.name,key));
+for(const key of ["palette","mode","speed","intensity"]){get(key).value=options[key];get(key).onchange=()=>{options[key]=get(key).value;render()}}
+function render(){FatihTheme.apply(options);get("effects").textContent="Hareketli Efektler · "+(options.effects?"Açık":"Kapalı");get("effects").setAttribute("aria-pressed",String(options.effects));try{localStorage.setItem("r673-demo",JSON.stringify(options))}catch{}}
+get("effects").onclick=()=>{options.effects=!options.effects;render()};
+function status(){const phase=get("phase").value,current=document.querySelector("[data-current]"),heater=document.querySelector("[data-heater]");current.dataset.fresh=String(phase!=="offline");current.textContent=phase==="offline"?"—":"94 °C";heater.dataset.phase=phase;heater.textContent=get("phase").selectedOptions[0].textContent}
+get("phase").onchange=status;get("open").onclick=()=>document.querySelector("dialog").showModal();get("close").onclick=()=>document.querySelector("dialog").close();render();status();
+</script></body></html>
