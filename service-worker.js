@@ -21,7 +21,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r672-faturalarim",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r673-tema",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./faturalarim/","./faturalarim/index.html","./faturalarim/script.js?v=672","./faturalarim/style.css?v=672","./faturalarim/ocr-parser.js?v=671","./assets/js/supplier-report.js?v=672",
   "./assets/js/boiler-notification-visuals.js?v=669",
@@ -109,8 +109,8 @@ self.addEventListener("fetch",event=>{
   }
   if(url.pathname.endsWith("/assets/js/system-confirm.js")&&url.searchParams.get("v")!=="566"){const latest=new URL(url);latest.searchParams.set("v","566");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
   if(url.pathname.endsWith("/assets/js/pwa.js")&&url.searchParams.get("v")!=="571"){const latest=new URL(url);latest.searchParams.set("v","571");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
-  if((url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js"))&&url.searchParams.get("v")!=="571"){
-    const latest=new URL(url);latest.searchParams.set("v","571");
+  if((url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js"))&&url.searchParams.get("v")!=="673"){
+    const latest=new URL(url);latest.searchParams.set("v","673");
     event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;
   }
   if(url.pathname.endsWith("/veri-yonetimi/script.js")&&url.searchParams.get("v")!=="575"){const latest=new URL(url);latest.searchParams.set("v","575");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}

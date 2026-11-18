@@ -18,12 +18,12 @@ function heaterLabel(){
  if(liveInfo.phase==="reached")return["Hedefe ulaştı","Isıtma çıkışı kapalı"];
  return["Beklemede","Isıtma çıkışı kapalı"];
 }
-function renderHeater(element){const [title,note]=heaterLabel();element.dataset.phase=displayPhase();element.innerHTML=`<i class="fa-solid fa-fire-flame-curved" aria-hidden="true"></i><strong>${title}</strong><small>${note}</small>`}
+function renderHeater(element){const [title,note]=heaterLabel();element.dataset.phase=liveInfo.fresh?displayPhase():"offline";element.innerHTML=`<i class="fa-solid fa-fire-flame-curved" aria-hidden="true"></i><strong>${title}</strong><small>${note}</small>`}
 function renderLive(){
  const current=liveInfo.fresh?temperature(liveInfo.temperature):"—";
  if(headerButton){headerButton.dataset.mode=liveInfo.fresh?"live":"offline";headerButton.dataset.phase=liveInfo.fresh?displayPhase():"offline";headerButton.querySelector("strong").textContent=liveInfo.fresh?`${Math.round(liveInfo.temperature)}°`:"--";headerButton.title=`${current} · ${liveInfo.status}`;headerButton.setAttribute("aria-label",`Akıllı Kazan Hızlı Ayarı · ${headerButton.title}`)}
  for(const root of [page,dialog,targetDialog])if(root){
-  root.querySelectorAll("[data-current]").forEach(element=>element.textContent=current);
+  root.querySelectorAll("[data-current]").forEach(element=>{element.textContent=current;element.dataset.fresh=String(liveInfo.fresh)});
   root.querySelectorAll("[data-mode]").forEach(element=>{element.textContent=liveInfo.status;element.dataset.mode=liveInfo.fresh?"live":"offline"});
   root.querySelectorAll("[data-target]").forEach(element=>element.textContent=liveInfo.targetFresh?temperature(liveInfo.target):"—");
   root.querySelectorAll("[data-target-status]").forEach(element=>element.textContent=liveInfo.targetFresh?"ENDA’da kayıtlı aktif hedef":"Güncel hedef bilgisi alınamadı.");

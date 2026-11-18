@@ -22,6 +22,11 @@ let config={},teaState={},loaded=false,teaLoaded=false,saving=false,receiptSavin
 
 onAuthStateChanged(auth,async user=>{
   if(!user){location.replace("../yonetici-giris.html?next=tanimlamalar/");return}
+  if(!isOwner(user)&&await hasPanelAccess(user,db,"themeSave")){
+    document.body.classList.add("appearance-only");
+    onSnapshot(configRef,snapshot=>{config=snapshot.data()||{};loaded=true;$("themeSettingsCard").disabled=false});
+    return;
+  }
   if(!isOwner(user)){location.replace(await hasPanelAccess(user,db,"menu")?"../menu-yonetimi/":"../yonetim-merkezi/");return}
   onSnapshot(posLayoutRef,snapshot=>{tableLayout=normalizeTableLayout(snapshot.data()||{});posSalesMode=salesMode(snapshot.data());layoutLoaded=true;updateLayoutCard();$('salesModeCard').disabled=false;$('salesModeDescription').textContent=`Şu an: ${salesModeName(posSalesMode)}`;renderSalesModeCurrent()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
   onSnapshot(query(layoutOrdersCol,where("status","==","open")),snapshot=>{layoutOrders=snapshot.docs.map(d=>({id:d.id,...d.data()}));layoutOrdersLoaded=true;updateLayoutCard()},error=>{console.error(error);toast("Ayar verileri yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.")});
@@ -71,9 +76,12 @@ function renderPageState(){
 const themeModeNames={light:"Açık",dark:"Karanlık",auto:"Otomatik"};
 function themeApi(){return window.FatihTheme}
 function normalizeTheme(value){return themeApi()?.normalize(value)||{mode:["light","dark","auto"].includes(value?.mode)?value.mode:"light",palette:["classic","graphite","gold","coffee","navy","mono","emerald","orange"].includes(value?.palette)?value.palette:"classic"}}
-function themeFromForm(){const custom=themeApi().normalize(themeDraft).custom;document.querySelectorAll("[data-theme-color]").forEach(input=>{custom[input.dataset.mode][input.dataset.themeColor]=input.value});return normalizeTheme({mode:document.querySelector('input[name="themeMode"]:checked')?.value,palette:document.querySelector('input[name="themePalette"]:checked')?.value,custom})}
+function themeFromForm(){const custom=themeApi().normalize(themeDraft).custom;document.querySelectorAll("[data-theme-color]").forEach(input=>{custom[input.dataset.mode][input.dataset.themeColor]=input.value});return normalizeTheme({effects:$("appearanceEffects").checked,speed:$("appearanceSpeed").value,intensity:$("appearanceIntensity").value,mode:document.querySelector('input[name="themeMode"]:checked')?.value,palette:document.querySelector('input[name="themePalette"]:checked')?.value,custom})}
 function fillThemeForm(settings){
   const value=normalizeTheme(settings),mode=document.querySelector(`input[name="themeMode"][value="${value.mode}"]`),palette=document.querySelector(`input[name="themePalette"][value="${value.palette}"]`);
+  $("appearanceEffects").checked=value.effects;
+  $("appearanceSpeed").value=value.speed;
+  $("appearanceIntensity").value=value.intensity;
   if(mode)mode.checked=true;if(palette)palette.checked=true;themeDraft=value;
   const names={primary:"Ana renk",accent:"Vurgu",page:"Sayfa zemini",panel:"Bölüm / panel",card:"Kartlar",text:"Ana yazı",muted:"Açıklama yazısı",input:"Giriş alanları"};
   $("customThemeColors").innerHTML=["light","dark"].map(mode=>`<fieldset><legend>${mode==="light"?"Açık görünüm":"Karanlık görünüm"}</legend><div class="custom-color-grid">${Object.entries(names).map(([key,label])=>`<label><span>${label}</span><input type="color" data-mode="${mode}" data-theme-color="${key}" value="${value.custom[mode][key]}" aria-label="${label}"></label>`).join("")}</div></fieldset>`).join("");
@@ -95,11 +103,11 @@ function closeThemeSettings(){if(themeSaving)return;if(themeBase&&themeApi())the
 async function saveThemeSettings(event){
   event.preventDefault();if(themeSaving||!themeApi())return;const next=themeFromForm();themeSaving=true;setThemeBusy(true);$("themeFormMessage").textContent="";
   try{
-    themeApi().save(next);themeBase={...next};themeDraft={...next};config={...config,themeSettings:next};
     await setDoc(configRef,{themeSettings:next,themeSettingsUpdatedAt:serverTimestamp(),themeSettingsUpdatedBy:auth.currentUser?.uid||""},{merge:true});
+    themeApi().save(next);themeBase={...next};themeDraft={...next};config={...config,themeSettings:next};
     $("themeSettingsDialog").close();toast("Tema ve görünüm ayarları bütün sistem için kaydedildi.");
   }catch(error){
-    console.error(error);themeApi().save(next);themeBase={...next};themeDraft={...next};config={...config,themeSettings:next};$("themeSettingsDialog").close();toast("Tema bu cihazda kaydedildi; diğer cihazlarla eşitleme şu anda tamamlanamadı.");
+    console.error(error);themeApi().apply(themeBase);fillThemeForm(themeBase);$("themeFormMessage").textContent="Tema kaydedilemedi. Yetkinizi ve bağlantınızı kontrol edin.";
   }finally{themeSaving=false;setThemeBusy(false)}
 }
 function setThemeBusy(value){$("saveThemeSettings").disabled=value;$("cancelThemeSettings").disabled=value;$("closeThemeSettings").disabled=value;$("resetThemeSettings").disabled=value;$("saveThemeSettings").innerHTML=value?'<i class="fa-solid fa-spinner fa-spin"></i> Kaydediliyor':'<i class="fa-solid fa-floppy-disk"></i> Kaydet'}
