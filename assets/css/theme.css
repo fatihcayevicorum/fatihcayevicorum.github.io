@@ -592,3 +592,38 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
 [data-tech-theme="true"][data-effects="true"][data-page-visible="true"] :is(.section-heading,.boiler-temperature-card:has([data-fresh="true"]))::after{content:"";position:absolute;bottom:0;inset-inline:5%;height:1px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--theme-accent),transparent);animation:appearance-sweep var(--motion-time) ease-in-out infinite alternate}
 [data-tech-theme="true"][data-effects="true"][data-page-visible="true"] [data-heater][data-phase="heating"]::after{content:"";display:inline-block;width:30px;height:12px;background:repeating-linear-gradient(90deg,var(--theme-accent) 0 3px,transparent 3px 6px);transform-origin:bottom;animation:appearance-heat calc(var(--motion-time)/5) ease-in-out infinite alternate}
 }
+
+/* R675 · Taze Dem ve Adisyon iç panelleri */
+.page-shell:has(#activeBrewList, .brew-list) :is(.summary-panel,.active-panel,.history-panel) {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+.page-shell:has(.brew-list) :is(.stat-card,.history-item,.history-empty,.empty-state,.meta-item,.brew-card) {
+  background: var(--theme-surface-2);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+.page-shell:has(.brew-list) :is(.stat-card strong,.brew-name,.section-heading h2) { color: var(--theme-text); }
+.page-shell:has(.brew-list) :is(.capacity-note,.history-empty,.stat-card span,.timer-label,.timer-note,.brew-started) { color: var(--theme-muted); }
+.page-shell .brew-card :is(.timer-value,.state-badge,.progress-heading strong) {
+  color: color-mix(in srgb,var(--state-color) 45%,var(--theme-text));
+}
+.page-shell .brew-card .progress-track { background: var(--theme-border); }
+.boiler-quick-card.boiler-quick-current > i.fa-temperature-half { color: var(--theme-text); opacity: .82; }
+
+#tableEditDialog :is(.notice,.current-account-form-hint,.org-toggle),
+#checkoutDialog :is(.payment-summary > div,.notice,.payment-confirm,.payment-confirm-products,.payment-confirm-products > span,.merchant-marka-toggle) {
+  background: var(--theme-surface-2);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+#checkoutDialog :is(.payment-summary b,.payment-confirm b,.payment-confirm span,.payment-confirm strong,.payment-confirm em,#paidAmount),
+#tableEditDialog .org-toggle span { color: var(--theme-text); }
+#checkoutDialog :is(.payment-summary span,.payment-confirm small),
+#tableEditDialog .org-toggle small { color: var(--theme-muted); }
+#checkoutDialog .payment-type-switch input:not(:checked) + span {
+  background: var(--theme-surface-2); color: var(--theme-text); border-color: var(--theme-border);
+}
+#checkoutDialog .payment-type-switch input:checked + span { background: var(--theme-primary); color: var(--theme-on-primary); }
+#checkoutDialog .payment-summary > .remaining { border-inline-start: 3px solid var(--theme-accent); }
