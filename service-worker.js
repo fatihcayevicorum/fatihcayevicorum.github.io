@@ -21,7 +21,7 @@ messaging.onBackgroundMessage(payload=>{
     tag:data.tag||type||"fatih-admin-tea",renotify:true,data:{link:data.link||"/taze-dem-paneli/"}
   })
 });
-const VERSION="fatih-cay-evi-r673-tema",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
+const VERSION="fatih-cay-evi-r675-tema",STATIC_CACHE=`${VERSION}-static`,RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=[
   "./faturalarim/","./faturalarim/index.html","./faturalarim/script.js?v=672","./faturalarim/style.css?v=672","./faturalarim/ocr-parser.js?v=671","./assets/js/supplier-report.js?v=672",
   "./assets/js/boiler-notification-visuals.js?v=669",
@@ -31,7 +31,7 @@ const CORE=[
   "./akilli-kazan/","./akilli-kazan/index.html","./akilli-kazan/script.js","./assets/js/smart-boiler.js","./assets/js/smart-boiler-plan.js","./assets/js/smart-boiler-live.js","./assets/js/smart-boiler-settings.js","./assets/js/smart-boiler-settings.js?v=663","./assets/css/smart-boiler.css",
   "./assets/js/product-group-summary.js","./assets/css/product-group-summary.css",
   "./assets/js/product-pricing.js","./assets/js/current-account-pricing.js","./assets/js/current-account-pricing-store.js",
-  "./assets/js/sales-mode.js","./assets/js/table-layout.js","./assets/js/theme.js","./assets/js/finance-account-compat.js","./assets/js/finance-real-accounts.js","./assets/js/payment-methods.js","./assets/js/payment-account-routing.js","./assets/css/theme.css",
+  "./assets/js/sales-mode.js","./assets/js/table-layout.js","./assets/js/theme.js","./assets/js/theme.js?v=675","./assets/js/finance-account-compat.js","./assets/js/finance-real-accounts.js","./assets/js/payment-methods.js","./assets/js/payment-account-routing.js","./assets/css/theme.css","./assets/css/theme.css?v=675",
   "./islem-gecmisi/","./islem-gecmisi/index.html","./islem-gecmisi/style.css","./islem-gecmisi/script.js",
   "./birikim-hesaplari/","./birikim-hesaplari/index.html","./birikim-hesaplari/style.css","./birikim-hesaplari/script.js","./assets/js/savings.js","./isletme-asistani/campaign-cost.js","./assets/js/estimated-cost.js","./menu-yonetimi/cost-groups.js","./assets/js/stock-recipe.js","./assets/js/collection-summary.js",
   "./","./index.html","./offline.html","./assets/images/logo.png","./assets/css/home.css","./assets/css/home-dynamic.css","./assets/css/campaign-enhancements.css","./assets/css/news-campaign-layout.css",
@@ -109,9 +109,12 @@ self.addEventListener("fetch",event=>{
   }
   if(url.pathname.endsWith("/assets/js/system-confirm.js")&&url.searchParams.get("v")!=="566"){const latest=new URL(url);latest.searchParams.set("v","566");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
   if(url.pathname.endsWith("/assets/js/pwa.js")&&url.searchParams.get("v")!=="571"){const latest=new URL(url);latest.searchParams.set("v","571");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
-  if((url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js"))&&url.searchParams.get("v")!=="673"){
-    const latest=new URL(url);latest.searchParams.set("v","673");
-    event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;
+  if(url.pathname.endsWith("/assets/css/theme.css")||url.pathname.endsWith("/assets/js/theme.js")){
+    const latest=new URL(url);latest.searchParams.set("v","675");
+    event.respondWith(caches.open(RUNTIME_CACHE).then(async cache=>{
+      try{const response=await fetch(latest.href,{cache:"reload"});if(response.ok){await cache.put(latest.href,response.clone());return response}return (await cache.match(latest.href))||await matchAppCache(new Request(latest.href))||response}
+      catch{return (await cache.match(latest.href))||await matchAppCache(new Request(latest.href))||await matchAppCache(request)||Response.error()}
+    }));return;
   }
   if(url.pathname.endsWith("/veri-yonetimi/script.js")&&url.searchParams.get("v")!=="575"){const latest=new URL(url);latest.searchParams.set("v","575");event.respondWith(fetch(latest.href).then(response=>{if(response.ok){const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>matchAppCache(request)));return;}
   if(request.mode==="navigate"){event.respondWith(fetch(request).then(response=>{const copy=response.clone();caches.open(RUNTIME_CACHE).then(cache=>cache.put(request,copy));return response}).catch(async()=>await matchAppCache(request)||await caches.match("./offline.html")));return}
