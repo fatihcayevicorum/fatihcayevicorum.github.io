@@ -13,7 +13,7 @@ const app=initializeApp({projectId},'invoice-test'),db=getFirestore(app),date=ne
 const handler=buildInvoices({db,FieldValue,HttpsError,requireOwner:r=>{if(r.auth?.uid!==owner)throw new HttpsError('permission-denied','Denied')}}).handler,call=data=>handler({auth:{uid:owner},data});
 try{
  await db.doc('adminSuppliers/s1').set({name:'Test Firma',balanceCents:0,active:true});await db.doc('adminStockItems/tea').set({name:'Çay',quantity:10,unitCost:10,active:true});
- const invoice={kind:'purchase',supplierId:'s1',partyName:'Test Firma',number:'ABC',date,lines:[{name:'Çay',quantity:2,unitPrice:100,total:200,stock:true,stockItemId:'tea',multiplier:10}],total:200,vat:0};
+ const invoice={kind:'purchase',supplierId:'s1',partyName:'Test Firma',number:'ABC',date,lines:[{name:'Çay',quantity:2,unit:'koli',unitPrice:100,total:200,stock:true,stockItemId:'tea',multiplier:10}],total:200,vat:0};
  const simultaneous=await Promise.allSettled([call({action:'invoice',id:'i1',invoice}),call({action:'invoice',id:'i2',invoice})]);assert.equal(simultaneous.filter(x=>x.status==='fulfilled').length,1);const id=simultaneous.find(x=>x.status==='fulfilled').value.id;
  const payments=await Promise.allSettled([call({action:'payment',id:'p1',invoiceId:id,amount:150,accountId:'legacy-cash'}),call({action:'payment',id:'p2',invoiceId:id,amount:150,accountId:'legacy-bank'})]);assert.equal(payments.filter(x=>x.status==='fulfilled').length,1);assert.equal((await db.doc('adminSuppliers/s1').get()).data().balanceCents,5000);assert.equal((await db.doc('adminStockItems/tea').get()).data().quantity,30);
  const ownerDb=env.authenticatedContext(owner).firestore(),staffDb=env.authenticatedContext('staff').firestore(),anon=env.unauthenticatedContext().firestore();
