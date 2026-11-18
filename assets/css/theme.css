@@ -677,12 +677,6 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
 
 /* R676 — gerçek işletme ekranlarından gelen tema düzeltmeleri.
    Yerleşim, masa kimliği, durum ve işlem kuralları korunur. */
-:root {
-  --fce-ui-fg:var(--theme-text);
-  --fce-ui-muted:var(--theme-muted);
-}
-:root[data-effective-theme="dark"] {--fce-state-light:72%}
-:root[data-effective-theme="light"] {--fce-state-light:0%}
 :root[data-effective-theme="dark"] body:has(#brewList) :is(.summary-panel,.active-panel,.history-panel,.history-item,.empty-state,.history-empty,.meta-item,.stat-card) {
   background:var(--theme-surface)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important;
 }
@@ -725,6 +719,9 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
   isolation:isolate;
 }
 :root[data-tech-theme="true"] #tablesView .table-card.empty-table {--fce-state:var(--fce-card-neon)}
+:root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-card.occupied {
+  box-shadow:inset 0 0 18px color-mix(in srgb,var(--fce-state) 20%,transparent),0 0 8px color-mix(in srgb,var(--fce-state) 23%,transparent);
+}
 :root[data-tech-theme="true"] #tablesView .table-card.empty-table.has-region-style {border-inline-start:4px solid var(--region-end)}
 :root[data-tech-theme="true"] #tablesView .table-card.occupied {--fce-state:#38875f;--fce-tint:#38875f;border-inline-start-width:4px}
 :root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-card.occupied {--fce-state:#55eaa3}
@@ -794,7 +791,14 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
     box-shadow:inset 0 0 12px #7af1b1;animation:fce-r676-breath calc(var(--motion-time)/2) ease-in-out infinite;
   }
 }
-:root[data-tech-theme="true"][data-effects="false"] :is(.live-badge>span,.progress-fill::after) {animation:none}
+:root[data-tech-theme="true"][data-effects="false"] .live-badge>span,
+:root[data-tech-theme="true"][data-effects="false"] .progress-fill::after {animation:none}
 @media(prefers-reduced-motion:reduce){
-  :root[data-tech-theme="true"] :is(.live-badge>span,.progress-fill::after) {animation:none}
+  :root[data-tech-theme="true"] .live-badge>span,
+  :root[data-tech-theme="true"] .progress-fill::after {animation:none}
+}
+
+/* Diğer yeni temalarda da masa kartları kendi yüzey ve köşe dilini taşır. */
+:root:is([data-color-theme="blackGold"],[data-color-theme="glass"],[data-color-theme="teahouse"],[data-color-theme="future"],[data-color-theme="minimal"],[data-color-theme="jade"],[data-color-theme="original"],[data-color-theme="corum"]) #tablesView .table-card {
+  background-image:var(--appearance-finish)!important;border-radius:var(--appearance-radius);border-style:var(--appearance-edge);
 }
