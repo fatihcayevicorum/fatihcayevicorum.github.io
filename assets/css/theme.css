@@ -674,3 +674,135 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
     border-width:2px;filter:drop-shadow(0 0 3px var(--theme-accent));
   }
 }
+
+/* R676: Tema kimliği Adisyon kartlarına da uygulanır. Durum ve bölge renkleri korunur. */
+:root:is([data-color-theme="blackGold"],[data-color-theme="glass"],[data-color-theme="teahouse"],[data-color-theme="future"],[data-color-theme="minimal"],[data-color-theme="jade"],[data-color-theme="original"],[data-color-theme="corum"],[data-color-theme="hud"],[data-color-theme="holo"],[data-color-theme="control"]) #tablesView {
+  --pos-theme-accent:var(--appearance-focus,var(--theme-accent));
+  background-image:var(--appearance-finish)!important;
+  border-radius:var(--appearance-radius);
+}
+:root:is([data-color-theme="blackGold"],[data-color-theme="glass"],[data-color-theme="teahouse"],[data-color-theme="future"],[data-color-theme="minimal"],[data-color-theme="jade"],[data-color-theme="original"],[data-color-theme="corum"],[data-color-theme="hud"],[data-color-theme="holo"],[data-color-theme="control"]) #tablesView .table-card {
+  --card-signal:var(--pos-theme-accent);
+  background-color:var(--table-fill,var(--theme-surface-2));
+  background-image:var(--appearance-finish),linear-gradient(145deg,color-mix(in srgb,var(--card-signal) 10%,transparent),transparent 75%)!important;
+  border-radius:var(--appearance-radius)!important;
+  border-style:var(--appearance-edge);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--card-signal) 28%,transparent),var(--theme-shadow);
+}
+:root:is([data-color-theme="blackGold"],[data-color-theme="glass"],[data-color-theme="teahouse"],[data-color-theme="future"],[data-color-theme="minimal"],[data-color-theme="jade"],[data-color-theme="original"],[data-color-theme="corum"],[data-color-theme="hud"],[data-color-theme="holo"],[data-color-theme="control"]) #tablesView .table-card.occupied {
+  --card-signal:var(--table-edge);
+}
+:root[data-tech-theme="true"] #tablesView {
+  --pos-neon:var(--appearance-focus);
+  border-color:color-mix(in srgb,var(--pos-neon) 55%,var(--theme-border));
+  box-shadow:inset 0 0 22px color-mix(in srgb,var(--pos-neon) 8%,transparent),var(--theme-shadow);
+}
+:root[data-color-theme="hud"] #tablesView {--pos-panel-finish:repeating-linear-gradient(0deg,transparent 0 5px,#4edcff0b 5px 6px);--pos-neon-strength:45%}
+:root[data-color-theme="holo"] #tablesView {--pos-panel-finish:linear-gradient(125deg,#83f2ea23,transparent 42%,#9d7fff1c 77%,#83f2ea11);--pos-neon-strength:35%}
+:root[data-color-theme="control"] #tablesView {--pos-panel-finish:repeating-linear-gradient(90deg,transparent 0 23px,#54ebc812 23px 24px);--pos-neon-strength:42%}
+:root[data-tech-theme="true"] #tablesView .table-card {
+  background-image:var(--pos-panel-finish),linear-gradient(145deg,color-mix(in srgb,var(--pos-neon) 14%,transparent),transparent 60%,color-mix(in srgb,var(--card-signal) 14%,transparent))!important;
+  border-color:color-mix(in srgb,var(--pos-neon) 60%,var(--theme-border));
+  border-width:1px;
+  box-shadow:inset 0 0 14px color-mix(in srgb,var(--pos-neon) 12%,transparent),0 0 11px color-mix(in srgb,var(--pos-neon) 14%,transparent);
+}
+:root[data-tech-theme="true"] #tablesView .table-card.empty-table.has-region-style {
+  border-inline-start:4px solid var(--region-end,var(--pos-neon));
+}
+:root[data-tech-theme="true"] #tablesView .table-card.occupied {
+  border-color:var(--table-edge);border-inline-start-width:4px;
+  box-shadow:inset 0 0 18px color-mix(in srgb,var(--card-signal) 20%,transparent),0 0 13px color-mix(in srgb,var(--card-signal) var(--pos-neon-strength,35%),transparent);
+}
+:root[data-tech-theme="true"] #tablesView .table-open>i {
+  color:var(--pos-neon);opacity:1;text-shadow:0 0 10px color-mix(in srgb,var(--pos-neon) 45%,transparent);
+}
+:root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-card.occupied .table-open>i {
+  color:color-mix(in srgb,var(--card-signal) 57%,white);
+}
+:root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-open>b {
+  text-shadow:0 0 9px color-mix(in srgb,var(--pos-neon) 35%,transparent);
+}
+:root[data-tech-theme="true"] #tablesView .table-open:focus-visible {outline:2px solid var(--pos-neon);outline-offset:-4px}
+:root[data-tech-theme="true"] #tablesView .overview-row :is(.open-total-card,.pos-tea-card,.pos-tea-start,.icon-action) {
+  border-radius:var(--appearance-radius);
+}
+:root[data-tech-theme="true"] #tablesView .open-total-card {
+  background:linear-gradient(135deg,var(--theme-primary),var(--theme-primary-dark));
+  border-color:var(--pos-neon);color:var(--theme-on-primary);
+  --orbit-color:var(--theme-accent);
+}
+:root[data-tech-theme="true"] #tablesView .pos-tea-card:not(.is-empty) {
+  background:var(--pos-panel-finish),linear-gradient(145deg,color-mix(in srgb,var(--tea-state) 26%,var(--theme-surface)),var(--theme-surface-2));
+  border-color:var(--tea-state);
+  box-shadow:inset 0 0 16px color-mix(in srgb,var(--tea-state) 18%,transparent);
+}
+:root[data-tech-theme="true"] #tablesView .pos-tea-card:not(.is-empty) :is(span,strong,small) {
+  color:var(--theme-text);opacity:1;
+}
+:root[data-tech-theme="true"] #tablesView .pos-tea-card.is-empty {
+  background-image:var(--pos-panel-finish);opacity:1;
+}
+:root[data-tech-theme="true"] #tablesView .quick-actions .icon-action {
+  background:var(--pos-panel-finish),var(--theme-surface-2)!important;
+  border:1px solid color-mix(in srgb,var(--pos-neon) 50%,var(--theme-border));
+  color:var(--pos-neon)!important;
+}
+:root[data-tech-theme="true"] #tablesView .control-panel-divider::before,
+:root[data-tech-theme="true"] #tablesView .control-panel-divider::after {
+  background:linear-gradient(90deg,transparent,var(--pos-neon),transparent);
+}
+@keyframes r676-card-light {0%{transform:translateX(-120%)}100%{transform:translateX(430%)}}
+@media(prefers-reduced-motion:no-preference) {
+  :root[data-tech-theme="true"][data-effects="true"][data-page-visible="true"] #tablesView .table-card.occupied::after {
+    content:"";position:absolute;bottom:0;left:0;height:2px;width:25%;pointer-events:none;
+    background:linear-gradient(90deg,transparent,var(--pos-neon),transparent);
+    box-shadow:0 0 8px var(--pos-neon);
+    opacity:var(--light-strength);animation:r676-card-light var(--motion-time) linear infinite;
+  }
+}
+:root[data-tech-theme="true"]:is([data-effects="false"],[data-page-visible="false"]) #tablesView :is(.open-total-card,.pos-tea-card,.pos-tea-start)::before {
+  animation:none!important;display:none!important;
+}
+
+/* R676: Taze Dem sabit beyaz yüzeyleri ve adisyon bilgi penceresi kontrastı. */
+:root .page-shell:has(#brewList) :is(.summary-panel,.active-panel,.history-panel) {
+  background:var(--theme-surface)!important;color:var(--theme-text);border-color:var(--theme-border);
+}
+:root .page-shell:has(#brewList) :is(.stat-card,.meta-item,.history-item,.history-empty) {
+  background:var(--theme-surface-2)!important;color:var(--theme-text);border-color:var(--theme-border);
+}
+:root .page-shell:has(#brewList) .brew-card {
+  background:radial-gradient(circle at 100% 0%,var(--state-soft),transparent 10rem),var(--theme-surface-2)!important;
+  color:var(--theme-text);
+  --state-readable:color-mix(in srgb,var(--state-color) 70%,#101010);
+}
+:root[data-effective-theme="dark"] .page-shell:has(#brewList) .brew-card {
+  --state-readable:color-mix(in srgb,var(--state-color) 55%,white);
+}
+:root .page-shell:has(#brewList) :is(.stat-card strong,.brew-name,.meta-item strong,.history-copy strong) {color:var(--theme-text)!important}
+:root .page-shell:has(#brewList) :is(.stat-card span,.brew-started,.timer-label,.timer-note,.progress-heading span,.progress-meta span,.meta-item span,.history-copy span,.history-duration,.capacity-note,.history-empty,.empty-state p) {
+  color:var(--theme-muted)!important;
+}
+:root .page-shell:has(#brewList) :is(.state-badge,.timer-value,.progress-heading strong) {color:var(--state-readable)}
+:root .page-shell:has(#brewList) .progress-track {background:var(--theme-border)}
+:root[data-effective-theme="dark"] .page-shell:has(#brewList) :is(.live-badge,.ready-button) {color:#85e6ad}
+:root[data-effective-theme="dark"] .page-shell:has(#brewList) .finish-button {color:#ff9b9f}
+:root[data-tech-theme="true"] .page-shell:has(#brewList) :is(.summary-panel,.active-panel,.history-panel,.brew-card,.stat-card) {
+  border-radius:var(--appearance-radius);
+  box-shadow:inset 0 0 13px color-mix(in srgb,var(--theme-accent) 10%,transparent),var(--theme-shadow);
+}
+:root[data-tech-theme="true"]:is([data-effects="false"],[data-page-visible="false"]) .page-shell:has(#brewList) :is(.progress-fill::after,.live-badge>span) {animation:none!important}
+:root #tableEditDialog :is(.notice,.org-toggle) {
+  background:var(--theme-surface-2)!important;color:var(--theme-text)!important;border-color:var(--theme-border);
+}
+:root #tableEditDialog .org-toggle small {color:var(--theme-muted)!important}
+:root #tableEditDialog .current-account-form-hint {
+  background:color-mix(in srgb,#3281ae 13%,var(--theme-surface-2))!important;color:var(--theme-text)!important;
+  border:1px solid color-mix(in srgb,#3281ae 50%,var(--theme-border));
+}
+:root #themeSettingsDialog {overflow:hidden}
+:root #themeSettingsDialog>form {box-sizing:border-box;max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
+:root #themeSettingsDialog .dialog-actions {
+  position:sticky;bottom:0;z-index:3;flex-wrap:wrap;padding:10px 0;
+  background:var(--theme-surface);border-top:1px solid var(--theme-border);
+}
