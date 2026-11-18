@@ -674,3 +674,131 @@ html:root[data-effective-theme="dark"] :is(.timeline-row time,.simple-products h
     border-width:2px;filter:drop-shadow(0 0 3px var(--theme-accent));
   }
 }
+
+/* R676 — gerçek işletme ekranlarından gelen tema düzeltmeleri.
+   Yerleşim, masa kimliği, durum ve işlem kuralları korunur. */
+:root[data-effective-theme="dark"] body:has(#brewList) :is(.summary-panel,.active-panel,.history-panel,.history-item,.empty-state,.history-empty,.meta-item,.stat-card) {
+  background:var(--theme-surface)!important;color:var(--theme-text)!important;border-color:var(--theme-border)!important;
+}
+:root[data-effective-theme="dark"] body:has(#brewList) .brew-card {
+  background:radial-gradient(ellipse at top right,var(--state-soft),transparent 65%),var(--theme-surface-2)!important;
+  color:var(--theme-text);border-color:color-mix(in srgb,var(--state-color) 55%,var(--theme-border));
+}
+:root[data-effective-theme="dark"] body:has(#brewList) :is(.stat-card strong,.meta-item strong,.brew-name,.reset-count-button strong) {color:var(--theme-text)!important}
+:root[data-effective-theme="dark"] body:has(#brewList) :is(.brew-started,.timer-label,.timer-note,.progress-meta span,.progress-heading span,.capacity-note,.history-empty,.stat-card span,.meta-item span) {color:var(--theme-muted)!important}
+:root[data-effective-theme="dark"] body:has(#brewList) :is(.timer-value,.state-badge,.progress-heading strong,.progress-meta strong) {color:color-mix(in srgb,var(--state-color) 62%,white)!important}
+:root[data-effective-theme="dark"] body:has(#brewList) .progress-track {background:var(--theme-input)}
+:root[data-effective-theme="dark"] body:has(#brewList) :is(.live-badge,.connection-badge:not(.is-error),.ready-button) {color:#88e6ae;background:#17422c}
+:root[data-effective-theme="dark"] body:has(#brewList) :is(.finish-button,.connection-badge.is-error) {color:#ffb2b7;background:#4b2129}
+:root[data-effective-theme="dark"] #tableEditDialog :is(.notice,.org-toggle,.current-account-form-hint) {
+  color:var(--theme-text)!important;background:var(--theme-surface-2)!important;border:1px solid var(--theme-border);
+}
+:root[data-effective-theme="dark"] #tableEditDialog .org-toggle small {color:var(--theme-muted)!important}
+:root[data-effective-theme="dark"] #tableEditDialog .current-account-form-hint {border-color:#3281ae}
+#themeSettingsDialog {overflow:hidden;box-sizing:border-box;max-height:calc(100dvh - 24px)}
+#themeSettingsDialog>form {box-sizing:border-box;max-height:calc(100dvh - 24px);min-height:0;overflow-y:auto;overscroll-behavior:contain}
+#themeSettingsDialog .dialog-actions {position:sticky;bottom:-1px;z-index:4;background:var(--theme-surface);padding:10px 0 4px;border-top:1px solid var(--theme-border)}
+#themeSettingsDialog .dialog-actions>* {min-height:44px}
+#themeSettingsDialog :is(#appearanceIntensity,#appearanceSpeed) {border-radius:12px;padding-inline:12px 30px}
+:root[data-tech-theme="true"][data-effective-theme="dark"] {--fce-neon:var(--theme-accent);--fce-card-neon:var(--theme-accent)}
+:root[data-tech-theme="true"][data-effective-theme="light"] {--fce-neon:var(--theme-primary);--fce-card-neon:var(--theme-primary)}
+:root[data-tech-theme="true"] #tablesView {
+  border-color:color-mix(in srgb,var(--fce-neon) 60%,var(--theme-border));
+  background-image:radial-gradient(ellipse at top,color-mix(in srgb,var(--theme-accent) 10%,transparent),transparent 70%),var(--appearance-finish);
+  border-radius:var(--appearance-radius);
+}
+:root[data-tech-theme="true"] #tablesView .table-card {
+  --fce-state:var(--fce-card-neon);
+  --fce-tint:var(--fce-card-neon);
+  --fce-fill:var(--theme-surface-2);
+  border:1px solid color-mix(in srgb,var(--fce-state) 67%,var(--theme-border));
+  border-radius:var(--appearance-radius);
+  background:linear-gradient(145deg,color-mix(in srgb,var(--fce-fill) 82%,var(--fce-tint)),var(--fce-fill))!important;
+  background-image:var(--appearance-finish),linear-gradient(145deg,color-mix(in srgb,var(--fce-fill) 82%,var(--fce-tint)),var(--fce-fill))!important;
+  box-shadow:inset 0 0 14px color-mix(in srgb,var(--fce-state) 13%,transparent),0 3px 10px color-mix(in srgb,var(--fce-state) 12%,transparent);
+  isolation:isolate;
+}
+:root[data-tech-theme="true"] #tablesView .table-card.empty-table {--fce-state:var(--fce-card-neon)}
+:root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-card.occupied {
+  box-shadow:inset 0 0 18px color-mix(in srgb,var(--fce-state) 20%,transparent),0 0 8px color-mix(in srgb,var(--fce-state) 23%,transparent);
+}
+:root[data-tech-theme="true"] #tablesView .table-card.empty-table.has-region-style {border-inline-start:4px solid var(--region-end)}
+:root[data-tech-theme="true"] #tablesView .table-card.occupied {--fce-state:#38875f;--fce-tint:#38875f;border-inline-start-width:4px}
+:root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-card.occupied {--fce-state:#55eaa3}
+:root[data-tech-theme="true"] #tablesView .table-card:is(.credit-table,.current-account-table) {--fce-state:#3281ae;--fce-tint:#3281ae}
+:root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-card:is(.credit-table,.current-account-table) {--fce-state:#69caff}
+:root[data-tech-theme="true"] #tablesView .table-card.organization-table {--fce-state:#c47d22;--fce-tint:#c47d22}
+:root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-card.organization-table {--fce-state:#ffc168}
+:root[data-tech-theme="true"] #tablesView .table-card::before {
+  content:"";position:absolute;inset:5px;pointer-events:none;z-index:0;
+  border-radius:inherit;
+  background:linear-gradient(var(--fce-state),var(--fce-state)) left top/15px 1px no-repeat,
+             linear-gradient(var(--fce-state),var(--fce-state)) left top/1px 15px no-repeat,
+             linear-gradient(var(--fce-state),var(--fce-state)) right bottom/15px 1px no-repeat,
+             linear-gradient(var(--fce-state),var(--fce-state)) right bottom/1px 15px no-repeat;
+  opacity:.65;
+}
+:root[data-tech-theme="true"] #tablesView .table-open {position:relative;z-index:1}
+:root[data-tech-theme="true"] #tablesView .table-open>i {color:var(--fce-state)!important;opacity:1}
+:root[data-tech-theme="true"][data-effective-theme="dark"] #tablesView .table-card.occupied .table-open>b {color:var(--fce-state)!important;text-shadow:0 0 9px color-mix(in srgb,var(--fce-state) 35%,transparent)}
+:root[data-tech-theme="true"] #tablesView .table-card.empty-table .table-open>b {color:var(--theme-muted)!important}
+:root[data-tech-theme="true"] #tablesView .pos-tea-card.is-empty {
+  background-image:var(--appearance-finish)!important;border-radius:var(--appearance-radius);
+}
+:root[data-tech-theme="true"] #tablesView .quick-actions button {
+  border:1px solid var(--theme-border);box-shadow:inset 0 0 8px color-mix(in srgb,var(--theme-accent) 10%,transparent);
+}
+:root[data-tech-theme="true"] :is(.center-card,.stat-card,.brew-card,.boiler-card,.boiler-quick-card) {
+  border-radius:var(--appearance-radius);box-shadow:inset 0 0 15px color-mix(in srgb,var(--theme-accent) 12%,transparent),var(--theme-shadow);
+}
+:root[data-tech-theme="true"] .card-grid .center-card {
+  background-image:var(--appearance-finish)!important;
+  border-color:color-mix(in srgb,var(--fce-neon) 43%,var(--theme-border))!important;
+}
+:root[data-tech-theme="true"] .card-grid-daily .center-card {
+  background-image:var(--appearance-finish),linear-gradient(145deg,var(--theme-primary-dark),var(--theme-primary))!important;
+}
+:root[data-tech-theme="true"] .card-grid .center-card .card-icon {background:var(--theme-primary);color:var(--theme-on-primary)}
+:root[data-tech-theme="true"] :is(.boiler-temperature-card,.boiler-quick-current):has([data-current][data-fresh="true"]) {
+  isolation:isolate;overflow:hidden;
+}
+:root[data-tech-theme="true"] :is(.boiler-temperature-card,.boiler-quick-current) [data-current]::before {content:none!important}
+:root[data-tech-theme="true"] :is(.boiler-temperature-card,.boiler-quick-current):has([data-current][data-fresh="true"])::before {
+  content:"";position:absolute;width:min(66%,164px);aspect-ratio:1;left:50%;top:55%;translate:-50% -50%;
+  border-radius:50%;pointer-events:none;z-index:-1;
+  background:repeating-conic-gradient(from 0deg,var(--fce-neon) 0deg 2deg,transparent 2deg 12deg);
+  mask:radial-gradient(circle,transparent 0 63%,#000 64% 67%,transparent 68%);
+  opacity:.58;
+}
+:root[data-tech-theme="true"] #smartBoilerQuickDialog .boiler-quick-current>i {color:var(--fce-neon)}
+:root[data-tech-theme="true"] :is(.boiler-temperature-card,.boiler-quick-current) [data-current] {color:var(--theme-text)}
+@keyframes fce-r676-edge {
+  0%{transform:translateX(-115%);opacity:0}
+  20%,80%{opacity:var(--light-strength)}
+  100%{transform:translateX(390%);opacity:0}
+}
+@keyframes fce-r676-breath {0%,100%{opacity:1}50%{opacity:.55}}
+@media(prefers-reduced-motion:no-preference){
+  :root[data-tech-theme="true"][data-effects="true"][data-page-visible="true"] #tablesView .table-card.occupied::after {
+    content:"";position:absolute;bottom:0;left:0;width:28%;height:2px;pointer-events:none;z-index:2;
+    background:linear-gradient(90deg,transparent,var(--fce-state),transparent);
+    box-shadow:0 0 8px var(--fce-state);animation:fce-r676-edge var(--motion-time) linear infinite;
+  }
+  :root[data-tech-theme="true"][data-effects="true"][data-page-visible="true"] :is(.boiler-temperature-card,.boiler-quick-current):has([data-current][data-fresh="true"])::before {
+    animation:appearance-orbit calc(var(--motion-time)*2) linear infinite;
+  }
+  :root[data-tech-theme="true"][data-effects="true"][data-page-visible="true"] .boiler-quick-heading-actions>span[data-state="online"] {
+    box-shadow:inset 0 0 12px #7af1b1;animation:fce-r676-breath calc(var(--motion-time)/2) ease-in-out infinite;
+  }
+}
+:root[data-tech-theme="true"][data-effects="false"] .live-badge>span,
+:root[data-tech-theme="true"][data-effects="false"] .progress-fill::after {animation:none}
+@media(prefers-reduced-motion:reduce){
+  :root[data-tech-theme="true"] .live-badge>span,
+  :root[data-tech-theme="true"] .progress-fill::after {animation:none}
+}
+
+/* Diğer yeni temalarda da masa kartları kendi yüzey ve köşe dilini taşır. */
+:root:is([data-color-theme="blackGold"],[data-color-theme="glass"],[data-color-theme="teahouse"],[data-color-theme="future"],[data-color-theme="minimal"],[data-color-theme="jade"],[data-color-theme="original"],[data-color-theme="corum"]) #tablesView .table-card {
+  background-image:var(--appearance-finish)!important;border-radius:var(--appearance-radius);border-style:var(--appearance-edge);
+}
